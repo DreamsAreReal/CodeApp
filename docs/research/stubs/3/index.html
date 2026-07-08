@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MindForge - Neo-Brutalist Learning Map</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Monaco', 'Courier New', monospace;
+      background: #FFFFFF;
+      color: #000000;
+      overflow-x: hidden;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 390px;
+      margin: 0 auto;
+      background: #FFFFFF;
+      min-height: 100vh;
+      padding: 0;
+    }
+
+    /* Header */
+    .header {
+      border-bottom: 4px solid #000000;
+      padding: 20px 16px 16px;
+      background: #F0F0F0;
+    }
+
+    .logo {
+      font-size: 24px;
+      font-weight: 900;
+      letter-spacing: -1px;
+      margin-bottom: 4px;
+    }
+
+    .tagline {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #666666;
+    }
+
+    /* Main Content */
+    .main {
+      padding: 20px 16px;
+    }
+
+    /* Stats Bar */
+    .stats-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      border: 3px solid #000000;
+      padding: 12px;
+      background: #FFFFFF;
+    }
+
+    .stat-box {
+      flex: 1;
+      border-right: 3px solid #000000;
+      padding-right: 8px;
+      text-align: center;
+    }
+
+    .stat-box:last-child {
+      border-right: none;
+      padding-right: 0;
+    }
+
+    .stat-value {
+      font-size: 20px;
+      font-weight: 900;
+      line-height: 1;
+      margin-bottom: 2px;
+    }
+
+    .stat-label {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: #666666;
+    }
+
+    /* Knowledge Graph Preview */
+    .graph-preview {
+      margin-bottom: 20px;
+      border: 3px solid #000000;
+      padding: 16px;
+      background: #F9F9F9;
+      aspect-ratio: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .graph-title {
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      color: #666666;
+    }
+
+    .graph-nodes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .node {
+      width: 20px;
+      height: 20px;
+      border: 2px solid #000000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 900;
+    }
+
+    .node.core {
+      background: #000000;
+      color: #FFFFFF;
+      width: 28px;
+      height: 28px;
+    }
+
+    .node.connected {
+      background: #FFD700;
+    }
+
+    .node.locked {
+      background: #E0E0E0;
+    }
+
+    /* Lesson Card */
+    .lesson-card {
+      border: 3px solid #000000;
+      margin-bottom: 20px;
+      background: #FFFFFF;
+      overflow: hidden;
+    }
+
+    .card-header {
+      background: #000000;
+      color: #FFFFFF;
+      padding: 12px 14px;
+      border-bottom: 3px solid #000000;
+    }
+
+    .card-topic {
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+      margin-bottom: 2px;
+    }
+
+    .card-meta {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      opacity: 0.7;
+    }
+
+    .card-body {
+      padding: 14px;
+      border-top: 3px solid #000000;
+    }
+
+    .card-description {
+      font-size: 12px;
+      line-height: 1.5;
+      margin-bottom: 10px;
+      color: #333333;
+    }
+
+    .card-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+
+    .tag {
+      background: #F0F0F0;
+      border: 2px solid #000000;
+      padding: 3px 8px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .difficulty {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 6px 8px;
+      border: 2px solid #FF3333;
+      color: #FF3333;
+    }
+
+    /* CTA Button */
+    .cta-button {
+      width: 100%;
+      padding: 14px;
+      background: #000000;
+      color: #FFFFFF;
+      border: 4px solid #000000;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.1s;
+      margin-bottom: 20px;
+    }
+
+    .cta-button:active {
+      background: #FFD700;
+      color: #000000;
+    }
+
+    /* Moodboard Section */
+    .moodboard {
+      border: 3px solid #000000;
+      padding: 14px;
+      background: #F0F0F0;
+    }
+
+    .moodboard-title {
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #000000;
+    }
+
+    .moodboard-section {
+      margin-bottom: 12px;
+    }
+
+    .section-label {
+      font-size: 8px;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: #666666;
+      margin-bottom: 6px;
+    }
+
+    .palette {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .color-swatch {
+      width: 40px;
+      height: 40px;
+      border: 2px solid #000000;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      font-size: 8px;
+      font-weight: 700;
+      padding-bottom: 2px;
+    }
+
+    .color-swatch.black {
+      background: #000000;
+      color: #FFFFFF;
+    }
+
+    .color-swatch.white {
+      background: #FFFFFF;
+    }
+
+    .color-swatch.gold {
+      background: #FFD700;
+    }
+
+    .color-swatch.red {
+      background: #FF3333;
+    }
+
+    .color-swatch.grey {
+      background: #F0F0F0;
+    }
+
+    .typography-sample {
+      margin-bottom: 8px;
+      border: 2px solid #000000;
+      padding: 8px;
+      background: #FFFFFF;
+    }
+
+    .type-heading {
+      font-size: 16px;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+      margin-bottom: 2px;
+    }
+
+    .type-label {
+      font-size: 8px;
+      font-weight: 700;
+      color: #666666;
+    }
+
+    .tone-list {
+      font-size: 10px;
+      line-height: 1.6;
+    }
+
+    .tone-list li {
+      margin-left: 14px;
+      font-weight: 700;
+    }
+
+    /* Footer spacing */
+    .footer-space {
+      height: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div class="logo">MINDFORGE</div>
+      <div class="tagline">Build Your Expertise</div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main">
+      <!-- Stats -->
+      <div class="stats-bar">
+        <div class="stat-box">
+          <div class="stat-value">7</div>
+          <div class="stat-label">Day Streak</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value">240</div>
+          <div class="stat-label">XP</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value">18</div>
+          <div class="stat-label">Mastered</div>
+        </div>
+      </div>
+
+      <!-- Knowledge Graph -->
+      <div class="graph-preview">
+        <div class="graph-title">Foundation Map</div>
+        <div class="graph-nodes">
+          <div class="node core">C#</div>
+          <div class="node connected">async</div>
+          <div class="node connected">await</div>
+          <div class="node locked">↓</div>
+          <div class="node connected">Task</div>
+          <div class="node connected">Thread</div>
+          <div class="node locked">→</div>
+          <div class="node locked">Parallel</div>
+        </div>
+      </div>
+
+      <!-- Lesson Card -->
+      <div class="lesson-card">
+        <div class="card-header">
+          <div class="card-topic">Async/Await in C#</div>
+          <div class="card-meta">• Fundamentals • 8 min</div>
+        </div>
+        <div class="card-body">
+          <div class="card-description">
+            Master asynchronous programming patterns. Learn how async/await simplifies concurrent code and improves application responsiveness.
+          </div>
+          <div class="card-tags">
+            <div class="tag">Concurrency</div>
+            <div class="tag">Patterns</div>
+          </div>
+          <div class="difficulty">INTERMEDIATE</div>
+        </div>
+      </div>
+
+      <!-- CTA -->
+      <button class="cta-button">Start Lesson →</button>
+
+      <!-- Moodboard -->
+      <div class="moodboard">
+        <div class="moodboard-title">Visual System</div>
+
+        <div class="moodboard-section">
+          <div class="section-label">Palette</div>
+          <div class="palette">
+            <div class="color-swatch black">#000</div>
+            <div class="color-swatch white">#FFF</div>
+            <div class="color-swatch gold">#FFD</div>
+            <div class="color-swatch red">#FF3</div>
+            <div class="color-swatch grey">#F0F</div>
+          </div>
+        </div>
+
+        <div class="moodboard-section">
+          <div class="section-label">Typography</div>
+          <div class="typography-sample">
+            <div class="type-heading">Heading Bold</div>
+            <div class="type-label">Monaco 900 | High impact</div>
+          </div>
+          <div class="typography-sample">
+            <div style="font-size: 11px; font-weight: 700; letter-spacing: 1px;">LABEL ALL CAPS</div>
+            <div class="type-label">Monaco 700 | Information hierarchy</div>
+          </div>
+        </div>
+
+        <div class="moodboard-section">
+          <div class="section-label">Tone</div>
+          <ul class="tone-list">
+            <li>• Direct & efficient</li>
+            <li>• Structured clarity</li>
+            <li>• Technical authority</li>
+            <li>• Progress-focused</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-space"></div>
+    </div>
+  </div>
+</body>
+</html>
