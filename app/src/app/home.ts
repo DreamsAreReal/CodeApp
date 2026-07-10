@@ -5,7 +5,7 @@
  * is faked — if the server is down, the screen says so and offers a retry.
  */
 import { api, ApiError } from "../api/client.ts";
-import type { DueResponse, LessonSummary, StatsResponse } from "../api/types.ts";
+import type { DueResponse, LessonSummary, ProgressResponse, StatsResponse } from "../api/types.ts";
 import { LESSONS } from "../lessons/index.ts";
 import type { LessonData, LessonIcon } from "../lessons/types.ts";
 import { ICON } from "../engine/index.ts";
@@ -13,6 +13,7 @@ import { S, plural } from "../strings.ts";
 import { session } from "./session.ts";
 import { router } from "./router.ts";
 import { tg } from "../telegram/webapp.ts";
+import { navBar, wireNav } from "./nav.ts";
 
 const TOPIC_ICON: Record<LessonIcon, string> = {
   types: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4-8 4-8-4 8-4z"/><path d="M4 12l8 4 8-4"/><path d="M4 17l8 4 8-4"/></svg>',
@@ -23,10 +24,12 @@ const TOPIC_ICON: Record<LessonIcon, string> = {
 
 interface LessonRow {
   lesson: LessonData;
-  due: number;
-  newCount: number;
-  total: number;
-  progressPct: number;
+  due: number; // cards due for review now (FSRS schedule)
+  newCount: number; // of those, brand-new (never reviewed)
+  total: number; // cards in the lesson
+  mastered: number; // cards durably learnt (stability >= threshold)
+  viewPct: number; // HONEST viewing progress: segmentsSeen / segmentsTotal
+  completed: boolean; // whole lesson viewed at least once (sticky)
 }
 
 function ring(size: number, r: number, sw: number, pct: number, cls: string): string {
@@ -46,8 +49,14 @@ export async function renderHome(root: HTMLElement): Promise<void> {
   let due: DueResponse;
   let stats: StatsResponse;
   let catalog: LessonSummary[];
+  let prog: ProgressResponse;
   try {
-    [due, stats, catalog] = await Promise.all([api.due(session.userId), api.stats(session.userId), api.lessons()]);
+    [due, stats, catalog, prog] = await Promise.all([
+      api.due(session.userId),
+      api.stats(session.userId),
+      api.lessons(),
+      api.progress(session.userId),
+    ]);
   } catch (e) {
     const msg = e instanceof ApiError ? e.message : String(e);
     root.innerHTML = `<div class="frame"><div class="home-body" style="padding-top:24px">
@@ -68,18 +77,35 @@ export async function renderHome(root: HTMLElement): Promise<void> {
     dueByLesson.set(lessonId, g);
   }
   const totalByLesson = new Map<string, number>(catalog.map((c) => [c.id, c.cards]));
+  // Server-side per-lesson signals (viewing progress + mastery), keyed by lesson id.
+  const progByLesson = new Map(prog.perLesson.map((l) => [l.lessonId, l]));
 
   const rows: LessonRow[] = LESSONS.map((lesson) => {
     const d = dueByLesson.get(lesson.id) ?? { due: 0, newCount: 0 };
     const total = totalByLesson.get(lesson.id) ?? lesson.cards.length;
-    const progressPct = total > 0 ? (100 * (total - d.due)) / total : 0;
-    return { lesson, due: d.due, newCount: d.newCount, total, progressPct };
+    const lp = progByLesson.get(lesson.id);
+    // HONEST viewing progress: how many segments the user actually saw. Never derived
+    // from "cards not currently due" (that overstated mastery after a single review).
+    const viewPct = lp && lp.segmentsTotal > 0 ? (100 * lp.segmentsSeen) / lp.segmentsTotal : 0;
+    return {
+      lesson,
+      due: d.due,
+      newCount: d.newCount,
+      total,
+      mastered: lp?.mastered ?? 0,
+      viewPct,
+      completed: lp?.completed ?? false,
+    };
   });
 
   const knownDue = rows.reduce((a, r) => a + r.due, 0);
   const knownTotal = rows.reduce((a, r) => a + r.total, 0);
-  const overallPct = knownTotal > 0 ? (100 * (knownTotal - knownDue)) / knownTotal : 0;
-  const heroRow = rows.find((r) => r.due > 0) ?? rows[0];
+  // Overall hero ring = lessons fully viewed / total lessons — a truthful completion
+  // number, NOT "cards not due". Falls back to catalog size if the rollup lags.
+  const lessonsTotal = prog.lessonsTotal > 0 ? prog.lessonsTotal : rows.length;
+  const overallPct = lessonsTotal > 0 ? (100 * prog.lessonsCompleted) / lessonsTotal : 0;
+  // Continue with the first lesson the user has NOT finished viewing; else first with due.
+  const heroRow = rows.find((r) => !r.completed) ?? rows.find((r) => r.due > 0) ?? rows[0];
 
   const connLabel = session.mode === "telegram" ? S.authTelegram : S.authDev(session.userId);
   const estMin = heroRow.lesson.home.estMinutes;
@@ -123,8 +149,8 @@ export async function renderHome(root: HTMLElement): Promise<void> {
         </div>
         <div class="bar" aria-hidden="true"><i style="width:${overallPct.toFixed(0)}%"></i></div>
         <div class="bar-cap">
-          <span>${escapeHtml(heroRow.lesson.home.subtitle)}</span>
-          <span><span class="mono">${knownTotal - knownDue}</span>/<span class="mono">${knownTotal}</span></span>
+          <span>${S.heroLessonsCompleted(prog.lessonsCompleted, lessonsTotal)}</span>
+          <span><span class="mono">${prog.lessonsCompleted}</span>/<span class="mono">${lessonsTotal}</span></span>
         </div>
         <button class="cta" id="heroCta">
           <span>${S.heroContinue}</span>
@@ -140,12 +166,10 @@ export async function renderHome(root: HTMLElement): Promise<void> {
       <div class="notice" id="conn" style="text-align:center">${connLabel} · <b id="connDue">${S.heroCardsDue(knownDue)}</b></div>
     </div>
 
-    <nav class="nav">
-      <button class="tab active" title="${S.navLearn}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11.5L12 4l9 7.5"/><path d="M5 10v9h5v-5h4v5h5v-9"/></svg><span class="lbl">${S.navLearn}</span></button>
-      <button class="tab" title="${S.navProgress}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M4 20h16"/></svg><span class="lbl">${S.navProgress}</span></button>
-      <button class="tab" title="${S.navProfile}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8.5" r="4"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></svg><span class="lbl">${S.navProfile}</span></button>
-    </nav>
+    ${navBar("home")}
   </div>`;
+
+  wireNav(root);
 
   const open = (id: string) => {
     tg.impact("light");
@@ -160,7 +184,7 @@ export async function renderHome(root: HTMLElement): Promise<void> {
     el.addEventListener("click", () => open(el.getAttribute("data-lesson")!));
   });
 
-  // Headless / debug hook — real state snapshot.
+  // Headless / debug hook — real state snapshot (now includes the honest signals).
   (window as unknown as { __home?: unknown }).__home = {
     userId: session.userId,
     mode: session.mode,
@@ -168,24 +192,51 @@ export async function renderHome(root: HTMLElement): Promise<void> {
     xp: stats.xp,
     knownDue,
     knownTotal,
-    overallPct: Math.round(overallPct),
-    lessons: rows.map((r) => ({ id: r.lesson.id, title: r.lesson.title, due: r.due, total: r.total })),
+    overallPct: Math.round(overallPct), // = lessonsCompleted / lessonsTotal (honest)
+    lessonsCompleted: prog.lessonsCompleted,
+    lessonsStarted: prog.lessonsStarted,
+    lessonsTotal,
+    segmentsViewed: prog.segmentsViewed,
+    lessons: rows.map((r) => ({
+      id: r.lesson.id,
+      title: r.lesson.title,
+      due: r.due,
+      total: r.total,
+      mastered: r.mastered,
+      viewPct: Math.round(r.viewPct),
+      completed: r.completed,
+    })),
   };
 }
 
 function topicRow(r: LessonRow, active: boolean, index: number): string {
   const icon = TOPIC_ICON[r.lesson.home.icon];
-  const doneTile =
-    '<div class="t-lock" style="color:var(--sage)" aria-label="готово">' +
-    '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>';
-  const smallLabel = r.newCount === r.due ? plural(r.due, "новое", "новых", "новых") : S.topicDue;
-  const badge = r.due > 0 ? `<div class="t-due">${r.due}<small>${smallLabel}</small></div>` : doneTile;
+  // Right-side status: a due badge when cards need review; else a completion check ONLY
+  // when the lesson was actually viewed through. A never-opened lesson with no due cards
+  // shows nothing misleading — honesty over a premature green tick.
+  const smallLabel = r.newCount === r.due && r.due > 0 ? plural(r.due, "новое", "новых", "новых") : S.topicDue;
+  let badge: string;
+  if (r.due > 0) {
+    badge = `<div class="t-due">${r.due}<small>${smallLabel}</small></div>`;
+  } else if (r.completed) {
+    badge =
+      '<div class="t-lock" style="color:var(--sage)" aria-label="пройдено">' +
+      '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>';
+  } else {
+    badge = `<div class="t-lock" aria-hidden="true"></div>`;
+  }
+  // Sub-line: honest viewing progress + mastery hint (mastered / total cards).
+  const sub = r.completed
+    ? S.topicViewedMastery(r.mastered, r.total)
+    : r.viewPct > 0
+      ? S.topicViewing(Math.round(r.viewPct))
+      : escapeHtml(r.lesson.home.subtitle);
   return `
     <button class="topic${active ? " active" : ""}" data-lesson="${r.lesson.id}" title="${escapeHtml(r.lesson.title)}" style="animation-delay:${index * 40}ms">
       <span class="t-ic" aria-hidden="true">${icon}</span>
       <div class="t-body">
         <div class="t-title">${escapeHtml(r.lesson.title)}</div>
-        <div class="t-sub">${escapeHtml(r.lesson.home.subtitle)}</div>
+        <div class="t-sub">${sub}</div>
         ${active ? `<span class="pill">${S.topicActive}</span>` : ""}
       </div>
       ${badge}

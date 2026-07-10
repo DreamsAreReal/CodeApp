@@ -26,4 +26,8 @@ public sealed record AuthRequest(string? InitData, long? DevUserId);
 
 public sealed record ReviewRequest(long UserId, string ItemId, int Grade);
 
+/// <summary>Client report of lesson-viewing progress (segments seen / completion).</summary>
+public sealed record LessonProgressRequest(
+    long UserId, string LessonId, int SegmentsSeen, int SegmentsTotal, bool Completed);
+
 public sealed record RunCSharpRequest(string Code);

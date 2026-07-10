@@ -4,7 +4,17 @@
  * The backend is the durable source of truth for the FSRS schedule (SQLite),
  * so `review` really moves the schedule server-side (not a display-only tick).
  */
-import type { AuthResponse, DueResponse, Grade, LessonSummary, ReviewResponse, StatsResponse } from "./types.ts";
+import type {
+  AuthResponse,
+  DueResponse,
+  Grade,
+  LessonProgressResponse,
+  LessonSummary,
+  ProgressResponse,
+  ResetProgressResponse,
+  ReviewResponse,
+  StatsResponse,
+} from "./types.ts";
 
 const BASE: string =
   (import.meta.env.VITE_API_BASE as string | undefined)?.replace(/\/$/, "") ?? "http://localhost:5080";
@@ -64,7 +74,36 @@ export const api = {
     });
   },
 
+  /**
+   * Report lesson-viewing progress (segments seen / completion). Fire-and-forget from
+   * the UI: the server UPSERT is monotonic, so out-of-order/duplicate reports are safe.
+   */
+  reportLessonProgress(
+    userId: number,
+    lessonId: string,
+    segmentsSeen: number,
+    segmentsTotal: number,
+    completed: boolean,
+  ): Promise<LessonProgressResponse> {
+    return req<LessonProgressResponse>("/api/lesson-progress", {
+      method: "POST",
+      body: JSON.stringify({ userId, lessonId, segmentsSeen, segmentsTotal, completed }),
+    });
+  },
+
   lessons(): Promise<LessonSummary[]> {
     return req<LessonSummary[]>("/api/lessons");
+  },
+
+  /** Full server-derived progress dashboard — real numbers only. */
+  progress(userId: number): Promise<ProgressResponse> {
+    return req<ProgressResponse>(`/api/progress?userId=${encodeURIComponent(userId)}`);
+  },
+
+  /** Erase THIS user's FSRS state + history (double-confirmed in the UI). */
+  resetProgress(userId: number): Promise<ResetProgressResponse> {
+    return req<ResetProgressResponse>(`/api/progress?userId=${encodeURIComponent(userId)}`, {
+      method: "DELETE",
+    });
   },
 };

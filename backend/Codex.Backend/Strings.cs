@@ -13,6 +13,7 @@ public static class Strings
     public const string ItemNotFound = "Карточка не найдена.";
     public const string LessonNotFound = "Урок не найден.";
     public const string InvalidGrade = "Недопустимая оценка. Ожидается 1–4 (Again/Hard/Good/Easy).";
+    public const string InvalidLessonProgress = "Некорректные данные прогресса урока.";
     public const string DevModeDisabled = "Dev-режим авторизации выключен.";
     public const string EmptyCode = "Код не передан.";
 }

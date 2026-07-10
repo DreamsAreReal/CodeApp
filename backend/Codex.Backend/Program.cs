@@ -101,6 +101,93 @@ app.MapGet("/api/stats", (long userId) =>
     });
 });
 
+// ---- GET /api/progress : full, server-derived progress dashboard (real numbers only) ----
+app.MapGet("/api/progress", (long userId) =>
+{
+    var now = DateTimeOffset.UtcNow;
+    var (reviewsTotal, streakDays) = db.GetStats(userId, now);
+    var created = db.GetUserCreated(userId);
+    var gradeMix = db.GetGradeMix(userId);
+    var cards = db.GetCardsSummary(userId);
+    var perLesson = db.GetPerLesson(userId, now);
+    var completion = db.GetCompletionSummary(userId); // lesson-viewing rollup (honest "прохождение")
+    var activity = db.GetActivity(userId, now, 28); // 4 weeks, for the heatmap
+    var upcoming = db.GetUpcoming(userId, now, 7);  // next 7 days, forward FSRS schedule
+
+    return Results.Ok(new
+    {
+        userId,
+        reviewsTotal,
+        streakDays,
+        xp = reviewsTotal * 10, // same rule as /api/stats — 10 XP per review, history-backed
+        memberSince = created, // null for a user who has never authed
+        daysActive = db.GetDaysActive(userId),
+        masteryStabilityDays = Database.MasteryStabilityDays,
+        // lesson-viewing rollup — a TRUTHFUL "how far through the material" signal,
+        // deliberately separate from card mastery (viewing != learning).
+        lessonsTotal = completion.LessonsTotal,
+        lessonsCompleted = completion.LessonsCompleted,
+        lessonsStarted = completion.LessonsStarted,
+        segmentsViewed = completion.SegmentsSeenTotal,
+        gradeMix = new
+        {
+            again = gradeMix.Again,
+            hard = gradeMix.Hard,
+            good = gradeMix.Good,
+            easy = gradeMix.Easy,
+        },
+        cards = new
+        {
+            seen = cards.Seen,
+            total = cards.Total,
+            mastered = cards.Mastered,
+            lapsesTotal = cards.LapsesTotal,
+        },
+        perLesson = perLesson.Select(l => new
+        {
+            lessonId = l.LessonId,
+            seen = l.Seen,
+            total = l.Total,
+            mastered = l.Mastered,
+            due = l.Due,
+            segmentsSeen = l.SegmentsSeen,
+            segmentsTotal = l.SegmentsTotal,
+            completed = l.Completed,
+        }),
+        activity = activity.Select(d => new { day = d.Day, count = d.Count }),
+        upcoming = upcoming.Select(d => new { day = d.Day, count = d.Count }),
+    });
+});
+
+// ---- POST /api/lesson-progress : report lesson-viewing progress (monotonic UPSERT) ----
+app.MapPost("/api/lesson-progress", (LessonProgressRequest req) =>
+{
+    if (string.IsNullOrWhiteSpace(req.LessonId))
+        return Results.Json(new { error = Strings.InvalidLessonProgress }, statusCode: 400);
+    if (req.SegmentsTotal < 0 || req.SegmentsSeen < 0)
+        return Results.Json(new { error = Strings.InvalidLessonProgress }, statusCode: 400);
+
+    var saved = db.UpsertLessonProgress(
+        req.UserId, req.LessonId, req.SegmentsSeen, req.SegmentsTotal, req.Completed, DateTimeOffset.UtcNow);
+
+    return Results.Ok(new
+    {
+        ok = true,
+        userId = req.UserId,
+        lessonId = saved.LessonId,
+        segmentsSeen = saved.SegmentsSeen,
+        segmentsTotal = saved.SegmentsTotal,
+        completed = saved.Completed,
+    });
+});
+
+// ---- DELETE /api/progress : erase THIS user's FSRS state + history (double-confirmed in UI) ----
+app.MapDelete("/api/progress", (long userId) =>
+{
+    var (reviewStates, events) = db.ResetProgress(userId);
+    return Results.Ok(new { ok = true, userId, reviewStatesDeleted = reviewStates, eventsDeleted = events });
+});
+
 // ---- POST /api/review : update FSRS state, return next due, append history ----
 app.MapPost("/api/review", (ReviewRequest req) =>
 {

@@ -1,0 +1,301 @@
+/* ==========================================================================
+   Profile screen — mid design (cream + coral + Rubik). Tokens only.
+   Reuses .frame/.home-body/.nav/.sec-label/.card/.metric-grid.
+   ========================================================================== */
+
+/* ---- identity card ---- */
+.pf-id {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: var(--shadow-2);
+}
+.pf-avatar {
+  flex: none;
+  width: 60px;
+  height: 60px;
+  border-radius: 18px;
+  object-fit: cover;
+  background: var(--muted-tile);
+  border: 1px solid var(--line);
+}
+.pf-initials {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 22px;
+  color: var(--surface);
+  background: linear-gradient(150deg, var(--coral-l) 0%, var(--coral) 55%, var(--coral-d) 100%);
+  border: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+.pf-id-body {
+  flex: 1;
+  min-width: 0;
+}
+.pf-name {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 19px;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pf-user {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 1px;
+  font-family: var(--mono);
+}
+.pf-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+.pf-tag {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: var(--muted-tile);
+  border-radius: 6px;
+  padding: 3px 8px;
+}
+.pf-tag-tg {
+  color: var(--coral);
+  background: var(--coral-tint);
+}
+.pf-since {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.pf-grid {
+  margin-top: 0;
+}
+
+/* ---- how it works (FSRS exhibit) ---- */
+.pf-how {
+  display: flex;
+  gap: 14px;
+  background: linear-gradient(180deg, var(--surface), var(--coral-wash));
+  border-color: rgba(240, 83, 58, 0.28);
+}
+.pf-how-ic {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--coral-tint);
+  color: var(--coral);
+}
+.pf-how-ic svg {
+  width: 22px;
+  height: 22px;
+}
+.pf-how-body {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--ink);
+  font-weight: 400;
+}
+
+/* ---- settings row + toggle ---- */
+.pf-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.pf-row-body {
+  flex: 1;
+  min-width: 0;
+}
+.pf-row-t {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+.pf-row-s {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+  line-height: 1.4;
+}
+
+.toggle {
+  flex: none;
+  width: 48px;
+  height: 28px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--muted-tile);
+  cursor: pointer;
+  padding: 0;
+  position: relative;
+  transition: background 0.18s ease, border-color 0.18s ease;
+}
+.toggle .knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: 0 1px 3px rgba(35, 32, 27, 0.25);
+  transition: transform 0.18s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.toggle.on {
+  background: var(--coral);
+  border-color: var(--coral-d);
+}
+.toggle.on .knob {
+  transform: translateX(20px);
+}
+
+/* ---- danger zone ---- */
+.sec-danger {
+  color: var(--coral-d);
+}
+.sec-danger::after {
+  background: rgba(196, 61, 40, 0.25);
+}
+.pf-danger {
+  border-color: rgba(196, 61, 40, 0.3);
+}
+.danger-btn {
+  margin-top: 14px;
+  width: 100%;
+  border: 1px solid rgba(196, 61, 40, 0.4);
+  background: var(--coral-tint);
+  color: var(--coral-d);
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 14.5px;
+  border-radius: 14px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: transform 0.08s ease, background 0.15s ease;
+}
+.danger-btn:active {
+  transform: scale(0.99);
+}
+.danger-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.danger-solid {
+  background: linear-gradient(180deg, var(--coral) 0%, var(--coral-d) 100%);
+  color: var(--surface);
+  border-color: var(--coral-d);
+}
+.ghost-btn {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 14.5px;
+  border-radius: 14px;
+  padding: 12px 16px;
+  cursor: pointer;
+}
+.ghost-btn:active {
+  transform: scale(0.99);
+}
+
+.reset-confirm {
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: var(--r-m);
+  background: var(--coral-tint);
+  border: 1px solid rgba(196, 61, 40, 0.35);
+}
+.reset-final {
+  background: var(--coral-wash);
+}
+.reset-c-t {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--coral-d);
+}
+.reset-c-s {
+  font-size: 12.5px;
+  color: var(--ink);
+  opacity: 0.85;
+  margin-top: 6px;
+  line-height: 1.45;
+}
+.reset-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+.reset-actions button {
+  flex: 1;
+  margin-top: 0;
+}
+.reset-done {
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: var(--r-m);
+  background: var(--sage-tint);
+  color: var(--sage);
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 14.5px;
+  text-align: center;
+}
+
+/* ---- about ---- */
+.pf-about {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.pf-about-brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 16px;
+  color: var(--ink);
+}
+.pf-mark {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  background: linear-gradient(150deg, var(--coral-l) 0%, var(--coral) 55%, var(--coral-d) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px -3px rgba(196, 61, 40, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+.pf-mark svg {
+  width: 18px;
+  height: 18px;
+}
+.pf-about-purpose {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.pf-about-ver {
+  font-size: 11.5px;
+  color: var(--muted);
+  margin-top: 2px;
+}

@@ -82,6 +82,57 @@ function viz(): VizRegistry {
   return (window as unknown as { __viz: VizRegistry }).__viz;
 }
 
+/**
+ * Reports lesson-viewing progress to the server (segments seen / completion).
+ * Purely fire-and-forget: errors are swallowed so a report can never block or break
+ * the lesson UI. `segmentsSeen` is the count of DISTINCT segment indexes that have
+ * entered the viewport (max index + 1); the server UPSERT is monotonic, so duplicate
+ * or out-of-order reports are harmless. Partial reports are debounced.
+ */
+class LessonReporter {
+  private maxSeen = 0; // highest (index+1) of a segment that has entered the viewport
+  private completed = false;
+  private timer: ReturnType<typeof setTimeout> | null = null;
+
+  constructor(
+    private lessonId: string,
+    private total: number,
+  ) {}
+
+  /** A segment (0-based index) became visible. Debounced partial report. */
+  markVisible(index: number): void {
+    const seen = Math.min(this.total, index + 1);
+    if (seen <= this.maxSeen) return;
+    this.maxSeen = seen;
+    if (this.timer) clearTimeout(this.timer);
+    this.timer = setTimeout(() => this.send(false), 400);
+  }
+
+  /** The user reached the end of the lesson (graded the card). Completion sticks. */
+  markCompleted(): void {
+    if (this.completed) return;
+    this.completed = true;
+    this.maxSeen = this.total;
+    if (this.timer) {
+      clearTimeout(this.timer);
+      this.timer = null;
+    }
+    this.send(true);
+  }
+
+  private send(completed: boolean): void {
+    // Fire-and-forget: never await, never surface errors to the UI.
+    void api
+      .reportLessonProgress(session.userId, this.lessonId, this.maxSeen, this.total, completed)
+      .then((res) => {
+        (window as unknown as { __lessonProgress?: unknown }).__lessonProgress = res;
+      })
+      .catch(() => {
+        /* swallow — reporting is best-effort telemetry, not part of the loop */
+      });
+  }
+}
+
 export function runLesson(root: HTMLElement, lessonId: string): void {
   const lesson = getLesson(lessonId);
   if (!lesson) {
@@ -103,6 +154,8 @@ export function runLesson(root: HTMLElement, lessonId: string): void {
 
   const el = <T extends HTMLElement = HTMLElement>(sel: string) => root.querySelector<T>(sel)!;
   const progress = new LessonProgress(lesson.segments.length, el("#xpN"), el("#lprogFill"), el("#xpChip"));
+  // Server-side lesson-viewing telemetry (segments seen / completion). Fire-and-forget.
+  const reporter = new LessonReporter(lesson.id, lesson.segments.length);
 
   // ---- build animated segments ----
   const hostTop = el("#segHostTop");
@@ -117,7 +170,7 @@ export function runLesson(root: HTMLElement, lessonId: string): void {
   });
 
   // ---- MCQ + grade (closes the loop) ----
-  buildMcq(root, lesson, progress);
+  buildMcq(root, lesson, progress, reporter);
 
   // ---- reconstruct + sources ----
   el("#secRecon").innerHTML = reconstruct(lesson);
@@ -133,14 +186,28 @@ export function runLesson(root: HTMLElement, lessonId: string): void {
 
   // ---- autoplay on scroll-into-view ----
   if (REDUCED) {
-    built.forEach((b) => {
+    built.forEach((b, i) => {
       b.viz.showFinal();
+      reporter.markVisible(i); // all segments are shown at once in reduced-motion
     });
     // mark all segments complete (static final frames)
     lesson.segments.forEach((seg) => progress.markSeg(seg.id));
   } else if ("IntersectionObserver" in window) {
-    built.forEach((b) => {
+    built.forEach((b, i) => {
       let started = false;
+      // Report the moment a segment enters the viewport (even before autoplay begins),
+      // so "segments seen" tracks how far the user scrolled — the honest viewing signal.
+      const seenIo = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((en) => {
+            if (en.isIntersecting && en.intersectionRatio >= 0.35) {
+              reporter.markVisible(i);
+              seenIo.disconnect();
+            }
+          });
+        },
+        { threshold: [0, 0.35] },
+      );
       const io = new IntersectionObserver(
         (entries) => {
           entries.forEach((en) => {
@@ -154,18 +221,25 @@ export function runLesson(root: HTMLElement, lessonId: string): void {
         { threshold: [0, 0.35, 0.6] },
       );
       const stage = b.card.querySelector(".stage");
-      if (stage) io.observe(stage);
+      if (stage) {
+        seenIo.observe(stage);
+        io.observe(stage);
+      }
     });
   } else {
-    built.forEach((b) => b.viz.play());
+    built.forEach((b, i) => {
+      b.viz.play();
+      reporter.markVisible(i);
+    });
   }
 
   // headless helper: jump every segment to its final frame, resolving predicts.
   viz().forcePlayAll = () => {
-    lesson.segments.forEach((seg) => {
+    lesson.segments.forEach((seg, i) => {
       const v = viz().vizByKey[seg.id];
       if (v) v.showFinal();
       progress.markSeg(seg.id);
+      reporter.markVisible(i);
     });
   };
   viz().ready = true;
@@ -358,7 +432,7 @@ function srcChips(lesson: LessonData, ids: string[]): string {
 }
 
 // ---- MCQ + FSRS grade strip ----
-function buildMcq(root: HTMLElement, lesson: LessonData, progress: LessonProgress): void {
+function buildMcq(root: HTMLElement, lesson: LessonData, progress: LessonProgress, reporter: LessonReporter): void {
   const card: Card = lesson.cards[0];
   const host = root.querySelector<HTMLElement>("#mcqCard")!;
   const checkSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
@@ -427,7 +501,7 @@ function buildMcq(root: HTMLElement, lesson: LessonData, progress: LessonProgres
     // reveal the grade strip → this is the review action that moves the schedule.
     const grade = host.querySelector<HTMLElement>("#grade")!;
     grade.hidden = false;
-    wireGrade(host, lesson, card, progress);
+    wireGrade(host, lesson, card, progress, reporter);
     grade.scrollIntoView({ behavior: REDUCED ? "auto" : "smooth", block: "nearest" });
   });
 }
@@ -436,7 +510,13 @@ function gradeBtn(g: Grade, label: string, hint: string): string {
   return `<button class="grade-btn" type="button" data-g="${g}"><span class="gl">${label}</span><span class="gi">${hint || "&nbsp;"}</span></button>`;
 }
 
-function wireGrade(host: HTMLElement, lesson: LessonData, card: Card, progress: LessonProgress): void {
+function wireGrade(
+  host: HTMLElement,
+  lesson: LessonData,
+  card: Card,
+  progress: LessonProgress,
+  reporter: LessonReporter,
+): void {
   const itemId = `${lesson.id}/${card.id}`;
   const done = host.querySelector<HTMLElement>("#gradeDone")!;
   const msg = host.querySelector<HTMLElement>("#gradeMsg")!;
@@ -457,6 +537,8 @@ function wireGrade(host: HTMLElement, lesson: LessonData, card: Card, progress: 
         const res: ReviewResponse = await api.review(session.userId, itemId, grade);
         msg.innerHTML = `<b>${S.reviewSaved(S.reviewDaysFmt(res.intervalDays))}</b>`;
         progress.bumpTo(100);
+        // Reaching the grade = the user completed the lesson. Report it (sticky).
+        reporter.markCompleted();
         appendNext(host);
         (window as unknown as { __lastReview?: ReviewResponse }).__lastReview = res;
         tg.notify("success");

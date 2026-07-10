@@ -66,8 +66,18 @@ public sealed class Database
                 grade   INTEGER NOT NULL,
                 ts      TEXT NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS lesson_progress (
+                user_id        INTEGER NOT NULL,
+                lesson_id      TEXT NOT NULL,
+                segments_seen  INTEGER NOT NULL,
+                segments_total INTEGER NOT NULL,
+                completed      INTEGER NOT NULL,
+                updated        TEXT NOT NULL,
+                PRIMARY KEY (user_id, lesson_id)
+            );
             CREATE INDEX IF NOT EXISTS ix_review_due ON review_state (user_id, due);
             CREATE INDEX IF NOT EXISTS ix_events_user ON progress_events (user_id, ts);
+            CREATE INDEX IF NOT EXISTS ix_lesson_prog_user ON lesson_progress (user_id);
             """;
         cmd.ExecuteNonQuery();
     }
@@ -275,7 +285,351 @@ public sealed class Database
         }
         return (total, streak);
     }
+
+    /// <summary>
+    /// A card is "mastered" once its FSRS stability reaches this many days. At a 21-day
+    /// interval the FSRS-6 forgetting curve still predicts ~90% retention (the app's
+    /// target retention), so a stability of &gt;= 21 days means the card is durably learnt,
+    /// not merely seen once. Kept as a named constant so the number is documented in one place.
+    /// </summary>
+    public const double MasteryStabilityDays = 21.0;
+
+    // ---- progress aggregates (GET /api/progress) ----
+
+    /// <summary>The created timestamp for a user, or null if the user does not exist.</summary>
+    public DateTimeOffset? GetUserCreated(long userId)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT created FROM users WHERE tg_id = $u;";
+        cmd.Parameters.AddWithValue("$u", userId);
+        var v = cmd.ExecuteScalar();
+        return v is string s ? ParseIso(s) : null;
+    }
+
+    /// <summary>Distinct UTC calendar days on which the user recorded at least one review.</summary>
+    public int GetDaysActive(long userId)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText =
+            "SELECT COUNT(DISTINCT substr(ts, 1, 10)) FROM progress_events WHERE user_id = $u;";
+        cmd.Parameters.AddWithValue("$u", userId);
+        return Convert.ToInt32(cmd.ExecuteScalar());
+    }
+
+    /// <summary>Count of review events by FSRS grade (1=Again, 2=Hard, 3=Good, 4=Easy).</summary>
+    public GradeMix GetGradeMix(long userId)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText =
+            "SELECT grade, COUNT(*) FROM progress_events WHERE user_id = $u GROUP BY grade;";
+        cmd.Parameters.AddWithValue("$u", userId);
+        int again = 0, hard = 0, good = 0, easy = 0;
+        using var r = cmd.ExecuteReader();
+        while (r.Read())
+        {
+            int g = r.GetInt32(0), c = r.GetInt32(1);
+            switch (g)
+            {
+                case 1: again = c; break;
+                case 2: hard = c; break;
+                case 3: good = c; break;
+                case 4: easy = c; break;
+            }
+        }
+        return new GradeMix(again, hard, good, easy);
+    }
+
+    /// <summary>
+    /// Card-level coverage: distinct items the user has seen (has review_state for),
+    /// the total catalog size, how many are mastered (stability &gt;= <see cref="MasteryStabilityDays"/>),
+    /// and the total number of lapses (Again re-grades) accumulated across all cards.
+    /// </summary>
+    public CardsSummary GetCardsSummary(long userId)
+    {
+        using var conn = Open();
+
+        using var totalCmd = conn.CreateCommand();
+        totalCmd.CommandText = "SELECT COUNT(*) FROM items;";
+        int total = Convert.ToInt32(totalCmd.ExecuteScalar());
+
+        using var seenCmd = conn.CreateCommand();
+        seenCmd.CommandText = """
+            SELECT
+                COUNT(*),
+                COALESCE(SUM(CASE WHEN stability >= $m THEN 1 ELSE 0 END), 0),
+                COALESCE(SUM(lapses), 0)
+            FROM review_state WHERE user_id = $u;
+            """;
+        seenCmd.Parameters.AddWithValue("$u", userId);
+        seenCmd.Parameters.AddWithValue("$m", MasteryStabilityDays);
+        using var r = seenCmd.ExecuteReader();
+        r.Read();
+        int seen = r.GetInt32(0);
+        int mastered = r.GetInt32(1);
+        int lapsesTotal = r.GetInt32(2);
+        return new CardsSummary(seen, total, mastered, lapsesTotal);
+    }
+
+    /// <summary>
+    /// Per-lesson mastery: for every lesson in the catalog, how many of its items the
+    /// user has seen, mastered, and how many are due now (due &lt;= now, or never seen).
+    /// LEFT JOIN keeps lessons the user has not started (seen/mastered = 0, due = total).
+    /// </summary>
+    public List<LessonProgress> GetPerLesson(long userId, DateTimeOffset now)
+    {
+        var viewing = GetLessonProgress(userId); // lesson-viewing rows (segments seen / completed)
+
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = """
+            SELECT
+                i.lesson_id,
+                COUNT(*) AS total,
+                COALESCE(SUM(CASE WHEN rs.item_id IS NOT NULL THEN 1 ELSE 0 END), 0) AS seen,
+                COALESCE(SUM(CASE WHEN rs.stability >= $m THEN 1 ELSE 0 END), 0) AS mastered,
+                COALESCE(SUM(CASE WHEN rs.item_id IS NULL OR rs.due <= $now THEN 1 ELSE 0 END), 0) AS due
+            FROM items i
+            LEFT JOIN review_state rs ON rs.item_id = i.item_id AND rs.user_id = $u
+            GROUP BY i.lesson_id
+            ORDER BY i.lesson_id;
+            """;
+        cmd.Parameters.AddWithValue("$u", userId);
+        cmd.Parameters.AddWithValue("$m", MasteryStabilityDays);
+        cmd.Parameters.AddWithValue("$now", Iso(now));
+        using var r = cmd.ExecuteReader();
+        var list = new List<LessonProgress>();
+        while (r.Read())
+        {
+            var lessonId = r.GetString(0);
+            var view = viewing.GetValueOrDefault(lessonId);
+            list.Add(new LessonProgress(
+                LessonId: lessonId,
+                Total: r.GetInt32(1),
+                Seen: r.GetInt32(2),
+                Mastered: r.GetInt32(3),
+                Due: r.GetInt32(4),
+                SegmentsSeen: view?.SegmentsSeen ?? 0,
+                SegmentsTotal: view?.SegmentsTotal ?? 0,
+                Completed: view?.Completed ?? false));
+        }
+        return list;
+    }
+
+    /// <summary>
+    /// Daily review counts for the trailing <paramref name="days"/> UTC days, ending
+    /// today, 0-filled for days with no activity — the backing grid for a heatmap.
+    /// </summary>
+    public List<DayCount> GetActivity(long userId, DateTimeOffset now, int days)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = """
+            SELECT substr(ts, 1, 10) AS d, COUNT(*)
+            FROM progress_events WHERE user_id = $u AND substr(ts, 1, 10) >= $from
+            GROUP BY d;
+            """;
+        var today = now.UtcDateTime.Date;
+        var from = today.AddDays(-(days - 1));
+        cmd.Parameters.AddWithValue("$u", userId);
+        cmd.Parameters.AddWithValue("$from", from.ToString("yyyy-MM-dd"));
+        var counts = new Dictionary<string, int>();
+        using (var r = cmd.ExecuteReader())
+            while (r.Read())
+                counts[r.GetString(0)] = r.GetInt32(1);
+
+        var list = new List<DayCount>(days);
+        for (int i = 0; i < days; i++)
+        {
+            var day = from.AddDays(i).ToString("yyyy-MM-dd");
+            list.Add(new DayCount(day, counts.GetValueOrDefault(day, 0)));
+        }
+        return list;
+    }
+
+    /// <summary>
+    /// Forward FSRS schedule: how many cards fall due on each of the next
+    /// <paramref name="days"/> UTC days (starting today), 0-filled — the "upcoming" view.
+    /// Cards due in the past collapse onto today's bucket (they are due now).
+    /// </summary>
+    public List<DayCount> GetUpcoming(long userId, DateTimeOffset now, int days)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        var today = now.UtcDateTime.Date;
+        var horizon = today.AddDays(days); // exclusive upper bound
+        cmd.CommandText = """
+            SELECT due FROM review_state
+            WHERE user_id = $u AND due < $horizon;
+            """;
+        cmd.Parameters.AddWithValue("$u", userId);
+        cmd.Parameters.AddWithValue("$horizon", Iso(new DateTimeOffset(horizon, TimeSpan.Zero)));
+        var counts = new Dictionary<string, int>();
+        using (var r = cmd.ExecuteReader())
+        {
+            while (r.Read())
+            {
+                var dueDay = ParseIso(r.GetString(0)).UtcDateTime.Date;
+                if (dueDay < today) dueDay = today; // overdue -> due today
+                var key = dueDay.ToString("yyyy-MM-dd");
+                counts[key] = counts.GetValueOrDefault(key, 0) + 1;
+            }
+        }
+
+        var list = new List<DayCount>(days);
+        for (int i = 0; i < days; i++)
+        {
+            var day = today.AddDays(i).ToString("yyyy-MM-dd");
+            list.Add(new DayCount(day, counts.GetValueOrDefault(day, 0)));
+        }
+        return list;
+    }
+
+    /// <summary>
+    /// Erase a single user's learning history: their FSRS schedule and append-only
+    /// review events. Only ever touches rows for <paramref name="userId"/> (never the
+    /// catalog or other users). Returns the number of rows removed.
+    /// </summary>
+    public (int ReviewStates, int Events) ResetProgress(long userId)
+    {
+        using var conn = Open();
+        using var tx = conn.BeginTransaction();
+
+        using var delStates = conn.CreateCommand();
+        delStates.Transaction = tx;
+        delStates.CommandText = "DELETE FROM review_state WHERE user_id = $u;";
+        delStates.Parameters.AddWithValue("$u", userId);
+        int states = delStates.ExecuteNonQuery();
+
+        using var delEvents = conn.CreateCommand();
+        delEvents.Transaction = tx;
+        delEvents.CommandText = "DELETE FROM progress_events WHERE user_id = $u;";
+        delEvents.Parameters.AddWithValue("$u", userId);
+        int events = delEvents.ExecuteNonQuery();
+
+        // Lesson-viewing progress is this user's data too — wipe it on reset.
+        using var delLessons = conn.CreateCommand();
+        delLessons.Transaction = tx;
+        delLessons.CommandText = "DELETE FROM lesson_progress WHERE user_id = $u;";
+        delLessons.Parameters.AddWithValue("$u", userId);
+        delLessons.ExecuteNonQuery();
+
+        tx.Commit();
+        return (states, events);
+    }
+
+    // ---- lesson-viewing progress (segments seen / completed) ----
+
+    /// <summary>
+    /// UPSERT lesson-viewing progress with MONOTONIC semantics: segments_seen never
+    /// decreases (max of stored vs incoming), completed is sticky (once true, stays true).
+    /// segments_total and updated always take the latest value. Truthful "how far did the
+    /// user get" signal, independent of the FSRS review schedule.
+    /// </summary>
+    public LessonViewProgress UpsertLessonProgress(
+        long userId, string lessonId, int segmentsSeen, int segmentsTotal, bool completed, DateTimeOffset now)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = """
+            INSERT INTO lesson_progress (user_id, lesson_id, segments_seen, segments_total, completed, updated)
+            VALUES ($u, $l, $seen, $total, $done, $ts)
+            ON CONFLICT(user_id, lesson_id) DO UPDATE SET
+                segments_seen  = MAX(lesson_progress.segments_seen, excluded.segments_seen),
+                segments_total = excluded.segments_total,
+                completed      = MAX(lesson_progress.completed, excluded.completed),
+                updated        = excluded.updated;
+            """;
+        cmd.Parameters.AddWithValue("$u", userId);
+        cmd.Parameters.AddWithValue("$l", lessonId);
+        cmd.Parameters.AddWithValue("$seen", Math.Max(0, segmentsSeen));
+        cmd.Parameters.AddWithValue("$total", Math.Max(0, segmentsTotal));
+        cmd.Parameters.AddWithValue("$done", completed ? 1 : 0);
+        cmd.Parameters.AddWithValue("$ts", Iso(now));
+        cmd.ExecuteNonQuery();
+
+        using var read = conn.CreateCommand();
+        read.CommandText = """
+            SELECT segments_seen, segments_total, completed
+            FROM lesson_progress WHERE user_id = $u AND lesson_id = $l;
+            """;
+        read.Parameters.AddWithValue("$u", userId);
+        read.Parameters.AddWithValue("$l", lessonId);
+        using var r = read.ExecuteReader();
+        r.Read();
+        return new LessonViewProgress(lessonId, r.GetInt32(0), r.GetInt32(1), r.GetInt32(2) != 0);
+    }
+
+    /// <summary>All lesson-viewing rows for a user, keyed by lesson_id.</summary>
+    public Dictionary<string, LessonViewProgress> GetLessonProgress(long userId)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = """
+            SELECT lesson_id, segments_seen, segments_total, completed
+            FROM lesson_progress WHERE user_id = $u;
+            """;
+        cmd.Parameters.AddWithValue("$u", userId);
+        var map = new Dictionary<string, LessonViewProgress>();
+        using var r = cmd.ExecuteReader();
+        while (r.Read())
+            map[r.GetString(0)] = new LessonViewProgress(
+                r.GetString(0), r.GetInt32(1), r.GetInt32(2), r.GetInt32(3) != 0);
+        return map;
+    }
+
+    /// <summary>
+    /// Catalog-wide lesson-viewing rollup: distinct lessons in the catalog, how many the
+    /// user has started (segments_seen &gt; 0), how many completed, and total segments viewed.
+    /// </summary>
+    public CompletionSummary GetCompletionSummary(long userId)
+    {
+        using var conn = Open();
+
+        using var totalCmd = conn.CreateCommand();
+        totalCmd.CommandText = "SELECT COUNT(DISTINCT lesson_id) FROM items;";
+        int lessonsTotal = Convert.ToInt32(totalCmd.ExecuteScalar());
+
+        using var rollup = conn.CreateCommand();
+        rollup.CommandText = """
+            SELECT
+                COALESCE(SUM(CASE WHEN completed = 1 THEN 1 ELSE 0 END), 0),
+                COALESCE(SUM(CASE WHEN segments_seen > 0 THEN 1 ELSE 0 END), 0),
+                COALESCE(SUM(segments_seen), 0)
+            FROM lesson_progress WHERE user_id = $u;
+            """;
+        rollup.Parameters.AddWithValue("$u", userId);
+        using var r = rollup.ExecuteReader();
+        r.Read();
+        return new CompletionSummary(lessonsTotal, r.GetInt32(0), r.GetInt32(1), r.GetInt32(2));
+    }
 }
+
+/// <summary>Review-count breakdown by FSRS grade.</summary>
+public sealed record GradeMix(int Again, int Hard, int Good, int Easy);
+
+/// <summary>Catalog-wide card coverage for a user.</summary>
+public sealed record CardsSummary(int Seen, int Total, int Mastered, int LapsesTotal);
+
+/// <summary>
+/// Per-lesson rollup for a user: card mastery (Total/Seen/Mastered/Due from the FSRS
+/// review state) AND lesson-viewing progress (SegmentsSeen/SegmentsTotal/Completed).
+/// The two are deliberately distinct — "completed viewing" is not "mastered".
+/// </summary>
+public sealed record LessonProgress(
+    string LessonId, int Total, int Seen, int Mastered, int Due,
+    int SegmentsSeen, int SegmentsTotal, bool Completed);
+
+/// <summary>One lesson-viewing progress row (segments seen / completed).</summary>
+public sealed record LessonViewProgress(string LessonId, int SegmentsSeen, int SegmentsTotal, bool Completed);
+
+/// <summary>Catalog-wide lesson-viewing rollup for a user.</summary>
+public sealed record CompletionSummary(int LessonsTotal, int LessonsCompleted, int LessonsStarted, int SegmentsSeenTotal);
+
+/// <summary>A single (day, count) bucket for activity / upcoming timelines.</summary>
+public sealed record DayCount(string Day, int Count);
 
 /// <summary>A due-queue entry returned by GET /api/due.</summary>
 public sealed record DueItem(

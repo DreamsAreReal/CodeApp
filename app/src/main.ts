@@ -5,15 +5,19 @@
 import "./styles/tokens.css";
 import "./styles/home.css";
 import "./styles/lesson.css";
+import "./styles/progress.css";
+import "./styles/profile.css";
 
 import { tg } from "./telegram/webapp.ts";
 import { session } from "./app/session.ts";
 import { router } from "./app/router.ts";
+import { applyReducedMotion } from "./app/settings.ts";
 import { S } from "./strings.ts";
 
 async function boot(): Promise<void> {
   const root = document.getElementById("app");
   if (!root) return;
+  applyReducedMotion(); // honour the persisted reduce-motion preference from the first paint
   tg.ready();
   router.mount(root);
 

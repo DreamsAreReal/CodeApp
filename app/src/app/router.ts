@@ -1,12 +1,14 @@
 /**
- * Tiny router: home <-> lesson. Owns the #app root and swaps screens.
- * State is intentionally minimal (this is a walking skeleton) but real:
- * navigating to home re-fetches the live due queue from the server.
+ * Tiny router: swaps the top-level screens (home / progress / profile) and the
+ * lesson runner over the single #app root. State is minimal but real — every
+ * navigation re-fetches live server data for the target screen.
  */
 import { renderHome } from "./home.ts";
 import { runLesson } from "./lessonRunner.ts";
+import { renderProgress } from "./progress.ts";
+import { renderProfile } from "./profile.ts";
 
-export type Screen = "home" | "lesson";
+export type Screen = "home" | "lesson" | "progress" | "profile";
 
 class Router {
   private root!: HTMLElement;
@@ -22,6 +24,20 @@ class Router {
     this.lessonId = null;
     window.scrollTo(0, 0);
     await renderHome(this.root);
+  }
+
+  async showProgress(): Promise<void> {
+    this.screen = "progress";
+    this.lessonId = null;
+    window.scrollTo(0, 0);
+    await renderProgress(this.root);
+  }
+
+  async showProfile(): Promise<void> {
+    this.screen = "profile";
+    this.lessonId = null;
+    window.scrollTo(0, 0);
+    await renderProfile(this.root);
   }
 
   showLesson(id: string): void {

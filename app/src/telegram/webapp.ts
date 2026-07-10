@@ -21,9 +21,17 @@ interface HapticFeedback {
   notificationOccurred(type: NotificationType): void;
   selectionChanged(): void;
 }
+/** The Telegram-provided user profile (from initDataUnsafe; client-side identity only). */
+export interface TelegramUser {
+  id: number;
+  first_name?: string;
+  last_name?: string;
+  username?: string;
+  photo_url?: string;
+}
 interface TelegramWebApp {
   initData: string;
-  initDataUnsafe?: { user?: { id: number; first_name?: string; username?: string } };
+  initDataUnsafe?: { user?: TelegramUser };
   colorScheme?: string;
   HapticFeedback?: HapticFeedback;
   ready(): void;
@@ -88,6 +96,11 @@ export const tg = {
   userLabel(): string | null {
     const u = webApp()?.initDataUnsafe?.user;
     return u ? u.first_name ?? u.username ?? String(u.id) : null;
+  },
+
+  /** The Telegram profile (name / username / photo), or null outside Telegram. */
+  user(): TelegramUser | null {
+    return webApp()?.initDataUnsafe?.user ?? null;
   },
 
   /** Haptic tap — no-op outside Telegram. */

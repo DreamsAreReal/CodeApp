@@ -1,0 +1,324 @@
+/* ==========================================================================
+   Progress screen — mid design (cream + coral + Rubik). Tokens only.
+   Reuses .frame/.home-body/.nav/.sec-label/.topic/.ring from home.css.
+   ========================================================================== */
+
+/* ---- screen header (shared by Progress + Profile) ---- */
+.screen-head {
+  justify-content: flex-start;
+}
+.screen-title {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 20px;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+/* ---- generic section card ---- */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-l);
+  padding: 16px;
+  box-shadow: var(--shadow-1);
+}
+.hint {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--muted);
+  font-weight: 400;
+}
+
+/* ---- overall mastery ---- */
+.mastery {
+  box-shadow: var(--shadow-2);
+}
+.mastery-top {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.ring-lg,
+.ring-lg svg {
+  width: 84px;
+  height: 84px;
+}
+.ring-lg svg {
+  transform: rotate(-90deg);
+}
+.ring-lg .track {
+  stroke: var(--line);
+}
+.ring-lg .val {
+  stroke: var(--coral);
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.ring-lg .pct {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--coral);
+}
+.mastery-body {
+  flex: 1;
+  min-width: 0;
+}
+.mastery-cap {
+  font-size: 12.5px;
+  color: var(--muted);
+  margin-top: 6px;
+  line-height: 1.35;
+}
+
+/* ---- metric grid ---- */
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 14px;
+}
+.metric {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 4px;
+  background: var(--code-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--r-s);
+  text-align: center;
+}
+.metric-n {
+  font-family: var(--mono);
+  font-weight: 600;
+  font-size: 17px;
+  color: var(--ink);
+  line-height: 1;
+}
+.metric-l {
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--muted);
+  line-height: 1.2;
+}
+
+/* ---- grade-mix calibration bar ---- */
+.gm-bar {
+  display: flex;
+  height: 14px;
+  border-radius: 7px;
+  overflow: hidden;
+  background: var(--line);
+  gap: 2px;
+}
+.gm-seg {
+  display: block;
+  height: 100%;
+}
+.gm-again {
+  background: var(--coral);
+}
+.gm-hard {
+  background: var(--amber);
+}
+.gm-good {
+  background: var(--sage);
+}
+.gm-easy {
+  background: var(--coral-l);
+  opacity: 0.55;
+}
+.gm-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin-top: 12px;
+}
+.gm-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 500;
+}
+.gm-key b {
+  color: var(--ink);
+}
+.gm-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 3px;
+  flex: none;
+}
+
+/* ---- activity heatmap (GitHub-style, cream -> coral) ---- */
+.heat-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-auto-flow: row;
+  gap: 5px;
+}
+.heat-cell {
+  aspect-ratio: 1 / 1;
+  border-radius: 5px;
+  background: var(--muted-tile);
+  border: 1px solid var(--line);
+}
+.heat-l0 {
+  background: var(--muted-tile);
+}
+.heat-l1 {
+  background: var(--coral-tint);
+  border-color: var(--coral-tint);
+}
+.heat-l2 {
+  background: #f6b3a3;
+  border-color: #f6b3a3;
+}
+.heat-l3 {
+  background: var(--coral-l);
+  border-color: var(--coral-l);
+}
+.heat-l4 {
+  background: var(--coral-d);
+  border-color: var(--coral-d);
+}
+.heat-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+.heat-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10.5px;
+  color: var(--muted);
+  font-weight: 500;
+}
+.heat-legend .heat-cell {
+  width: 12px;
+  height: 12px;
+  aspect-ratio: auto;
+}
+
+/* ---- upcoming (forward FSRS schedule) ---- */
+.up-list {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin-bottom: 12px;
+}
+.up-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.up-day {
+  flex: none;
+  width: 58px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+}
+.up-track {
+  flex: 1;
+  height: 8px;
+  border-radius: 5px;
+  background: var(--line);
+  overflow: hidden;
+}
+.up-track > i {
+  display: block;
+  height: 100%;
+  border-radius: 5px;
+  background: linear-gradient(90deg, var(--coral-l), var(--coral));
+  transition: width 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.up-n {
+  flex: none;
+  width: 20px;
+  text-align: right;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* ---- per-lesson list: reuse .topic; ring shows mastery ---- */
+.lesson-list .topic {
+  cursor: pointer;
+}
+.lesson-list .t-ring .val {
+  stroke: var(--coral);
+}
+.lesson-list .t-ring .pct {
+  color: var(--coral);
+}
+
+/* ---- empty state ---- */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 10px;
+  padding: 40px 20px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-l);
+  box-shadow: var(--shadow-1);
+  margin-top: 8px;
+}
+.empty-ic {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--coral-tint);
+  color: var(--coral);
+}
+.empty-ic svg {
+  width: 28px;
+  height: 28px;
+}
+.empty-h {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  margin-top: 4px;
+}
+.empty-s {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+  max-width: 300px;
+}
+.empty .cta {
+  margin-top: 10px;
+  width: auto;
+  padding-left: 26px;
+  padding-right: 22px;
+}
+
+/* respect the persisted reduce-motion preference (in addition to OS setting) */
+.reduced-motion * {
+  animation-duration: 0.001ms !important;
+  transition-duration: 0.001ms !important;
+}
