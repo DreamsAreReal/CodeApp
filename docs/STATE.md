@@ -121,6 +121,17 @@ FSRS-расписание, 0 ошибок консоли.
   прогнать не могу (нет доступа) — исполнится при первом пуше; шаги по канонному паттерну. ОСТАЁТСЯ ЗА
   ПОЛЬЗОВАТЕЛЕМ: создать GitHub-репо, git remote add + push, задать 5 секретов, разово поднять Caddy+домен.
   gh НЕ установлен (репо создаёт пользователь). [ЭФФЕКТ-ПРИМЕНЁН]
+- 2026-07-10 — ЗАПУШЕНО + ОБРАЗ ПРОВЕРЕН. GitHub SSH: пользователь добавил СТАРЫЙ vps-ключ (6vBM…),
+  а конфиг я настроил на новый (pUpx…) → рассинхрон; переключил ~/.ssh/config github.com → id_ed25519
+  (тот, что добавлен). ssh -T = «Hi DreamsAreReal!», git push -u origin main = [new branch] main OK →
+  код на github.com/DreamsAreReal/CodeApp, первый CI-прогон пошёл. DOCKER (пользователь включил):
+  docker build -f deploy/Dockerfile = OK (497MB, arm64). Запуск контейнера ПОДТВЕРЖДЁН на чистом порту
+  (первый замер врал — на хост-порту 8099 висел ПОСТОРОННИЙ python http.server, docker-порт столкнулся
+  по IPv6): /health ok, GET / 200, /api/lessons=6, run-csharp 403, sign-initdata 403, SQLite на volume.
+  Dockerfile теперь доказан не только на .NET-уровне, но и реальной сборкой+запуском образа. ОСТАЛОСЬ ЗА
+  ПОЛЬЗОВАТЕЛЕМ для авто-деплоя: 5 секретов в репо (VPS_HOST/USER/SSH_KEY/PORT + TELEGRAM_BOT_TOKEN) +
+  разово Caddy+домен на VPS. Первый CI: test+build-and-push пройдут, deploy упадёт до секретов (ожидаемо).
+  [ЭФФЕКТ-ПРИМЕНЁН]
 
 ### История DESIGN-фазы (архив)
 brief.md доведён по критике R1 (закрыты: БЛОКЕР T4-очереди→P2; G3 усилен census+existence-check+N≥60;

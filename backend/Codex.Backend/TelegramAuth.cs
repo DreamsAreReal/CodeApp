@@ -32,7 +32,9 @@ public static class TelegramAuth
             string key = Uri.UnescapeDataString(part[..eq]);
             string value = Uri.UnescapeDataString(part[(eq + 1)..]);
             if (key == "hash") { receivedHash = value; continue; }
-            if (key == "signature") continue; // Ed25519 third-party field, excluded from HMAC check
+            // Only `hash` is excluded from the HMAC data-check-string. `signature` (the Ed25519
+            // third-party field) IS part of the HMAC input — verified empirically against a real
+            // Telegram payload; excluding it produces a mismatch.
             fields[key] = value;
         }
 
