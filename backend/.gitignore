@@ -1,0 +1,8 @@
+# Build output
+bin/
+obj/
+
+# SQLite runtime data (durable store is created at runtime; not source)
+*.db
+*.db-wal
+*.db-shm

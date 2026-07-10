@@ -1,0 +1,80 @@
+{
+  "id": "T1.M2.value-vs-reference",
+  "track": "T1",
+  "module": "M1.2",
+  "title": "Значение и ссылка",
+  "prereqs": [],
+  "version": "1.0.0",
+  "volatility": "stable",
+  "sourceSnapshot": { "dotnet": "net-10.0" },
+  "reviewBy": "2026-10-01",
+  "status": "published",
+
+  "depth": {
+    "intuition": [
+      { "id": "i1", "text": "Value-тип содержит сам экземпляр; reference-тип содержит ссылку на объект на куче.", "source": "cs-value-types", "status": "fact" }
+    ],
+    "mechanics": [
+      { "id": "m1", "text": "Присваивание value-типа копирует значение целиком: у struct семантика значения.", "source": "cs-struct", "status": "fact" },
+      { "id": "m2", "text": "Присваивание reference-типа копирует ссылку: оба имени указывают на один объект.", "source": "cs-classes", "status": "fact" }
+    ],
+    "spec": [
+      { "id": "s1", "text": "Value: «each variable has its own copy of the data». Reference: «two variables can reference the same object».", "source": "cs-reference-types", "status": "fact" }
+    ]
+  },
+  "edgeCases": [
+    { "id": "e1", "text": "struct: var b = a копирует значение; мутация b не трогает a.", "source": "cs-struct" },
+    { "id": "e2", "text": "class: var b = a копирует ссылку; a и b смотрят на один объект.", "source": "cs-classes" }
+  ],
+  "misconceptions": [
+    { "wrong": "var b = a всегда делает копию данных.", "correction": "Только для value-типов; для class копируется лишь ссылка на общий объект.", "source": "cs-value-types" }
+  ],
+  "rationale": { "id": "r1", "text": "Две категории типов определяют и размещение (стек/inline vs куча), и семантику копирования.", "source": "cs-value-types" },
+
+  "sources": [
+    { "id": "cs-value-types", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/value-types", "section": "Value types", "date": "2024-09-27", "retrieved": "2026-07-09" },
+    { "id": "cs-reference-types", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/reference-types", "section": "Reference types", "date": "2023-03-13", "retrieved": "2026-07-09" },
+    { "id": "cs-classes", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/types/classes", "section": "Classes", "date": "2024-11-06", "retrieved": "2026-07-09" },
+    { "id": "cs-struct", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/struct", "section": "Structure types", "date": "2024-11-06", "retrieved": "2026-07-09" }
+  ],
+  "identifiers": [
+    { "symbol": "System.ValueType", "kind": "type", "minTfm": "net-1.0" }
+  ],
+
+  "viz": {
+    "model": "boxes-and-arrows",
+    "renderer": "svg",
+    "interaction": "responding",
+    "entities": [
+      { "id": "stack.a", "zone": "stack", "label": "a:P", "value": 1 },
+      { "id": "stack.b", "zone": "stack", "label": "b:P", "value": 1 }
+    ],
+    "trace": [
+      { "op": "annotate", "target": "stack.a", "caption": "struct: a содержит X=1", "signal": "stack.a" },
+      { "op": "copy", "args": { "from": "stack.a", "to": "stack.b" }, "caption": "var b = a — копия значения", "signal": "stack.b" },
+      { "op": "annotate", "target": "stack.b", "args": { "value": 9 }, "caption": "b.X = 9 меняет только b", "signal": "stack.b" }
+    ],
+    "predictAt": [2]
+  },
+
+  "codePreamble": "using System;",
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Что напечатает код (P — struct)?",
+      "code": "struct P { public int X; } var a = new P{X=1}; var b = a; b.X = 9; Console.WriteLine(a.X);",
+      "expectedOutput": "1",
+      "verify": "execute",
+      "sourceRefs": ["cs-value-types", "cs-struct"],
+      "fsrsSeed": { "desiredRetention": 0.9 }
+    }
+  ],
+
+  "verification": {
+    "gates": { "G-SCHEMA": "pass", "G-CITE": "pass", "G-EXIST-API": "pass", "G-EXEC": "pass", "G-VIZ": "pass" },
+    "citationCoverage": 1.0,
+    "reviewDate": "2026-07-09"
+  }
+}

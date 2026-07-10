@@ -1,0 +1,16 @@
+# Build context = repo root. Keep the image build lean and reproducible:
+# node_modules / build outputs are rebuilt inside the image; local DBs and docs never go in.
+**/node_modules
+app/dist
+app/dist-deploy
+backend/**/bin
+backend/**/obj
+backend/Codex.Backend/wwwroot
+**/*.db
+**/*.db-shm
+**/*.db-wal
+.spikes
+.verify
+docs
+deploy/.env
+**/.DS_Store

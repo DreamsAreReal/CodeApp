@@ -1,0 +1,20 @@
+{
+  "name": "codex-mini-app",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Telegram Mini App — deep C# fundamentals refresher for seniors (walking skeleton).",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "build:deploy": "tsc --noEmit && VITE_API_BASE= vite build --outDir dist-deploy --emptyOutDir",
+    "deploy:pack": "npm run build:deploy && rm -rf ../backend/Codex.Backend/wwwroot && cp -r dist-deploy ../backend/Codex.Backend/wwwroot",
+    "preview": "vite preview --port 4173",
+    "verify": "node verify/run.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.61.1",
+    "typescript": "^5.7.3",
+    "vite": "^6.0.7"
+  }
+}

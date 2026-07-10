@@ -1,0 +1,84 @@
+{
+  "id": "T2.M2.closures",
+  "track": "T2",
+  "module": "M2.2",
+  "title": "Замыкания и захват",
+  "prereqs": ["T1.M3.boxing"],
+  "version": "1.0.0",
+  "volatility": "stable",
+  "sourceSnapshot": { "dotnet": "net-10.0" },
+  "reviewBy": "2026-10-01",
+  "status": "published",
+
+  "depth": {
+    "intuition": [
+      { "id": "i1", "text": "Лямбда захватывает ПЕРЕМЕННУЮ (ячейку), а не её значение; значение читается в момент вызова, не создания.", "source": "ms-lambda", "status": "fact" }
+    ],
+    "mechanics": [
+      { "id": "m1", "text": "Компилятор генерит display class (<>c__DisplayClass); захваченная переменная становится его полем на куче.", "source": "ms-lambda", "status": "fact" },
+      { "id": "m2", "text": "Несколько лямбд, захвативших одну переменную, делят одну ячейку (один экземпляр display-класса).", "source": "ms-lambda", "status": "fact" },
+      { "id": "m3", "text": "Захваченная переменная переживает свой scope: жива, пока жив ссылающийся делегат.", "source": "ms-lambda", "status": "fact" }
+    ],
+    "spec": [
+      { "id": "s1", "text": "«If you capture variables in this way, the lambda expression stores them for use even if the variables go out of scope and would normally be garbage collected.» (дословно офдок)", "source": "ms-lambda", "status": "fact" }
+    ]
+  },
+  "edgeCases": [
+    { "id": "e1", "text": "Захват переменной цикла: for делит одну i (вывод 333), foreach (C# 5+) даёт свою переменную на итерацию (вывод 012).", "source": "cs-spec-foreach" },
+    { "id": "e2", "text": "static-лямбда не захватывает локальные/instance-состояние; может ссылаться на static-члены и константы.", "source": "ms-lambda" }
+  ],
+  "misconceptions": [
+    { "wrong": "Лямбда захватывает значение переменной в момент создания.", "correction": "Захватывается сама переменная (ячейка); значение читается при вызове — изменение переменной после создания лямбды видно внутри.", "source": "ms-lambda" },
+    { "wrong": "for(int i…) list.Add(()=>i) напечатает 012.", "correction": "Нет: все лямбды делят одну i; после цикла i==3, поэтому 333. За 012 отвечает foreach (C# 5+, своя переменная на итерацию).", "source": "cs-spec-foreach" }
+  ],
+  "rationale": { "id": "r1", "text": "Замыкание существует, чтобы лямбда несла состояние: захваченная переменная поднимается в объект на куче и живёт вместе с делегатом.", "source": "ms-lambda" },
+
+  "sources": [
+    { "id": "ms-lambda", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/lambda-expressions", "section": "Capture of outer variables and variable scope in lambda expressions", "date": "2026-01-20", "retrieved": "2026-07-09" },
+    { "id": "cs-spec-foreach", "kind": "csharp-spec", "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/statements", "section": "§13.9.5 The foreach statement", "date": "2023-06-22", "retrieved": "2026-07-09" },
+    { "id": "cs-history", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/csharp/whats-new/csharp-version-history", "section": "C# version 5.0", "date": "2025-11-18", "retrieved": "2026-07-09" }
+  ],
+  "identifiers": [
+    { "symbol": "System.Func`2", "kind": "type", "minTfm": "net-2.0" },
+    { "symbol": "System.Action", "kind": "type", "minTfm": "net-2.0" },
+    { "symbol": "System.Collections.Generic.List`1", "kind": "type", "minTfm": "net-2.0" }
+  ],
+
+  "viz": {
+    "model": "closure-display-class",
+    "renderer": "svg",
+    "interaction": "responding",
+    "entities": [
+      { "id": "stack.n", "zone": "stack", "label": "n:int", "value": 1 },
+      { "id": "heap.dc", "zone": "heap", "label": "DisplayClass" }
+    ],
+    "trace": [
+      { "op": "annotate", "target": "stack.n", "caption": "int n = 1; лямбда захватывает переменную n", "signal": "stack.n" },
+      { "op": "alloc", "target": "heap.dc", "caption": "компилятор: n → поле display-класса на куче", "signal": "heap.dc" },
+      { "op": "highlight", "target": "heap.dc", "caption": "for-цикл: все лямбды делят одну i → 333", "signal": "heap.dc" }
+    ],
+    "predictAt": [2]
+  },
+
+  "codePreamble": "using System;\nusing System.Collections.Generic;",
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Что напечатает код?",
+      "code": "var a=new List<Action>(); for(int i=0;i<3;i++) a.Add(()=>Console.Write(i)); foreach(var f in a) f();",
+      "expectedOutput": "333",
+      "verify": "execute",
+      "sourceRefs": ["ms-lambda", "cs-spec-foreach"],
+      "distractors": ["012", "000"],
+      "fsrsSeed": { "desiredRetention": 0.9 }
+    }
+  ],
+
+  "verification": {
+    "gates": { "G-SCHEMA": "pass", "G-CITE": "pass", "G-EXIST-API": "pass", "G-EXEC": "pass", "G-VIZ": "pass" },
+    "citationCoverage": 1.0,
+    "reviewDate": "2026-07-09"
+  }
+}

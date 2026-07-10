@@ -1,0 +1,94 @@
+{
+  "id": "T1.M3.boxing",
+  "track": "T1",
+  "module": "M1.3",
+  "title": "Boxing и unboxing",
+  "prereqs": ["T1.M2.value-vs-reference"],
+  "version": "1.0.0",
+  "volatility": "stable",
+  "sourceSnapshot": { "dotnet": "net-10.0" },
+  "reviewBy": "2026-10-01",
+  "status": "published",
+
+  "depth": {
+    "intuition": [
+      { "id": "i1", "text": "Boxing — «завернуть» значимый тип в объект на куче, чтобы обращаться с ним как с object.", "source": "ms-boxing", "status": "fact" }
+    ],
+    "mechanics": [
+      { "id": "m1", "text": "Boxing неявный: CLR оборачивает значение в System.Object и кладёт на управляемую кучу, копируя значение.", "source": "ms-boxing", "status": "fact" },
+      { "id": "m2", "text": "Unboxing явный: проверяется тип boxed-значения, затем значение копируется в переменную значимого типа.", "source": "ms-boxing", "status": "fact" },
+      { "id": "m3", "text": "Оригинал и boxed-объект — РАЗНЫЕ ячейки памяти: изменение i после boxing не меняет o.", "source": "ms-boxing", "status": "fact" }
+    ],
+    "spec": [
+      { "id": "s1", "text": "«Boxing is implicit; unboxing is explicit… allocates an object instance on the heap and copies the value.» (дословно офдок)", "source": "ms-boxing", "status": "fact" }
+    ]
+  },
+  "edgeCases": [
+    { "id": "e1", "text": "Unbox null -> NullReferenceException.", "source": "ms-boxing" },
+    { "id": "e2", "text": "Unbox в НЕсовместимый тип (напр. (short) от boxed int) -> InvalidCastException, а не тихое приведение.", "source": "ms-boxing" }
+  ],
+  "misconceptions": [
+    { "wrong": "(short)o распакует boxed int с усечением.", "correction": "Нет: unboxing требует ТОЧНОГО совпадения типа; (short) от boxed int бросает InvalidCastException.", "source": "ms-boxing" },
+    { "wrong": "Boxing бесплатен, это просто приведение.", "correction": "Boxing аллоцирует объект на куче + копирует значение — дороже присваивания; generics его избегают.", "source": "ms-boxing" }
+  ],
+  "rationale": { "id": "r1", "text": "Boxing существует ради унифицированной системы типов: значение любого типа можно трактовать как object.", "source": "ms-boxing" },
+
+  "sources": [
+    { "id": "ms-boxing", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/types/boxing-and-unboxing", "section": "Boxing / Unboxing / Performance", "date": "2025-10-13", "retrieved": "2026-07-08" }
+  ],
+  "identifiers": [
+    { "symbol": "System.Object", "kind": "type", "minTfm": "net-1.0" },
+    { "symbol": "System.InvalidCastException", "kind": "type", "minTfm": "net-1.0" }
+  ],
+
+  "viz": {
+    "model": "boxes-and-arrows",
+    "renderer": "svg",
+    "interaction": "responding",
+    "entities": [
+      { "id": "stack.i", "zone": "stack", "label": "i:int", "value": 123 },
+      { "id": "stack.o", "zone": "stack", "label": "o:object" }
+    ],
+    "trace": [
+      { "op": "annotate", "target": "stack.i", "caption": "int i = 123; — значение на стеке", "signal": "stack.i" },
+      { "op": "alloc", "target": "heap.box", "args": { "type": "int" }, "caption": "object o = i; — boxing: аллокация на КУЧЕ", "signal": "heap.box" },
+      { "op": "copy", "args": { "from": "stack.i", "to": "heap.box" }, "caption": "значение 123 КОПИРУЕТСЯ в объект", "signal": "heap.box" },
+      { "op": "pointer", "args": { "from": "stack.o", "to": "heap.box" }, "caption": "o ссылается на boxed-объект", "signal": "stack.o" },
+      { "op": "annotate", "target": "stack.i", "args": { "value": 456 }, "caption": "i = 456; — меняем ОРИГИНАЛ", "signal": "stack.i" },
+      { "op": "highlight", "target": "heap.box", "caption": "boxed-объект всё ещё 123 — разные ячейки памяти!", "signal": "heap.box" }
+    ],
+    "predictAt": [4]
+  },
+
+  "codePreamble": "using System;",
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Что напечатает код?",
+      "code": "int i = 123; object o = i; i = 456; Console.WriteLine(o);",
+      "expectedOutput": "123",
+      "verify": "execute",
+      "sourceRefs": ["ms-boxing"],
+      "fsrsSeed": { "desiredRetention": 0.9 }
+    },
+    {
+      "id": "c2",
+      "type": "find-the-bug",
+      "engagementLevel": "changing",
+      "prompt": "Почему падает и как починить?",
+      "code": "int i = 123; object o = i; int j = (short)o;",
+      "expectedOutput": "System.InvalidCastException",
+      "verify": "execute",
+      "sourceRefs": ["ms-boxing"],
+      "distractors": ["Скомпилируется, j = 123", "Усечёт до short молча"]
+    }
+  ],
+
+  "verification": {
+    "gates": { "G-SCHEMA": "pass", "G-CITE": "pass", "G-EXIST-API": "pass", "G-EXEC": "pass", "G-VIZ": "pass" },
+    "citationCoverage": 1.0,
+    "reviewDate": "2026-07-08"
+  }
+}

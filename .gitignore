@@ -1,5 +1,6 @@
 node_modules/
 .env
+deploy/.env
 .DS_Store
 .verify/
 .spikes/**/out/
@@ -7,3 +8,13 @@ node_modules/
 **/bin/
 **/obj/
 **/publish/
+
+# build outputs (rebuilt by CI / the Docker image — never committed)
+app/dist/
+app/dist-deploy/
+backend/Codex.Backend/wwwroot/
+
+# SQLite runtime databases (durable data lives on the server volume, not in git)
+*.db
+*.db-wal
+*.db-shm

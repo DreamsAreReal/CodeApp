@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>[ НАЗВАНИЕ ] — Фундамент C# · HOME (стиль аля Duolingo)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    /* Duolingo-derived named palette (RS-03 §2.2) */
+    --green:#58CC02;      /* Feather Green — core */
+    --green-d:#58A700;    /* darker green — signature button shadow */
+    --green-l:#89E219;    /* Mask Green — highlight */
+    --blue:#1CB0F6;       /* Macaw — gems / secondary */
+    --blue-d:#1899D6;
+    --yellow:#FFC800;     /* Bee — stars / xp accents */
+    --orange:#FF9600;     /* Fox — streak flame */
+    --red:#FF4B4B;        /* Cardinal — hearts */
+    --red-d:#E43B3B;
+    --ink:#4B4B4B;        /* Eel — text */
+    --muted:#AFAFAF;
+    --bg:#FFFFFF;         /* Snow */
+    --card:#F7F7F7;
+    --line:#E5E5E5;
+    --lock:#E5E5E5;       /* locked node fill */
+    --lock-d:#C4C4C4;     /* locked node shadow */
+    --font:"Nunito",system-ui,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    font-family:var(--font);
+    color:var(--ink);
+    background:#DDE3EA;               /* neutral backdrop so the white app frame reads */
+    min-height:100vh;
+    display:flex;flex-direction:column;align-items:center;
+    padding:26px 0 34px;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ============ MOBILE APP FRAME ~390px ============ */
+  .frame{
+    width:390px;max-width:100vw;
+    height:800px;
+    background:var(--bg);
+    border-radius:34px;
+    overflow:hidden;
+    position:relative;
+    display:flex;flex-direction:column;
+    box-shadow:0 30px 70px -24px rgba(30,40,60,.55), 0 0 0 1px rgba(0,0,0,.04);
+  }
+
+  /* ============ 1 · STICKY GAMIFICATION TOP BAR ============ */
+  .topbar{
+    flex:none;
+    display:flex;align-items:center;justify-content:space-between;
+    gap:8px;
+    padding:14px 16px 12px;
+    background:var(--bg);
+    border-bottom:2px solid var(--line);
+    z-index:20;
+  }
+  .brand-chip{
+    display:inline-flex;align-items:center;gap:6px;
+    font-family:var(--mono);
+    font-size:11px;font-weight:700;letter-spacing:.06em;
+    color:var(--muted);
+    background:var(--card);
+    border:2px dashed var(--line);
+    border-radius:12px;
+    padding:7px 11px;
+    white-space:nowrap;
+    cursor:default;
+  }
+  .stats{display:flex;align-items:center;gap:14px;}
+  .stat{
+    display:inline-flex;align-items:center;gap:5px;
+    font-weight:800;font-size:16px;
+    cursor:default;
+    line-height:1;
+  }
+  .stat svg{width:24px;height:24px;display:block;flex:none;}
+  .stat.streak{color:var(--orange);}
+  .stat.gem{color:var(--blue);}
+  .stat.heart{color:var(--red);}
+
+  /* ============ SCROLL AREA ============ */
+  .scroll{
+    flex:1;overflow-y:auto;overflow-x:hidden;
+    background:var(--bg);
+    padding-bottom:14px;
+  }
+  .scroll::-webkit-scrollbar{width:0;}
+
+  /* ============ 2 · SECTION BANNER ============ */
+  .banner{
+    margin:16px 14px 4px;
+    background:var(--green);
+    color:#fff;
+    border-radius:18px;
+    padding:15px 16px;
+    display:flex;align-items:center;gap:12px;
+    box-shadow:0 4px 0 var(--green-d);
+  }
+  .banner .b-text{flex:1;min-width:0;}
+  .banner .b-kicker{
+    font-size:12px;font-weight:800;letter-spacing:.08em;
+    text-transform:uppercase;
+    color:rgba(255,255,255,.85);
+    margin-bottom:3px;
+  }
+  .banner .b-title{
+    font-size:20px;font-weight:900;line-height:1.05;letter-spacing:-.01em;
+  }
+  .banner .b-sub{
+    font-size:13px;font-weight:700;color:rgba(255,255,255,.9);
+    margin-top:4px;
+  }
+  .guide-btn{
+    flex:none;
+    width:46px;height:46px;border-radius:14px;
+    background:rgba(255,255,255,.16);
+    border:2px solid rgba(255,255,255,.4);
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+    transition:background .15s;
+  }
+  .guide-btn:hover{background:rgba(255,255,255,.28);}
+  .guide-btn svg{width:24px;height:24px;}
+
+  /* ============ 3 · LESSON PATH ============ */
+  .path{
+    position:relative;
+    padding:18px 0 6px;
+    display:flex;flex-direction:column;align-items:center;
+  }
+  .node-row{
+    width:100%;
+    display:flex;justify-content:center;
+    position:relative;
+    padding:18px 0;
+  }
+  .node-row.row-current{padding-top:52px;}   /* clearance for START bubble + ring */
+  .node-wrap{
+    position:relative;
+    display:flex;flex-direction:column;align-items:center;
+    /* horizontal offset set inline per node for the winding path */
+  }
+
+  /* circular 3D lesson button — the signature Duolingo tactile button */
+  .node{
+    position:relative;
+    width:72px;height:72px;border-radius:50%;
+    border:none;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    background:var(--green);
+    box-shadow:0 8px 0 var(--green-d);
+    transition:transform .06s ease, box-shadow .06s ease;
+  }
+  .node svg{width:38px;height:38px;}
+  .node:active{transform:translateY(5px);box-shadow:0 3px 0 var(--green-d);}
+
+  /* completed */
+  .node.done{background:var(--green);box-shadow:0 8px 0 var(--green-d);}
+  .node.done:active{box-shadow:0 3px 0 var(--green-d);}
+  /* current — larger, prominent */
+  .node.current{width:88px;height:88px;box-shadow:0 9px 0 var(--green-d);}
+  .node.current:active{box-shadow:0 3px 0 var(--green-d);}
+  .node.current svg{width:46px;height:46px;}
+  /* locked — grey, no juice */
+  .node.locked{background:var(--lock);box-shadow:0 8px 0 var(--lock-d);cursor:default;}
+  .node.locked:active{transform:none;box-shadow:0 8px 0 var(--lock-d);}
+  .node.locked svg path,.node.locked svg rect,.node.locked svg circle{fill:#fff;}
+
+  /* crown-progress ring around current node */
+  .ring{position:absolute;top:-9px;left:-9px;pointer-events:none;}
+
+  /* bouncing START bubble above current node */
+  .start-bubble{
+    position:absolute;
+    top:-52px;left:50%;transform:translateX(-50%);
+    background:#fff;
+    color:var(--green);
+    font-weight:900;font-size:14px;letter-spacing:.06em;
+    padding:8px 16px;border-radius:14px;
+    box-shadow:0 2px 0 var(--line);
+    border:2px solid var(--line);
+    white-space:nowrap;
+    animation:bob 1s ease-in-out infinite;
+  }
+  .start-bubble::after{
+    content:"";position:absolute;bottom:-9px;left:50%;
+    transform:translateX(-50%) rotate(45deg);
+    width:14px;height:14px;background:#fff;
+    border-right:2px solid var(--line);border-bottom:2px solid var(--line);
+  }
+  @keyframes bob{0%,100%{transform:translateX(-50%) translateY(0);}50%{transform:translateX(-50%) translateY(-6px);}}
+
+  /* progress stars under current node */
+  .stars{display:flex;gap:4px;margin-top:12px;}
+  .stars svg{width:16px;height:16px;}
+
+  /* small friendly lesson label under each node */
+  .node-label{
+    margin-top:11px;
+    font-size:12.5px;font-weight:800;
+    color:var(--ink);
+    text-align:center;max-width:130px;line-height:1.2;
+  }
+  .node-wrap.is-locked .node-label{color:var(--muted);}
+  .node-wrap.is-current .node-label{color:var(--green-d);}
+
+  /* placeholder mascot beside the current node */
+  .mascot{
+    position:absolute;
+    right:-104px;top:2px;
+    width:96px;height:110px;
+    pointer-events:none;
+    animation:float 3s ease-in-out infinite;
+  }
+  @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-7px);}}
+  .mascot-tag{
+    position:absolute;right:-104px;top:112px;width:96px;
+    text-align:center;
+    font-family:var(--mono);font-size:8.5px;font-weight:700;
+    letter-spacing:.04em;color:var(--muted);
+    line-height:1.25;
+  }
+
+  /* ============ NEXT-SECTION TEASER ============ */
+  .teaser{
+    margin:20px 14px 8px;
+    background:var(--card);
+    border:2px solid var(--line);
+    border-radius:18px;
+    padding:16px;
+    display:flex;align-items:center;gap:13px;
+  }
+  .teaser .t-lock{
+    flex:none;width:48px;height:48px;border-radius:14px;
+    background:var(--lock);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .teaser .t-lock svg{width:26px;height:26px;}
+  .teaser .t-lock svg path,.teaser .t-lock svg rect,.teaser .t-lock svg circle{fill:#fff;}
+  .teaser .t-body{flex:1;min-width:0;}
+  .teaser .t-kicker{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);}
+  .teaser .t-title{font-size:17px;font-weight:900;color:var(--muted);margin-top:2px;}
+  .teaser .t-sub{font-size:12.5px;font-weight:700;color:var(--muted);margin-top:2px;}
+
+  /* ============ 4 · BOTTOM TAB BAR ============ */
+  .tabbar{
+    flex:none;
+    display:flex;align-items:stretch;
+    background:var(--bg);
+    border-top:2px solid var(--line);
+    padding:8px 6px calc(8px + env(safe-area-inset-bottom,0px));
+    z-index:20;
+  }
+  .tab{
+    flex:1;
+    display:flex;flex-direction:column;align-items:center;gap:3px;
+    padding:8px 4px 6px;
+    border:none;background:none;cursor:pointer;
+    border-radius:14px;
+    font-family:var(--font);font-weight:800;font-size:11px;
+    color:var(--muted);
+    transition:background .15s;
+  }
+  .tab svg{width:30px;height:30px;}
+  .tab.active{color:var(--green-d);background:rgba(88,204,2,.12);}
+  .tab.active svg *{fill:var(--green);}
+  .tab:not(.active) svg *{fill:var(--muted);}
+
+  /* ============ CAPTION BELOW FRAME ============ */
+  .caption{
+    margin-top:16px;text-align:center;
+    font-family:var(--mono);font-size:11px;font-weight:500;
+    color:#6b7688;letter-spacing:.03em;
+  }
+  .caption b{color:#3a4457;font-weight:700;}
+</style>
+</head>
+<body>
+
+  <div class="frame">
+
+    <!-- ===== 1 · STICKY GAMIFICATION TOP BAR ===== -->
+    <header class="topbar">
+      <span class="brand-chip" title="бренд ещё не выбран">[ НАЗВАНИЕ ]</span>
+      <div class="stats">
+        <span class="stat streak" title="Стрик: 7 дней подряд">
+          <svg viewBox="0 0 32 32" aria-hidden="true">
+            <path fill="#FF9600" d="M17 2c-1.2 5.6-6.4 7.4-6.4 13.4A7 7 0 0 0 24 15.8c0-3.4-2-5.6-3.4-7.8.2 2.4-1 3.8-2.2 3.8-2.4 0-1-6.8-1.4-9.8z"/>
+            <path fill="#FFC800" d="M16.4 15c-.8 2.8-3.4 3.6-3.4 6.8a3.4 3.4 0 0 0 6.8 0c0-1.9-1.1-2.9-1.9-4.2-.3 1.2-1.1 1.6-1.6 1.6-1.2 0-.7-2.9 0-4.2z"/>
+          </svg>7
+        </span>
+        <span class="stat gem" title="Гемы: 450">
+          <svg viewBox="0 0 32 32" aria-hidden="true">
+            <path fill="#1CB0F6" d="M9 4h14l6 8-13 17L3 12z"/>
+            <path fill="#8AD6FB" d="M9 4l3.4 8h7.2L23 4z"/>
+            <path fill="#1899D6" d="M3 12h26L16 29z"/>
+            <path fill="#8AD6FB" d="M12.4 12h7.2L16 29z" opacity=".5"/>
+          </svg>450
+        </span>
+        <span class="stat heart" title="Сердца: 5">
+          <svg viewBox="0 0 32 32" aria-hidden="true">
+            <path fill="#FF4B4B" d="M16 28.5C5.6 21.2 3 15.2 3 10.6A6.6 6.6 0 0 1 16 8.2 6.6 6.6 0 0 1 29 10.6c0 4.6-2.6 10.6-13 17.9z"/>
+            <path fill="#FF7A7A" d="M9.4 8.3c-1.7.5-3 1.9-3.4 3.7-.1.6.6 1 1 .5.9-1.2 2.1-2 3.4-2.4.7-.2.5-1.4-.3-1.5-.2 0-.5 0-.7.1z" opacity=".8"/>
+          </svg>5
+        </span>
+      </div>
+    </header>
+
+    <!-- ===== SCROLLABLE CONTENT ===== -->
+    <div class="scroll">
+
+      <!-- 2 · SECTION BANNER -->
+      <div class="banner">
+        <div class="b-text">
+          <div class="b-kicker">Раздел 1 · Ядро C#</div>
+          <div class="b-title">Типы и память</div>
+          <div class="b-sub">Как всё устроено под капотом</div>
+        </div>
+        <button class="guide-btn" title="Гайд раздела">
+          <svg viewBox="0 0 32 32" aria-hidden="true">
+            <path fill="#fff" d="M7 5h12a4 4 0 0 1 4 4v18a3 3 0 0 0-3-3H7z"/>
+            <path fill="#fff" d="M25 5h1a2 2 0 0 1 2 2v18a2 2 0 0 1-2 2h-3a3 3 0 0 1 3-3V7a2 2 0 0 0-1-2z" opacity=".55"/>
+            <rect x="10" y="10" width="9" height="2.2" rx="1.1" fill="#58CC02"/>
+            <rect x="10" y="14.5" width="7" height="2.2" rx="1.1" fill="#58CC02"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- 3 · WINDING LESSON PATH -->
+      <div class="path">
+
+        <!-- node 1 — DONE (mastered / crown) -->
+        <div class="node-row">
+          <div class="node-wrap" style="transform:translateX(6px);">
+            <button class="node done" title="Пройдено: значение и ссылка">
+              <svg viewBox="0 0 32 26" aria-hidden="true">
+                <path fill="#FFC800" d="M3 9l6 4 7-9 7 9 6-4-3 15H6z"/>
+                <path fill="#FFDE59" d="M3 9l6 4 7-9 7 9 6-4-2 6H5z"/>
+                <circle cx="3" cy="9" r="2.4" fill="#FFC800"/><circle cx="29" cy="9" r="2.4" fill="#FFC800"/>
+              </svg>
+            </button>
+            <div class="node-label">value vs reference</div>
+          </div>
+        </div>
+
+        <!-- node 2 — DONE (check) -->
+        <div class="node-row">
+          <div class="node-wrap" style="transform:translateX(-62px);">
+            <button class="node done" title="Пройдено: стек и куча">
+              <svg viewBox="0 0 32 32" aria-hidden="true" fill="none">
+                <path d="M7 16.5l6 6 12-13.5" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <div class="node-label">Стек и куча</div>
+          </div>
+        </div>
+
+        <!-- node 3 — CURRENT (bigger, START bubble, ring, stars, mascot) -->
+        <div class="node-row row-current">
+          <div class="node-wrap is-current" style="transform:translateX(-84px);">
+            <div class="start-bubble">СТАРТ</div>
+            <svg class="ring" width="106" height="106" viewBox="0 0 106 106" aria-hidden="true">
+              <circle cx="53" cy="53" r="49" fill="none" stroke="#E5E5E5" stroke-width="7"/>
+              <circle cx="53" cy="53" r="49" fill="none" stroke="#FFC800" stroke-width="7"
+                      stroke-linecap="round" stroke-dasharray="308" stroke-dashoffset="185"
+                      transform="rotate(-90 53 53)"/>
+            </svg>
+            <button class="node current" title="Текущий урок: boxing / unboxing">
+              <svg viewBox="0 0 32 32" aria-hidden="true">
+                <path fill="#fff" d="M16 3l3 6 6.6-.1-3.3 5.7 3.3 5.7L19 20l-3 6-3-6-6.6.1L9.7 14.4 6.4 8.7 13 9z" opacity="0"/>
+                <path fill="#fff" d="M16 4l2.9 8.3 8.8.2-7 5.4 2.5 8.4L16 21l-7.2 5.3 2.5-8.4-7-5.4 8.8-.2z"/>
+              </svg>
+            </button>
+            <div class="stars" title="Прогресс урока: 2 из 3">
+              <svg viewBox="0 0 20 20" aria-hidden="true"><path fill="#FFC800" d="M10 1.5l2.5 5 5.5.6-4 3.8 1 5.4L10 19l-5 2.9 1-5.4-4-3.8 5.5-.6z"/></svg>
+              <svg viewBox="0 0 20 20" aria-hidden="true"><path fill="#FFC800" d="M10 1.5l2.5 5 5.5.6-4 3.8 1 5.4L10 19l-5 2.9 1-5.4-4-3.8 5.5-.6z"/></svg>
+              <svg viewBox="0 0 20 20" aria-hidden="true"><path fill="#E5E5E5" d="M10 1.5l2.5 5 5.5.6-4 3.8 1 5.4L10 19l-5 2.9 1-5.4-4-3.8 5.5-.6z"/></svg>
+            </div>
+            <div class="node-label">Boxing / unboxing</div>
+
+            <!-- placeholder mascot: rounded blob-robot -->
+            <svg class="mascot" viewBox="0 0 96 110" aria-hidden="true">
+              <!-- antenna -->
+              <line x1="48" y1="16" x2="48" y2="6" stroke="#3FA000" stroke-width="4" stroke-linecap="round"/>
+              <circle cx="48" cy="5" r="5" fill="#FFC800"/>
+              <!-- body -->
+              <rect x="10" y="14" width="76" height="80" rx="30" fill="#58CC02"/>
+              <rect x="10" y="14" width="76" height="80" rx="30" fill="#89E219" opacity="0"/>
+              <!-- belly -->
+              <ellipse cx="48" cy="62" rx="26" ry="28" fill="#7BD62B"/>
+              <!-- eyes -->
+              <circle cx="36" cy="46" r="11" fill="#fff"/>
+              <circle cx="60" cy="46" r="11" fill="#fff"/>
+              <circle cx="38" cy="48" r="5.5" fill="#3B3B3B"/>
+              <circle cx="62" cy="48" r="5.5" fill="#3B3B3B"/>
+              <circle cx="40" cy="46" r="1.8" fill="#fff"/>
+              <circle cx="64" cy="46" r="1.8" fill="#fff"/>
+              <!-- cheeks -->
+              <ellipse cx="26" cy="60" rx="6" ry="4" fill="#FF9600" opacity=".35"/>
+              <ellipse cx="70" cy="60" rx="6" ry="4" fill="#FF9600" opacity=".35"/>
+              <!-- smile -->
+              <path d="M40 66q8 8 16 0" stroke="#2E7D00" stroke-width="4" fill="none" stroke-linecap="round"/>
+              <!-- waving hand -->
+              <circle cx="86" cy="44" r="9" fill="#58CC02"/>
+              <circle cx="86" cy="44" r="9" fill="#4CAF00" opacity=".25"/>
+              <!-- feet -->
+              <ellipse cx="34" cy="98" rx="12" ry="8" fill="#3FA000"/>
+              <ellipse cx="62" cy="98" rx="12" ry="8" fill="#3FA000"/>
+            </svg>
+            <div class="mascot-tag">маскот<br>placeholder</div>
+          </div>
+        </div>
+
+        <!-- node 4 — LOCKED -->
+        <div class="node-row">
+          <div class="node-wrap is-locked" style="transform:translateX(-40px);">
+            <button class="node locked" title="Откроется после текущего урока" disabled>
+              <svg viewBox="0 0 32 32" aria-hidden="true">
+                <rect x="7" y="14" width="18" height="13" rx="4"/>
+                <path d="M11 14v-3.5a5 5 0 0 1 10 0V14" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round"/>
+              </svg>
+            </button>
+            <div class="node-label">GC базово</div>
+          </div>
+        </div>
+
+        <!-- node 5 — LOCKED -->
+        <div class="node-row">
+          <div class="node-wrap is-locked" style="transform:translateX(34px);">
+            <button class="node locked" title="Заблокировано" disabled>
+              <svg viewBox="0 0 32 32" aria-hidden="true">
+                <rect x="7" y="14" width="18" height="13" rx="4"/>
+                <path d="M11 14v-3.5a5 5 0 0 1 10 0V14" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round"/>
+              </svg>
+            </button>
+            <div class="node-label">Span и стек-память</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- NEXT-SECTION TEASER (locked) -->
+      <div class="teaser">
+        <div class="t-lock">
+          <svg viewBox="0 0 32 32" aria-hidden="true">
+            <rect x="7" y="14" width="18" height="13" rx="4"/>
+            <path d="M11 14v-3.5a5 5 0 0 1 10 0V14" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="t-body">
+          <div class="t-kicker">Дальше · Раздел 2</div>
+          <div class="t-title">Асинхронность</div>
+          <div class="t-sub">Пройди «Типы и память», чтобы открыть</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ===== 4 · BOTTOM TAB BAR ===== -->
+    <nav class="tabbar">
+      <button class="tab active" title="Учиться">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 4L3 15h3v12h7v-7h6v7h7V15h3z"/></svg>
+        Учиться
+      </button>
+      <button class="tab" title="Лига">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M6 4h20v6a10 10 0 0 1-8 9.8V24h4v4H10v-4h4v-4.2A10 10 0 0 1 6 10z"/></svg>
+        Лига
+      </button>
+      <button class="tab" title="Профиль">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="11" r="6"/><path d="M4 28a12 12 0 0 1 24 0z"/></svg>
+        Профиль
+      </button>
+    </nav>
+
+  </div>
+
+  <div class="caption">home &middot; стиль <b>аля Duolingo</b> &middot; название&nbsp;=&nbsp;placeholder</div>
+
+  <script>
+    // light JS: tactile press feedback on 3D nodes/buttons + tab switching (concept-only)
+    document.querySelectorAll('.node:not(.locked), .guide-btn').forEach(function(el){
+      el.addEventListener('pointerdown', function(){ el.classList.add('is-press'); });
+      ['pointerup','pointerleave','pointercancel'].forEach(function(ev){
+        el.addEventListener(ev, function(){ el.classList.remove('is-press'); });
+      });
+    });
+    document.querySelectorAll('.tab').forEach(function(tab){
+      tab.addEventListener('click', function(){
+        document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
+        tab.classList.add('active');
+      });
+    });
+  </script>
+
+</body>
+</html>

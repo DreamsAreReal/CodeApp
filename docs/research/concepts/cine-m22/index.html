@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Кино-курс C# · концепт в языке m22</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=Fraunces:ital,opsz,wght@1,9..144,400;1,9..144,500;1,9..144,600;1,9..144,700&family=Geist:wght@400;500;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   TOKENS — muted misty grade only. No gold, no red, no neon.
+   ============================================================ */
+:root{
+  --bg-0:#0D0F0E;          /* near-black desaturated green-grey */
+  --bg-1:#141715;
+  --bg-2:#1B1F1C;
+  --ink:#F0EFEA;           /* warm off-white */
+  --muted:#9AA39A;         /* grey-green */
+  --faint:#6E766D;         /* dimmer meta */
+  --line:#2A2E2A;          /* hairline */
+  --focus:#EDEFEA;         /* the single light focus */
+  --sage:#B9C4B2;          /* restrained desaturated accent, used sparingly */
+
+  /* code tokens — 4 desaturated tones, never a rainbow */
+  --tok-base:#D7D5CC;
+  --tok-key:#AEBCA9;       /* types / keywords — muted celadon */
+  --tok-num:#C9C6BB;       /* numbers — warm off */
+  --tok-com:#6E766D;       /* comments — muted */
+
+  --page:#0A0B0A;          /* page behind the frames */
+  --grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='150' height='150' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+
+  --sans:'Geist','Archivo','Helvetica Neue',Arial,sans-serif;
+  --serif:'Fraunces',Georgia,'Times New Roman',serif;
+  --mono:'JetBrains Mono',ui-monospace,'SFMono-Regular',monospace;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:var(--sans);
+  background:var(--page);
+  color:var(--ink);
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  line-height:1.5;
+  min-height:100vh;
+  position:relative;
+  overflow-x:hidden;
+}
+/* page grain + vignette overlays */
+body::before{ /* grain */
+  content:"";position:fixed;inset:0;z-index:9998;pointer-events:none;
+  background-image:var(--grain);opacity:.045;mix-blend-mode:soft-light;
+}
+body::after{ /* vignette */
+  content:"";position:fixed;inset:0;z-index:9997;pointer-events:none;
+  background:radial-gradient(130% 100% at 50% 32%,transparent 52%,rgba(0,0,0,.55) 100%);
+}
+
+/* shared photo grade — unify everything toward the misty near-mono look */
+.ph{filter:grayscale(.24) saturate(.7) brightness(.72) contrast(1.06);}
+
+.mono{font-family:var(--mono);}
+.sans{font-family:var(--sans);font-weight:800;letter-spacing:-.018em;}
+.ser{font-family:var(--serif);font-style:italic;font-weight:400;letter-spacing:-.01em;}
+
+/* ============================================================
+   PAGE CHROME
+   ============================================================ */
+.wrap{max-width:1420px;margin:0 auto;padding:clamp(28px,5vw,72px) clamp(18px,3vw,40px) 64px;}
+
+.masthead{max-width:760px;margin:0 auto clamp(34px,5vw,60px);text-align:left;}
+.tag-line{color:var(--muted);font-size:11px;letter-spacing:.24em;text-transform:uppercase;display:inline-block;
+  border:1px solid var(--line);border-radius:2px;padding:6px 11px;}
+.mh-title{font-size:clamp(30px,5vw,52px);line-height:1.02;margin:20px 0 14px;font-weight:800;}
+.mh-title .ser{font-weight:400;}
+.mh-note{color:var(--muted);font-size:14px;max-width:52ch;line-height:1.6;}
+
+/* stage: three ~390px frames in a row; wraps to stack on narrow screens */
+.stage{display:flex;flex-wrap:wrap;gap:clamp(20px,2.2vw,30px);justify-content:center;align-items:flex-start;}
+.col{width:390px;max-width:100%;display:flex;flex-direction:column;gap:14px;
+  opacity:0;transform:translateY(16px);transition:opacity .7s ease,transform .7s ease;}
+.col.in{opacity:1;transform:none;}
+.cap{color:var(--faint);font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;padding-left:2px;}
+.cap b{color:var(--muted);font-weight:500;}
+
+/* device frame */
+.frame{
+  width:390px;max-width:100%;border-radius:30px;overflow:hidden;
+  background:var(--bg-0);
+  border:1px solid #23271F;
+  box-shadow:0 1px 0 rgba(255,255,255,.03) inset,0 30px 70px -30px rgba(0,0,0,.9),0 2px 22px rgba(0,0,0,.5);
+}
+.screen{position:relative;background:var(--bg-0);}
+.pad{padding:22px 20px 26px;}
+
+/* metadata / labels */
+.label{color:var(--muted);font-size:10px;letter-spacing:.24em;text-transform:uppercase;font-family:var(--mono);}
+.sec-label{color:var(--faint);font-size:10px;letter-spacing:.24em;text-transform:uppercase;font-family:var(--mono);
+  display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+.sec-label::after{content:"";flex:1;height:1px;background:var(--line);}
+
+/* ============================================================
+   SCREEN 1 — HOME
+   ============================================================ */
+.hero{position:relative;height:462px;overflow:hidden;}
+.hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.hero-grad{position:absolute;inset:0;
+  background:
+    linear-gradient(180deg,rgba(13,15,14,.30) 0%,rgba(13,15,14,.05) 26%,rgba(13,15,14,.55) 62%,rgba(13,15,14,.97) 100%),
+    radial-gradient(120% 80% at 50% 0%,rgba(13,15,14,.0) 40%,rgba(13,15,14,.35) 100%);}
+.hero-top{position:absolute;top:18px;left:20px;right:20px;display:flex;justify-content:space-between;align-items:center;}
+.wordmark{color:var(--muted);font-size:10px;letter-spacing:.2em;
+  border:1px dashed #47504482;border-radius:3px;padding:6px 10px;background:rgba(13,15,14,.28);
+  backdrop-filter:blur(2px);}
+.hero-top-r{color:var(--muted);font-size:10px;letter-spacing:.22em;opacity:.8;}
+.hero-copy{position:absolute;left:20px;right:20px;bottom:22px;}
+.meta{color:var(--sage);font-size:10.5px;letter-spacing:.18em;margin-bottom:12px;opacity:.92;}
+.hero-h{font-size:41px;line-height:.98;letter-spacing:-.028em;color:var(--ink);text-shadow:0 1px 30px rgba(0,0,0,.55);}
+.hero-h .ser{font-size:47px;line-height:.9;display:inline-block;}
+.cta{margin-top:20px;display:inline-flex;align-items:center;gap:10px;
+  font-family:var(--sans);font-weight:700;font-size:14px;letter-spacing:.01em;color:var(--ink);
+  background:rgba(240,239,234,.04);border:1px solid rgba(237,239,234,.55);border-radius:100px;
+  padding:12px 20px;cursor:pointer;transition:background .25s ease,border-color .25s ease,transform .25s ease;}
+.cta:hover{background:rgba(240,239,234,.12);border-color:var(--focus);transform:translateY(-1px);}
+.cta svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.7;}
+
+/* editorial lesson list */
+.lessons{display:flex;flex-direction:column;}
+.lesson{display:flex;gap:14px;align-items:center;padding:16px 0;border-top:1px solid var(--line);position:relative;}
+.lesson:first-child{border-top:0;}
+.lesson.is-active{border-radius:12px;border:1px solid rgba(237,239,234,.42);
+  background:linear-gradient(180deg,rgba(240,239,234,.05),rgba(240,239,234,.015));
+  padding:16px 14px;margin:6px 0;box-shadow:0 0 0 1px rgba(237,239,234,.06),0 0 34px -8px rgba(237,239,234,.14);}
+.lesson.is-active + .lesson{border-top:0;}
+.thumb{width:58px;height:58px;flex:0 0 58px;border-radius:9px;object-fit:cover;border:1px solid #23271F;}
+.lesson.is-active .thumb{border-color:rgba(237,239,234,.35);}
+.l-body{flex:1;min-width:0;}
+.l-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;}
+.l-title{font-size:20px;line-height:1.08;font-weight:800;letter-spacing:-.02em;color:var(--ink);}
+.l-title .ser{font-weight:400;font-size:21px;}
+.l-pct{font-family:var(--mono);font-size:12px;color:var(--muted);flex:0 0 auto;letter-spacing:.02em;}
+.lesson.is-active .l-pct{color:var(--focus);}
+.l-sub{display:flex;align-items:center;gap:9px;margin-top:9px;}
+.meter{height:2px;background:var(--line);border-radius:2px;flex:1;overflow:hidden;}
+.meter i{display:block;height:100%;background:var(--faint);border-radius:2px;}
+.lesson.is-active .meter i{background:var(--focus);}
+.l-now{font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:var(--bg-0);background:var(--focus);
+  border-radius:2px;padding:3px 7px;flex:0 0 auto;font-weight:600;}
+
+/* ============================================================
+   SCREEN 2 — LESSON CARD
+   ============================================================ */
+.strip{position:relative;height:104px;overflow:hidden;}
+.strip img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.strip .strip-grad{position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(13,15,14,.55),rgba(13,15,14,.35) 40%,rgba(13,15,14,.92));}
+.strip .strip-label{position:absolute;left:20px;bottom:14px;color:var(--ink);font-family:var(--mono);
+  font-size:10px;letter-spacing:.2em;text-transform:uppercase;}
+.q-head{font-size:29px;line-height:1.04;letter-spacing:-.024em;margin:6px 0 18px;font-weight:800;}
+.q-head .ser{font-weight:400;font-size:31px;}
+
+.code{background:var(--bg-1);border:1px solid var(--line);border-radius:12px;padding:15px 4px 15px 0;
+  font-family:var(--mono);font-size:12.5px;line-height:1.95;color:var(--tok-base);overflow:hidden;}
+.code .ln{display:block;padding:0 16px 0 16px;position:relative;white-space:pre;}
+.code .ln.box{background:rgba(237,239,234,.05);border-left:2px solid var(--focus);padding-left:14px;}
+.tk{color:var(--tok-key);}    /* type / keyword */
+.tn{color:var(--tok-num);}    /* number */
+.tc{color:var(--tok-com);font-style:italic;} /* comment */
+.tp{color:#C4CBBE;}           /* type name (Console) */
+
+.reveal{width:100%;margin-top:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;
+  background:transparent;border:1px solid var(--line);border-radius:10px;padding:13px 16px;cursor:pointer;
+  color:var(--ink);font-family:var(--sans);font-weight:700;font-size:14px;transition:border-color .25s,background .25s;}
+.reveal:hover{border-color:#3a4038;background:rgba(240,239,234,.02);}
+.reveal .chev{width:16px;height:16px;stroke:var(--muted);fill:none;stroke-width:1.7;transition:transform .3s ease;}
+.reveal.is-open .chev{transform:rotate(180deg);}
+.answer{max-height:0;overflow:hidden;opacity:0;transition:max-height .45s ease,opacity .4s ease,margin .3s ease;}
+.answer.open{max-height:260px;opacity:1;margin-top:12px;}
+.ans-inner{border-left:2px solid var(--sage);padding:2px 0 2px 16px;}
+.out-line{display:flex;align-items:baseline;gap:10px;margin-bottom:8px;}
+.out-tag{font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;color:var(--faint);text-transform:uppercase;}
+.out-val{font-family:var(--mono);font-size:23px;color:var(--focus);font-weight:600;line-height:1;}
+.ans-txt{color:var(--muted);font-size:13.5px;line-height:1.62;}
+.ans-txt b{color:var(--ink);font-weight:600;letter-spacing:.03em;}
+.ans-txt .ser{color:var(--ink);}
+
+.grades{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:20px;}
+.grade{padding:11px 0 9px;border:1px solid var(--line);border-radius:9px;text-align:center;cursor:pointer;
+  background:transparent;color:var(--muted);font-family:var(--sans);font-weight:700;font-size:13px;
+  transition:border-color .2s,color .2s,background .2s;}
+.grade small{display:block;font-family:var(--mono);font-weight:400;font-size:9px;letter-spacing:.08em;color:var(--faint);margin-top:3px;}
+.grade:hover{border-color:#3a4038;color:var(--ink);}
+.grade.is-focus{border-color:rgba(237,239,234,.6);color:var(--ink);background:rgba(240,239,234,.05);
+  box-shadow:0 0 26px -8px rgba(237,239,234,.2);}
+.grade.is-focus small{color:var(--sage);}
+
+.source{margin-top:18px;display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px;
+  border:1px solid var(--line);border-radius:9px;padding:11px 14px;text-decoration:none;
+  transition:border-color .2s,color .2s;}
+.source:hover{border-color:#3a4038;color:var(--ink);}
+.source svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.6;flex:0 0 auto;}
+.source .src-name{font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--ink);}
+
+/* ============================================================
+   SCREEN 3 — HASH TABLE VISUALIZATION
+   ============================================================ */
+.viz-head{font-size:26px;line-height:1.06;letter-spacing:-.022em;margin-bottom:4px;font-weight:800;}
+.viz-head .ser{font-weight:400;font-size:28px;}
+.viz-sub{color:var(--faint);font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;margin-bottom:18px;}
+
+.viz{position:relative;width:100%;height:330px;margin-bottom:6px;}
+.viz svg.wires{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;}
+.viz svg.wires line{stroke:#3b423a;stroke-width:1;transition:stroke .4s,stroke-width .4s;}
+.viz svg.wires line.cur{stroke:var(--focus);stroke-width:1.5;}
+
+.node{position:absolute;font-family:var(--mono);}
+.key{width:30%;left:3%;}
+.key .k-chip{display:flex;align-items:center;justify-content:space-between;gap:6px;
+  background:var(--bg-2);border:1px solid var(--line);border-radius:7px;padding:7px 9px;
+  font-size:12px;color:var(--ink);transition:border-color .35s,box-shadow .35s;}
+.key.cur .k-chip{border-color:rgba(237,239,234,.5);box-shadow:0 0 22px -8px rgba(237,239,234,.28);}
+.key .k-hash{display:block;font-size:8.5px;letter-spacing:.06em;color:var(--faint);margin-top:5px;padding-left:2px;}
+
+.bkt{position:absolute;left:56%;width:41%;height:28px;display:flex;align-items:center;gap:6px;
+  border:1px solid var(--line);border-radius:7px;padding:0 8px;background:var(--bg-1);}
+.bkt .idx{font-size:10px;color:var(--faint);flex:0 0 auto;width:10px;}
+.bkt .cell{flex:1;display:flex;align-items:center;gap:5px;min-width:0;}
+.bkt .empty{height:1px;flex:1;background:repeating-linear-gradient(90deg,var(--line) 0 4px,transparent 4px 8px);}
+.chip{font-size:11px;color:var(--ink);background:var(--bg-2);border:1px solid #333a31;border-radius:5px;padding:2px 6px;white-space:nowrap;}
+.nxt{width:12px;height:9px;flex:0 0 auto;stroke:var(--muted);fill:none;stroke-width:1.4;}
+/* the one hot bucket — single light focus, not colored */
+.bkt.hot{border-color:rgba(237,239,234,.6);background:rgba(240,239,234,.045);
+  box-shadow:0 0 0 1px rgba(237,239,234,.08),0 0 30px -6px rgba(237,239,234,.24);}
+.bkt.hot .idx{color:var(--focus);}
+.bkt.hot .chip{border-color:rgba(237,239,234,.4);color:var(--focus);}
+
+/* step panel */
+.panel{border-top:1px solid var(--line);padding-top:16px;margin-top:2px;}
+.panel-row{display:flex;align-items:center;gap:12px;}
+.pbtn{width:38px;height:38px;flex:0 0 auto;border-radius:50%;border:1px solid rgba(237,239,234,.5);
+  background:rgba(240,239,234,.04);cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:background .2s,border-color .2s;}
+.pbtn:hover{background:rgba(240,239,234,.12);border-color:var(--focus);}
+.pbtn svg{width:15px;height:15px;fill:var(--ink);}
+.step-txt{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.08em;flex:0 0 auto;}
+.step-txt b{color:var(--ink);font-weight:600;}
+.track{flex:1;height:26px;position:relative;display:flex;align-items:center;cursor:pointer;}
+.track .rail{position:absolute;left:0;right:0;height:2px;background:var(--line);border-radius:2px;}
+.track .fill{position:absolute;left:0;height:2px;background:var(--focus);border-radius:2px;transition:width .35s ease;}
+.pip{position:relative;z-index:2;width:8px;height:8px;border-radius:50%;background:var(--bg-2);border:1px solid #3b423a;
+  margin:0 auto;transition:background .25s,border-color .25s,transform .25s;}
+.track .pips{position:absolute;left:0;right:0;display:flex;justify-content:space-between;padding:0 1px;}
+.pip.done{background:var(--muted);border-color:var(--muted);}
+.pip.now{background:var(--focus);border-color:var(--focus);transform:scale(1.25);}
+.viz-cap{margin-top:14px;color:var(--muted);font-size:12.5px;line-height:1.55;display:flex;gap:9px;align-items:flex-start;}
+.viz-cap .dot{width:6px;height:6px;border-radius:50%;background:var(--sage);margin-top:6px;flex:0 0 auto;}
+.viz-cap b{color:var(--ink);font-weight:600;}
+
+/* colophon */
+.colophon{margin:clamp(40px,6vw,72px) auto 0;text-align:center;color:var(--faint);
+  font-family:var(--mono);font-size:11px;letter-spacing:.16em;}
+
+@media (max-width:520px){
+  .frame,.col{width:100%;}
+  .hero-h{font-size:37px;}.hero-h .ser{font-size:42px;}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <span class="tag-line mono">Концепт · итерация 03 · в языке m22</span>
+    <h1 class="mh-title">Кино-курс C#, <span class="ser">кадр за кадром</span></h1>
+    <p class="mh-note">Приглушённый туманный грейд, белая смешанная типографика, реальные атмосферные фото. Тихо и сдержанно — без золота, без кича. Три мобильных экрана.</p>
+  </header>
+
+  <main class="stage">
+
+    <!-- ============ SCREEN 1 · HOME ============ -->
+    <div class="col">
+      <div class="frame">
+        <div class="screen s-home">
+          <section class="hero">
+            <img class="hero-img ph" src="../assets-mist/ms10.jpg" alt="Слоистый туман над лесом">
+            <div class="hero-grad"></div>
+            <div class="hero-top">
+              <span class="wordmark" title="placeholder — рабочее имя, бренд не выбран">[ НАЗВАНИЕ ]</span>
+              <span class="hero-top-r">C# · ОСНОВЫ</span>
+            </div>
+            <div class="hero-copy">
+              <div class="meta">СЕССИЯ · 3 ИЗ 12 · ~8 МИН · STREAK 7</div>
+              <h2 class="hero-h">Фундамент C#,<br><span class="ser">кадр за кадром</span></h2>
+              <button class="cta">Начать сессию
+                <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
+              </button>
+            </div>
+          </section>
+
+          <section class="pad">
+            <div class="sec-label">ЯДРО C# · 4 ТЕМЫ</div>
+            <div class="lessons">
+
+              <div class="lesson is-active">
+                <img class="thumb ph" src="../assets-mist/ms08.jpg" alt="">
+                <div class="l-body">
+                  <div class="l-top">
+                    <h3 class="l-title">Типы и <span class="ser">память</span></h3>
+                    <span class="l-pct">60%</span>
+                  </div>
+                  <div class="l-sub"><span class="meter"><i style="width:60%"></i></span></div>
+                </div>
+                <span class="l-now">СЕЙЧАС</span>
+              </div>
+
+              <div class="lesson">
+                <img class="thumb ph" src="../assets-mist/ms07.jpg" alt="">
+                <div class="l-body">
+                  <div class="l-top">
+                    <h3 class="l-title"><span class="ser">Асинхронность</span></h3>
+                    <span class="l-pct">20%</span>
+                  </div>
+                  <div class="l-sub"><span class="meter"><i style="width:20%"></i></span></div>
+                </div>
+              </div>
+
+              <div class="lesson">
+                <img class="thumb ph" src="../assets-mist/ms02.jpg" alt="">
+                <div class="l-body">
+                  <div class="l-top">
+                    <h3 class="l-title">Коллекции и <span class="ser">хеши</span></h3>
+                    <span class="l-pct">0%</span>
+                  </div>
+                  <div class="l-sub"><span class="meter"><i style="width:2%"></i></span></div>
+                </div>
+              </div>
+
+              <div class="lesson">
+                <img class="thumb ph" src="../assets-mist/ms05.jpg" alt="">
+                <div class="l-body">
+                  <div class="l-top">
+                    <h3 class="l-title">GC и <span class="ser">куча</span></h3>
+                    <span class="l-pct">40%</span>
+                  </div>
+                  <div class="l-sub"><span class="meter"><i style="width:40%"></i></span></div>
+                </div>
+              </div>
+
+            </div>
+          </section>
+        </div>
+      </div>
+      <figcaption class="cap">01 · <b>ГЛАВНАЯ</b> — документальная обложка</figcaption>
+    </div>
+
+    <!-- ============ SCREEN 2 · LESSON CARD ============ -->
+    <div class="col">
+      <div class="frame">
+        <div class="screen s-card">
+          <section class="strip">
+            <img class="ph" src="../assets-mist/ms11.jpg" alt="">
+            <div class="strip-grad"></div>
+            <div class="strip-label">ПРЕДСКАЖИ ВЫВОД · 03/12</div>
+          </section>
+          <div class="pad">
+            <h2 class="q-head">Упаковка значения в <span class="ser">object</span></h2>
+
+            <pre class="code"><code><span class="ln"><span class="tk">int</span> a = <span class="tn">5</span>;</span>
+<span class="ln box"><span class="tk">object</span> b = a;<span class="tc">   // boxing</span></span>
+<span class="ln">a = <span class="tn">10</span>;</span>
+<span class="ln"><span class="tp">Console</span>.WriteLine(b);</span></code></pre>
+
+            <button class="reveal" data-reveal="ans1">
+              <span>Что напечатает?</span>
+              <svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="answer" id="ans1">
+              <div class="ans-inner">
+                <div class="out-line">
+                  <span class="out-tag">Вывод</span>
+                  <span class="out-val">5</span>
+                </div>
+                <p class="ans-txt"><b>b</b> — это упакованная <b>КОПИЯ</b> значения, снятая в момент присваивания и <span class="ser">независимая</span> от <b>a</b>. Изменение <b>a</b> на 10 бокс не трогает.</p>
+              </div>
+            </div>
+
+            <div class="grades">
+              <button class="grade">Again<small>&lt;1м</small></button>
+              <button class="grade">Hard<small>6м</small></button>
+              <button class="grade is-focus">Good<small>1д</small></button>
+              <button class="grade">Easy<small>4д</small></button>
+            </div>
+
+            <a class="source" href="https://learn.microsoft.com/dotnet/csharp/programming-guide/types/boxing-and-unboxing" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24"><path d="M14 3h7v7"/><path d="M21 3l-9 9"/><path d="M10 5H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5"/></svg>
+              <span><span class="src-name">Microsoft Learn</span> · boxing и unboxing</span>
+            </a>
+          </div>
+        </div>
+      </div>
+      <figcaption class="cap">02 · <b>КАРТОЧКА УРОКА</b> — предскажи вывод</figcaption>
+    </div>
+
+    <!-- ============ SCREEN 3 · VISUALIZATION ============ -->
+    <div class="col">
+      <div class="frame">
+        <div class="screen s-viz">
+          <div class="pad">
+            <h2 class="viz-head">Хеш-таблица: <span class="ser">коллизии</span> и resize</h2>
+            <div class="viz-sub">ЦЕПОЧКИ · 8 БАКЕТОВ · 3 КЛЮЧА</div>
+
+            <div class="viz" id="viz">
+              <svg class="wires" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <line id="w-cat" x1="34" y1="21" x2="56" y2="45"></line>
+                <line id="w-owl" x1="34" y1="45" x2="56" y2="45"></line>
+                <line id="w-dog" x1="34" y1="75" x2="56" y2="81"></line>
+              </svg>
+
+              <!-- keys (left) -->
+              <div class="node key" id="k-cat" style="top:14%">
+                <div class="k-chip"><span>"cat"</span><span>→3</span></div>
+                <span class="k-hash">hash % 8 = 3</span>
+              </div>
+              <div class="node key" id="k-owl" style="top:39%">
+                <div class="k-chip"><span>"owl"</span><span>→3</span></div>
+                <span class="k-hash">hash % 8 = 3</span>
+              </div>
+              <div class="node key" id="k-dog" style="top:69%">
+                <div class="k-chip"><span>"dog"</span><span>→6</span></div>
+                <span class="k-hash">hash % 8 = 6</span>
+              </div>
+
+              <!-- buckets (right) 0..7 -->
+              <div class="bkt" style="top:2%"><span class="idx">0</span><div class="cell"><span class="empty"></span></div></div>
+              <div class="bkt" style="top:14.25%"><span class="idx">1</span><div class="cell"><span class="empty"></span></div></div>
+              <div class="bkt" style="top:26.5%"><span class="idx">2</span><div class="cell"><span class="empty"></span></div></div>
+              <div class="bkt hot" style="top:38.75%"><span class="idx">3</span>
+                <div class="cell">
+                  <span class="chip">"cat"</span>
+                  <svg class="nxt" viewBox="0 0 24 18"><path d="M2 9h18"/><path d="M15 3l6 6-6 6"/></svg>
+                  <span class="chip" id="chain-owl">"owl"</span>
+                </div>
+              </div>
+              <div class="bkt" style="top:51%"><span class="idx">4</span><div class="cell"><span class="empty"></span></div></div>
+              <div class="bkt" style="top:63.25%"><span class="idx">5</span><div class="cell"><span class="empty"></span></div></div>
+              <div class="bkt" style="top:75.5%"><span class="idx">6</span><div class="cell"><span class="chip">"dog"</span></div></div>
+              <div class="bkt" style="top:87.75%"><span class="idx">7</span><div class="cell"><span class="empty"></span></div></div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-row">
+                <button class="pbtn" id="playBtn" aria-label="play">
+                  <svg id="ic-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                  <svg id="ic-pause" viewBox="0 0 24 24" style="display:none"><path d="M7 5h3v14H7zM14 5h3v14h-3z"/></svg>
+                </button>
+                <div class="step-txt">шаг <b id="stepNow">2</b> из 5</div>
+                <div class="track" id="track">
+                  <div class="rail"></div>
+                  <div class="fill" id="fill" style="width:37.5%"></div>
+                  <div class="pips" id="pips"></div>
+                </div>
+              </div>
+              <div class="viz-cap"><span class="dot"></span><span><b>Коллизия:</b> два ключа в бакете 3 → цепочка (next-узел). Растёт load factor — таблица делает resize.</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <figcaption class="cap">03 · <b>ВИЗУАЛИЗАЦИЯ</b> — хеш-таблица</figcaption>
+    </div>
+
+  </main>
+
+  <footer class="colophon">в языке m22 · без золота · название = placeholder</footer>
+</div>
+
+<script>
+/* entrance — calm staggered fade-up */
+window.addEventListener('load',()=>{
+  document.querySelectorAll('.col').forEach((c,i)=>setTimeout(()=>c.classList.add('in'),120+i*130));
+});
+
+/* SCREEN 2 — reveal answer */
+document.querySelectorAll('[data-reveal]').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const t=document.getElementById(btn.dataset.reveal);
+    const open=t.classList.toggle('open');
+    btn.classList.toggle('is-open',open);
+    btn.querySelector('span').textContent=open?'Ответ раскрыт':'Что напечатает?';
+  });
+});
+
+/* SCREEN 3 — hash-table step scrubber */
+(function(){
+  const STEPS=5;
+  let step=2, timer=null;
+  const fill=document.getElementById('fill');
+  const stepNow=document.getElementById('stepNow');
+  const pipsWrap=document.getElementById('pips');
+  const playBtn=document.getElementById('playBtn');
+  const icP=document.getElementById('ic-play'), icPa=document.getElementById('ic-pause');
+  const wires={cat:document.getElementById('w-cat'),owl:document.getElementById('w-owl'),dog:document.getElementById('w-dog')};
+  const keys={cat:document.getElementById('k-cat'),owl:document.getElementById('k-owl'),dog:document.getElementById('k-dog')};
+
+  // build pips
+  for(let i=0;i<STEPS;i++){const p=document.createElement('div');p.className='pip';pipsWrap.appendChild(p);}
+  const pips=[...pipsWrap.children];
+
+  // per-step emphasis (light only; the chain stays visible as the signature visual)
+  const CUR={1:'cat',2:'dog',3:'owl',4:'owl',5:null};
+
+  function render(){
+    stepNow.textContent=step;
+    fill.style.width=((step-0.5)/STEPS*100).toFixed(1)+'%';
+    pips.forEach((p,i)=>{p.classList.toggle('done',i<step-1);p.classList.toggle('now',i===step-1);});
+    Object.values(wires).forEach(w=>w.classList.remove('cur'));
+    Object.values(keys).forEach(k=>k.classList.remove('cur'));
+    const c=CUR[step];
+    if(c){wires[c]&&wires[c].classList.add('cur');keys[c]&&keys[c].classList.add('cur');}
+  }
+  function set(n){step=((n-1+STEPS)%STEPS)+1;render();}
+
+  playBtn.addEventListener('click',()=>{
+    if(timer){clearInterval(timer);timer=null;icP.style.display='';icPa.style.display='none';return;}
+    icP.style.display='none';icPa.style.display='';
+    timer=setInterval(()=>{set(step+1);},1150);
+  });
+  document.getElementById('track').addEventListener('click',e=>{
+    const r=e.currentTarget.getBoundingClientRect();
+    set(Math.ceil((e.clientX-r.left)/r.width*STEPS)||1);
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

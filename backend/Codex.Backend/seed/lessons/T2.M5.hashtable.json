@@ -1,0 +1,80 @@
+{
+  "id": "T2.M5.hashtable",
+  "track": "T2",
+  "module": "M2.5",
+  "title": "Хеш-таблицы: коллизии и resize",
+  "prereqs": ["T2.M4.arrays"],
+  "version": "1.0.0",
+  "volatility": "stable",
+  "sourceSnapshot": { "dotnet": "net-10.0" },
+  "reviewBy": "2026-10-01",
+  "status": "published",
+
+  "depth": {
+    "intuition": [
+      { "id": "i1", "text": "Хеш-таблица кладёт ключ в bucket по hash(key) % size — доступ в среднем O(1), не через перебор.", "source": "clrs-ch11", "status": "fact" }
+    ],
+    "mechanics": [
+      { "id": "m1", "text": "Коллизия (два ключа в один bucket) решается цепочкой (separate chaining) или открытой адресацией.", "source": "clrs-ch11", "status": "fact" },
+      { "id": "m2", "text": "При высоком факторе загрузки таблица делает resize и перехеширует все ключи — амортизированно O(1).", "source": "clrs-ch11", "status": "fact" },
+      { "id": "m3", "text": ".NET Dictionary<TKey,TValue> — реализация хеш-таблицы с separate chaining.", "source": "ms-dictionary", "status": "fact" }
+    ],
+    "spec": [
+      { "id": "s1", "text": "Средняя сложность поиска/вставки — O(1), худшая — O(n) при вырожденном хешировании (все ключи в одну цепочку).", "source": "clrs-ch11", "status": "fact" }
+    ]
+  },
+  "edgeCases": [
+    { "id": "e1", "text": "Плохой хеш (все ключи в один bucket) вырождает таблицу в связный список — поиск O(n).", "source": "clrs-ch11" }
+  ],
+  "misconceptions": [
+    { "wrong": "Хеш-таблица всегда O(1).", "correction": "В среднем O(1); худший случай O(n) при коллизиях или атаке на хеш.", "source": "clrs-ch11" }
+  ],
+  "rationale": { "id": "r1", "text": "Хеш-таблица меняет память на скорость: массив bucket'ов + хеш дают почти константный доступ по ключу.", "source": "clrs-ch11" },
+
+  "sources": [
+    { "id": "clrs-ch11", "kind": "clrs", "url": "https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/", "section": "Chapter 11: Hash Tables", "date": "2022-04-05", "retrieved": "2026-07-08" },
+    { "id": "ms-dictionary", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.dictionary-2", "section": "Remarks", "date": "2025-09-01", "retrieved": "2026-07-08" }
+  ],
+  "identifiers": [
+    { "symbol": "System.Collections.Generic.Dictionary`2", "kind": "type", "minTfm": "net-1.0" }
+  ],
+
+  "viz": {
+    "model": "hashtable",
+    "renderer": "svg",
+    "interaction": "changing",
+    "entities": [
+      { "id": "buckets", "type": "array", "size": 8 },
+      { "id": "keys", "type": "stream", "values": ["cat", "dog", "fox", "owl", "ant"] }
+    ],
+    "trace": [
+      { "op": "insert", "target": "buckets", "args": { "key": "cat", "hash": 3 }, "caption": "hash(cat)%8=3 -> bucket 3", "signal": "b3" },
+      { "op": "insert", "target": "buckets", "args": { "key": "dog", "hash": 6 }, "caption": "hash(dog)%8=6 -> bucket 6", "signal": "b6" },
+      { "op": "insert", "target": "buckets", "args": { "key": "fox", "hash": 3 }, "caption": "КОЛЛИЗИЯ в bucket 3 -> цепочка", "signal": "b3" },
+      { "op": "compare", "args": { "key": "fox", "against": "cat" }, "caption": "идём по цепочке, сравниваем ключи", "signal": "b3.chain" },
+      { "op": "resize", "target": "buckets", "args": { "newSize": 16 }, "caption": "load factor высок -> resize x2 + rehash", "signal": "buckets" }
+    ],
+    "predictAt": [2]
+  },
+
+  "codePreamble": "using System; using System.Collections.Generic;",
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Сколько уникальных ключей в словаре после этих вставок?",
+      "code": "var d = new Dictionary<string,int>(); d[\"cat\"]=1; d[\"dog\"]=2; d[\"cat\"]=3; Console.WriteLine(d.Count);",
+      "expectedOutput": "2",
+      "verify": "execute",
+      "sourceRefs": ["ms-dictionary"],
+      "fsrsSeed": { "desiredRetention": 0.9 }
+    }
+  ],
+
+  "verification": {
+    "gates": { "G-SCHEMA": "pass", "G-CITE": "pass", "G-EXIST-API": "pass", "G-EXEC": "pass", "G-VIZ": "pass" },
+    "citationCoverage": 1.0,
+    "reviewDate": "2026-07-08"
+  }
+}

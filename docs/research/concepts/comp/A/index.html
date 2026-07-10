@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Фундамент C#, кадр за кадром — COVER</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;800&family=Archivo:wght@800&family=Fraunces:ital,opsz,wght@1,9..144,400;1,9..144,500;1,9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg-0:#0D0F0E;
+    --bg-1:#141715;
+    --ink:#F0EFEA;
+    --muted:#9AA39A;
+    --line:#2A2E2A;
+    --sage:#B9C4B2;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{background:var(--bg-0);}
+  body{
+    font-family:"Geist",system-ui,sans-serif;
+    color:var(--ink);
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:34px 0 60px;
+    position:relative;
+    -webkit-font-smoothing:antialiased;
+  }
+  /* page-wide grain + vignette */
+  body::before{
+    content:"";
+    position:fixed;inset:0;z-index:9000;pointer-events:none;
+    background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity:.045;mix-blend-mode:overlay;
+  }
+  body::after{
+    content:"";
+    position:fixed;inset:0;z-index:8999;pointer-events:none;
+    background:radial-gradient(120% 90% at 50% 30%, transparent 55%, rgba(0,0,0,.55) 100%);
+  }
+
+  .frame{
+    width:390px;max-width:100vw;
+    background:var(--bg-0);
+    position:relative;
+    overflow:hidden;
+    box-shadow:0 40px 120px -30px rgba(0,0,0,.9);
+  }
+
+  /* ===== COVER (photo ~68% of first screen) ===== */
+  .cover{
+    position:relative;
+    height:600px;              /* ~68% of a ~880px first screen inside frame */
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+  }
+  .cover .photo{
+    position:absolute;inset:0;
+    background:url("../../assets-mist/ms10.jpg") center 38% / cover no-repeat;
+    filter:grayscale(.72) contrast(1.02) brightness(.72) saturate(.55);
+  }
+  .cover .photo::after{  /* misty monochrome wash + heavy bottom gradient */
+    content:"";position:absolute;inset:0;
+    background:
+      linear-gradient(to bottom, rgba(13,15,14,.30) 0%, rgba(13,15,14,0) 22%, rgba(13,15,14,0) 42%, rgba(13,15,14,.72) 74%, var(--bg-0) 100%),
+      linear-gradient(200deg, rgba(13,15,14,.15), rgba(13,15,14,.55));
+  }
+
+  /* tiny top row */
+  .topbar{
+    position:relative;z-index:3;
+    display:flex;align-items:flex-start;justify-content:space-between;
+    padding:16px 18px 0;
+  }
+  .chip{
+    font-family:"JetBrains Mono",monospace;
+    font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--muted);
+    border:1px dashed var(--line);
+    border-radius:2px;
+    padding:5px 9px;
+    background:rgba(13,15,14,.25);
+    backdrop-filter:blur(2px);
+    cursor:default;
+  }
+  .issue{
+    text-align:right;
+    font-family:"JetBrains Mono",monospace;
+    font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;
+    color:var(--muted);
+    line-height:1.55;
+    padding-top:3px;
+  }
+  .issue b{color:var(--ink);font-weight:500;}
+
+  /* giant headline anchored to bottom */
+  .cover-title{
+    position:relative;z-index:3;
+    margin-top:auto;
+    padding:0 14px 20px;
+  }
+  .eyebrow{
+    font-family:"JetBrains Mono",monospace;
+    font-size:9.5px;letter-spacing:.3em;text-transform:uppercase;
+    color:var(--sage);
+    margin:0 0 10px 4px;
+  }
+  .t-fund{
+    font-family:"Archivo","Geist",sans-serif;font-weight:800;
+    font-size:40px;line-height:.86;letter-spacing:-.02em;
+    text-transform:uppercase;color:var(--ink);
+    margin-left:2px;
+  }
+  .t-hash{
+    font-family:"Archivo","Geist",sans-serif;font-weight:800;
+    font-size:132px;line-height:.72;letter-spacing:-.05em;
+    color:var(--ink);
+    margin:2px 0 0 -6px;
+    display:block;
+    text-shadow:0 12px 40px rgba(0,0,0,.5);
+  }
+  .t-hash .comma{color:var(--sage);}
+  .t-frames{
+    font-family:"Fraunces",serif;font-style:italic;font-weight:500;
+    font-size:52px;line-height:.9;letter-spacing:-.01em;
+    color:var(--ink);
+    display:block;
+    margin:-14px 0 0 6px;   /* overlap up onto C# */
+    position:relative;
+  }
+
+  /* single point accent: outline pill */
+  .cta{
+    position:relative;z-index:3;
+    margin:16px 18px 22px;
+  }
+  .cta a{
+    display:inline-flex;align-items:center;gap:10px;
+    text-decoration:none;
+    border:1px solid rgba(240,239,234,.55);
+    border-radius:40px;
+    padding:11px 20px 11px 16px;
+    color:var(--ink);
+    font-size:12.5px;letter-spacing:.06em;
+    background:rgba(13,15,14,.2);
+    backdrop-filter:blur(3px);
+    transition:.25s;
+  }
+  .cta a:hover{background:var(--ink);color:var(--bg-0);border-color:var(--ink);}
+  .cta .play{
+    font-size:10px;
+    width:22px;height:22px;border-radius:50%;
+    border:1px solid currentColor;
+    display:inline-flex;align-items:center;justify-content:center;
+  }
+  .cta .meta{font-family:"JetBrains Mono",monospace;font-size:10px;color:var(--muted);letter-spacing:.14em;}
+  .cta a:hover .meta{color:var(--bg-0);}
+
+  /* ===== INDEX (below fold) ===== */
+  .index{
+    padding:38px 18px 30px;
+    background:var(--bg-0);
+  }
+  .index-head{
+    display:flex;align-items:baseline;justify-content:space-between;
+    margin-bottom:30px;
+  }
+  .index-head .lbl{
+    font-family:"JetBrains Mono",monospace;
+    font-size:10px;letter-spacing:.28em;text-transform:uppercase;
+    color:var(--muted);
+  }
+  .index-head .cnt{
+    font-family:"Fraunces",serif;font-style:italic;font-size:15px;color:var(--sage);
+  }
+
+  .row{
+    display:block;text-decoration:none;color:inherit;
+    padding:22px 0 20px;
+    border-top:1px solid var(--line);
+    position:relative;
+  }
+  .row:last-child{border-bottom:1px solid var(--line);}
+  .row .r-top{
+    display:flex;align-items:baseline;gap:12px;
+  }
+  .row .num{
+    font-family:"JetBrains Mono",monospace;
+    font-size:11px;color:var(--muted);letter-spacing:.1em;
+    padding-top:3px;
+    min-width:22px;
+  }
+  .row .name{
+    font-family:"Geist",sans-serif;font-weight:600;
+    font-size:26px;line-height:1.02;letter-spacing:-.01em;
+    color:var(--muted);
+    flex:1;
+  }
+  .row .name em{
+    font-family:"Fraunces",serif;font-style:italic;font-weight:500;
+    letter-spacing:0;
+  }
+  .row .pct{
+    font-family:"JetBrains Mono",monospace;
+    font-size:12px;color:var(--muted);letter-spacing:.05em;
+    padding-top:5px;
+    white-space:nowrap;
+  }
+  /* hairline meter under each row name */
+  .row .meter{
+    margin:16px 0 0 34px;
+    height:1px;background:var(--line);
+    position:relative;
+  }
+  .row .meter > span{
+    position:absolute;left:0;top:0;height:1px;background:var(--muted);
+  }
+
+  /* ACTIVE row — the single bright focus */
+  .row.active{
+    border-top:1px solid rgba(240,239,234,.5);
+    background:linear-gradient(to right, rgba(240,239,234,.035), transparent 70%);
+    box-shadow:inset 2px 0 0 var(--ink);
+    padding-left:14px;margin-left:-14px;padding-right:14px;margin-right:-14px;
+  }
+  .row.active .name{color:var(--ink);font-weight:800;font-family:"Archivo","Geist",sans-serif;letter-spacing:-.015em;}
+  .row.active .name em{font-family:"Fraunces",serif;font-weight:600;color:var(--sage);}
+  .row.active .num{color:var(--ink);}
+  .row.active .pct{color:var(--ink);}
+  .row.active .meter{height:2px;background:var(--line);}
+  .row.active .meter > span{height:2px;background:var(--ink);box-shadow:0 0 12px rgba(240,239,234,.5);}
+  .row.active .tag{
+    display:inline-block;margin:12px 0 0 34px;
+    font-family:"JetBrains Mono",monospace;font-size:9px;letter-spacing:.24em;
+    text-transform:uppercase;color:var(--sage);
+  }
+
+  .footer{
+    margin-top:34px;
+    text-align:center;
+    font-family:"JetBrains Mono",monospace;
+    font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;
+    color:var(--line);
+  }
+  .footer b{color:var(--muted);font-weight:400;}
+</style>
+</head>
+<body>
+
+  <div class="frame">
+
+    <!-- ===== COVER ===== -->
+    <section class="cover">
+      <div class="photo"></div>
+
+      <div class="topbar">
+        <span class="chip" title="бренд не выбран">[ НАЗВАНИЕ ]</span>
+        <div class="issue">ВЫПУСК <b>03</b><br />СЕЗОН · 12</div>
+      </div>
+
+      <div class="cover-title">
+        <p class="eyebrow">СЕССИЯ · 3 ИЗ 12 · ~8 МИН · STREAK 7</p>
+        <h1>
+          <span class="t-fund">Фундамент</span>
+          <span class="t-hash">C#<span class="comma">,</span></span>
+          <span class="t-frames">кадр за кадром</span>
+        </h1>
+      </div>
+    </section>
+
+    <div class="cta">
+      <a href="#">
+        <span class="play">▶</span>
+        Начать сессию
+        <span class="meta">· ~8 МИН</span>
+      </a>
+    </div>
+
+    <!-- ===== INDEX ===== -->
+    <section class="index">
+      <div class="index-head">
+        <span class="lbl">ЯДРО C# · ОГЛАВЛЕНИЕ</span>
+        <span class="cnt">04</span>
+      </div>
+
+      <a class="row active" href="#">
+        <div class="r-top">
+          <span class="num">01</span>
+          <span class="name">Типы и <em>память</em></span>
+          <span class="pct">60%</span>
+        </div>
+        <div class="meter"><span style="width:60%"></span></div>
+        <span class="tag">◦ Активна сейчас</span>
+      </a>
+
+      <a class="row" href="#">
+        <div class="r-top">
+          <span class="num">02</span>
+          <span class="name"><em>Асинхронность</em></span>
+          <span class="pct">20%</span>
+        </div>
+        <div class="meter"><span style="width:20%"></span></div>
+      </a>
+
+      <a class="row" href="#">
+        <div class="r-top">
+          <span class="num">03</span>
+          <span class="name">Коллекции и <em>хеши</em></span>
+          <span class="pct">0%</span>
+        </div>
+        <div class="meter"><span style="width:2%"></span></div>
+      </a>
+
+      <a class="row" href="#">
+        <div class="r-top">
+          <span class="num">04</span>
+          <span class="name">GC и <em>куча</em></span>
+          <span class="pct">40%</span>
+        </div>
+        <div class="meter"><span style="width:40%"></span></div>
+      </a>
+
+      <div class="footer">ЭТЮД <b>A · COVER</b> — журнальная обложка</div>
+    </section>
+
+  </div>
+
+</body>
+</html>

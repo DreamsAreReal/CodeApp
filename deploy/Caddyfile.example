@@ -1,0 +1,22 @@
+# One Caddy in front of MANY projects on the same box. Caddy auto-provisions and renews
+# HTTPS (Let's Encrypt) as long as the domain's A record points at this server and ports
+# 80 + 443 are open. Put this at /etc/caddy/Caddyfile, then: sudo systemctl reload caddy
+#
+# Telegram Mini Apps REQUIRE a real HTTPS cert on a real domain (an IP or self-signed
+# will not work). Free option: a DuckDNS subdomain (yourname.duckdns.org) with its A
+# record set to this VM's public IP — Caddy gets a cert for it over the HTTP challenge,
+# no plugin needed. Or use any domain you own.
+
+codex.example.com {
+	reverse_proxy 127.0.0.1:8080
+}
+
+# --- add another project on the same box: new subdomain -> its own local port ---
+# blog.example.com {
+# 	reverse_proxy 127.0.0.1:8090
+# }
+#
+# some-static-site.example.com {
+# 	root * /srv/some-site
+# 	file_server
+# }

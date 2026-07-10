@@ -1,0 +1,17 @@
+# Production compose that PULLS the prebuilt image from GHCR (no local build).
+# The CI deploy job writes an equivalent file on the VPS automatically; this copy is for
+# manual deploys. Provide CODEX_IMAGE and TELEGRAM_BOT_TOKEN via env or a sibling .env:
+#   CODEX_IMAGE=ghcr.io/<owner>/<repo>:latest TELEGRAM_BOT_TOKEN=... docker compose -f docker-compose.prod.yml up -d
+services:
+  codex:
+    image: ${CODEX_IMAGE:?set CODEX_IMAGE=ghcr.io/<owner>/<repo>:latest}
+    restart: unless-stopped
+    environment:
+      Telegram__BotToken: ${TELEGRAM_BOT_TOKEN:?set TELEGRAM_BOT_TOKEN}
+    volumes:
+      - codexdata:/data          # durable SQLite (survives restarts/redeploys)
+    ports:
+      - "127.0.0.1:8080:8080"    # public edge is your reverse proxy (Caddy), not this port
+
+volumes:
+  codexdata:

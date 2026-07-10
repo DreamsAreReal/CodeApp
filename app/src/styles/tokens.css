@@ -1,0 +1,124 @@
+/* ==========================================================================
+   Design tokens — "mid" (LOCKED): warm cream + confident coral + Rubik.
+   Single source of colour/shape/type. No hardcoded colours outside :root.
+   Mirrors docs/research/concepts/mid + concepts/lesson-boxing (design-locked).
+   ========================================================================== */
+:root {
+  --bg: #f6f1e9; /* warm cream app surface (not white) */
+  --surface: #ffffff; /* raised cards */
+  --ink: #23201b; /* warm near-black text */
+  --muted: #8a8377; /* secondary text */
+  --line: #e7dfd2; /* hairlines / dividers */
+  --coral: #f0533a; /* ONE confident accent — own warm coral */
+  --coral-l: #ff6a4e; /* top highlight for soft-3D depth */
+  --coral-d: #c43d28; /* pressed / bottom shadow */
+  --coral-tint: #fbe7e1; /* soft coral wash for focus surface */
+  --coral-wash: #fff8f5; /* faint coral surface for active row/hero */
+  --sage: #7c8b6f; /* calm secondary */
+  --sage-tint: #eaeee4;
+  --amber: #e8a13a; /* tertiary — stars / rewards, sparingly */
+  --amber-tint: #f7e9cf;
+  --page-0: #f1e9db;
+  --page-1: #e9dfcd;
+  --page-2: #e3d8c3;
+  --locked-bg: #fcfaf6;
+  --muted-tile: #f1ece2;
+  --code-bg: #fbf7f0;
+
+  --shadow-1: 0 2px 8px rgba(35, 32, 27, 0.06), 0 8px 22px -10px rgba(35, 32, 27, 0.1);
+  --shadow-2: 0 3px 12px rgba(35, 32, 27, 0.08), 0 18px 40px -16px rgba(35, 32, 27, 0.14);
+
+  --r-s: 14px;
+  --r-m: 18px;
+  --r-l: 22px;
+
+  --display: "Rubik", system-ui, sans-serif;
+  --body: "Onest", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, monospace;
+
+  /* Content column width — the app frame on wide screens. */
+  --col: 440px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+html {
+  -webkit-text-size-adjust: 100%;
+}
+html,
+body {
+  min-height: 100%;
+}
+body {
+  font-family: var(--body);
+  color: var(--ink);
+  background: radial-gradient(120% 80% at 50% -10%, var(--page-0) 0%, var(--page-1) 60%, var(--page-2) 100%);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* App root: a centered content column that reads as the phone frame on wide
+   screens and goes full-bleed on mobile. Fills the Telegram WebApp viewport. */
+#app {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+.frame {
+  width: 100%;
+  max-width: var(--col);
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow-x: clip;
+}
+/* On wide screens, float the frame as a soft card on the warm backdrop. */
+@media (min-width: 560px) {
+  #app {
+    align-items: center;
+    padding: 28px 0 40px;
+  }
+  .frame {
+    min-height: auto;
+    border-radius: 34px;
+    overflow: hidden;
+    box-shadow: 0 40px 90px -34px rgba(35, 32, 27, 0.42), 0 0 0 1px rgba(35, 32, 27, 0.04);
+  }
+}
+
+code,
+.mono {
+  font-family: var(--mono);
+}
+code {
+  font-size: 0.92em;
+  background: var(--muted-tile);
+  border-radius: 6px;
+  padding: 1px 5px;
+  color: var(--ink);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}

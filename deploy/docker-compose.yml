@@ -1,0 +1,22 @@
+# One box, many projects: this compose runs the app bound to localhost:8080, and a
+# separate Caddy (see Caddyfile.example) reverse-proxies it with auto-HTTPS.
+# Start:  cd deploy && cp .env.example .env && <edit .env> && docker compose up -d --build
+services:
+  codex:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    image: codex-mini-app
+    restart: unless-stopped
+    environment:
+      # Real bot token comes from deploy/.env (git-ignored). Fail fast if it is missing.
+      Telegram__BotToken: ${TELEGRAM_BOT_TOKEN:?set TELEGRAM_BOT_TOKEN in deploy/.env}
+    volumes:
+      # durable SQLite: the FSRS schedule survives restarts, redeploys and reboots
+      - codexdata:/data
+    ports:
+      # exposed ONLY to the host (127.0.0.1) — the public edge is Caddy, not this port
+      - "127.0.0.1:8080:8080"
+
+volumes:
+  codexdata:

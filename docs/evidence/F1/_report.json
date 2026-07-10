@@ -1,0 +1,666 @@
+{
+  "file": "/Users/admin/Desktop/test5/docs/research/concepts/lesson-boxing/index.html",
+  "errors": [],
+  "scrollInfo": {
+    "scrollHeight": 2654,
+    "innerHeight": 900,
+    "scrolledTo": 1754
+  },
+  "scrollable": true,
+  "api": {
+    "index": 0,
+    "index2": 0,
+    "progress": 21,
+    "xp": 0,
+    "reduced": true,
+    "viz": {
+      "cfg": {
+        "stage": "ref: <Node>",
+        "viewBox": "0 0 340 236",
+        "zones": [
+          {
+            "x": 14,
+            "y": 34,
+            "w": 138,
+            "h": 188,
+            "cls": "vz-zone",
+            "label": "СТЕК",
+            "labelCls": "vz-zlabel",
+            "lx": 83,
+            "ly": 24
+          },
+          {
+            "x": 188,
+            "y": 34,
+            "w": 138,
+            "h": 188,
+            "cls": "vz-zone heap",
+            "label": "КУЧА · HEAP",
+            "labelCls": "vz-zlabel heap",
+            "lx": 257,
+            "ly": 24
+          }
+        ],
+        "scenes": [
+          {
+            "codeLine": 0,
+            "out": "",
+            "caption": "Значение <b>5</b> живёт прямо в слоте <b>a</b> на <b>стеке</b>.",
+            "nodes": [
+              {
+                "id": "s_a",
+                "kind": "slot",
+                "x": 83,
+                "y": 74,
+                "w": 110,
+                "h": 40,
+                "name": "a",
+                "value": "5"
+              },
+              {
+                "id": "cp",
+                "kind": "chip",
+                "x": 83,
+                "y": 74,
+                "w": 30,
+                "h": 26,
+                "value": "5",
+                "ghost": true
+              }
+            ],
+            "edges": [],
+            "_marker": "url(#vz-arrow)"
+          },
+          {
+            "codeLine": 1,
+            "out": "",
+            "caption": "<b>boxing</b>: значение 5 <span class=\"hl\">УПАКОВАНО</span> в объект на куче; <b>b</b> хранит ссылку, а не копию значения на стеке.",
+            "nodes": [
+              {
+                "id": "s_a",
+                "kind": "slot",
+                "x": 83,
+                "y": 74,
+                "w": 110,
+                "h": 40,
+                "name": "a",
+                "value": "5"
+              },
+              {
+                "id": "s_b",
+                "kind": "ref",
+                "x": 83,
+                "y": 128,
+                "w": 110,
+                "h": 40,
+                "name": "b",
+                "accent": true
+              },
+              {
+                "id": "h_obj",
+                "kind": "obj",
+                "x": 257,
+                "y": 128,
+                "w": 112,
+                "h": 52,
+                "typeTag": "[int]",
+                "value": "5",
+                "accent": true
+              },
+              {
+                "id": "cp",
+                "kind": "chip",
+                "x": 257,
+                "y": 128,
+                "w": 30,
+                "h": 26,
+                "value": "5"
+              }
+            ],
+            "edges": [
+              {
+                "id": "ref",
+                "from": "s_b",
+                "to": "h_obj",
+                "accent": true
+              }
+            ],
+            "_marker": "url(#vz-arrow)"
+          },
+          {
+            "codeLine": 2,
+            "out": "",
+            "caption": "<b>a</b> изменилась на <b>10</b>; упакованная копия на куче <span class=\"hl\">независима</span>.",
+            "nodes": [
+              {
+                "id": "s_a",
+                "kind": "slot",
+                "x": 83,
+                "y": 74,
+                "w": 110,
+                "h": 40,
+                "name": "a",
+                "value": "10",
+                "accent": true
+              },
+              {
+                "id": "s_b",
+                "kind": "ref",
+                "x": 83,
+                "y": 128,
+                "w": 110,
+                "h": 40,
+                "name": "b"
+              },
+              {
+                "id": "h_obj",
+                "kind": "obj",
+                "x": 257,
+                "y": 128,
+                "w": 112,
+                "h": 52,
+                "typeTag": "[int]",
+                "value": "5"
+              }
+            ],
+            "edges": [
+              {
+                "id": "ref",
+                "from": "s_b",
+                "to": "h_obj"
+              }
+            ],
+            "_marker": "url(#vz-arrow)"
+          },
+          {
+            "codeLine": 3,
+            "out": "5",
+            "caption": "<b>WriteLine(b)</b> читает объект на куче → печатает <b>5</b>, а не 10.",
+            "nodes": [
+              {
+                "id": "s_a",
+                "kind": "slot",
+                "x": 83,
+                "y": 74,
+                "w": 110,
+                "h": 40,
+                "name": "a",
+                "value": "10"
+              },
+              {
+                "id": "s_b",
+                "kind": "ref",
+                "x": 83,
+                "y": 128,
+                "w": 110,
+                "h": 40,
+                "name": "b"
+              },
+              {
+                "id": "h_obj",
+                "kind": "obj",
+                "x": 257,
+                "y": 128,
+                "w": 112,
+                "h": 52,
+                "typeTag": "[int]",
+                "value": "5",
+                "accent": true
+              }
+            ],
+            "edges": [
+              {
+                "id": "ref",
+                "from": "s_b",
+                "to": "h_obj",
+                "accent": true
+              }
+            ],
+            "_marker": "url(#vz-arrow)"
+          }
+        ],
+        "gateIndex": 3,
+        "predictQ": "Что напечатает <code>Console.WriteLine(b)</code>?",
+        "vizKey": "",
+        "els": {
+          "caption": "ref: <Node>",
+          "out": "ref: <Node>",
+          "step": "ref: <Node>",
+          "scrub": "ref: <Node>",
+          "prev": "ref: <Node>",
+          "next": "ref: <Node>",
+          "play": "ref: <Node>",
+          "playIcon": "ref: <Node>",
+          "predict": "ref: <Node>",
+          "predictTitle": "ref: <Node>",
+          "predictQ": "ref: <Node>",
+          "predictShow": "ref: <Node>",
+          "predictShowTxt": "ref: <Node>",
+          "codePanel": "ref: <Node>"
+        }
+      },
+      "stage": "ref: <Node>",
+      "K": "",
+      "markerId": "vz-arrow",
+      "gateIndex": 3,
+      "player": {
+        "steps": [
+          {
+            "codeLine": 0,
+            "out": "",
+            "caption": "Значение <b>5</b> живёт прямо в слоте <b>a</b> на <b>стеке</b>.",
+            "nodes": [
+              {
+                "id": "s_a",
+                "kind": "slot",
+                "x": 83,
+                "y": 74,
+                "w": 110,
+                "h": 40,
+                "name": "a",
+                "value": "5"
+              },
+              {
+                "id": "cp",
+                "kind": "chip",
+                "x": 83,
+                "y": 74,
+                "w": 30,
+                "h": 26,
+                "value": "5",
+                "ghost": true
+              }
+            ],
+            "edges": [],
+            "_marker": "url(#vz-arrow)"
+          },
+          {
+            "codeLine": 1,
+            "out": "",
+            "caption": "<b>boxing</b>: значение 5 <span class=\"hl\">УПАКОВАНО</span> в объект на куче; <b>b</b> хранит ссылку, а не копию значения на стеке.",
+            "nodes": [
+              {
+                "id": "s_a",
+                "kind": "slot",
+                "x": 83,
+                "y": 74,
+                "w": 110,
+                "h": 40,
+                "name": "a",
+                "value": "5"
+              },
+              {
+                "id": "s_b",
+                "kind": "ref",
+                "x": 83,
+                "y": 128,
+                "w": 110,
+                "h": 40,
+                "name": "b",
+                "accent": true
+              },
+              {
+                "id": "h_obj",
+                "kind": "obj",
+                "x": 257,
+                "y": 128,
+                "w": 112,
+                "h": 52,
+                "typeTag": "[int]",
+                "value": "5",
+                "accent": true
+              },
+              {
+                "id": "cp",
+                "kind": "chip",
+                "x": 257,
+                "y": 128,
+                "w": 30,
+                "h": 26,
+                "value": "5"
+              }
+            ],
+            "edges": [
+              {
+                "id": "ref",
+                "from": "s_b",
+                "to": "h_obj",
+                "accent": true
+              }
+            ],
+            "_marker": "url(#vz-arrow)"
+          },
+          {
+            "codeLine": 2,
+            "out": "",
+            "caption": "<b>a</b> изменилась на <b>10</b>; упакованная копия на куче <span class=\"hl\">независима</span>.",
+            "nodes": [
+              {
+                "id": "s_a",
+                "kind": "slot",
+                "x": 83,
+                "y": 74,
+                "w": 110,
+                "h": 40,
+                "name": "a",
+                "value": "10",
+                "accent": true
+              },
+              {
+                "id": "s_b",
+                "kind": "ref",
+                "x": 83,
+                "y": 128,
+                "w": 110,
+                "h": 40,
+                "name": "b"
+              },
+              {
+                "id": "h_obj",
+                "kind": "obj",
+                "x": 257,
+                "y": 128,
+                "w": 112,
+                "h": 52,
+                "typeTag": "[int]",
+                "value": "5"
+              }
+            ],
+            "edges": [
+              {
+                "id": "ref",
+                "from": "s_b",
+                "to": "h_obj"
+              }
+            ],
+            "_marker": "url(#vz-arrow)"
+          },
+          {
+            "codeLine": 3,
+            "out": "5",
+            "caption": "<b>WriteLine(b)</b> читает объект на куче → печатает <b>5</b>, а не 10.",
+            "nodes": [
+              {
+                "id": "s_a",
+                "kind": "slot",
+                "x": 83,
+                "y": 74,
+                "w": 110,
+                "h": 40,
+                "name": "a",
+                "value": "10"
+              },
+              {
+                "id": "s_b",
+                "kind": "ref",
+                "x": 83,
+                "y": 128,
+                "w": 110,
+                "h": 40,
+                "name": "b"
+              },
+              {
+                "id": "h_obj",
+                "kind": "obj",
+                "x": 257,
+                "y": 128,
+                "w": 112,
+                "h": 52,
+                "typeTag": "[int]",
+                "value": "5",
+                "accent": true
+              }
+            ],
+            "edges": [
+              {
+                "id": "ref",
+                "from": "s_b",
+                "to": "h_obj",
+                "accent": true
+              }
+            ],
+            "_marker": "url(#vz-arrow)"
+          }
+        ],
+        "opts": {
+          "reducedMotion": true
+        },
+        "i": 0,
+        "prevTree": {
+          "tag": "g",
+          "key": "root",
+          "attrs": {},
+          "children": [
+            {
+              "tag": "g",
+              "key": "n:s_a",
+              "attrs": {
+                "transform": "translate(83,74)",
+                "class": "node slot"
+              },
+              "children": [
+                {
+                  "tag": "rect",
+                  "key": "bx",
+                  "attrs": {
+                    "x": -55,
+                    "y": -20,
+                    "width": 110,
+                    "height": 40,
+                    "rx": 9,
+                    "class": "vz-slot"
+                  }
+                },
+                {
+                  "tag": "line",
+                  "key": "dv",
+                  "attrs": {
+                    "x1": -21,
+                    "y1": -15,
+                    "x2": -21,
+                    "y2": 15,
+                    "class": "vz-div"
+                  }
+                },
+                {
+                  "tag": "text",
+                  "key": "nm",
+                  "attrs": {
+                    "x": -38,
+                    "y": 6,
+                    "text-anchor": "middle",
+                    "class": "vz-name"
+                  },
+                  "text": "a"
+                },
+                {
+                  "tag": "text",
+                  "key": "vl",
+                  "attrs": {
+                    "x": 17,
+                    "y": 6,
+                    "text-anchor": "middle",
+                    "class": "vz-val"
+                  },
+                  "text": "5"
+                }
+              ]
+            },
+            {
+              "tag": "g",
+              "key": "n:cp",
+              "attrs": {
+                "transform": "translate(83,74)",
+                "class": "node chip ghost"
+              },
+              "children": [
+                {
+                  "tag": "rect",
+                  "key": "bx",
+                  "attrs": {
+                    "x": -15,
+                    "y": -13,
+                    "width": 30,
+                    "height": 26,
+                    "rx": 7,
+                    "class": "vz-chip"
+                  }
+                },
+                {
+                  "tag": "text",
+                  "key": "cv",
+                  "attrs": {
+                    "x": 0,
+                    "y": 5,
+                    "text-anchor": "middle",
+                    "class": "vz-chipval"
+                  },
+                  "text": "5"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "total": 4,
+      "elMap": {
+        "n:s_a": "ref: <Node>",
+        "n:cp": "ref: <Node>"
+      },
+      "baseMap": {
+        "n:s_a": {
+          "x": 83,
+          "y": 74
+        },
+        "n:cp": {
+          "x": 83,
+          "y": 74
+        }
+      },
+      "vmap": {
+        "n:s_a": {
+          "tag": "g",
+          "key": "n:s_a",
+          "attrs": {
+            "transform": "translate(83,74)",
+            "class": "node slot"
+          },
+          "children": [
+            {
+              "tag": "rect",
+              "key": "bx",
+              "attrs": {
+                "x": -55,
+                "y": -20,
+                "width": 110,
+                "height": 40,
+                "rx": 9,
+                "class": "vz-slot"
+              }
+            },
+            {
+              "tag": "line",
+              "key": "dv",
+              "attrs": {
+                "x1": -21,
+                "y1": -15,
+                "x2": -21,
+                "y2": 15,
+                "class": "vz-div"
+              }
+            },
+            {
+              "tag": "text",
+              "key": "nm",
+              "attrs": {
+                "x": -38,
+                "y": 6,
+                "text-anchor": "middle",
+                "class": "vz-name"
+              },
+              "text": "a"
+            },
+            {
+              "tag": "text",
+              "key": "vl",
+              "attrs": {
+                "x": 17,
+                "y": 6,
+                "text-anchor": "middle",
+                "class": "vz-val"
+              },
+              "text": "5"
+            }
+          ]
+        },
+        "n:cp": {
+          "tag": "g",
+          "key": "n:cp",
+          "attrs": {
+            "transform": "translate(83,74)",
+            "class": "node chip ghost"
+          },
+          "children": [
+            {
+              "tag": "rect",
+              "key": "bx",
+              "attrs": {
+                "x": -15,
+                "y": -13,
+                "width": 30,
+                "height": 26,
+                "rx": 7,
+                "class": "vz-chip"
+              }
+            },
+            {
+              "tag": "text",
+              "key": "cv",
+              "attrs": {
+                "x": 0,
+                "y": 5,
+                "text-anchor": "middle",
+                "class": "vz-chipval"
+              },
+              "text": "5"
+            }
+          ]
+        }
+      },
+      "playing": false,
+      "timer": null,
+      "predictResolved": false,
+      "maxIndex": 0,
+      "edgeLayer": "ref: <Node>",
+      "nodeLayer": "ref: <Node>",
+      "svg": "ref: <Node>"
+    },
+    "mcqCorrectIndex": 0,
+    "hasViz": true
+  },
+  "vizDrive": {
+    "ok": true,
+    "gateShown": true,
+    "idxAfter": 3,
+    "resolved": true,
+    "consoleOut": "5"
+  },
+  "mcq": {
+    "ok": true,
+    "correctClicked": 0,
+    "bannerClass": "q-banner show ok",
+    "mcqCorrect": true,
+    "xp": 10
+  },
+  "deep": {
+    "present": true,
+    "expanded": true,
+    "viz2": {
+      "present": true,
+      "index": 1,
+      "svgNodeGroups": 4
+    },
+    "plaques": 6,
+    "claims": 5
+  }
+}
