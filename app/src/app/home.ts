@@ -52,10 +52,10 @@ export async function renderHome(root: HTMLElement): Promise<void> {
   let prog: ProgressResponse;
   try {
     [due, stats, catalog, prog] = await Promise.all([
-      api.due(session.userId),
-      api.stats(session.userId),
+      api.due(),
+      api.stats(),
       api.lessons(),
-      api.progress(session.userId),
+      api.progress(),
     ]);
   } catch (e) {
     const msg = e instanceof ApiError ? e.message : String(e);

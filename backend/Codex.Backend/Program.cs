@@ -1,6 +1,9 @@
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
+using System.Threading.RateLimiting;
 using Codex.Backend;
+using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,9 +13,11 @@ string botToken = cfg["Telegram:BotToken"] ?? "";
 bool devMode = cfg.GetValue("Auth:DevMode", true);
 int maxAgeSeconds = cfg.GetValue("Auth:MaxAgeSeconds", 86400);
 int runnerTimeout = cfg.GetValue("CSharpRunner:TimeoutSeconds", 10);
+string? sessionSecret = cfg["Auth:SessionSecret"];
 string dbPath = Path.Combine(builder.Environment.ContentRootPath, cfg["Database:Path"] ?? "codex.db");
 string lessonsDir = Path.Combine(builder.Environment.ContentRootPath, "seed", "lessons");
 string[] corsOrigins = cfg.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
+bool isDev = builder.Environment.IsDevelopment();
 
 // ---- services ----
 var db = new Database(dbPath);
@@ -24,6 +29,16 @@ builder.Services.AddSingleton(db);
 builder.Services.AddSingleton(lessons);
 builder.Services.AddSingleton(fsrs);
 builder.Services.AddSingleton(runner);
+// TimeProvider is injectable so tests can drive the review/FSRS clock deterministically
+// (FakeTimeProvider). Production uses the real system clock.
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddSingleton(sp =>
+    new SessionTokenService(sessionSecret, botToken, sp.GetRequiredService<TimeProvider>()));
+builder.Services.AddSingleton(sp =>
+    new ReviewService(db, fsrs, sp.GetRequiredService<TimeProvider>()));
+
+// RFC7807 problem+json for unhandled exceptions (instead of a bare 500).
+builder.Services.AddProblemDetails();
 
 // Keep Cyrillic (product language: ru) readable in JSON responses instead of \uXXXX escapes.
 builder.Services.ConfigureHttpJsonOptions(o =>
@@ -36,7 +51,62 @@ builder.Services.AddCors(o => o.AddDefaultPolicy(p =>
     p.AllowAnyHeader().AllowAnyMethod();
 }));
 
+// Rate limiting: partition by the authenticated tgId (falls back to remote IP before auth),
+// fixed 60/min window. Applied only to the mutating endpoints below via RequireRateLimiting.
+const string MutatingLimiter = "mutating";
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy(MutatingLimiter, ctx =>
+    {
+        string key = ctx.Items.TryGetValue(AuthMiddleware.TgIdKey, out var v) && v is long id
+            ? $"tg:{id}"
+            : $"ip:{ctx.Connection.RemoteIpAddress}";
+        return RateLimitPartition.GetFixedWindowLimiter(key, _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 60,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0,
+        });
+    });
+});
+
+// Behind cloudflared/Caddy in production: trust forwarded proto/host so HTTPS/HSTS work.
+if (!isDev)
+{
+    builder.Services.Configure<ForwardedHeadersOptions>(o =>
+    {
+        o.ForwardedHeaders = ForwardedHeaders.All;
+        // The reverse proxy is trusted; the known-networks/proxies allowlist would otherwise
+        // reject forwarded headers from cloudflared's dynamic IPs.
+        o.KnownIPNetworks.Clear();
+        o.KnownProxies.Clear();
+    });
+}
+
 var app = builder.Build();
+
+// ---- exception handling: unhandled -> RFC7807 problem+json ----
+app.UseExceptionHandler();
+app.UseStatusCodePages();
+
+// ---- production hardening (never in Development, so local http :5080 keeps working) ----
+if (!isDev)
+{
+    app.UseForwardedHeaders();
+    app.UseHsts();
+    app.Use(async (ctx, next) =>
+    {
+        // Telegram embeds the Mini App in an iframe, so X-Frame-Options: DENY would break it.
+        // A frame-ancestors CSP allows exactly Telegram's web/app hosts to frame us.
+        ctx.Response.Headers["Content-Security-Policy"] =
+            "frame-ancestors https://web.telegram.org https://*.telegram.org tg://resolve";
+        ctx.Response.Headers["X-Content-Type-Options"] = "nosniff";
+        ctx.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+        await next();
+    });
+}
+
 app.UseCors();
 
 // ---- serve the built frontend (single origin: the same host serves the app AND
@@ -54,15 +124,46 @@ if (serveFrontend)
     app.UseStaticFiles(new StaticFileOptions { FileProvider = frontend });
 }
 
-// ---- startup: create schema + seed catalog ----
+// ---- auth gate: validates the Bearer session token on every /api/* except the public routes,
+//      and stashes the authenticated tgId for the handlers. MUST run before the rate limiter so
+//      the limiter can partition by tgId. ----
+var tokens = app.Services.GetRequiredService<SessionTokenService>();
+app.UseMiddleware<AuthMiddleware>();
+app.UseRateLimiter();
+
+// ---- startup: run migrations (user_version-gated) + seed catalog ----
 db.Initialize();
 foreach (var item in lessons.Items) db.SeedItem(item);
 
+// ---- graceful shutdown: fold the WAL into the main DB before SIGTERM on redeploy ----
+var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
+lifetime.ApplicationStopping.Register(() =>
+{
+    try { db.Checkpoint(); }
+    catch { /* best-effort on shutdown; never block termination */ }
+});
+
 TimeSpan? maxAge = maxAgeSeconds > 0 ? TimeSpan.FromSeconds(maxAgeSeconds) : null;
 
+// ---- health checks ----
+// /health/live and /health (alias): static 200, no dependencies (used by deploy/tunnel curls).
 app.MapGet("/health", () => Results.Ok(new { status = "ok", fsrs = "fsrs-6", storage = "sqlite" }));
+app.MapGet("/health/live", () => Results.Ok(new { status = "live" }));
+// /health/ready: proves the DB is reachable (SELECT 1) -> 200, else 503.
+app.MapGet("/health/ready", (Database database) =>
+{
+    try
+    {
+        database.Ping();
+        return Results.Ok(new { status = "ready" });
+    }
+    catch
+    {
+        return Results.Json(new { status = "unready" }, statusCode: 503);
+    }
+});
 
-// ---- POST /api/auth : validate initData (HMAC), create/return user ----
+// ---- POST /api/auth : validate initData (HMAC), create user, mint a session token ----
 app.MapPost("/api/auth", (AuthRequest req) =>
 {
     // Dev bypass: only when dev mode is on and an explicit dev user id is supplied.
@@ -70,28 +171,32 @@ app.MapPost("/api/auth", (AuthRequest req) =>
     {
         if (!devMode) return Results.Json(new { error = Strings.DevModeDisabled }, statusCode: 403);
         var devUser = db.UpsertUser(devId);
-        return Results.Ok(new { userId = devUser.TgId, created = devUser.Created, mode = "dev" });
+        var (devToken, devExp) = tokens.Issue(devUser.TgId);
+        return Results.Ok(new { userId = devUser.TgId, created = devUser.Created, mode = "dev", token = devToken, expiresAt = devExp });
     }
 
     var res = TelegramAuth.Validate(req.InitData ?? "", botToken, maxAge);
     if (!res.Ok) return Results.Json(new { error = res.Error }, statusCode: 401);
 
     var user = db.UpsertUser(res.UserId);
-    return Results.Ok(new { userId = user.TgId, created = user.Created, mode = "telegram" });
+    var (token, expiresAt) = tokens.Issue(user.TgId);
+    return Results.Ok(new { userId = user.TgId, created = user.Created, mode = "telegram", token, expiresAt });
 });
 
-// ---- GET /api/due : items due now for a user ----
-app.MapGet("/api/due", (long userId) =>
+// ---- GET /api/due : items due now for the authenticated user ----
+app.MapGet("/api/due", (HttpContext http, TimeProvider clock) =>
 {
-    var now = DateTimeOffset.UtcNow;
+    long userId = http.TgId();
+    var now = clock.GetUtcNow();
     var due = db.GetDue(userId, now);
     return Results.Ok(new { userId, now, count = due.Count, items = due });
 });
 
 // ---- GET /api/stats : durable, server-derived home stats (reviews / streak / xp) ----
-app.MapGet("/api/stats", (long userId) =>
+app.MapGet("/api/stats", (HttpContext http, TimeProvider clock) =>
 {
-    var (reviewsTotal, streakDays) = db.GetStats(userId, DateTimeOffset.UtcNow);
+    long userId = http.TgId();
+    var (reviewsTotal, streakDays) = db.GetStats(userId, clock.GetUtcNow());
     return Results.Ok(new
     {
         userId,
@@ -102,9 +207,10 @@ app.MapGet("/api/stats", (long userId) =>
 });
 
 // ---- GET /api/progress : full, server-derived progress dashboard (real numbers only) ----
-app.MapGet("/api/progress", (long userId) =>
+app.MapGet("/api/progress", (HttpContext http, TimeProvider clock) =>
 {
-    var now = DateTimeOffset.UtcNow;
+    long userId = http.TgId();
+    var now = clock.GetUtcNow();
     var (reviewsTotal, streakDays) = db.GetStats(userId, now);
     var created = db.GetUserCreated(userId);
     var gradeMix = db.GetGradeMix(userId);
@@ -160,82 +266,58 @@ app.MapGet("/api/progress", (long userId) =>
 });
 
 // ---- POST /api/lesson-progress : report lesson-viewing progress (monotonic UPSERT) ----
-app.MapPost("/api/lesson-progress", (LessonProgressRequest req) =>
+app.MapPost("/api/lesson-progress", (HttpContext http, LessonProgressRequest req, TimeProvider clock) =>
 {
+    long userId = http.TgId();
     if (string.IsNullOrWhiteSpace(req.LessonId))
         return Results.Json(new { error = Strings.InvalidLessonProgress }, statusCode: 400);
     if (req.SegmentsTotal < 0 || req.SegmentsSeen < 0)
         return Results.Json(new { error = Strings.InvalidLessonProgress }, statusCode: 400);
 
     var saved = db.UpsertLessonProgress(
-        req.UserId, req.LessonId, req.SegmentsSeen, req.SegmentsTotal, req.Completed, DateTimeOffset.UtcNow);
+        userId, req.LessonId, req.SegmentsSeen, req.SegmentsTotal, req.Completed, clock.GetUtcNow());
 
     return Results.Ok(new
     {
         ok = true,
-        userId = req.UserId,
+        userId,
         lessonId = saved.LessonId,
         segmentsSeen = saved.SegmentsSeen,
         segmentsTotal = saved.SegmentsTotal,
         completed = saved.Completed,
     });
-});
+}).RequireRateLimiting(MutatingLimiter);
 
 // ---- DELETE /api/progress : erase THIS user's FSRS state + history (double-confirmed in UI) ----
-app.MapDelete("/api/progress", (long userId) =>
+app.MapDelete("/api/progress", (HttpContext http) =>
 {
+    long userId = http.TgId();
     var (reviewStates, events) = db.ResetProgress(userId);
     return Results.Ok(new { ok = true, userId, reviewStatesDeleted = reviewStates, eventsDeleted = events });
-});
+}).RequireRateLimiting(MutatingLimiter);
 
 // ---- POST /api/review : update FSRS state, return next due, append history ----
-app.MapPost("/api/review", (ReviewRequest req) =>
+app.MapPost("/api/review", (HttpContext http, ReviewRequest req, ReviewService reviews) =>
 {
     if (req.Grade is < 1 or > 4)
         return Results.Json(new { error = Strings.InvalidGrade }, statusCode: 400);
 
-    var rating = (Rating)req.Grade;
-    var now = DateTimeOffset.UtcNow;
-    var prev = db.GetReviewState(req.UserId, req.ItemId);
-
-    FsrsState state;
-    int reps, lapses;
-    double elapsedDays;
-    if (prev is null)
-    {
-        state = fsrs.ReviewNew(rating);
-        reps = 1;
-        lapses = rating == Rating.Again ? 1 : 0;
-        elapsedDays = 0;
-    }
-    else
-    {
-        elapsedDays = prev.LastReview is { } lr ? (now - lr).TotalDays : 0;
-        state = fsrs.Review(new FsrsState(prev.Difficulty, prev.Stability), elapsedDays, rating);
-        reps = prev.Reps + 1;
-        lapses = prev.Lapses + (rating == Rating.Again ? 1 : 0);
-    }
-
-    double intervalDays = fsrs.IntervalDays(state.Stability);
-    var due = now + TimeSpan.FromDays(intervalDays);
-
-    db.UpsertReviewState(new ReviewState(
-        req.UserId, req.ItemId, state.Difficulty, state.Stability, due, reps, lapses, now));
-    db.AppendProgressEvent(new ProgressEvent(req.UserId, req.ItemId, req.Grade, now));
+    long userId = http.TgId();
+    var result = reviews.Review(userId, req.ItemId, (Rating)req.Grade);
 
     return Results.Ok(new
     {
-        itemId = req.ItemId,
-        grade = rating.ToString(),
-        difficulty = Math.Round(state.Difficulty, 4),
-        stability = Math.Round(state.Stability, 4),
-        intervalDays = Math.Round(intervalDays, 4),
-        elapsedDays = Math.Round(elapsedDays, 4),
-        due,
-        reps,
-        lapses,
+        itemId = result.ItemId,
+        grade = result.Grade.ToString(),
+        difficulty = Math.Round(result.Difficulty, 4),
+        stability = Math.Round(result.Stability, 4),
+        intervalDays = Math.Round(result.IntervalDays, 4),
+        elapsedDays = Math.Round(result.ElapsedDays, 4),
+        due = result.Due,
+        reps = result.Reps,
+        lapses = result.Lapses,
     });
-});
+}).RequireRateLimiting(MutatingLimiter);
 
 // ---- GET /api/lessons : catalog ----
 app.MapGet("/api/lessons", (LessonStore store) => Results.Ok(store.Summaries));

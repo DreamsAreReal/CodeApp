@@ -16,7 +16,6 @@ import type { VizElements, VizPlayer as VizPlayerType } from "../engine/index.ts
 import { getLesson } from "../lessons/index.ts";
 import type { Card, LessonData, Segment, Source } from "../lessons/types.ts";
 import { S } from "../strings.ts";
-import { session } from "./session.ts";
 import { router } from "./router.ts";
 import { tg } from "../telegram/webapp.ts";
 
@@ -123,7 +122,7 @@ class LessonReporter {
   private send(completed: boolean): void {
     // Fire-and-forget: never await, never surface errors to the UI.
     void api
-      .reportLessonProgress(session.userId, this.lessonId, this.maxSeen, this.total, completed)
+      .reportLessonProgress(this.lessonId, this.maxSeen, this.total, completed)
       .then((res) => {
         (window as unknown as { __lessonProgress?: unknown }).__lessonProgress = res;
       })
@@ -534,7 +533,7 @@ function wireGrade(
       done.classList.add("show");
       tg.impact("medium");
       try {
-        const res: ReviewResponse = await api.review(session.userId, itemId, grade);
+        const res: ReviewResponse = await api.review(itemId, grade);
         msg.innerHTML = `<b>${S.reviewSaved(S.reviewDaysFmt(res.intervalDays))}</b>`;
         progress.bumpTo(100);
         // Reaching the grade = the user completed the lesson. Report it (sticky).

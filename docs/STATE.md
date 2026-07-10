@@ -416,3 +416,21 @@ Maximalist-ставка: «self-hosting learning app» — приложение 
   добавлены → 14/14 PASS. Коммит e521e70 запушен в main (CI перезапущен). VPS-контейнер пересобран с
   фиксом. Первичка Telegram: hash покрывает ВСЕ поля кроме hash (в т.ч. signature). Осталось: пользователь
   переоткрывает бота (@coseappbot) — вход должен пройти; потом /revoke токена (светился в чате).
+
+- 2026-07-11 — PROGRESS/PROFILE + честный трекинг ГОТОВЫ И НА VPS (коммит a61d057). Экраны Прогресс/
+  Профиль, навигация, /api/progress + /api/lesson-progress (монотонно), честная метрика (прохождение≠
+  мастерство), 18/18 тестов, оба harness'а зелёные, задеплоено (данные пережили). Research-workflow
+  (wwez7hfxq, 4 линзы+синтез) выдал grounded gap-анализ (RS-16). НАШЁЛ HIGH-баг: IDOR — все эндпоинты
+  берут userId параметром без проверки → любой может читать/стереть чужие данные (DELETE /api/progress?
+  userId=victim). Плюс: SQLite Cache=Shared+WAL без busy_timeout (HIGH); нет ProblemDetails/rate-limit/
+  CSP/HSTS/health-ready (MED); контейнер под root, деплой :latest, нет HEALTHCHECK/WAL-checkpoint/бэкапа
+  (MED); Telegram iOS: safe-area=0, 100vh, нет disableVerticalSwipes/closingConfirmation/BackButton (MED);
+  тесты: FSRS golden-vector, персистентность-через-рестарт, auth edge, IDOR-guard, a11y, harness-в-CI.
+  ПОЛЬЗОВАТЕЛЬ ВЫБРАЛ: полный проход по приоритету. ПЛАН: Builder A (бэк: IDOR-токены сессии + middleware
+  + убрать userId-параметры + фронт client/session шлёт токен; SQLite PRAGMA; ProblemDetails+rate-limit+
+  CSP+HSTS+forwarded+health/live+ready; migration-runner user_version; WAL-checkpoint on stop; тесты:
+  IDOR-guard/FSRS-golden/persistence/auth-edge/validation/prod-403/concurrency) → verify → Builder B
+  (фронт Telegram lifecycle: safe-area var(--tg-*)+stable-height, disableVerticalSwipes+closingConfirm во
+  время повтора, themeChanged, BackButton в router; a11y axe в harness) → verify → Я (Dockerfile USER+
+  HEALTHCHECK; CI: деплой SHA-pinned + прогон harness'ов + coverlet) → финальный verify → ОДИН деплой на
+  VPS. Спавню Builder A.

@@ -23,7 +23,7 @@ export async function renderProfile(root: HTMLElement): Promise<void> {
 
   let p: ProgressResponse;
   try {
-    p = await api.progress(session.userId);
+    p = await api.progress();
   } catch (e) {
     const msg = e instanceof ApiError ? e.message : String(e);
     root.innerHTML = `<div class="frame">
@@ -204,7 +204,7 @@ function wireReset(root: HTMLElement): void {
       go.textContent = S.resetProcessing;
     }
     try {
-      await api.resetProgress(session.userId);
+      await api.resetProgress();
       tg.notify("success");
       area.innerHTML = `<div class="reset-done">${S.resetDone}</div>`;
       // Re-render the profile so every number reflects the wipe (real state, not a guess).

@@ -4,6 +4,8 @@ export interface AuthResponse {
   userId: number;
   created: string;
   mode: "dev" | "telegram";
+  token: string; // stateless signed session token — sent as `Authorization: Bearer <token>`
+  expiresAt: string; // ISO-8601 UTC expiry (~7 days out)
 }
 
 /** One entry of GET /api/due (backend DueItem). */

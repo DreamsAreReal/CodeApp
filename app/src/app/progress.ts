@@ -12,7 +12,6 @@ import { api, ApiError } from "../api/client.ts";
 import type { DayCount, GradeMix, LessonProgress, ProgressResponse } from "../api/types.ts";
 import { getLesson } from "../lessons/index.ts";
 import { S } from "../strings.ts";
-import { session } from "./session.ts";
 import { router } from "./router.ts";
 import { tg } from "../telegram/webapp.ts";
 import { navBar, wireNav } from "./nav.ts";
@@ -34,7 +33,7 @@ export async function renderProgress(root: HTMLElement): Promise<void> {
 
   let p: ProgressResponse;
   try {
-    p = await api.progress(session.userId);
+    p = await api.progress();
   } catch (e) {
     const msg = e instanceof ApiError ? e.message : String(e);
     root.innerHTML = `<div class="frame">

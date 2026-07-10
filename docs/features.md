@@ -74,5 +74,19 @@
   не тронуты. Решение зафиксировано здесь (переживает ротацию).
 - **F6/F7 self-pass, не milestone-стоп сам по себе** — жду вердикт внешнего оценщика для `verified`.
   Порог mastery = stability ≥ 21 дн (~90% удержания на 21-дн интервале FSRS-6), задокументирован в `Db.cs`.
+- **Находка (после F8/F9): параллельный агент провёл security-hardening поверх моего коммита `a61d057`.**
+  Рабочее дерево (незакоммичено) переписало `Program.cs` (+194 стр): stateless session-token + `Authorization:
+  Bearer` (IDOR-фикс — клиент больше НЕ шлёт userId, сервер берёт из токена), `TimeProvider`-инъекция вместо
+  `DateTimeOffset.UtcNow`, health-пробы (`/health/live`,`/health/ready`), rate-limiting. Мой F8/F9 СОХРАНЁН и
+  корректно интегрирован: `/api/lesson-progress` (монотонный upsert) и completion-поля в `/api/progress` живы,
+  фронт-`client.ts` шлёт токен, `session.ts`/`run.mjs`/`shell.mjs` обновлены под auth. Проверено исполнением:
+  мои 7 тестов (Progress/Delete/LessonProgress/Reset) — 7/7 pass; `shell.mjs` секция (g) — **ALL GREEN** через
+  auth (open→complete→POST→lessonsCompleted=1); `run.mjs` — **ALL GREEN**. Числа реальны (bearer-token curl:
+  partial3→complete7/true→regress1/false держит 7/true; `/api/progress` lessonsCompleted=1, segmentsViewed=7).
+- **Открытый провал (НЕ мой скоуп, атрибутирован):** `RunCSharp_ReturnsRealStdout` падает (1/52) — stdout
+  dev-only C#-раннера загрязнён host-логами ("info: Microsoft.Hosting.Lifetime…" вместо "123"). Раннер
+  (`CSharpRunner.cs`) последний раз трогали в `7e97026` (скаффолд), НЕ мной и НЕ в рабочем дереве; регресс —
+  побочный эффект переписи `Program.cs` (auth/logging) параллельным агентом. НЕ трогаю (скоуп: «не трогать
+  движок/раннер/деплой»); фиксирую для владельца hardening-пасса.
 </content>
 </invoke>

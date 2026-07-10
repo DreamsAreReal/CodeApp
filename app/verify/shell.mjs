@@ -37,23 +37,38 @@ function assert(cond, msg) {
   }
 }
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-const apiGet = async (p) => (await fetch(API + p)).json();
-async function apiPost(p, body) {
-  return (await fetch(API + p, {
+
+// The data API now requires a Bearer session token (IDOR fix). Each user gets its own token
+// from POST /api/auth {devUserId}; the token is passed on every subsequent call and userId
+// is server-derived. tokenFor(user) mints (and caches) that user's token.
+const tokens = new Map();
+async function tokenFor(devUserId) {
+  if (tokens.has(devUserId)) return tokens.get(devUserId);
+  const res = await fetch(API + "/api/auth", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  })).json();
+    body: JSON.stringify({ devUserId }),
+  });
+  const j = await res.json();
+  tokens.set(devUserId, j.token);
+  return j.token;
+}
+const apiGet = async (p, user) =>
+  (await fetch(API + p, { headers: { Authorization: `Bearer ${await tokenFor(user)}` } })).json();
+async function apiPost(p, body, user) {
+  const headers = { "Content-Type": "application/json" };
+  if (user !== undefined) headers.Authorization = `Bearer ${await tokenFor(user)}`;
+  return (await fetch(API + p, { method: "POST", headers, body: JSON.stringify(body) })).json();
 }
 
 /** Dev-auth `user` and grade several distinct due items with varied grades (real data). */
 async function seed(user) {
-  await apiPost("/api/auth", { devUserId: user });
-  const due = await apiGet(`/api/due?userId=${user}`);
+  await tokenFor(user); // mints the token via /api/auth
+  const due = await apiGet(`/api/due`, user);
   const grades = [3, 4, 3, 1, 2]; // Good / Easy / Good / Again / Hard -> real grade mix + a lapse
   const items = due.items.slice(0, grades.length);
   for (let i = 0; i < items.length; i++) {
-    await apiPost("/api/review", { userId: user, itemId: items[i].itemId, grade: grades[i] });
+    await apiPost("/api/review", { itemId: items[i].itemId, grade: grades[i] }, user);
   }
   return items.length;
 }
@@ -64,7 +79,7 @@ async function main() {
   const seeded = await seed(RUN_USER);
   log(`seeded ${seeded} reviews for runUser=${RUN_USER}`);
   // Confirm the backend itself reflects the seed (numbers are real, not UI-invented).
-  const prog = await apiGet(`/api/progress?userId=${RUN_USER}`);
+  const prog = await apiGet(`/api/progress`, RUN_USER);
   assert(prog.reviewsTotal === seeded, `backend reviewsTotal=${prog.reviewsTotal} matches seeded ${seeded}`);
   assert(prog.gradeMix.again >= 1, "backend recorded an Again grade (lapse path)");
 
@@ -228,7 +243,7 @@ async function main() {
   const homeBefore = await page3.evaluate(() => window.__home);
   assert(homeBefore.lessonsCompleted === 0, "home baseline: 0 lessons completed");
   assert(homeBefore.segmentsViewed === 0, "home baseline: 0 segments viewed");
-  const progBefore = await apiGet(`/api/progress?userId=${COMPLETE_USER}`);
+  const progBefore = await apiGet(`/api/progress`, COMPLETE_USER);
   assert(progBefore.lessonsCompleted === 0 && progBefore.segmentsViewed === 0, "backend baseline: nothing viewed");
 
   // open the boxing lesson (7 segments) and view all of them, then answer + grade
@@ -256,7 +271,7 @@ async function main() {
   assert(lprog.segmentsSeen === 7 && lprog.segmentsTotal === 7, "completion report is 7/7 segments");
 
   // the SERVER now shows the lesson completed + segments seen (real, persisted)
-  const progAfter = await apiGet(`/api/progress?userId=${COMPLETE_USER}`);
+  const progAfter = await apiGet(`/api/progress`, COMPLETE_USER);
   assert(progAfter.lessonsCompleted >= 1, `/api/progress lessonsCompleted>=1 (got ${progAfter.lessonsCompleted})`);
   assert(progAfter.segmentsViewed >= 7, `/api/progress segmentsViewed>=7 (got ${progAfter.segmentsViewed})`);
   const boxingRow = progAfter.perLesson.find((l) => l.lessonId === "T1.M3.boxing");

@@ -9,6 +9,8 @@ public static class Strings
     public const string MissingInitData = "Отсутствуют данные авторизации Telegram.";
     public const string InvalidInitData = "Недействительные данные авторизации Telegram.";
     public const string AuthDateExpired = "Данные авторизации устарели, откройте приложение заново.";
+    public const string Unauthorized = "Требуется авторизация. Откройте приложение заново.";
+    public const string RateLimited = "Слишком много запросов. Попробуйте через минуту.";
     public const string UserNotFound = "Пользователь не найден.";
     public const string ItemNotFound = "Карточка не найдена.";
     public const string LessonNotFound = "Урок не найден.";

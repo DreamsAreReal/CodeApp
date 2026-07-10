@@ -24,10 +24,12 @@ public sealed record ProgressEvent(long UserId, string ItemId, int Grade, DateTi
 
 public sealed record AuthRequest(string? InitData, long? DevUserId);
 
-public sealed record ReviewRequest(long UserId, string ItemId, int Grade);
+// userId is NOT a request field: the server derives it from the validated session token
+// (see AuthMiddleware). Accepting it from the client would reopen the IDOR hole.
+public sealed record ReviewRequest(string ItemId, int Grade);
 
 /// <summary>Client report of lesson-viewing progress (segments seen / completion).</summary>
 public sealed record LessonProgressRequest(
-    long UserId, string LessonId, int SegmentsSeen, int SegmentsTotal, bool Completed);
+    string LessonId, int SegmentsSeen, int SegmentsTotal, bool Completed);
 
 public sealed record RunCSharpRequest(string Code);

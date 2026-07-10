@@ -14,11 +14,13 @@ public sealed class Database
 
     public Database(string filePath)
     {
+        // No shared-cache: it forces a process-wide single cache that serialises unrelated
+        // connections and is a known source of "database is locked" under concurrency. WAL +
+        // per-connection busy_timeout is the correct model for many short-lived connections.
         _connectionString = new SqliteConnectionStringBuilder
         {
             DataSource = filePath,
             Mode = SqliteOpenMode.ReadWriteCreate,
-            Cache = SqliteCacheMode.Shared,
         }.ToString();
     }
 
@@ -27,59 +29,124 @@ public sealed class Database
         var conn = new SqliteConnection(_connectionString);
         conn.Open();
         using var pragma = conn.CreateCommand();
-        pragma.CommandText = "PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON;";
+        // busy_timeout: on a lock, retry for up to 5s instead of throwing immediately.
+        // synchronous=NORMAL: safe with WAL and much faster than FULL for our write pattern.
+        pragma.CommandText =
+            "PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000; PRAGMA synchronous=NORMAL; PRAGMA foreign_keys=ON;";
         pragma.ExecuteNonQuery();
         return conn;
     }
 
-    /// <summary>Create schema if absent. Idempotent.</summary>
-    public void Initialize()
+    /// <summary>
+    /// Fold the WAL back into the main database file. Called on graceful shutdown so a redeploy
+    /// (SIGTERM) does not leave uncheckpointed pages in the -wal sidecar.
+    /// </summary>
+    public void Checkpoint()
     {
         using var conn = Open();
         using var cmd = conn.CreateCommand();
-        cmd.CommandText = """
-            CREATE TABLE IF NOT EXISTS users (
-                tg_id   INTEGER PRIMARY KEY,
-                created TEXT NOT NULL
-            );
-            CREATE TABLE IF NOT EXISTS items (
-                item_id         TEXT PRIMARY KEY,
-                lesson_id       TEXT NOT NULL,
-                prompt          TEXT,
-                expected_output TEXT
-            );
-            CREATE TABLE IF NOT EXISTS review_state (
-                user_id     INTEGER NOT NULL,
-                item_id     TEXT NOT NULL,
-                difficulty  REAL NOT NULL,
-                stability   REAL NOT NULL,
-                due         TEXT NOT NULL,
-                reps        INTEGER NOT NULL,
-                lapses      INTEGER NOT NULL,
-                last_review TEXT,
-                PRIMARY KEY (user_id, item_id)
-            );
-            CREATE TABLE IF NOT EXISTS progress_events (
-                id      INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER NOT NULL,
-                item_id TEXT NOT NULL,
-                grade   INTEGER NOT NULL,
-                ts      TEXT NOT NULL
-            );
-            CREATE TABLE IF NOT EXISTS lesson_progress (
-                user_id        INTEGER NOT NULL,
-                lesson_id      TEXT NOT NULL,
-                segments_seen  INTEGER NOT NULL,
-                segments_total INTEGER NOT NULL,
-                completed      INTEGER NOT NULL,
-                updated        TEXT NOT NULL,
-                PRIMARY KEY (user_id, lesson_id)
-            );
-            CREATE INDEX IF NOT EXISTS ix_review_due ON review_state (user_id, due);
-            CREATE INDEX IF NOT EXISTS ix_events_user ON progress_events (user_id, ts);
-            CREATE INDEX IF NOT EXISTS ix_lesson_prog_user ON lesson_progress (user_id);
-            """;
+        cmd.CommandText = "PRAGMA wal_checkpoint(TRUNCATE);";
         cmd.ExecuteNonQuery();
+    }
+
+    /// <summary>Open a connection and run <c>SELECT 1</c> — the readiness probe. Throws if the DB is unreachable.</summary>
+    public void Ping()
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT 1;";
+        cmd.ExecuteScalar();
+    }
+
+    /// <summary>
+    /// Migration 1 — the current full schema. Written with CREATE TABLE/INDEX IF NOT EXISTS so it
+    /// is a NO-OP on the live production DB (which already has these tables + real user rows): it
+    /// never drops or recreates anything, it only fills in what is missing on a fresh DB.
+    /// </summary>
+    private const string Migration1Schema = """
+        CREATE TABLE IF NOT EXISTS users (
+            tg_id   INTEGER PRIMARY KEY,
+            created TEXT NOT NULL
+        );
+        CREATE TABLE IF NOT EXISTS items (
+            item_id         TEXT PRIMARY KEY,
+            lesson_id       TEXT NOT NULL,
+            prompt          TEXT,
+            expected_output TEXT
+        );
+        CREATE TABLE IF NOT EXISTS review_state (
+            user_id     INTEGER NOT NULL,
+            item_id     TEXT NOT NULL,
+            difficulty  REAL NOT NULL,
+            stability   REAL NOT NULL,
+            due         TEXT NOT NULL,
+            reps        INTEGER NOT NULL,
+            lapses      INTEGER NOT NULL,
+            last_review TEXT,
+            PRIMARY KEY (user_id, item_id)
+        );
+        CREATE TABLE IF NOT EXISTS progress_events (
+            id      INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            item_id TEXT NOT NULL,
+            grade   INTEGER NOT NULL,
+            ts      TEXT NOT NULL
+        );
+        CREATE TABLE IF NOT EXISTS lesson_progress (
+            user_id        INTEGER NOT NULL,
+            lesson_id      TEXT NOT NULL,
+            segments_seen  INTEGER NOT NULL,
+            segments_total INTEGER NOT NULL,
+            completed      INTEGER NOT NULL,
+            updated        TEXT NOT NULL,
+            PRIMARY KEY (user_id, lesson_id)
+        );
+        CREATE INDEX IF NOT EXISTS ix_review_due ON review_state (user_id, due);
+        CREATE INDEX IF NOT EXISTS ix_events_user ON progress_events (user_id, ts);
+        CREATE INDEX IF NOT EXISTS ix_lesson_prog_user ON lesson_progress (user_id);
+        """;
+
+    /// <summary>
+    /// Ordered, FORWARD-ONLY migration scripts. Index i is the script that bumps user_version
+    /// from i to i+1 (so Migrations[0] == migration 1). Append here for future schema changes;
+    /// each new script runs exactly once, in order, inside a transaction. Never edit/reorder a
+    /// script that has already shipped — that would silently skip it on existing DBs.
+    /// </summary>
+    private static readonly string[] Migrations =
+    {
+        Migration1Schema,
+    };
+
+    /// <summary>
+    /// Apply any pending migrations, gated on <c>PRAGMA user_version</c>. Forward-only and
+    /// idempotent: on the existing prod DB (user_version already at the latest) this is a no-op;
+    /// on a fresh DB it runs migration 1 (the full schema) and sets user_version=1. Each script
+    /// runs in its own transaction and bumps the version, so a crash mid-run cannot half-apply.
+    /// </summary>
+    public void Initialize()
+    {
+        using var conn = Open();
+
+        using var readVer = conn.CreateCommand();
+        readVer.CommandText = "PRAGMA user_version;";
+        int version = Convert.ToInt32(readVer.ExecuteScalar());
+
+        for (int target = version + 1; target <= Migrations.Length; target++)
+        {
+            using var tx = conn.BeginTransaction();
+            using var script = conn.CreateCommand();
+            script.Transaction = tx;
+            script.CommandText = Migrations[target - 1];
+            script.ExecuteNonQuery();
+
+            using var bump = conn.CreateCommand();
+            bump.Transaction = tx;
+            // PRAGMA does not accept a bound parameter; target is an int we control (not user input).
+            bump.CommandText = $"PRAGMA user_version = {target};";
+            bump.ExecuteNonQuery();
+
+            tx.Commit();
+        }
     }
 
     private static string Iso(DateTimeOffset t) => t.ToUniversalTime().ToString("o");
