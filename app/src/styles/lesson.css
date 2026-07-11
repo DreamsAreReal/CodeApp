@@ -8,7 +8,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: calc(14px + env(safe-area-inset-top, 0px)) 16px 10px;
+  padding: calc(14px + var(--safe-top)) calc(16px + var(--safe-right)) 10px calc(16px + var(--safe-left));
   position: sticky;
   top: 0;
   z-index: 5;
@@ -96,7 +96,7 @@
 
 /* ---- lesson scroll body ---- */
 .lesson-body {
-  padding: 4px 16px calc(20px + env(safe-area-inset-bottom, 0px));
+  padding: 4px calc(16px + var(--safe-right)) calc(20px + var(--safe-bottom)) calc(16px + var(--safe-left));
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -154,7 +154,7 @@
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--coral);
+  color: var(--coral-text);
   background: var(--coral-tint);
   padding: 4px 9px;
   border-radius: 8px;
@@ -196,7 +196,7 @@
   font-family: var(--mono);
   font-weight: 700;
   font-size: 12px;
-  color: var(--coral);
+  color: var(--coral-text);
   background: var(--coral-tint);
   border-radius: 9px;
   padding: 5px 9px;
@@ -254,11 +254,11 @@
   border-left-color: var(--coral);
 }
 .cl-line.cur .ln {
-  color: var(--coral);
+  color: var(--coral-text);
   opacity: 1;
 }
 .tok-ty {
-  color: var(--sage);
+  color: var(--sage-text);
   font-weight: 600;
 }
 .tok-num {
@@ -322,7 +322,7 @@
   letter-spacing: -0.01em;
 }
 .il-off {
-  color: #5c6570;
+  color: #8f9aa6; /* AA (5.45:1) on the dark IL panel #20242a */
   font-size: 10px;
   width: 44px;
 }
@@ -335,7 +335,7 @@
   font-weight: 600;
 }
 .il-cmt {
-  color: #6e7883;
+  color: #8f9aa6; /* AA (5.45:1) on the dark IL panel #20242a */
   font-style: italic;
 }
 .il-line.cur {
@@ -379,7 +379,7 @@
   fill: var(--coral-d);
 }
 .vz-zlabel.good {
-  fill: var(--sage);
+  fill: var(--sage-text);
 }
 .vz-zlabel.sm {
   font-size: 9.5px;
@@ -397,8 +397,8 @@
   opacity: 0.85;
 }
 .vz-zsub.good {
-  fill: var(--sage);
-  opacity: 0.9;
+  fill: var(--sage-text);
+  opacity: 1;
 }
 
 /* data-join nodes */
@@ -456,7 +456,7 @@
   font-family: var(--mono);
   font-size: 10px;
   font-weight: 600;
-  fill: var(--sage);
+  fill: var(--sage-text);
 }
 .vz-objval {
   font-family: var(--mono);
@@ -491,7 +491,7 @@
   font-family: var(--mono);
   font-size: 9.5px;
   font-weight: 700;
-  fill: var(--sage);
+  fill: var(--sage-text);
 }
 .node.fail .vz-gatelbl {
   fill: var(--coral-d);
@@ -534,7 +534,7 @@
   min-height: 38px;
 }
 .vz-cprompt {
-  color: var(--sage);
+  color: var(--sage-text);
   font-weight: 700;
 }
 .vz-clbl {
@@ -669,7 +669,7 @@
   font-weight: 700;
 }
 .vz-caption .hl {
-  color: var(--coral-d);
+  color: var(--coral-text);
   font-weight: 700;
 }
 
@@ -752,7 +752,7 @@
   font-family: var(--mono);
   font-size: 10.5px;
   font-weight: 700;
-  color: var(--coral);
+  color: var(--coral-text);
   background: #fff;
   border: 1px solid var(--line);
   border-radius: 6px;
@@ -760,7 +760,7 @@
   letter-spacing: 0.02em;
 }
 .dd-claim.sage .dd-ctitle .n {
-  color: var(--sage);
+  color: var(--sage-text);
 }
 .dd-ctext {
   margin-top: 6px;
@@ -772,7 +772,7 @@
   font-weight: 700;
 }
 .dd-ctext .hl {
-  color: var(--coral-d);
+  color: var(--coral-text);
   font-weight: 700;
 }
 .dd-ctext code {
@@ -792,7 +792,7 @@
   font-family: var(--mono);
   font-size: 9.5px;
   font-weight: 600;
-  color: var(--sage);
+  color: var(--sage-text);
   background: #fff;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -954,17 +954,17 @@
   gap: 8px;
 }
 .q-banner.ok .q-bhead {
-  color: var(--sage);
+  color: var(--sage-text);
 }
 .q-banner.no .q-bhead {
-  color: var(--coral-d);
+  color: var(--coral-text);
 }
 .q-bhead .xpp {
   margin-left: auto;
   font-family: var(--mono);
   font-size: 12px;
   font-weight: 700;
-  color: var(--amber);
+  color: var(--amber-text);
   background: var(--amber-tint);
   border-radius: 7px;
   padding: 2px 7px;
@@ -979,7 +979,7 @@
   font-weight: 700;
 }
 .q-btext .hl {
-  color: var(--coral-d);
+  color: var(--coral-text);
   font-weight: 700;
 }
 .q-btext code {
@@ -1059,7 +1059,7 @@
   display: flex;
 }
 .grade-done b {
-  color: var(--sage);
+  color: var(--sage-text);
   font-weight: 700;
 }
 .grade-done svg {
@@ -1073,7 +1073,7 @@
 .sec-label .num {
   font-family: var(--mono);
   font-weight: 700;
-  color: var(--coral);
+  color: var(--coral-text);
   background: var(--coral-tint);
   border-radius: 6px;
   padding: 2px 6px;

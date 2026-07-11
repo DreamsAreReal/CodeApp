@@ -68,7 +68,7 @@
   padding: 3px 8px;
 }
 .pf-tag-tg {
-  color: var(--coral);
+  color: var(--coral-text);
   background: var(--coral-tint);
 }
 .pf-since {
@@ -166,7 +166,7 @@
 
 /* ---- danger zone ---- */
 .sec-danger {
-  color: var(--coral-d);
+  color: var(--coral-text);
 }
 .sec-danger::after {
   background: rgba(196, 61, 40, 0.25);
@@ -179,7 +179,7 @@
   width: 100%;
   border: 1px solid rgba(196, 61, 40, 0.4);
   background: var(--coral-tint);
-  color: var(--coral-d);
+  color: var(--coral-text);
   font-family: var(--display);
   font-weight: 700;
   font-size: 14.5px;
@@ -229,7 +229,7 @@
   font-family: var(--display);
   font-weight: 700;
   font-size: 15px;
-  color: var(--coral-d);
+  color: var(--coral-text);
 }
 .reset-c-s {
   font-size: 12.5px;
@@ -252,7 +252,7 @@
   padding: 14px;
   border-radius: var(--r-m);
   background: var(--sage-tint);
-  color: var(--sage);
+  color: var(--sage-text);
   font-family: var(--display);
   font-weight: 700;
   font-size: 14.5px;

@@ -332,7 +332,10 @@ function buildSegment(lesson: LessonData, seg: Segment, onComplete: () => void):
     `<div class="seg-head"><span class="seg-num">${esc(seg.num)}</span><div><div class="seg-kicker">${esc(seg.kicker)}</div><div class="seg-title">${esc(seg.title)}</div></div></div>` +
     codeHTML +
     ilHTML +
-    `<div class="stage" aria-label="${esc(seg.title)}"></div>` +
+    // The engine renders an SVG (role="img") into .stage; we name it via a <title>
+    // element AFTER render (see below), so this container carries no bare aria-label
+    // (which would be a prohibited-attr on a role-less div).
+    `<div class="stage"></div>` +
     consoleHTML +
     predictHTML +
     '<div class="vz-ctrls">' +
@@ -403,6 +406,16 @@ function buildSegment(lesson: LessonData, seg: Segment, onComplete: () => void):
   });
 
   player.render();
+  // Accessibility: the engine tags its diagram SVG with role="img"; give that SVG an
+  // accessible name (a <title> is the SVG-native equivalent of alt text) so it is not
+  // an unlabelled image. The individual animated shapes/text inside stay decorative.
+  const stageSvg = card.querySelector<SVGSVGElement>(".stage svg");
+  if (stageSvg && !stageSvg.querySelector("title")) {
+    const titleEl = document.createElementNS("http://www.w3.org/2000/svg", "title");
+    titleEl.textContent = seg.title;
+    stageSvg.insertBefore(titleEl, stageSvg.firstChild);
+    stageSvg.setAttribute("aria-label", seg.title);
+  }
   return { card, viz: player };
 }
 

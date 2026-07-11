@@ -7,14 +7,22 @@
   --bg: #f6f1e9; /* warm cream app surface (not white) */
   --surface: #ffffff; /* raised cards */
   --ink: #23201b; /* warm near-black text */
-  --muted: #8a8377; /* secondary text */
+  /* --muted is used as secondary TEXT app-wide; darkened to a warm taupe that clears
+     WCAG AA (>=4.5:1) on cream/surface/tiles at 11–13px, while staying the same hue. */
+  --muted: #6b6659; /* secondary text (AA on cream/surface) */
   --line: #e7dfd2; /* hairlines / dividers */
-  --coral: #f0533a; /* ONE confident accent — own warm coral */
+  --coral: #f0533a; /* ONE confident accent — own warm coral (fills / rings / CTAs) */
   --coral-l: #ff6a4e; /* top highlight for soft-3D depth */
   --coral-d: #c43d28; /* pressed / bottom shadow */
+  /* Accents as TEXT (kickers, pills, badges, labels) need AA against tint/cream:
+     the vivid --coral / --sage stay for fills, borders, rings and gradients, but
+     any place the accent is the *text colour* routes through these darker twins. */
+  --coral-text: #b83a25; /* coral used as text (AA on cream / coral-tint / wash) */
+  --sage-text: #5b6850; /* sage used as text (AA on cream / sage-tint) */
+  --amber-text: #8a5d0e; /* amber used as text — e.g. the +XP badge (AA on amber-tint) */
   --coral-tint: #fbe7e1; /* soft coral wash for focus surface */
   --coral-wash: #fff8f5; /* faint coral surface for active row/hero */
-  --sage: #7c8b6f; /* calm secondary */
+  --sage: #7c8b6f; /* calm secondary (fills / rings) */
   --sage-tint: #eaeee4;
   --amber: #e8a13a; /* tertiary — stars / rewards, sparingly */
   --amber-tint: #f7e9cf;
@@ -38,6 +46,18 @@
 
   /* Content column width — the app frame on wide screens. */
   --col: 440px;
+
+  /* Telegram-WebView-aware viewport + safe areas.
+     webapp.ts sets --tg-viewport-stable-height / --tg-content-safe-area-inset-* from the
+     Telegram SDK on boot (and on viewport/safe-area change). Outside Telegram these stay
+     unset and the fallbacks below take over, so a plain browser is unaffected.
+     env(safe-area-inset-*) resolves to 0 inside the Telegram iOS WebView (documented bug),
+     so the Telegram content-safe-area var is preferred, with env() as the graceful fallback. */
+  --app-height: var(--tg-viewport-stable-height, 100dvh);
+  --safe-top: var(--tg-content-safe-area-inset-top, env(safe-area-inset-top, 0px));
+  --safe-bottom: var(--tg-content-safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
+  --safe-left: var(--tg-content-safe-area-inset-left, env(safe-area-inset-left, 0px));
+  --safe-right: var(--tg-content-safe-area-inset-right, env(safe-area-inset-right, 0px));
 }
 
 * {
@@ -45,6 +65,24 @@
   padding: 0;
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* Visible keyboard focus (WCAG 2.4.7). Touch/mouse taps stay clean via :focus-visible;
+   only real keyboard focus draws the coral ring. Applies to every interactive element
+   (buttons, links, role="switch"/"button") across all screens. */
+:focus-visible {
+  outline: 2px solid var(--coral);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+/* Elements that already carry their own radius keep a matching ring shape. */
+.cta:focus-visible,
+.q-check:focus-visible,
+.next-cta:focus-visible,
+.vz-play:focus-visible,
+.danger-btn:focus-visible,
+.ghost-btn:focus-visible {
+  outline-offset: 3px;
 }
 html {
   -webkit-text-size-adjust: 100%;
@@ -67,14 +105,14 @@ body {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  min-height: 100vh;
-  min-height: 100dvh;
+  min-height: 100vh; /* fallback for engines without custom-prop-in-length */
+  min-height: var(--app-height);
 }
 .frame {
   width: 100%;
   max-width: var(--col);
-  min-height: 100vh;
-  min-height: 100dvh;
+  min-height: 100vh; /* fallback */
+  min-height: var(--app-height);
   background: var(--bg);
   display: flex;
   flex-direction: column;

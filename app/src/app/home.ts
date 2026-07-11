@@ -135,7 +135,7 @@ export async function renderHome(root: HTMLElement): Promise<void> {
         <div class="greet-s">${S.greetSub}</div>
       </div>
 
-      <section class="hero" role="button" tabindex="0" id="hero" aria-label="${escapeHtml(heroRow.lesson.title)}">
+      <section class="hero" id="hero" aria-label="${escapeHtml(heroRow.lesson.title)}">
         <div class="hero-top">
           ${ring(64, 27, 6, overallPct, "ring")}
           <div class="hero-head">

@@ -434,3 +434,14 @@ Maximalist-ставка: «self-hosting learning app» — приложение 
   время повтора, themeChanged, BackButton в router; a11y axe в harness) → verify → Я (Dockerfile USER+
   HEALTHCHECK; CI: деплой SHA-pinned + прогон harness'ов + coverlet) → финальный verify → ОДИН деплой на
   VPS. Спавню Builder A.
+- 2026-07-11 — Builder A ГОТОВ + НЕЗАВИСИМО ПРОВЕРЕН. IDOR закрыт (session-token Bearer, userId с сервера,
+  параметр убран), SQLite PRAGMA, ProblemDetails+rate-limit+CSP+HSTS+forwarded+health/live/ready, WAL-
+  checkpoint on stop, migration-runner user_version. Тесты 18→52 (все PASS). IDOR curl доказан (нет токена
+  →401, ?userId spoof игнор, DELETE gated), rate-limit 60/5×429, оба harness'а ALL GREEN, npm build чисто.
+  Коммит 52c361a запушен. НАХОДКА A (честная): наш FSRS ОПУСКАЕТ short-term термы w17–w19 → across-day
+  интервалы РАСХОДЯТСЯ с py-fsrs: наш [Again,Good×5]→[0.217,0.724,2.211,6.249,16.489,40.904], terminal
+  S≈40.9/D≈6.86; py-fsrs даёт [0,0,1,3,8,21], S≈53.63/D≈6.357. Тест построен как регресс-замок НАШЕГО
+  поведения (не менял модель — вне скоупа). ВОПРОС ПОЛЬЗОВАТЕЛЮ: выравнивать FSRS под py-fsrs (добавить
+  w17–w19) в волне 3? Мелочь: run-csharp stdout может полироваться host-логами (dev-only; в isolated-тесте
+  52/52 не воспроизводится) — почищу в cleanup. Спавню Builder B (фронт Telegram lifecycle + a11y);
+  волна 3 (логика повторов: ввод-ответ+объективный грейд+калибровка) — после B, + возможно FSRS-выравнивание.

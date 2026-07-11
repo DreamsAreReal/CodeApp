@@ -11,6 +11,7 @@
  * Writes evidence PNGs under docs/evidence/shell.
  */
 import { chromium } from "playwright";
+import { AxeBuilder } from "@axe-core/playwright";
 import { mkdirSync } from "node:fs";
 
 const APP = process.env.APP_BASE || "http://localhost:4173";
@@ -37,6 +38,34 @@ function assert(cond, msg) {
   }
 }
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * Run an axe-core scan (WCAG 2.0/2.1 level A + AA) on the current page state and FAIL
+ * the harness on any serious/critical violation. We scan the live #app screen (not a
+ * static fixture) so contrast, names/roles and focus are checked on the real render.
+ */
+async function axeScan(page, label) {
+  const results = await new AxeBuilder({ page })
+    .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+    .include("#app")
+    .analyze();
+  const blocking = results.violations.filter(
+    (v) => v.impact === "serious" || v.impact === "critical",
+  );
+  if (blocking.length === 0) {
+    log(`  ✓ axe ${label}: 0 serious/critical (${results.passes.length} checks passed)`);
+  } else {
+    failed++;
+    log(`  ✗ FAIL: axe ${label}: ${blocking.length} serious/critical violation(s)`);
+    for (const v of blocking) {
+      const nodes = v.nodes.slice(0, 4).map((n) => n.target.join(" ")).join(" | ");
+      log(`      [${v.impact}] ${v.id} — ${v.help}`);
+      log(`        help: ${v.helpUrl}`);
+      log(`        at: ${nodes}`);
+    }
+  }
+  return blocking;
+}
 
 // The data API now requires a Bearer session token (IDOR fix). Each user gets its own token
 // from POST /api/auth {devUserId}; the token is passed on every subsequent call and userId
@@ -119,6 +148,8 @@ async function main() {
   const homeActive = await page.locator('nav.nav .tab.active [aria-hidden], nav.nav .tab.active').first().isVisible();
   assert(homeActive, "a nav tab is marked active on home");
   await page.screenshot({ path: `${EV}/390-home.png`, fullPage: true });
+  // a11y: scan the Home screen (WCAG A + AA) — fail on serious/critical.
+  await axeScan(page, "Home");
 
   // ===================== (b) Progress tab =====================
   log("\n== (b) Progress tab -> populated dashboard ==");
@@ -149,6 +180,8 @@ async function main() {
   assert(await page.locator(".card").filter({ hasText: "Тем пройдено" }).count() === 1, "completion section rendered (Тем пройдено)");
   const activeProg = await page.locator('nav.nav [data-nav="progress"]').getAttribute("class");
   assert(activeProg.includes("active"), "Progress nav tab is active on the Progress screen");
+  // a11y: scan the populated Progress dashboard (rings, grade-mix, heatmap, per-lesson).
+  await axeScan(page, "Progress");
   for (const vp of [375, 768, 1440]) {
     await page.setViewportSize(VIEWPORTS[vp]);
     await sleep(250);
@@ -161,6 +194,10 @@ async function main() {
   await page.click(".lesson-list .topic[data-lesson]");
   await page.waitForFunction((id) => window.__lesson && window.__lesson.id === id, lessonId, { timeout: 15000 });
   assert(true, "per-lesson row opened lesson " + lessonId);
+  // a11y: scan the opened lesson (close/back button, animated segment controls, MCQ, grade strip).
+  await page.waitForFunction(() => window.__viz && window.__viz.ready, { timeout: 15000 });
+  await sleep(300);
+  await axeScan(page, "Lesson (" + lessonId + ")");
   // close the lesson -> home, then hop back to Progress via the shared nav
   await page.click("#btnClose");
   await page.waitForFunction(() => window.__home && typeof window.__home.userId === "number", { timeout: 15000 });

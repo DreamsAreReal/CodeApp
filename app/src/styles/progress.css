@@ -64,7 +64,7 @@
   font-family: var(--mono);
   font-weight: 600;
   font-size: 15px;
-  color: var(--coral);
+  color: var(--coral-text);
 }
 .mastery-body {
   flex: 1;
@@ -265,7 +265,7 @@
   stroke: var(--coral);
 }
 .lesson-list .t-ring .pct {
-  color: var(--coral);
+  color: var(--coral-text);
 }
 
 /* ---- empty state ---- */
