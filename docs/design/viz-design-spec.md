@@ -40,5 +40,54 @@ Replace the straight center-to-center `<line>` with a rounded orthogonal `<path>
 ## Lesson changes
 - Normalize every scene's node w/h to ladder+kind-height (or omit and let `sizeNode` derive); snap x/y to /4; align rows to a shared center-Y; reduce distinct centers to ≤4; keep zones ≥8u around nodes. Same pass for all 6 lessons (uniform).
 
+## Auto-layout v2 — bug-proof authoring (mentor CANNOT make a crooked scene)
+Goal: authors declare STRUCTURE, never pixel coordinates. The engine computes positions,
+so overflow / overlap / misalignment are impossible by construction.
+- **Node placement:** a node has NO `x/y/w/h`. Instead `at: { zone: <zoneId>, row: <int>, col?: <int> }`.
+  Nodes sharing `(zone,row)` form a ROW (array order = left→right). Size comes from `sizeNode`
+  (kind height + width ladder auto-fit to content).
+- **Zones** get an `id`. Layout algorithm:
+  1. `sizeNode` every node (kind + measured content).
+  2. Group nodes by `(zone,row)`; order within a row by `col` then array order.
+  3. Per zone (inner box = zone minus PAD=8): rows stack vertically, distributed with GUTTER
+     between rows; each row's nodes distribute horizontally centered with GUTTER_CROSS=16, all
+     snapped to the 2u grid; **every node in a row shares one center-Y and one height**.
+  4. If a row is wider than the zone inner width → shrink node widths toward the ladder min;
+     if still overflowing → THROW an authoring error (surfaced, never a silent visual bug).
+  5. A node with no `at` and no explicit coords → authoring error.
+- **Escape hatch:** explicit `x/y` still honoured (snapped+clamped) for rare special cases, but
+  the DEFAULT + documented path is `at`. AUTHORING-AI.md documents ONLY `at`.
+- **Edges** unchanged: `from`/`to` ids, auto orthogonal routing.
+- **Guarantee:** a scene authored with `at` is always grid-aligned, in-zone, non-overlapping,
+  consistently sized, with orthogonal edges — verified by viz-fit. This is the "mentor can't
+  break it" property the product needs.
+
+### Implementation notes (engine/layout.ts — `layoutScene`, shipped)
+- Pure/deterministic; runs in `VizPlayer` BEFORE `render` so FLIP measures deltas from the
+  computed x/y and still animates a node whose `at` changes between scenes.
+- **GRID model (`layoutZone`, generalized for the 2D timeline):** a zone is a grid of
+  `(row, col)` cells. Columns = the union of every node's `col` (absent ⇒ 0); a column's
+  width is the MAX cell width over all rows; the whole column block is centered in the zone
+  inner width, so every column has ONE center-X that is STABLE across rows (an empty cell
+  never shifts its column). This lets a 2D timeline (async-await: tracks = zones/rows,
+  before/after-await = columns) keep same-phase nodes on a shared X. A cell may hold >1 node
+  (a horizontal sub-row centered on the column X — backward-compatible with the old "row of
+  N nodes"). SINGLE-COLUMN zones reduce EXACTLY to the previous vertical stack, so already
+  pixel-verified lessons (closures) render byte-identical. Overflow shrinks column widths
+  down the ladder, then THROWS.
+- **Wide gates:** a `gate` with a long `detail` (e.g. "NullReferenceException") needs a
+  ladder width (up to 168u) that cannot fit a ≤150u column; author it in a dedicated
+  full-width band zone (boxing s3, gc s3/s6, hashtable s4/s5) instead of a narrow track.
+- Nested (`at:{in}`): parent is sized first, then AUTO-GROWS its height to `header + Σ(childH+gap)
+  + PAD` (header = 20 when the parent carries a `typeTag`, else PAD=8). Children stack centered on
+  the parent's center-X and fill the parent's inner width (`parent − 2·PAD`, snapped down to a
+  ladder rung) so a slot/ref has room for its name gutter + value and never pokes out.
+- Overflow shrink steps a box DOWN the ladder (stays WIDTH-ON-LADDER) into `innerW − 2` (snap
+  slack, keeps PAD≥8 after centering); if the ladder min still can't fit → THROW.
+- Escape hatch (`x/y`, no `at`) is clamped to the segment's real viewBox (passed in by the player).
+- **Migration complete:** ALL 6 lessons are fully on `at` (0 manual coordinates) — verified by
+  viz-fit's coverage line "autolayout: 6/6 lessons fully on `at`". closures stays the pixel-exact
+  single-column exemplar; async-await is the 2D-timeline exemplar (tracks × phases via the grid).
+
 ## Verification (extend verify/viz-fit.mjs; keep FIT/CLIP/OVERLAP)
 HEIGHT-IN-SCALE · WIDTH-ON-LADDER · GRID-SNAP (v%2==0) · EDGE-ORTHOGONAL (each drawn segment axis-aligned except arcs, or single straight when endpoints share x/y) · EDGE-PORT-ON-BORDER · BEND-COUNT ≤3 · ROW-BASELINE (near-equal center-Y ⇒ identical y+height) · RX-CONSISTENT per kind · STROKE-CONSISTENT per class.

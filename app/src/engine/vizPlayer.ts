@@ -6,6 +6,7 @@
  * scrubber UI, gates on a predict-then-run step, and autoplays on demand.
  */
 import { baseXY, domMeasure, durations, svgEl, SVGNS, type Durations } from "./dom.ts";
+import { layoutScene } from "./layout.ts";
 import { StepPlayer } from "./stepPlayer.ts";
 import type { DiffResult, FlipMove, Scene, VNode, Zone } from "./types.ts";
 
@@ -93,9 +94,17 @@ export class VizPlayer {
     this.reduced = cfg.reducedMotion;
     this.dur = durations(this.reduced);
 
+    // AUTO-LAYOUT v2: resolve each scene's structural placement (`at`) into concrete
+    // x/y/w/h BEFORE the StepPlayer renders, so FLIP measures deltas from real
+    // coordinates and a node whose `at` changes between scenes still animates its
+    // move. layoutScene is pure + deterministic; scenes with explicit x/y (the
+    // un-migrated lessons) pass through unchanged (escape hatch). The arrow marker
+    // is injected on the laid-out copy.
+    const zones = cfg.zones || [];
     const steps = cfg.scenes.map((s) => {
-      s._marker = "url(#" + this.markerId + ")";
-      return s;
+      const laid = layoutScene(s, zones, domMeasure, cfg.viewBox);
+      laid._marker = "url(#" + this.markerId + ")";
+      return laid;
     });
     this.player = new StepPlayer(steps, { reducedMotion: this.reduced, measure: domMeasure });
     this.total = this.player.steps.length;

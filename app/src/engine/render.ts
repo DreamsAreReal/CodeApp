@@ -144,7 +144,9 @@ interface Box {
 }
 function boxOf(n: DiagramNode, measure: Measure): Box {
   const { w, h } = sizeNode(n, measure);
-  return { cx: snap(n.x), cy: snap(n.y), hw: w / 2, hh: h / 2 };
+  // x/y are resolved by layoutScene before render; fall back to 0 for the rare
+  // pure-render caller that hands over a coordinate-free node.
+  return { cx: snap(n.x ?? 0), cy: snap(n.y ?? 0), hw: w / 2, hh: h / 2 };
 }
 
 /** A port: a point on a box border + the side it faces (for perpendicular jogs). */
@@ -333,7 +335,7 @@ export function renderNode(n: DiagramNode, measure: Measure = monoMeasure): VNod
   return {
     tag: "g",
     key: "n:" + n.id,
-    attrs: { transform: `translate(${snap(n.x)},${snap(n.y)})`, class: cls, "data-node": n.id },
+    attrs: { transform: `translate(${snap(n.x ?? 0)},${snap(n.y ?? 0)})`, class: cls, "data-node": n.id },
     children,
   };
 }

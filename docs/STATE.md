@@ -55,7 +55,23 @@ Workspace: /Users/admin/Desktop/test5/docs/
 
 ## Следующий шаг
 
-### BUILD-статус (ТЕКУЩИЙ — 2026-07-10)
+### ТЕКУЩАЯ ВОЛНА (2026-07-11) — АВТОЛЕЙАУТ движка (bug-proof authoring)
+СТАТУС: движок+миграция 6/6 ГОТОВЫ и проверены. Пользователь на гейте выбрал «НАПОЛНИТЬ вердикт-кадры
+контекстом». Осталось: полиш ~6 разреженных вердикт-сцен (gc s3/s6, boxing s3/s6/s7, async s5) —
+в пустеющих зонах осмысленный узел из УЖЕ показанного в сегменте факта (0 новых claim/источников),
+финальный кадр сбалансирован. Потом финальный визуальный проход → 1 коммит+push (auto-deploy). ↓ детали ↓
+
+Пользователь (после 5 скринов): «докручивай. мне нужен движок который максимально просто даёт
+создавать анимации без визуальных багов. чтобы ментор не мог сделать кривую анимацию или урок».
+→ Убираем последний источник кривизны — РУЧНЫЕ x/y узлов. Модель: зоны остаются авторскими
+прямоугольниками (низкий риск ошибки), узлы получают `at:{zone,row,col}` (+ вложенные
+`at:{in:parentId}`), движок сам считает позицию/размер/выравнивание/маршрут внутри зоны.
+Спека: docs/design/viz-design-spec.md §«Auto-layout v2». План: Builder-1 движок layoutScene +
+типы + миграция closures (proof, самый сложный: вложение+ряды+рёбра) + расширить viz-fit
+(AUTHORING-PROOF: узлы без x/y, лейаут детерминирован, в зоне) + обновить AUTHORING-AI.md →
+я визуально ревью closures → Builder-2 миграция остальных 5 → визуальный проход + деплой.
+
+### BUILD-статус (ТЕКУЩИЙ — 2026-07-11)
 Фаза 4 BUILD идёт. Собрано и ЗЕЛЕНО (npm run build + npm run verify, live backend):
 walking skeleton + движок (RS-08) + бэкенд C#/ASP.NET+SQLite+FSRS-6 (12 xUnit PASS) +
 AI-инструкция (docs/AUTHORING-AI.md). Уроки-фронт (LessonData): value-vs-reference, boxing,
@@ -489,6 +505,30 @@ Maximalist-ставка: «self-hosting learning app» — приложение 
   types w/h optional) → расширить viz-fit (height-in-scale/width-ladder/grid-snap/edge-orthogonal/port-on-
   border/bend/row-baseline/rx/stroke) → нормализовать ВСЕ 6 уроков → viz-fit+harness'ы ALL GREEN +
   before/after скрины. Потом Я визуально проверяю каждую сцену + деплой. Волна 4 (Dockerfile/CI) — после.
+- 2026-07-11 — АВТОЛЕЙАУТ v2 — ВСЕ 6 УРОКОВ МИГРИРОВАНЫ + НЕЗАВИСИМО ПРОВЕРЕНО. Builder-2 обобщил
+  layoutScene до сетки (row×col: у колонки один стабильный center-X между рядами → даёт 2D-таймлайн
+  async-await; одноколоночные зоны = прежний стек, closures пиксель-в-пиксель по SHA-256). Мигрированы
+  value-vs-reference/boxing/gc/hashtable/async-await на `at` (0 ручных координат во всём app). Моя
+  независимая верификация: build OK; viz-fit ALL GREEN + «6/6 lessons fully on at»; run.mjs/new-lessons
+  ALL GREEN; grep raw-coords=0. ВИЗУАЛЬНОЕ РЕВЬЮ ОРКЕСТРАТОРА (28 кадров): сильно — value-vs-ref, closures,
+  hashtable (цепочка коллизий + сетка 2×2), gc s2 (3 поколения), boxing s5 (вложение), async s1-s4
+  (таймлайн). ПАТТЕРН для решения пользователя (вкус, не баг): ~6 финальных вердикт-кадров (gc s3/s6,
+  boxing s3/s7, async s5) разрежены — верхние зоны пустеют (объекты жили в предыдущих сценах, зоны =
+  стабильный фон), остаётся gate. Движок корректен (ментор так не сделает кривую — цель достигнута);
+  вопрос — наполнять вердикт-кадры контекстом или оставить минимальными. НЕ коммичу до решения вкуса →
+  один чистый коммит+push (auto-deploy) после. Артефакты: engine/layout.ts (grid), 5 lessons, autolayout-shots.mjs.
+  ГЛАЗАМИ. Builder-1: engine/layout.ts `layoutScene` (зоны→ряды: центр по X, один center-Y/ряд,
+  блок центр по Y; вложение `at:{in}` — родитель авто-растёт, дети = parent−2·PAD; overflow→шаг вниз
+  по лестнице или THROW; escape-hatch snap+clamp в реальный viewBox). types: x?/y? опц. + at:
+  NodePlacement + Zone.id?. vizPlayer зовёт layoutScene ДО StepPlayer (FLIP цел). closures.ts — все 5
+  сегментов на `at` (0 узлов с x/y). viz-fit +AUTHORING-PROOF + покрытие «1/6 fully on at». Пруфы
+  исполнены: build чисто; viz-fit ALL GREEN; run.mjs/new-lessons/shell ALL GREEN (un-migrated 5 не
+  сломались); pure escape-hatch 81 сцена 0 throws. ВИЗУАЛЬНОЕ РЕВЬЮ ОРКЕСТРАТОРА (s1-s5 PNG): s1-s4
+  ровные (вложение авто-растёт, рёбра прямые/ортог.). НАХОДКА s5: gate «foreach → 012» стоял в зоне
+  «for·одна i» (смысловое противоречие, пред-существовало в контенте) → починил на «for → 333 /
+  общая i=3» (левая=ловушка for, правая=фикс foreach зелёными n=0/1/2). Пересобрал+переснял+viz-fit
+  GREEN. Не коммичу — жду миграции остальных 5 (Builder-2) → финальный визуальный проход → 1 коммит+деплой.
+  [ЭФФЕКТ-ПРИМЕНЁН]
 - 2026-07-11 — BUILDER выполнил viz-redesign по спеке. Движок: render.ts — routeEdge (ортогональный
   скруглённый path, порты на гранях по доминантной оси, ≤2-3 изгиба, r=6 clamped, colinear→прямая,
   data-edge для харнеса); snap(v)=Math.round(v/2)*2 на всех коорд; KIND_RX {chip6,slot8,ref8,obj8,gate10};

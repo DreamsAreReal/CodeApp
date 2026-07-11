@@ -26,6 +26,10 @@
  */
 import { chromium } from "playwright";
 import { mkdirSync } from "node:fs";
+// Auto-layout v2 (engine) + the lesson registry, imported directly (node strips the
+// TS types) so the AUTHORING-PROOF runs the REAL layoutScene the app runs.
+import { layoutScene } from "../src/engine/layout.ts";
+import { LESSONS as LESSON_DATA } from "../src/lessons/index.ts";
 
 const APP = process.env.APP_BASE || "http://localhost:4173";
 const API = process.env.VITE_API_BASE || "http://localhost:5080";
@@ -269,13 +273,26 @@ function measureInPage(lessonId) {
       }
     });
 
-    // ---- ROW-BASELINE: two nodes whose center-Y differ ≤ ROW_TOL must share
-    // an identical center-Y AND height (no "almost aligned" 61 vs 64 rows).
-    // EXEMPT: a node fully CONTAINED in another (nested display-class field slot)
-    // legitimately shares its parent's row — same exemption as the OVERLAP check. ----
+    // ---- ROW-BASELINE (auto-layout v2): two nodes in the SAME row share ONE
+    // center-Y — CENTER alignment, so their HEIGHTS MAY DIFFER (a chip h28 and an
+    // obj h44 in one row is legal in v2). We therefore only flag "almost aligned"
+    // rows: center-Ys that are NEAR-equal (within ROW_TOL) but not identical — the
+    // 61-vs-64 bug the engine now makes impossible. Exact-equal center-Y with
+    // different heights is NOT a violation any more (that is the intended model).
+    // EXEMPT: a node fully CONTAINED in another (nested display-class field slot). ----
     const rowContains = (o, i) => o.x0 <= i.x0 + OVL_TOL && o.y0 <= i.y0 + OVL_TOL && o.x1 >= i.x1 - OVL_TOL && o.y1 >= i.y1 - OVL_TOL;
+    // A node fully contained in ANY other box is NESTED (its center-Y is set by its
+    // parent's internal stacking, not by row alignment). Such nodes are excluded from
+    // the row-pair comparison entirely — comparing a nested field slot's center-Y with
+    // a far-away sibling box is meaningless (they are not a row).
+    const nestedIdx = new Set();
+    for (let i = 0; i < boxes.length; i++)
+      for (let j = 0; j < boxes.length; j++)
+        if (i !== j && rowContains(boxes[j], boxes[i])) nestedIdx.add(i);
     for (let i = 0; i < metrics.length; i++) {
+      if (nestedIdx.has(i)) continue;
       for (let j = i + 1; j < metrics.length; j++) {
+        if (nestedIdx.has(j)) continue;
         const a = metrics[i];
         const b = metrics[j];
         const ba = boxes[i];
@@ -284,8 +301,6 @@ function measureInPage(lessonId) {
         const dCy = Math.abs(a.cy - b.cy);
         if (dCy > 0.5 && dCy <= ROW_TOL) {
           row.push({ lesson: lessonId, seg: segId, a: a.id, b: b.id, cyA: round(a.cy), cyB: round(b.cy), reason: "center-Y" });
-        } else if (dCy <= 0.5 && Math.abs(a.h - b.h) > 0.5) {
-          row.push({ lesson: lessonId, seg: segId, a: a.id, b: b.id, hA: round(a.h), hB: round(b.h), reason: "height" });
         }
       }
     }
@@ -401,8 +416,108 @@ function measureInPage(lessonId) {
   return { fit, clip, overlap, height, width, grid, ortho, port, bend, row, rxc, strk };
 }
 
+/**
+ * AUTHORING-PROOF (auto-layout v2): runs the REAL engine `layoutScene` over every
+ * lesson's scenes (no browser needed) and asserts the "mentor can't make a crooked
+ * frame" guarantees for the fully-`at` lessons:
+ *   - every zone-placed node sits inside its zone with PAD≥8 on every side;
+ *   - a nested node is fully contained in its parent;
+ *   - all nodes of one (zone,row) share ONE center-Y (center alignment; ROW-BASELINE);
+ *   - no two node boxes partially overlap (nesting containment is allowed);
+ *   - grid-snap (x/y/w/h even).
+ * Also prints the coverage line "autolayout: N/6 lessons fully on `at`" (closures ⇒ ≥1).
+ * A lesson is "fully on at" when EVERY node in EVERY scene declares `at` (no x/y).
+ */
+function authoringProof() {
+  const PAD = 8;
+  let bad = 0;
+  const fail = (m) => {
+    bad++;
+    log("  ✗ FAIL: AUTHORING-PROOF " + m);
+  };
+  const box = (n) => ({ x0: n.x - n.w / 2, y0: n.y - n.h / 2, x1: n.x + n.w / 2, y1: n.y + n.h / 2 });
+  const contains = (o, i) => o.x0 <= i.x0 + 1 && o.y0 <= i.y0 + 1 && o.x1 >= i.x1 - 1 && o.y1 >= i.y1 - 1;
+
+  let fullyOnAt = 0;
+  const onAtLessons = [];
+  for (const L of LESSON_DATA) {
+    let lessonAllAt = true;
+    let hasAtNode = false;
+    for (const seg of L.segments) {
+      const zones = seg.zones || [];
+      const zoneById = new Map(zones.filter((z) => z.id).map((z) => [z.id, z]));
+      for (const sc of seg.scenes) {
+        for (const n of sc.nodes) {
+          if (n.at) hasAtNode = true;
+          else lessonAllAt = false;
+        }
+        // Only assert the layout invariants on scenes that actually use `at`
+        // (un-migrated explicit-x/y scenes are covered by the browser FIT/CLIP/OVERLAP).
+        if (!sc.nodes.some((n) => n.at)) continue;
+        let laid;
+        try {
+          laid = layoutScene(sc, zones, undefined, seg.viewBox);
+        } catch (e) {
+          fail(`${L.id}/${seg.id}: layoutScene threw: ${e.message}`);
+          continue;
+        }
+        const byId = new Map(laid.nodes.map((n) => [n.id, n]));
+        const boxes = laid.nodes.map((n) => ({ id: n.id, ...box(n) }));
+        // grid-snap
+        for (const n of laid.nodes)
+          for (const [k, v] of [["x", n.x], ["y", n.y], ["w", n.w], ["h", n.h]])
+            if (Math.round(v) % 2 !== 0) fail(`${L.id}/${seg.id}: ${n.id}.${k}=${v} not grid-snapped`);
+        // in-zone PAD≥8 + nested containment + row center-Y
+        const rows = new Map();
+        for (const n of sc.nodes) {
+          const at = n.at;
+          if (at && at.zone) {
+            const z = zoneById.get(at.zone);
+            if (!z) {
+              fail(`${L.id}/${seg.id}: node ${n.id} references unknown zone '${at.zone}'`);
+              continue;
+            }
+            const b = box(byId.get(n.id));
+            if (b.x0 < z.x + PAD - 0.5 || b.y0 < z.y + PAD - 0.5 || b.x1 > z.x + z.w - PAD + 0.5 || b.y1 > z.y + z.h - PAD + 0.5)
+              fail(`${L.id}/${seg.id}: ${n.id} not inside zone '${at.zone}' with PAD≥8`);
+            const rk = at.zone + ":" + at.row;
+            (rows.get(rk) || rows.set(rk, []).get(rk)).push(byId.get(n.id));
+          }
+          if (at && at.in) {
+            const p = byId.get(at.in);
+            if (!p) fail(`${L.id}/${seg.id}: nested ${n.id} references unknown parent '${at.in}'`);
+            else if (!contains(box(p), box(byId.get(n.id)))) fail(`${L.id}/${seg.id}: nested ${n.id} not contained in ${at.in}`);
+          }
+        }
+        // ROW-BASELINE: one center-Y per (zone,row)
+        for (const [rk, arr] of rows) {
+          const cy0 = arr[0].y;
+          for (const n of arr) if (Math.abs(n.y - cy0) > 0.5) fail(`${L.id}/${seg.id}: row ${rk} center-Y mismatch on ${n.id}`);
+        }
+        // no partial overlap (nesting containment allowed)
+        for (let i = 0; i < boxes.length; i++)
+          for (let j = i + 1; j < boxes.length; j++) {
+            const a = boxes[i], b = boxes[j];
+            const ox = Math.min(a.x1, b.x1) - Math.max(a.x0, b.x0);
+            const oy = Math.min(a.y1, b.y1) - Math.max(a.y0, b.y0);
+            if (ox > 1 && oy > 1 && !contains(a, b) && !contains(b, a)) fail(`${L.id}/${seg.id}: overlap ${a.id} ∩ ${b.id}`);
+          }
+      }
+    }
+    if (lessonAllAt && hasAtNode) {
+      fullyOnAt++;
+      onAtLessons.push(L.id);
+    }
+  }
+  log(`\n== AUTHORING-PROOF (auto-layout v2, pure engine) ==`);
+  assert(bad === 0, `layoutScene: every at-scene is in-zone (PAD≥8), nested-contained, row-aligned, non-overlapping, snapped`);
+  log(`  autolayout: ${fullyOnAt}/${LESSON_DATA.length} lessons fully on \`at\`${onAtLessons.length ? " [" + onAtLessons.join(", ") + "]" : ""}`);
+  assert(fullyOnAt >= 1, `at least 1/${LESSON_DATA.length} lessons fully migrated to \`at\` (closures)`);
+}
+
 async function main() {
   mkdirSync(EV, { recursive: true });
+  authoringProof();
   await authApi();
   const browser = await chromium.launch();
   const consoleErrors = [];

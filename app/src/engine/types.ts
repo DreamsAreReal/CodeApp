@@ -23,11 +23,27 @@ export interface VNode {
 export type NodeKind = "slot" | "ref" | "obj" | "chip" | "gate";
 export type NodeState = "ok" | "fail" | "";
 
+/**
+ * Where a node lives, declared STRUCTURALLY (auto-layout v2). The engine computes
+ * the pixel position from this, so the author can never produce a crooked frame.
+ *   - `{ zone, row, col? }` — the node sits in a zone's grid: nodes sharing
+ *     `(zone,row)` form a horizontal ROW (left→right by `col`, then array order).
+ *   - `{ in, order? }` — the node is NESTED inside another node (e.g. a hoisted
+ *     field slot inside its DisplayClass obj); the parent auto-grows to contain it.
+ * A node with `at` needs no `x/y`; a node with explicit `x/y` and no `at` is the
+ * documented escape hatch (honoured, snapped + clamped into the viewBox).
+ */
+export type NodePlacement = { zone: string; row: number; col?: number } | { in: string; order?: number };
+
 export interface DiagramNode {
   id: string;
   kind: NodeKind;
-  x: number;
-  y: number;
+  /** Optional: computed by `layoutScene` from `at`. Explicit x/y = escape hatch. */
+  x?: number;
+  /** Optional: computed by `layoutScene` from `at`. Explicit x/y = escape hatch. */
+  y?: number;
+  /** Structural placement (auto-layout v2). Preferred over x/y — see NodePlacement. */
+  at?: NodePlacement;
   /** Optional: derived by `sizeNode` from the width ladder when omitted. */
   w?: number;
   /** Optional: derived by `sizeNode` from the kind-height map when omitted. */
@@ -66,6 +82,8 @@ export interface Scene {
 
 /** A static backdrop rectangle (e.g. STACK / HEAP zone). */
 export interface Zone {
+  /** Optional id: a node's `at.zone` matches a zone by this id (auto-layout v2). */
+  id?: string;
   x: number;
   y: number;
   w: number;

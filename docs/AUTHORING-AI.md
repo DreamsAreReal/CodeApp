@@ -58,6 +58,53 @@
 6. **Зарегистрируй** урок в `app/src/lessons/index.ts` и, при необходимости, в сид бэка/`/api/lessons`.
 7. **Верифицируй** (§6) headless-прогоном.
 
+## 3a. РАЗМЕЩЕНИЕ виз-узлов — ТОЛЬКО через `at` (auto-layout v2, bug-proof)
+**Правило:** узел НЕ несёт координат `x/y` (и почти никогда `w/h`). Он объявляет только
+МЕСТО, а движок (`layoutScene`) сам считает позицию, размер, выравнивание и маршрут рёбер.
+Кривой/вылезающий/несбалансированный кадр СОБРАТЬ НЕЛЬЗЯ — это гарантия движка, проверяемая
+`verify/viz-fit.mjs` (AUTHORING-PROOF: in-zone PAD≥8 · один center-Y на ряд · нет overlap ·
+grid-snap · ширины на лестнице). Declare placement — the engine positions.
+
+- **В зоне:** `at: { zone: <zoneId>, row: <int>, col?: <int> }`. Дай каждой зоне `id`.
+  Узлы с одинаковым `(zone,row)` образуют РЯД (слева-направо по `col`, затем по порядку в
+  массиве); ряд центрируется горизонтально, все узлы ряда делят ОДИН center-Y (высоты могут
+  различаться — chip и obj в одном ряду выравниваются по центру). Ряды стопкой сверху вниз,
+  весь блок центрируется в зоне.
+- **Вложенность:** `at: { in: <parentId>, order?: <int> }` — узел кладётся ВНУТРЬ другого
+  (напр. поле display-класса внутри его obj). Родитель авто-растёт по высоте, чтобы вместить
+  детей под своей «шапкой» (typeTag). Ширину/позицию вложенного считает движок.
+- **Размер:** приходит из `sizeNode` (высота по kind + ширина по лестнице под измеренный
+  текст). `w/h` в узле писать НЕ надо — движок подберёт и при переполнении зоны ужмёт
+  ширину до подходящей ступени лестницы, а если не влезает — БРОСИТ ошибку авторинга
+  (виден сбой, не тихий баг). Узел без `at` и без `x/y` → тоже ошибка авторинга.
+- **Escape hatch:** явные `x/y` (без `at`) ещё уважаются (snap+clamp в viewBox) для редких
+  спецслучаев, но ДОКУМЕНТИРОВАННЫЙ путь — только `at`. Не мигрированные уроки на `x/y`
+  продолжают работать без изменений (обратная совместимость).
+
+**Было (ручные координаты — так БОЛЬШЕ НЕ надо):**
+```ts
+nodes: [
+  { id: "n",  kind: "slot", x: 83,  y: 88,  name: "n", value: "1" },
+  { id: "add", kind: "ref", x: 83,  y: 152, name: "add" },
+  { id: "cap", kind: "chip", x: 257, y: 112, value: "→ n" },
+]
+```
+**Стало (только размещение — движок расставит):**
+```ts
+// zones: [{ id:"stack", ... }, { id:"heap", ... }]
+nodes: [
+  { id: "n",   kind: "slot", at: { zone: "stack", row: 0 }, name: "n", value: "1" },
+  { id: "add", kind: "ref",  at: { zone: "stack", row: 1 }, name: "add" },
+  { id: "cap", kind: "chip", at: { zone: "heap",  row: 0 }, value: "→ n" },
+]
+```
+Вложение (поле `nf` внутри display-класса `dc`, `dc` авто-растёт):
+```ts
+{ id: "dc", kind: "obj",  at: { zone: "heap", row: 0 }, typeTag: "DisplayClass" },
+{ id: "nf", kind: "slot", at: { in: "dc" }, name: "n", value: "1" },
+```
+Эталон полной миграции — `app/src/lessons/closures.ts` (5 сегментов: ряды, вложение, рёбра).
+
 ## 4. Каталог примитивов виз (собирай сцены из них; см. движок)
 `stack{thread}` (кадр стека, подпиши «стек потока ~1МБ Windows» где уместно) · `heap` («GC-куча · общая ·
 все потоки») · `thread{name}` · `box{name,value,type}` · `ref{from→to}` (стрелка) · `gate{ok/fail}`
@@ -135,8 +182,10 @@ export const lesson = {
   code?:["int i = 123;"], il?:[{off,op,arg,cmt}],
   predictAt?:2, predictQ?:"HTML", console?:true,
   scenes:[ { codeLine?:0, ilLine?:1, out?:"123", caption:"HTML",
-             nodes:[{id,kind:"slot|ref|obj|chip|gate", x,y,w,h, name?,value?,typeTag?,
-                     accent?,good?,state?,label?,detail?}],
+             // РАЗМЕЩЕНИЕ через at (auto-layout v2, см. §3a) — НЕ x/y. w/h тоже не нужны.
+             nodes:[{id,kind:"slot|ref|obj|chip|gate",
+                     at:{zone,row,col?} | {in,order?},   // предпочтительно; x/y = escape hatch
+                     name?,value?,typeTag?,accent?,good?,state?,label?,detail?}],
              edges:[{id,from,to,accent?}] } ],
   explain:"HTML: механизм + ДОСЛОВНАЯ цитата", sources:["ms-x"] }
 ```

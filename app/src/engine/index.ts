@@ -6,7 +6,9 @@
  *   Scene (data) -> render -> keyed data-join diff -> FLIP -> StepPlayer -> VizPlayer (DOM).
  */
 export * from "./types.ts";
-export { render, renderNode } from "./render.ts";
+export { render, renderNode, sizeNode, snap, monoMeasure } from "./render.ts";
+export type { Measure } from "./render.ts";
+export { layoutScene, LAYOUT_GRID } from "./layout.ts";
 export { diff, planFlip } from "./diff.ts";
 export { StepPlayer } from "./stepPlayer.ts";
 export { VizPlayer } from "./vizPlayer.ts";
