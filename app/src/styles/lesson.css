@@ -986,11 +986,230 @@
   font-size: 0.86em;
 }
 
+/* ---- typed-answer card (generation, not recognition) ---- */
+.typed {
+  margin-top: 13px;
+}
+.typed-lbl {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.typed-badge {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--coral-text);
+  background: var(--coral-tint);
+  border-radius: 7px;
+  padding: 3px 8px;
+}
+.typed-hint {
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--muted);
+}
+.typed-in {
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  min-height: 46px;
+  font-family: var(--mono);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--ink);
+  background: var(--code-bg);
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-m);
+  padding: 12px 13px;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.typed-in::placeholder {
+  color: var(--muted);
+  font-weight: 500;
+  opacity: 0.75;
+}
+.typed-in:focus {
+  outline: none;
+  border-color: var(--coral);
+  background: var(--surface);
+}
+.typed-in.locked {
+  cursor: default;
+}
+.typed-in.ok {
+  border-color: var(--sage);
+  background: var(--sage-tint);
+}
+.typed-in.no {
+  border-color: var(--coral-d);
+  background: var(--coral-tint);
+}
+
+/* reveal: correct output (+ yours-vs-expected diff on a miss) */
+.typed-verdict {
+  margin-top: 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.typed-verdict[hidden] {
+  display: none;
+}
+.tv-hint {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+.tv-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.tv-k {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.tv-row.yours .tv-k {
+  color: var(--coral-text);
+}
+.tv-row.expected .tv-k {
+  color: var(--sage-text);
+}
+.tv-v {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 9px 11px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.tv-row.yours .tv-v {
+  border-color: var(--coral-d);
+  background: var(--coral-tint);
+  color: var(--coral-d);
+}
+.tv-row.expected .tv-v {
+  border-color: var(--sage);
+  background: var(--sage-tint);
+  color: var(--sage-text);
+}
+
+/* ---- calibration ("уверен?") strip — a light, tasteful confidence signal ---- */
+.calib {
+  margin-top: 13px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  flex-wrap: wrap;
+}
+.calib-q {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.calib-row {
+  display: flex;
+  gap: 7px;
+}
+.calib-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1.5px solid var(--line);
+  background: var(--surface);
+  border-radius: 10px;
+  padding: 6px 11px;
+  cursor: pointer;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--muted);
+  transition: transform 0.08s ease, border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+.calib-btn:active {
+  transform: scale(0.96);
+}
+.calib-btn svg {
+  width: 13px;
+  height: 13px;
+}
+.calib-btn.sel {
+  border-color: var(--coral);
+  background: var(--coral-wash);
+  color: var(--coral-text);
+}
+.calib-btn:disabled {
+  cursor: default;
+  opacity: 0.85;
+}
+/* immediate calibration feedback (inside the answer banner) — no shaming, just a signal */
+.calib-fb {
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.45;
+  padding: 7px 10px;
+  border-radius: 9px;
+}
+.calib-fb.good {
+  color: var(--sage-text);
+  background: var(--sage-tint);
+}
+.calib-fb.warn {
+  color: var(--amber-text);
+  background: var(--amber-tint);
+}
+
 /* ---- FSRS grade strip (the review step that closes the loop) ---- */
 .grade {
   margin-top: 14px;
   border-top: 1px dashed var(--line);
   padding-top: 14px;
+}
+/* objective result pre-selects a grade; the user may still adjust (self-rating secondary) */
+.grade-preselect {
+  margin: 0 0 10px;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 7px 10px;
+  border-radius: 9px;
+  display: none;
+}
+.grade-preselect.show {
+  display: block;
+}
+.grade-preselect.ok {
+  color: var(--sage-text);
+  background: var(--sage-tint);
+}
+.grade-preselect.no {
+  color: var(--coral-text);
+  background: var(--coral-tint);
+}
+.grade-btn.preselected {
+  border-color: var(--coral);
+  background: var(--coral-wash);
+  box-shadow: 0 0 0 2px var(--coral-tint);
+}
+.grade-btn.preselected .gl {
+  color: var(--coral-text);
 }
 .grade[hidden] {
   display: none;

@@ -220,6 +220,7 @@ app.MapGet("/api/progress", (HttpContext http, TimeProvider clock) =>
     var (reviewsTotal, streakDays) = db.GetStats(userId, now);
     var created = db.GetUserCreated(userId);
     var gradeMix = db.GetGradeMix(userId);
+    var calibration = db.GetCalibration(userId); // confidence-vs-outcome (typed-answer cards)
     var cards = db.GetCardsSummary(userId);
     var perLesson = db.GetPerLesson(userId, now);
     var completion = db.GetCompletionSummary(userId); // lesson-viewing rollup (honest "прохождение")
@@ -247,6 +248,13 @@ app.MapGet("/api/progress", (HttpContext http, TimeProvider clock) =>
             hard = gradeMix.Hard,
             good = gradeMix.Good,
             easy = gradeMix.Easy,
+        },
+        calibration = new
+        {
+            answered = calibration.Answered,
+            wellCalibrated = calibration.WellCalibrated,
+            overconfident = calibration.Overconfident,
+            underconfident = calibration.Underconfident,
         },
         cards = new
         {
@@ -309,7 +317,9 @@ app.MapPost("/api/review", (HttpContext http, ReviewRequest req, ReviewService r
         return Results.Json(new { error = Strings.InvalidGrade }, statusCode: 400);
 
     long userId = http.TgId();
-    var result = reviews.Review(userId, req.ItemId, (Rating)req.Grade);
+    // Correct/Confidence are optional calibration signals (null when the client omits them) —
+    // persisted alongside the grade; they never affect the FSRS schedule (grade alone drives that).
+    var result = reviews.Review(userId, req.ItemId, (Rating)req.Grade, req.Correct, req.Confidence);
 
     return Results.Ok(new
     {

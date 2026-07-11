@@ -37,7 +37,13 @@ public sealed class ReviewService
         _clock = clock;
     }
 
-    public ReviewResult Review(long userId, string itemId, Rating rating)
+    /// <summary>
+    /// Grade a review. <paramref name="correct"/> (objective typed-answer outcome) and
+    /// <paramref name="confidence"/> (the "уверен?" tap) are OPTIONAL calibration signals appended
+    /// to the history event; both default to null so the existing contract is byte-for-byte intact.
+    /// </summary>
+    public ReviewResult Review(
+        long userId, string itemId, Rating rating, bool? correct = null, bool? confidence = null)
     {
         var now = _clock.GetUtcNow();
         var prev = _db.GetReviewState(userId, itemId);
@@ -68,7 +74,7 @@ public sealed class ReviewService
         _db.UpsertReviewState(new ReviewState(
             userId, itemId, state.Difficulty, state.Stability, due, reps, lapses, now,
             state.State, state.Step));
-        _db.AppendProgressEvent(new ProgressEvent(userId, itemId, (int)rating, now));
+        _db.AppendProgressEvent(new ProgressEvent(userId, itemId, (int)rating, now, correct, confidence));
 
         return new ReviewResult(
             itemId, rating, state.Difficulty, state.Stability, intervalDays, elapsedDays, due,

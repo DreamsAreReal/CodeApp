@@ -456,3 +456,12 @@ Maximalist-ставка: «self-hosting learning app» — приложение 
   грейд+калибровка) + обновить AUTHORING-AI.md под новый формат карточек + починить run-csharp log-pollution.
   Потом волна 4 (я: Dockerfile non-root+HEALTHCHECK, CI SHA-деплой+harness+coverlet) → финал → ОДИН деплой.
   Спавню Builder 3a (FSRS).
+- 2026-07-11 — Builder 3a ГОТОВ + ПРОВЕРЕН + ИСПРАВЛЕНЫ 2 хвоста (коммит 75586a5). FSRS = верный порт
+  py-fsrs 6.3.1 (short-term w17-w19 + Learning/Review/Relearning, ошибки в сессию 60/600с, интервалы
+  совпали с реальным py-fsrs, golden-vector на реальных числах, миграция 2 state/step безопасна на prod-БД).
+  Я починил: (1) host-логи→stderr (CSharpRunner больше не полируется, RunCSharp тест стабилен → 58/58),
+  (2) new-lessons.mjs шлёт Bearer (был 401 после IDOR). Все 3 harness'а зелёные. Спавню Builder 3b:
+  логика повторов на фронте — карточка «напечатай ответ» вместо MCQ (сверка с verify.expect, trimmed,
+  MCQ-фолбэк для карточек без expect), объективный исход → предлагает FSRS-грейд (верно→Хорошо/Легко,
+  неверно→Снова, ошибка вернётся в сессию через 3a), само-оценка=калибровка + фидбек «уверен vs прав».
+  + обновить AUTHORING-AI.md под новый формат карточек (run-csharp теперь чистый). Потом волна 4 (я).

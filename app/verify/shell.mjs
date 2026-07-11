@@ -290,11 +290,17 @@ async function main() {
   assert(total === 7, "boxing has 7 segments (segmentsTotal)");
   await page3.evaluate(() => window.__viz.forcePlayAll()); // marks every segment seen -> partial reports
   await sleep(600); // let the debounced partial report flush
-  // answer correctly (option 0 = "123") and grade Good -> completion report fires
-  await page3.locator('[data-opt="0"]').scrollIntoViewIfNeeded();
-  await page3.click('[data-opt="0"]');
+  // answer correctly by TYPING the real expected output "123", tap "уверен", grade Good ->
+  // completion report fires (typed generation flow, not MCQ)
+  assert(await page3.locator("#qTyped").count() === 1, "boxing card renders typed-answer input (generation)");
+  await page3.locator("#qTyped").scrollIntoViewIfNeeded();
+  await page3.fill("#qTyped", "123");
+  await page3.click('[data-conf="1"]'); // calibration: уверен
   await page3.click("#qCheck");
-  await page3.waitForSelector('.grade-btn[data-g="3"]', { state: "visible", timeout: 8000 });
+  await page3.waitForSelector("#qVerdict", { state: "visible", timeout: 8000 });
+  const boxAnswer = await page3.evaluate(() => window.__lastAnswer);
+  assert(boxAnswer.correct === true && boxAnswer.confidence === true, "typed ✓ + confidence captured (right+sure = well-calibrated)");
+  assert(await page3.locator('.grade-btn[data-g="3"].preselected').count() === 1, "correct -> Good (3) pre-selected");
   await page3.click('.grade-btn[data-g="3"]');
   await page3.waitForFunction(() => window.__lastReview, { timeout: 8000 });
   // wait for the completion report to reach the client hook
@@ -331,6 +337,16 @@ async function main() {
   await page3.waitForFunction(() => window.__progress && window.__progress.empty === false, { timeout: 15000 });
   const pgAfter = await page3.evaluate(() => window.__progress);
   assert(pgAfter.lessonsCompleted >= 1, "Progress screen shows lessonsCompleted>=1");
+  // calibration is PERSISTED end-to-end: the typed ✓ + "уверен" tap was recorded and surfaces
+  // as a real calibration stat on the Progress dashboard (right+sure = well-calibrated = 100%).
+  assert(pgAfter.calibration && pgAfter.calibration.answered === 1, "calibration persisted: 1 confidence-rated answer");
+  assert(pgAfter.calibration.wellCalibrated === 1 && pgAfter.calibration.overconfident === 0, "right+sure counted as well-calibrated");
+  assert(pgAfter.calibrationPct === 100, "calibration stat = 100% (the one answer was well-calibrated)");
+  assert(Array.isArray(pgAfter.sections) && pgAfter.sections.includes("calibration"), "Progress declares a calibration section");
+  assert(await page3.locator(".sec-label").filter({ hasText: "Калибровка" }).count() === 1, "calibration section label rendered on the Progress screen");
+  assert(await page3.locator(".calib-stat .ring-lg .pct").count() === 1, "calibration ring (with %) rendered");
+  const calibRingTxt = await page3.locator(".calib-stat .ring-lg .pct").innerText();
+  assert(calibRingTxt.trim() === "100%", `calibration ring shows 100% (got "${calibRingTxt.trim()}")`);
   await page3.screenshot({ path: `${EV}/390-progress-completed.png`, fullPage: true });
 
   // ===================== (f) console errors gate =====================

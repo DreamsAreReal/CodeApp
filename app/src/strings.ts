@@ -141,6 +141,32 @@ export const S = {
   check: "Проверить",
   okTitle: "Верно!",
   noTitle: "Почти",
+
+  // ---- typed-answer card (generation, not recognition) ----
+  typedLabel: "Напечатай вывод",
+  typedHint: "Введи ровно то, что напечатает программа в консоль.",
+  typedPlaceholder: "вывод программы…",
+  typedCheck: "Проверить ответ",
+  verdictOk: "✓ верно",
+  verdictNo: "✗ мимо",
+  typedYours: "Твой ответ",
+  typedExpected: "Ожидалось",
+  typedRevealHint: "Правильный вывод раскрыт ниже — сверься и оцени себя.",
+
+  // ---- calibration (confidence signal) ----
+  confidenceQ: "Уверен в ответе?",
+  confidenceYes: "Уверен",
+  confidenceNo: "Не уверен",
+  calibRightSure: "Отлично — знал и был уверен.",
+  calibRightUnsure: "Знал, но не был уверен — доверяй себе чуть больше.",
+  calibWrongSure: "Переоценил — обрати внимание на этот нюанс.",
+  calibWrongUnsure: "Ожидаемо: не был уверен — как раз для этого и повтор.",
+  // Progress calibration stat
+  calibLabel: "Калибровка",
+  calibCaption: "Совпадение уверенности с результатом — по вашим ответам.",
+  calibPctFmt: (pct: number) => `${pct}% в точку`,
+  calibEmpty: "Пока нет ответов с отметкой уверенности.",
+  calibOverconfidentFmt: (n: number) => `${n} ${plural(n, "переоценка", "переоценки", "переоценок")}`,
   mechanismTitle: "Механизм — как и почему",
   sourceKicker: "Источник · Microsoft Learn",
   moreSources: "Все источники · сверено дословно с первоисточником",
@@ -149,6 +175,10 @@ export const S = {
 
   // ---- review (FSRS grade) ----
   gradeHead: "Оцените, насколько уверенно вспомнили",
+  // objective result is now the main signal; self-rating is secondary and pre-selected
+  gradeHeadObjective: "Оценка выставлена по результату — можете уточнить",
+  gradePreselectedOk: "По результату — Хорошо",
+  gradePreselectedNo: "По результату — Снова",
   gradeAgain: "Снова",
   gradeHard: "Трудно",
   gradeGood: "Хорошо",

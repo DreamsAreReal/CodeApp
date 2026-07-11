@@ -127,10 +127,23 @@ export const api = {
     return req<StatsResponse>("/api/stats");
   },
 
-  review(itemId: string, grade: Grade): Promise<ReviewResponse> {
+  /**
+   * Post a review. `correct` (objective typed-answer outcome) and `confidence` (the "уверен?"
+   * tap) are OPTIONAL calibration signals: when present they are persisted alongside the grade;
+   * when omitted the request is byte-for-byte the old contract, so nothing breaks for MCQ cards
+   * or older clients. The server defaults both to null.
+   */
+  review(
+    itemId: string,
+    grade: Grade,
+    opts?: { correct?: boolean; confidence?: boolean },
+  ): Promise<ReviewResponse> {
+    const body: Record<string, unknown> = { itemId, grade };
+    if (opts?.correct !== undefined) body.correct = opts.correct;
+    if (opts?.confidence !== undefined) body.confidence = opts.confidence;
     return req<ReviewResponse>("/api/review", {
       method: "POST",
-      body: JSON.stringify({ itemId, grade }),
+      body: JSON.stringify(body),
     });
   },
 

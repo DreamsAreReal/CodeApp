@@ -95,8 +95,8 @@ async function main() {
     await page.screenshot({ path: `${EV}/${e.ev}/375-full.png`, fullPage: true });
   }
 
-  // ---- the loop: GC card -> grade Good -> /api/review moves schedule ----
-  log("\n== T1.M4.gc: answer card -> grade Good -> POST /api/review moves schedule ==");
+  // ---- the loop: GC card -> TYPE correct answer -> ✓ -> Good pre-selected -> /api/review ----
+  log("\n== T1.M4.gc: TYPE correct answer -> ✓ -> Good pre-selected -> POST /api/review moves schedule ==");
   await page.evaluate(() => window.__app.openLesson("T1.M4.gc"));
   await page.waitForFunction(() => window.__viz && window.__viz.ready && window.__lesson.id === "T1.M4.gc", { timeout: 15000 });
   await authApi();
@@ -104,16 +104,22 @@ async function main() {
   const gcDueBefore = dueBefore.items.some((i) => i.itemId === "T1.M4.gc/c1");
   assert(gcDueBefore, "gc/c1 is due before review");
   const countBefore = dueBefore.count;
-  await page.locator('[data-opt="0"]').scrollIntoViewIfNeeded();
-  await page.click('[data-opt="0"]'); // correct answer "01"
+  // typed-answer card: the monospace input is present, MCQ options are NOT
+  assert(await page.locator("#qTyped").count() === 1, "gc card renders typed-answer input (generation)");
+  assert(await page.locator("[data-opt]").count() === 0, "gc card has no MCQ options (typed flow)");
+  await page.locator("#qTyped").scrollIntoViewIfNeeded();
+  await page.fill("#qTyped", "01"); // the REAL expected output (verify.expect)
   await page.click("#qCheck");
-  await page.waitForSelector('.grade-btn[data-g="3"]', { state: "visible", timeout: 8000 });
-  await page.click('.grade-btn[data-g="3"]');
+  await page.waitForSelector("#qVerdict", { state: "visible", timeout: 8000 });
+  const gcAnswer = await page.evaluate(() => window.__lastAnswer);
+  assert(gcAnswer.correct === true, "typing the exact expect '01' is graded objectively correct");
+  assert(await page.locator('.grade-btn[data-g="3"].preselected').count() === 1, "correct -> Good (3) pre-selected");
+  await page.click('.grade-btn[data-g="3"]'); // confirm the pre-selected Good
   await page.waitForFunction(() => window.__lastReview, { timeout: 8000 });
   const review = await page.evaluate(() => window.__lastReview);
   log("  review response: " + JSON.stringify(review));
   assert(review.itemId === "T1.M4.gc/c1", "review posted for gc/c1");
-  assert(review.grade === "Good", "grade recorded as Good");
+  assert(review.grade === "Good", "grade recorded as Good (objective correct -> Good)");
   // FSRS-6 (py-fsrs 6.3.1): a brand-new Good advances one learning step (600s == ~0.00694 d),
   // due (now + 600s) is in the future, so the card leaves the immediate due queue.
   assert(review.intervalDays > 0 && review.intervalDays < 0.02, "new Good -> learning-step interval ~600s (" + review.intervalDays + "d)");
@@ -121,6 +127,29 @@ async function main() {
   const dueAfter = await apiGet(`/api/due`);
   assert(dueAfter.count === countBefore - 1, `due count dropped ${countBefore} -> ${dueAfter.count}`);
   assert(!dueAfter.items.some((i) => i.itemId === "T1.M4.gc/c1"), "gc/c1 left the due queue (schedule moved)");
+
+  // ---- the loop (wrong path): hashtable card -> TYPE wrong -> ✗ -> Again pre-selected -> posts Again ----
+  log("\n== T2.M5.hashtable: TYPE wrong answer -> ✗ -> Again pre-selected -> posts Again (same-session re-queue) ==");
+  await page.evaluate(() => window.__app.openLesson("T2.M5.hashtable"));
+  await page.waitForFunction(() => window.__viz && window.__viz.ready && window.__lesson.id === "T2.M5.hashtable", { timeout: 15000 });
+  const htDueBefore = await apiGet(`/api/due`);
+  assert(htDueBefore.items.some((i) => i.itemId === "T2.M5.hashtable/c1"), "hashtable/c1 is due before the wrong review");
+  await page.locator("#qTyped").scrollIntoViewIfNeeded();
+  await page.fill("#qTyped", "3"); // WRONG — the real expect is "2"
+  await page.click("#qCheck");
+  await page.waitForSelector("#qVerdict", { state: "visible", timeout: 8000 });
+  const htAnswer = await page.evaluate(() => window.__lastAnswer);
+  assert(htAnswer.correct === false, "typing a wrong output is graded objectively incorrect");
+  assert(await page.locator('.grade-btn[data-g="1"].preselected').count() === 1, "wrong -> Again (1) pre-selected");
+  assert(await page.locator("#qVerdict .tv-row.yours").count() === 1, "miss shows a yours-vs-expected diff");
+  await page.click('.grade-btn[data-g="1"]'); // confirm the pre-selected Again
+  await page.waitForFunction(() => window.__lastReview && window.__lastReview.itemId === "T2.M5.hashtable/c1", { timeout: 8000 });
+  const htReview = await page.evaluate(() => window.__lastReview);
+  log("  wrong review response: " + JSON.stringify(htReview));
+  assert(htReview.grade === "Again", "grade recorded as Again (objective wrong -> Again)");
+  // Again lands on the 1-minute learning step -> due is a short within-session step in the future.
+  const htDueDeltaSec = (new Date(htReview.due).getTime() - Date.now()) / 1000;
+  assert(htDueDeltaSec > 0 && htDueDeltaSec < 120, `Again re-queues hashtable/c1 due ${htDueDeltaSec.toFixed(0)}s out (< 2 min, this session)`);
 
   // ---- reduced-motion static final frames for each new lesson ----
   log("\n== reduced-motion: static final frames ==");

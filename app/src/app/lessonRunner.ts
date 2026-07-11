@@ -443,27 +443,196 @@ function srcChips(lesson: LessonData, ids: string[]): string {
   return `<div class="dd-src">${h}</div>`;
 }
 
-// ---- MCQ + FSRS grade strip ----
+// ---------------------------------------------------------------------------
+// Card question: typed generation (strong recall) OR MCQ fallback (recognition).
+//
+// A card is a TYPED-ANSWER card iff it is `predict-output` AND carries a non-empty
+// `verify.expect` (the real program output). Then the user TYPES the output and it is graded
+// objectively by string-compare. Otherwise (compare/explain, or no usable expect) we keep the
+// MCQ. Either way the outcome pre-selects the FSRS grade in a shared grade strip.
+// ---------------------------------------------------------------------------
+
+/** A card can be typed-graded only if it has a real, non-empty expected output to compare against. */
+function isTyped(card: Card): boolean {
+  return card.type === "predict-output" && typeof card.verify?.expect === "string" && card.verify.expect.trim().length > 0;
+}
+
+/**
+ * Tolerant normalization for objective typed-answer grading. Program output should match by
+ * VALUE, not by incidental whitespace: normalize CRLF/CR -> LF, strip trailing spaces on each
+ * line, and trim leading/trailing blank lines. Inner structure (line breaks that carry meaning)
+ * is preserved. This mirrors what the authoring `run-csharp` gate compares against (stdout.trim()).
+ */
+function normOutput(s: string): string {
+  return s
+    .replace(/\r\n?/g, "\n")
+    .split("\n")
+    .map((line) => line.replace(/[ \t]+$/g, ""))
+    .join("\n")
+    .replace(/^\n+/, "")
+    .replace(/\n+$/, "");
+}
+
+/** Objective correctness of a typed answer against the card's real expected output. */
+function typedCorrect(card: Card, typed: string): boolean {
+  return normOutput(typed) === normOutput(card.verify.expect);
+}
+
+const OK_ICON =
+  '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
+const NO_ICON =
+  '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 8v5M12 16h.01"/><circle cx="12" cy="12" r="9"/></svg>';
+
+/** The confidence ("уверен?") strip, captured BEFORE reveal. Returns a getter for the tap. */
+function calibrationStrip(): string {
+  return (
+    '<div class="calib" id="calib"><div class="calib-q">' + esc(S.confidenceQ) + "</div>" +
+    '<div class="calib-row">' +
+    `<button class="calib-btn" type="button" data-conf="1">${OK_ICON}<span>${esc(S.confidenceYes)}</span></button>` +
+    `<button class="calib-btn" type="button" data-conf="0"><span>${esc(S.confidenceNo)}</span></button>` +
+    "</div></div>"
+  );
+}
+
+/** Wire the confidence taps; returns () => boolean|null (null = the user never answered). */
+function wireCalibration(host: HTMLElement): () => boolean | null {
+  let confidence: boolean | null = null;
+  const btns = host.querySelectorAll<HTMLButtonElement>(".calib-btn");
+  btns.forEach((b) => {
+    b.addEventListener("click", () => {
+      confidence = b.getAttribute("data-conf") === "1";
+      btns.forEach((o) => o.classList.remove("sel"));
+      b.classList.add("sel");
+      tg.impact("light");
+      (window as unknown as { __calibration?: { confidence: boolean | null } }).__calibration = { confidence };
+    });
+  });
+  return () => confidence;
+}
+
+/** Immediate, tasteful calibration feedback line (no shaming). */
+function calibrationMessage(correct: boolean, confidence: boolean | null): string {
+  if (confidence === null) return "";
+  if (correct) return confidence ? S.calibRightSure : S.calibRightUnsure;
+  return confidence ? S.calibWrongSure : S.calibWrongUnsure;
+}
+
+// ---- card dispatcher ----
 function buildMcq(root: HTMLElement, lesson: LessonData, progress: LessonProgress, reporter: LessonReporter): void {
   const card: Card = lesson.cards[0];
   const host = root.querySelector<HTMLElement>("#mcqCard")!;
-  const checkSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
+  if (isTyped(card)) buildTyped(host, lesson, card, progress, reporter);
+  else buildOptions(host, lesson, card, progress, reporter);
+}
 
+/**
+ * TYPED-ANSWER card (generation, not recognition): a monospace text input. On submit the typed
+ * text is normalized and compared to the real `verify.expect` -> OBJECTIVE correct/incorrect. The
+ * correct output is revealed; on a miss we show a "yours vs expected" highlighted diff. The
+ * objective verdict then PRE-SELECTS the FSRS grade (correct -> Good, wrong -> Again).
+ */
+function buildTyped(
+  host: HTMLElement,
+  lesson: LessonData,
+  card: Card,
+  progress: LessonProgress,
+  reporter: LessonReporter,
+): void {
+  host.innerHTML =
+    `<div class="q-title">${card.question}</div>` +
+    `<div class="typed"><div class="typed-lbl"><span class="typed-badge">${esc(S.typedLabel)}</span><span class="typed-hint">${esc(S.typedHint)}</span></div>` +
+    `<textarea class="typed-in" id="qTyped" rows="1" spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off" placeholder="${esc(S.typedPlaceholder)}" aria-label="${esc(S.typedLabel)}"></textarea></div>` +
+    calibrationStrip() +
+    `<button class="q-check" id="qCheck" disabled>${S.typedCheck}</button>` +
+    '<div class="q-banner" id="qBanner"><div class="q-bhead"><span id="qbIcon"></span><span id="qbTitle"></span><span class="xpp" id="qbXp" hidden></span></div>' +
+    '<div class="typed-verdict" id="qVerdict" hidden></div>' +
+    '<div class="q-btext" id="qbText"></div></div>' +
+    gradeStripHtml();
+
+  const input = host.querySelector<HTMLTextAreaElement>("#qTyped")!;
+  const check = host.querySelector<HTMLButtonElement>("#qCheck")!;
+  const getConfidence = wireCalibration(host);
+  let answered = false;
+
+  // enable the check as soon as the user has typed something
+  input.addEventListener("input", () => {
+    check.disabled = answered || input.value.length === 0;
+  });
+  // Ctrl/Cmd+Enter submits (Enter alone inserts a newline — output can be multi-line).
+  input.addEventListener("keydown", (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === "Enter" && !check.disabled) check.click();
+  });
+
+  check.addEventListener("click", () => {
+    if (answered || input.value.length === 0) return;
+    answered = true;
+    input.readOnly = true;
+    input.classList.add("locked");
+    const ok = typedCorrect(card, input.value);
+    input.classList.add(ok ? "ok" : "no");
+    check.disabled = true;
+
+    const banner = host.querySelector<HTMLElement>("#qBanner")!;
+    banner.className = "q-banner show " + (ok ? "ok" : "no");
+    host.querySelector<HTMLElement>("#qbIcon")!.innerHTML = ok ? OK_ICON : NO_ICON;
+    host.querySelector<HTMLElement>("#qbTitle")!.textContent = ok ? S.verdictOk : S.verdictNo;
+
+    // reveal: correct output always; on a miss also a yours-vs-expected diff.
+    const verdict = host.querySelector<HTMLElement>("#qVerdict")!;
+    verdict.hidden = false;
+    verdict.innerHTML = typedReveal(card, input.value, ok);
+
+    const conf = getConfidence();
+    const calibLine = calibrationMessage(ok, conf);
+    host.querySelector<HTMLElement>("#qbText")!.innerHTML =
+      (ok ? card.okText : card.noText) + (calibLine ? `<div class="calib-fb ${conf === (ok) ? "good" : "warn"}">${esc(calibLine)}</div>` : "");
+
+    const xpBadge = host.querySelector<HTMLElement>("#qbXp")!;
+    if (ok) {
+      xpBadge.hidden = false;
+      xpBadge.textContent = "+" + card.xp + " XP";
+      progress.addXp(card.xp);
+    }
+    // lock the confidence strip once answered
+    host.querySelectorAll<HTMLButtonElement>(".calib-btn").forEach((b) => (b.disabled = true));
+
+    progress.bumpTo(78);
+    tg.notify(ok ? "success" : "warning");
+
+    (window as unknown as { __lastAnswer?: unknown }).__lastAnswer = {
+      itemId: `${lesson.id}/${card.id}`,
+      typed: input.value,
+      expected: card.verify.expect,
+      correct: ok,
+      confidence: conf,
+    };
+
+    revealGrade(host, lesson, card, progress, reporter, { correct: ok, confidence: conf });
+  });
+}
+
+/**
+ * MCQ FALLBACK (recognition) for cards WITHOUT a usable typed expect (compare/explain). Same
+ * pre-select-the-grade contract: a correct pick -> Good, a wrong pick -> Again.
+ */
+function buildOptions(
+  host: HTMLElement,
+  lesson: LessonData,
+  card: Card,
+  progress: LessonProgress,
+  reporter: LessonReporter,
+): void {
   host.innerHTML =
     `<div class="q-title">${card.question}</div>` +
     '<div class="opts" id="qOpts"></div>' +
+    calibrationStrip() +
     `<button class="q-check" id="qCheck" disabled>${S.check}</button>` +
     '<div class="q-banner" id="qBanner"><div class="q-bhead"><span id="qbIcon"></span><span id="qbTitle"></span><span class="xpp" id="qbXp" hidden></span></div><div class="q-btext" id="qbText"></div></div>' +
-    // grade strip (revealed after answering) — this posts the real review
-    `<div class="grade" id="grade" hidden><div class="grade-h">${S.gradeHead}</div><div class="grade-row">` +
-    gradeBtn(1, S.gradeAgain, S.gradeAgainHint) +
-    gradeBtn(2, S.gradeHard, "") +
-    gradeBtn(3, S.gradeGood, "") +
-    gradeBtn(4, S.gradeEasy, "") +
-    `</div><div class="grade-done" id="gradeDone">${ICON.check}<span id="gradeMsg"></span></div></div>`;
+    gradeStripHtml();
 
   const opts = host.querySelector<HTMLElement>("#qOpts")!;
   const check = host.querySelector<HTMLButtonElement>("#qCheck")!;
+  const getConfidence = wireCalibration(host);
   let selected = -1;
   let answered = false;
 
@@ -472,7 +641,7 @@ function buildMcq(root: HTMLElement, lesson: LessonData, progress: LessonProgres
     b.className = "opt";
     b.type = "button";
     b.setAttribute("data-opt", String(i));
-    b.innerHTML = `<span class="mk">${checkSvg}</span><span class="ot">${esc(txt)}</span>`;
+    b.innerHTML = `<span class="mk">${OK_ICON}</span><span class="ot">${esc(txt)}</span>`;
     b.addEventListener("click", () => {
       if (answered) return;
       selected = i;
@@ -495,31 +664,93 @@ function buildMcq(root: HTMLElement, lesson: LessonData, progress: LessonProgres
 
     const banner = host.querySelector<HTMLElement>("#qBanner")!;
     banner.className = "q-banner show " + (ok ? "ok" : "no");
-    host.querySelector<HTMLElement>("#qbIcon")!.innerHTML = ok
-      ? '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>'
-      : '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 8v5M12 16h.01"/><circle cx="12" cy="12" r="9"/></svg>';
+    host.querySelector<HTMLElement>("#qbIcon")!.innerHTML = ok ? OK_ICON : NO_ICON;
     host.querySelector<HTMLElement>("#qbTitle")!.textContent = ok ? S.okTitle : S.noTitle;
-    host.querySelector<HTMLElement>("#qbText")!.innerHTML = ok ? card.okText : card.noText;
+
+    const conf = getConfidence();
+    const calibLine = calibrationMessage(ok, conf);
+    host.querySelector<HTMLElement>("#qbText")!.innerHTML =
+      (ok ? card.okText : card.noText) + (calibLine ? `<div class="calib-fb ${conf === ok ? "good" : "warn"}">${esc(calibLine)}</div>` : "");
+
     const xpBadge = host.querySelector<HTMLElement>("#qbXp")!;
     if (ok) {
       xpBadge.hidden = false;
       xpBadge.textContent = "+" + card.xp + " XP";
       progress.addXp(card.xp);
     }
+    host.querySelectorAll<HTMLButtonElement>(".calib-btn").forEach((b) => (b.disabled = true));
     check.disabled = true;
-    progress.bumpTo(Math.max(78, 78));
+    progress.bumpTo(78);
     tg.notify(ok ? "success" : "warning");
 
-    // reveal the grade strip → this is the review action that moves the schedule.
-    const grade = host.querySelector<HTMLElement>("#grade")!;
-    grade.hidden = false;
-    wireGrade(host, lesson, card, progress, reporter);
-    grade.scrollIntoView({ behavior: REDUCED ? "auto" : "smooth", block: "nearest" });
+    (window as unknown as { __lastAnswer?: unknown }).__lastAnswer = {
+      itemId: `${lesson.id}/${card.id}`,
+      correct: ok,
+      confidence: conf,
+    };
+
+    revealGrade(host, lesson, card, progress, reporter, { correct: ok, confidence: conf });
   });
+}
+
+/**
+ * Reveal after a typed submit: always the correct output; on a miss also a compact
+ * "yours vs expected" comparison so the user sees exactly where they diverged.
+ */
+function typedReveal(card: Card, typed: string, ok: boolean): string {
+  const expected = `<div class="tv-row expected"><span class="tv-k">${esc(S.typedExpected)}</span><pre class="tv-v">${esc(normOutput(card.verify.expect))}</pre></div>`;
+  if (ok) return expected;
+  const yours = `<div class="tv-row yours"><span class="tv-k">${esc(S.typedYours)}</span><pre class="tv-v">${esc(normOutput(typed))}</pre></div>`;
+  return `<div class="tv-hint">${esc(S.typedRevealHint)}</div>${yours}${expected}`;
+}
+
+// ---- shared FSRS grade strip (the review action that moves the schedule) ----
+
+function gradeStripHtml(): string {
+  return (
+    `<div class="grade" id="grade" hidden><div class="grade-h" id="gradeHead">${S.gradeHeadObjective}</div>` +
+    '<div class="grade-preselect" id="gradePreselect" hidden></div>' +
+    '<div class="grade-row">' +
+    gradeBtn(1, S.gradeAgain, S.gradeAgainHint) +
+    gradeBtn(2, S.gradeHard, "") +
+    gradeBtn(3, S.gradeGood, "") +
+    gradeBtn(4, S.gradeEasy, "") +
+    `</div><div class="grade-done" id="gradeDone">${ICON.check}<span id="gradeMsg"></span></div></div>`
+  );
 }
 
 function gradeBtn(g: Grade, label: string, hint: string): string {
   return `<button class="grade-btn" type="button" data-g="${g}"><span class="gl">${label}</span><span class="gi">${hint || "&nbsp;"}</span></button>`;
+}
+
+/**
+ * Reveal the grade strip with the objective outcome PRE-SELECTED: correct -> Good (3), wrong ->
+ * Again (1). The self-rating is now secondary — the user MAY bump to Hard/Easy, but the objective
+ * result is the primary signal. The chosen grade is posted to /api/review exactly as before, plus
+ * the optional calibration fields (correct + confidence).
+ */
+function revealGrade(
+  host: HTMLElement,
+  lesson: LessonData,
+  card: Card,
+  progress: LessonProgress,
+  reporter: LessonReporter,
+  outcome: { correct: boolean; confidence: boolean | null },
+): void {
+  const grade = host.querySelector<HTMLElement>("#grade")!;
+  grade.hidden = false;
+  const preselected: Grade = outcome.correct ? 3 : 1; // Good | Again
+  const buttons = host.querySelectorAll<HTMLButtonElement>(".grade-btn");
+  buttons.forEach((b) => {
+    if (Number(b.getAttribute("data-g")) === preselected) b.classList.add("preselected");
+  });
+  const banner = host.querySelector<HTMLElement>("#gradePreselect")!;
+  banner.hidden = false;
+  banner.className = "grade-preselect show " + (outcome.correct ? "ok" : "no");
+  banner.textContent = outcome.correct ? S.gradePreselectedOk : S.gradePreselectedNo;
+
+  wireGrade(host, lesson, card, progress, reporter, preselected, outcome);
+  grade.scrollIntoView({ behavior: REDUCED ? "auto" : "smooth", block: "nearest" });
 }
 
 function wireGrade(
@@ -528,6 +759,8 @@ function wireGrade(
   card: Card,
   progress: LessonProgress,
   reporter: LessonReporter,
+  preselected: Grade,
+  outcome: { correct: boolean; confidence: boolean | null },
 ): void {
   const itemId = `${lesson.id}/${card.id}`;
   const done = host.querySelector<HTMLElement>("#gradeDone")!;
@@ -535,34 +768,47 @@ function wireGrade(
   const buttons = host.querySelectorAll<HTMLButtonElement>(".grade-btn");
   let sent = false;
 
-  buttons.forEach((btn) => {
-    btn.addEventListener("click", async () => {
-      if (sent) return;
-      sent = true;
-      const grade = Number(btn.getAttribute("data-g")) as Grade;
-      buttons.forEach((b) => (b.disabled = true));
-      btn.classList.add("sel");
-      msg.textContent = S.gradeSending;
+  async function post(grade: Grade, btn: HTMLButtonElement): Promise<void> {
+    if (sent) return;
+    sent = true;
+    buttons.forEach((b) => {
+      b.disabled = true;
+      b.classList.remove("sel");
+    });
+    btn.classList.add("sel");
+    msg.textContent = S.gradeSending;
+    done.classList.add("show");
+    tg.impact("medium");
+    try {
+      // Objective correctness + the confidence tap ride along as OPTIONAL calibration fields.
+      const res: ReviewResponse = await api.review(itemId, grade, {
+        correct: outcome.correct,
+        confidence: outcome.confidence ?? undefined,
+      });
+      msg.innerHTML = `<b>${S.reviewSaved(S.reviewDaysFmt(res.intervalDays))}</b>`;
+      progress.bumpTo(100);
+      // Reaching the grade = the user completed the lesson. Report it (sticky).
+      reporter.markCompleted();
+      appendNext(host);
+      (window as unknown as { __lastReview?: ReviewResponse }).__lastReview = res;
+      tg.notify("success");
+    } catch (e) {
+      sent = false;
+      buttons.forEach((b) => (b.disabled = false));
+      btn.classList.remove("sel");
+      msg.textContent = `Ошибка сохранения: ${(e as Error).message}`;
       done.classList.add("show");
-      tg.impact("medium");
-      try {
-        const res: ReviewResponse = await api.review(itemId, grade);
-        msg.innerHTML = `<b>${S.reviewSaved(S.reviewDaysFmt(res.intervalDays))}</b>`;
-        progress.bumpTo(100);
-        // Reaching the grade = the user completed the lesson. Report it (sticky).
-        reporter.markCompleted();
-        appendNext(host);
-        (window as unknown as { __lastReview?: ReviewResponse }).__lastReview = res;
-        tg.notify("success");
-      } catch (e) {
-        sent = false;
-        buttons.forEach((b) => (b.disabled = false));
-        btn.classList.remove("sel");
-        msg.textContent = `Ошибка сохранения: ${(e as Error).message}`;
-        done.classList.add("show");
-      }
+    }
+  }
+
+  buttons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const grade = Number(btn.getAttribute("data-g")) as Grade;
+      void post(grade, btn);
     });
   });
+
+  void preselected; // pre-selection is purely visual; the user confirms by tapping a grade.
 }
 
 function appendNext(host: HTMLElement): void {

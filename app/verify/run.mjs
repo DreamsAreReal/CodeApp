@@ -48,7 +48,7 @@ const apiGet = async (p) =>
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function main() {
-  for (const f of ["F1", "F2", "F3", "F4", "F5"]) mkdirSync(`${EV}/${f}`, { recursive: true });
+  for (const f of ["F1", "F2", "F3", "F4", "F5", "F6"]) mkdirSync(`${EV}/${f}`, { recursive: true });
   // Mint a session token for RUN_USER so the harness's direct API calls (Bearer) read the
   // SAME user the browser dev-auths as (both keyed on RUN_USER).
   await apiAuth(RUN_USER);
@@ -124,22 +124,34 @@ async function main() {
   assert(allFinal, "all 7 segments reach their final frame (data-join/StepPlayer end)");
   await page.screenshot({ path: `${EV}/F2/375-boxing-full.png`, fullPage: true });
 
-  // ===================== F3 — the loop: card -> grade -> review ===============
-  log("\n== F3: answer card -> grade Good -> POST /api/review moves schedule ==");
+  // ===================== F3 — the loop: TYPED answer -> objective grade -> review =====
+  // The card is now typed generation: TYPE the correct output "123" -> objective ✓ -> Good is
+  // PRE-SELECTED -> confirm -> POST /api/review posts Good -> the schedule moves (card leaves due).
+  log("\n== F3: TYPE correct answer -> ✓ -> Good pre-selected -> POST /api/review moves schedule ==");
   const dueBefore = await apiGet(`/api/due`);
   const countBefore = dueBefore.count;
   const boxingC1Before = dueBefore.items.some((i) => i.itemId === "T1.M3.boxing/c1");
   assert(boxingC1Before, "boxing/c1 is due before review");
-  await page.locator('[data-opt="0"]').scrollIntoViewIfNeeded();
-  await page.click('[data-opt="0"]'); // correct answer "123"
+  // it is a typed-answer card: the monospace input is present, the MCQ options are NOT
+  assert(await page.locator("#qTyped").count() === 1, "typed-answer input rendered (generation, not MCQ)");
+  assert(await page.locator("[data-opt]").count() === 0, "no MCQ options on a typed-answer card");
+  await page.locator("#qTyped").scrollIntoViewIfNeeded();
+  await page.fill("#qTyped", "123"); // the REAL expected output (verify.expect)
+  await page.click('[data-conf="1"]'); // calibration: "уверен?" -> да
   await page.click("#qCheck");
-  await page.waitForSelector('.grade-btn[data-g="3"]', { state: "visible", timeout: 8000 });
-  await page.click('.grade-btn[data-g="3"]'); // Good
+  // objective verdict is primary + the correct grade is pre-selected
+  await page.waitForSelector("#qVerdict", { state: "visible", timeout: 8000 });
+  const answer = await page.evaluate(() => window.__lastAnswer);
+  log("  __lastAnswer: " + JSON.stringify(answer));
+  assert(answer.correct === true, "typing the exact expect is graded objectively correct");
+  assert(answer.confidence === true, "confidence tap captured (уверен = true)");
+  assert(await page.locator('.grade-btn[data-g="3"].preselected').count() === 1, "correct -> Good (3) pre-selected");
+  await page.click('.grade-btn[data-g="3"]'); // confirm the pre-selected Good
   await page.waitForFunction(() => window.__lastReview, { timeout: 8000 });
   const review = await page.evaluate(() => window.__lastReview);
   log("  review response: " + JSON.stringify(review));
   assert(review.itemId === "T1.M3.boxing/c1", "review posted for boxing/c1");
-  assert(review.grade === "Good", "grade recorded as Good");
+  assert(review.grade === "Good", "grade recorded as Good (objective correct -> Good)");
   // FSRS-6 (py-fsrs 6.3.1): a brand-new Good advances one learning step (600s == ~0.00694 d).
   // Its due (now + 600s) is in the future, so the card leaves the immediate due queue.
   assert(review.intervalDays > 0 && review.intervalDays < 0.02, "new Good -> learning-step interval ~600s (" + review.intervalDays + "d)");
@@ -189,6 +201,48 @@ async function main() {
     await sleep(200);
     await rmPage.screenshot({ path: `${EV}/F5/${vp}-lesson.png`, fullPage: true });
   }
+
+  // ===================== F6 — WRONG typed answer re-queues the card (FSRS same-session) =====
+  // Type a WRONG output -> objective ✗ -> Again PRE-SELECTED -> POST /api/review posts Again ->
+  // FSRS-6 relearning keeps the card DUE this session (its itemId is back in /api/due).
+  log("\n== F6: TYPE wrong answer -> ✗ -> Again pre-selected -> posts Again -> card due again this session ==");
+  await page.setViewportSize(VIEWPORTS[390]);
+  await page.evaluate(() => window.__app.openLesson("T1.M2.value-vs-reference"));
+  await page.waitForFunction(() => window.__viz && window.__viz.ready && window.__lesson.id === "T1.M2.value-vs-reference", { timeout: 15000 });
+  const dueBeforeWrong = await apiGet(`/api/due`);
+  assert(dueBeforeWrong.items.some((i) => i.itemId === "T1.M2.value-vs-reference/c1"), "value-vs-reference/c1 is due before the wrong review");
+  await page.locator("#qTyped").scrollIntoViewIfNeeded();
+  await page.fill("#qTyped", "9"); // WRONG — the real expect is "1"
+  await page.click('[data-conf="1"]'); // said "уверен" but is wrong -> overconfident (the valuable signal)
+  await page.click("#qCheck");
+  await page.waitForSelector("#qVerdict", { state: "visible", timeout: 8000 });
+  const wrongAnswer = await page.evaluate(() => window.__lastAnswer);
+  log("  __lastAnswer(wrong): " + JSON.stringify(wrongAnswer));
+  assert(wrongAnswer.correct === false, "a wrong typed answer is graded objectively incorrect");
+  assert(await page.locator('.grade-btn[data-g="1"].preselected').count() === 1, "wrong -> Again (1) pre-selected");
+  // the yours-vs-expected diff is shown on a miss
+  assert(await page.locator("#qVerdict .tv-row.yours").count() === 1, "miss shows a yours-vs-expected diff");
+  await page.screenshot({ path: `${EV}/F6/390-wrong-typed.png`, fullPage: false });
+  await page.click('.grade-btn[data-g="1"]'); // confirm the pre-selected Again
+  await page.waitForFunction(() => window.__lastReview && window.__lastReview.itemId === "T1.M2.value-vs-reference/c1", { timeout: 8000 });
+  const wrongReview = await page.evaluate(() => window.__lastReview);
+  log("  wrong review response: " + JSON.stringify(wrongReview));
+  assert(wrongReview.grade === "Again", "grade recorded as Again (objective wrong -> Again)");
+  // FSRS-6 (py-fsrs 6.3.1): a brand-new Again lands on learning step 0 = 1 MINUTE, so the card's
+  // due is a short within-session step in the near future (NOT days out like a Good). This is the
+  // same-session relearning re-queue: the mistake resurfaces this session, not tomorrow.
+  assert(wrongReview.intervalDays < 0.02, "Again -> short within-session step (" + wrongReview.intervalDays + "d ~= 60s)");
+  const dueDeltaSec = (new Date(wrongReview.due).getTime() - Date.now()) / 1000;
+  assert(dueDeltaSec > 0 && dueDeltaSec < 120, `Again re-queues due ${dueDeltaSec.toFixed(0)}s out (< 2 min, this session)`);
+  // Prove the re-queue for real: poll /api/due until the 1-minute learning step elapses and the
+  // card RE-APPEARS as due this session (ties the objective wrong answer to FSRS relearning).
+  let requeued = false;
+  for (let waited = 0; waited < 80 && !requeued; waited += 3) {
+    const d = await apiGet(`/api/due`);
+    requeued = d.items.some((i) => i.itemId === "T1.M2.value-vs-reference/c1");
+    if (!requeued) await sleep(3000);
+  }
+  assert(requeued, "value-vs-reference/c1 RE-APPEARS in /api/due after its learning step (same-session relearning re-queue)");
 
   // ===================== console errors gate (G5) ============================
   log("\n== G5: console errors ==");

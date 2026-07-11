@@ -23,8 +23,14 @@ public sealed record ReviewState(
     CardState State,
     int? Step);
 
-/// <summary>Append-only history of a single review action.</summary>
-public sealed record ProgressEvent(long UserId, string ItemId, int Grade, DateTimeOffset Ts);
+/// <summary>
+/// Append-only history of a single review action. <see cref="Correct"/> (objective typed-answer
+/// outcome) and <see cref="Confidence"/> (the "уверен?" tap) are OPTIONAL calibration signals:
+/// null for MCQ cards / older clients, and excluded from the calibration rollup when null.
+/// </summary>
+public sealed record ProgressEvent(
+    long UserId, string ItemId, int Grade, DateTimeOffset Ts,
+    bool? Correct = null, bool? Confidence = null);
 
 // ---- API request DTOs ----
 
@@ -32,7 +38,11 @@ public sealed record AuthRequest(string? InitData, long? DevUserId);
 
 // userId is NOT a request field: the server derives it from the validated session token
 // (see AuthMiddleware). Accepting it from the client would reopen the IDOR hole.
-public sealed record ReviewRequest(string ItemId, int Grade);
+//
+// Correct/Confidence are OPTIONAL calibration fields (default null): `Correct` is the objective
+// typed-answer outcome, `Confidence` is the "уверен?" tap. Omitting them keeps the exact old
+// contract (nothing breaks for MCQ cards or older clients).
+public sealed record ReviewRequest(string ItemId, int Grade, bool? Correct = null, bool? Confidence = null);
 
 /// <summary>Client report of lesson-viewing progress (segments seen / completion).</summary>
 public sealed record LessonProgressRequest(

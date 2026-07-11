@@ -55,6 +55,18 @@ export interface GradeMix {
   easy: number;
 }
 
+/**
+ * Calibration rollup (GET /api/progress). Derived only from review events that carried BOTH
+ * an objective `correct` outcome and a `confidence` signal — i.e. typed-answer cards where the
+ * user tapped "уверен?". `answered` is that eligible count; the rest are always <= answered.
+ */
+export interface Calibration {
+  answered: number; // events with both correct + confidence recorded
+  wellCalibrated: number; // right+sure OR wrong+unsure (confidence matched the outcome)
+  overconfident: number; // wrong+sure (the valuable signal — thought they knew, didn't)
+  underconfident: number; // right+unsure (knew it, doubted themselves)
+}
+
 /** Catalog-wide card coverage for a user. */
 export interface CardsSummary {
   seen: number; // distinct items the user has a review_state for
@@ -96,6 +108,7 @@ export interface ProgressResponse {
   lessonsStarted: number; // lessons with >=1 segment viewed
   segmentsViewed: number; // total segments viewed across all lessons
   gradeMix: GradeMix;
+  calibration: Calibration; // confidence-vs-outcome rollup (typed-answer cards)
   cards: CardsSummary;
   perLesson: LessonProgress[];
   activity: DayCount[]; // last 28 days (heatmap), 0-filled

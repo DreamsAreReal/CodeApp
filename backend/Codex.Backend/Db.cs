@@ -120,6 +120,18 @@ public sealed class Database
         """;
 
     /// <summary>
+    /// Migration 3 — add the calibration columns to progress_events. Forward-only and safe on the
+    /// live prod DB: both are NULLABLE with no default, so every existing row (and every review that
+    /// does not send the optional fields, e.g. an MCQ card) simply stores NULL and is excluded from
+    /// the calibration rollup. `correct` is the objective typed-answer outcome (0/1), `confidence`
+    /// is the "уверен?" tap (0/1). SQLite ADD COLUMN is a cheap metadata-only change (no rewrite).
+    /// </summary>
+    private const string Migration3CalibrationColumns = """
+        ALTER TABLE progress_events ADD COLUMN correct INTEGER;
+        ALTER TABLE progress_events ADD COLUMN confidence INTEGER;
+        """;
+
+    /// <summary>
     /// Ordered, FORWARD-ONLY migration scripts. Index i is the script that bumps user_version
     /// from i to i+1 (so Migrations[0] == migration 1). Append here for future schema changes;
     /// each new script runs exactly once, in order, inside a transaction. Never edit/reorder a
@@ -129,6 +141,7 @@ public sealed class Database
     {
         Migration1Schema,
         Migration2StateColumns,
+        Migration3CalibrationColumns,
     };
 
     /// <summary>
@@ -313,11 +326,16 @@ public sealed class Database
         using var conn = Open();
         using var cmd = conn.CreateCommand();
         cmd.CommandText =
-            "INSERT INTO progress_events (user_id, item_id, grade, ts) VALUES ($u, $i, $g, $ts);";
+            "INSERT INTO progress_events (user_id, item_id, grade, ts, correct, confidence) " +
+            "VALUES ($u, $i, $g, $ts, $correct, $confidence);";
         cmd.Parameters.AddWithValue("$u", e.UserId);
         cmd.Parameters.AddWithValue("$i", e.ItemId);
         cmd.Parameters.AddWithValue("$g", e.Grade);
         cmd.Parameters.AddWithValue("$ts", Iso(e.Ts));
+        // Optional calibration signals — stored as 0/1, or NULL when the client did not send them
+        // (MCQ cards / older clients). NULL rows are excluded from the calibration rollup.
+        cmd.Parameters.AddWithValue("$correct", e.Correct is { } c ? (c ? 1 : 0) : DBNull.Value);
+        cmd.Parameters.AddWithValue("$confidence", e.Confidence is { } cf ? (cf ? 1 : 0) : DBNull.Value);
         cmd.ExecuteNonQuery();
     }
 
@@ -427,6 +445,33 @@ public sealed class Database
             }
         }
         return new GradeMix(again, hard, good, easy);
+    }
+
+    /// <summary>
+    /// Confidence-vs-outcome calibration over the events that recorded BOTH a `correct` outcome and
+    /// a `confidence` tap (typed-answer cards). Rows with either field NULL (MCQ / older clients)
+    /// are excluded, so this is honestly derived only from answers the user rated their confidence on.
+    ///   well-calibrated = right+sure OR wrong+unsure   (confidence matched the outcome)
+    ///   overconfident   = wrong+sure                    (thought they knew, didn't — the valuable one)
+    ///   underconfident  = right+unsure                  (knew it, doubted themselves)
+    /// </summary>
+    public Calibration GetCalibration(long userId)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = """
+            SELECT
+                COUNT(*),
+                COALESCE(SUM(CASE WHEN correct = confidence THEN 1 ELSE 0 END), 0),
+                COALESCE(SUM(CASE WHEN correct = 0 AND confidence = 1 THEN 1 ELSE 0 END), 0),
+                COALESCE(SUM(CASE WHEN correct = 1 AND confidence = 0 THEN 1 ELSE 0 END), 0)
+            FROM progress_events
+            WHERE user_id = $u AND correct IS NOT NULL AND confidence IS NOT NULL;
+            """;
+        cmd.Parameters.AddWithValue("$u", userId);
+        using var r = cmd.ExecuteReader();
+        r.Read();
+        return new Calibration(r.GetInt32(0), r.GetInt32(1), r.GetInt32(2), r.GetInt32(3));
     }
 
     /// <summary>
@@ -696,6 +741,13 @@ public sealed class Database
 
 /// <summary>Review-count breakdown by FSRS grade.</summary>
 public sealed record GradeMix(int Again, int Hard, int Good, int Easy);
+
+/// <summary>
+/// Confidence-vs-outcome rollup, over the review events that carried BOTH an objective
+/// <c>correct</c> and a <c>confidence</c> signal (typed-answer cards where the user tapped
+/// "уверен?"). <see cref="Answered"/> is that eligible count; the three sub-counts partition it.
+/// </summary>
+public sealed record Calibration(int Answered, int WellCalibrated, int Overconfident, int Underconfident);
 
 /// <summary>Catalog-wide card coverage for a user.</summary>
 public sealed record CardsSummary(int Seen, int Total, int Mastered, int LapsesTotal);

@@ -303,6 +303,81 @@ public sealed class ApiTests : IClassFixture<ApiTests.Factory>
         Assert.Equal(0, after.GetProperty("segmentsViewed").GetInt32());
     }
 
+    // ======================= CALIBRATION (typed-answer confidence) =======================
+
+    [Fact]
+    public async Task Review_WithCalibrationFields_IsAccepted_AndSurfacesInProgress()
+    {
+        long user = FreshUser();
+        string token = await AuthToken(user);
+
+        // right + sure  -> well-calibrated
+        await Post("/api/review", token, new { itemId = "T1.M3.boxing/c1", grade = 3, correct = true, confidence = true });
+        // wrong + sure  -> overconfident (the valuable signal)
+        await Post("/api/review", token, new { itemId = "T1.M2.value-vs-reference/c1", grade = 1, correct = false, confidence = true });
+        // right + unsure -> underconfident
+        await Post("/api/review", token, new { itemId = "T1.M4.gc/c1", grade = 3, correct = true, confidence = false });
+
+        var p = await Json(await Get("/api/progress", token));
+        var cal = p.GetProperty("calibration");
+        Assert.Equal(3, cal.GetProperty("answered").GetInt32());
+        Assert.Equal(1, cal.GetProperty("wellCalibrated").GetInt32());   // right+sure
+        Assert.Equal(1, cal.GetProperty("overconfident").GetInt32());    // wrong+sure
+        Assert.Equal(1, cal.GetProperty("underconfident").GetInt32());   // right+unsure
+
+        // The schedule itself is unaffected by calibration — all three reviews still recorded.
+        Assert.Equal(3, p.GetProperty("reviewsTotal").GetInt32());
+    }
+
+    [Fact]
+    public async Task Review_WithoutCalibrationFields_IsUnchangedContract_AndExcludedFromCalibration()
+    {
+        long user = FreshUser();
+        string token = await AuthToken(user);
+
+        // The exact OLD request shape (itemId + grade only) must still work and record no calibration.
+        var r = await Post("/api/review", token, new { itemId = "T1.M3.boxing/c1", grade = 3 });
+        r.EnsureSuccessStatusCode();
+
+        var p = await Json(await Get("/api/progress", token));
+        var cal = p.GetProperty("calibration");
+        Assert.Equal(0, cal.GetProperty("answered").GetInt32()); // no confidence-rated answers
+        Assert.Equal(1, p.GetProperty("reviewsTotal").GetInt32()); // but the review IS recorded
+    }
+
+    [Fact]
+    public async Task Calibration_OnlyCountsEventsWithBothSignals()
+    {
+        long user = FreshUser();
+        string token = await AuthToken(user);
+
+        // A mix: one fully-rated, one with only `correct`, one with only `confidence`, one bare.
+        await Post("/api/review", token, new { itemId = "T1.M3.boxing/c1", grade = 3, correct = true, confidence = true });
+        await Post("/api/review", token, new { itemId = "T1.M2.value-vs-reference/c1", grade = 3, correct = true });
+        await Post("/api/review", token, new { itemId = "T1.M4.gc/c1", grade = 3, confidence = true });
+        await Post("/api/review", token, new { itemId = "T2.M2.closures/c1", grade = 3 });
+
+        var cal = (await Json(await Get("/api/progress", token))).GetProperty("calibration");
+        // Only the first event has BOTH correct AND confidence -> it alone is eligible.
+        Assert.Equal(1, cal.GetProperty("answered").GetInt32());
+        Assert.Equal(1, cal.GetProperty("wellCalibrated").GetInt32());
+    }
+
+    [Fact]
+    public async Task DeleteProgress_AlsoClearsCalibration()
+    {
+        long user = FreshUser();
+        string token = await AuthToken(user);
+        await Post("/api/review", token, new { itemId = "T1.M3.boxing/c1", grade = 3, correct = true, confidence = true });
+        Assert.Equal(1, (await Json(await Get("/api/progress", token)))
+            .GetProperty("calibration").GetProperty("answered").GetInt32());
+
+        await Delete("/api/progress", token);
+
+        Assert.Equal(0, (await Json(await Get("/api/progress", token)))
+            .GetProperty("calibration").GetProperty("answered").GetInt32());
+    }
+
     [Fact]
     public async Task RunCSharp_ReturnsRealStdout()
     {

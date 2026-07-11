@@ -9,7 +9,7 @@
  * forward FSRS schedule (next 7 days), and a per-lesson mastery list.
  */
 import { api, ApiError } from "../api/client.ts";
-import type { DayCount, GradeMix, LessonProgress, ProgressResponse } from "../api/types.ts";
+import type { Calibration, DayCount, GradeMix, LessonProgress, ProgressResponse } from "../api/types.ts";
 import { getLesson } from "../lessons/index.ts";
 import { S } from "../strings.ts";
 import { router } from "./router.ts";
@@ -123,6 +123,13 @@ export async function renderProgress(root: HTMLElement): Promise<void> {
         <div class="hint">${S.gradeMixCaption}</div>
       </section>
 
+      <!-- calibration (confidence vs outcome, typed-answer cards) -->
+      <div class="sec-label">${S.calibLabel}</div>
+      <section class="card">
+        ${calibrationBlock(p.calibration)}
+        <div class="hint">${S.calibCaption}</div>
+      </section>
+
       <!-- activity heatmap -->
       <div class="sec-label">${S.heatmapLabel}</div>
       <section class="card">
@@ -168,6 +175,8 @@ export async function renderProgress(root: HTMLElement): Promise<void> {
     masteryPct: Math.round(masteryPct),
     cards: p.cards,
     gradeMix: p.gradeMix,
+    calibration: p.calibration,
+    calibrationPct: p.calibration.answered > 0 ? Math.round((100 * p.calibration.wellCalibrated) / p.calibration.answered) : null,
     activityDays: p.activity.length,
     activeDays,
     upcomingDays: p.upcoming.length,
@@ -186,12 +195,35 @@ export async function renderProgress(root: HTMLElement): Promise<void> {
       mastered: l.mastered,
       due: l.due,
     })),
-    sections: ["mastery", "completion", "gradeMix", "heatmap", "upcoming", "perLesson"],
+    sections: ["mastery", "completion", "gradeMix", "calibration", "heatmap", "upcoming", "perLesson"],
   };
 }
 
 function metric(value: string, label: string): string {
   return `<div class="metric"><span class="metric-n mono">${escapeHtml(value)}</span><span class="metric-l">${escapeHtml(label)}</span></div>`;
+}
+
+/**
+ * Calibration read: the share of confidence-rated answers where the tap matched the outcome,
+ * with the "переоценил" (wrong+sure) count called out — the actionable signal. Honestly empty
+ * until the user answers at least one typed card WITH a confidence tap.
+ */
+function calibrationBlock(c: Calibration): string {
+  if (c.answered === 0) return `<div class="hint">${S.calibEmpty}</div>`;
+  const pct = Math.round((100 * c.wellCalibrated) / c.answered);
+  const over =
+    c.overconfident > 0
+      ? `<div class="calib-stat-sub warn">${escapeHtml(S.calibOverconfidentFmt(c.overconfident))}</div>`
+      : "";
+  return (
+    '<div class="calib-stat">' +
+    ring(84, 36, 8, pct, "ring ring-lg", pct + "%") +
+    '<div class="calib-stat-body">' +
+    `<span class="kicker">${escapeHtml(S.calibPctFmt(pct))}</span>` +
+    `<div class="calib-stat-cap">${escapeHtml(S.calibCaption)}</div>` +
+    over +
+    "</div></div>"
+  );
 }
 
 /** Honest calibration read: a stacked proportional bar of the four grades. */
