@@ -408,11 +408,11 @@
 .vz-slot {
   fill: #fff;
   stroke: var(--line);
-  stroke-width: 1.4;
+  stroke-width: 1.5;
 }
 .node.accent .vz-slot {
-  stroke: var(--coral);
-  stroke-width: 1.8;
+  stroke: var(--coral-d);
+  stroke-width: 1.5;
 }
 .vz-div {
   stroke: var(--line);
@@ -443,11 +443,11 @@
 .vz-obj {
   fill: #fff;
   stroke: var(--coral);
-  stroke-width: 1.6;
+  stroke-width: 1.5;
 }
 .node.accent .vz-obj {
   stroke: var(--coral-d);
-  stroke-width: 2;
+  stroke-width: 1.5;
 }
 .node.good .vz-obj {
   stroke: var(--sage);
@@ -470,7 +470,11 @@
 .vz-chip {
   fill: var(--coral);
   stroke: var(--coral-d);
-  stroke-width: 1;
+  stroke-width: 1.5;
+}
+.node.accent .vz-chip {
+  stroke: var(--coral-d);
+  stroke-width: 1.5;
 }
 .vz-chipval {
   font-family: var(--mono);
@@ -506,10 +510,12 @@
   stroke: var(--coral);
   stroke-width: 2;
   fill: none;
+  stroke-linejoin: round;
+  stroke-linecap: round;
 }
 .edge.accent {
   stroke: var(--coral-d);
-  stroke-width: 2.4;
+  stroke-width: 2;
 }
 .node {
   transition: opacity 0.3s ease;

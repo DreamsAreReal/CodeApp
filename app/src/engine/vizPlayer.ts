@@ -5,7 +5,7 @@
  * runs FLIP + accent flashes via WAAPI, syncs the code/IL/console/caption/
  * scrubber UI, gates on a predict-then-run step, and autoplays on demand.
  */
-import { baseXY, durations, svgEl, SVGNS, type Durations } from "./dom.ts";
+import { baseXY, domMeasure, durations, svgEl, SVGNS, type Durations } from "./dom.ts";
 import { StepPlayer } from "./stepPlayer.ts";
 import type { DiffResult, FlipMove, Scene, VNode, Zone } from "./types.ts";
 
@@ -97,7 +97,7 @@ export class VizPlayer {
       s._marker = "url(#" + this.markerId + ")";
       return s;
     });
-    this.player = new StepPlayer(steps, { reducedMotion: this.reduced });
+    this.player = new StepPlayer(steps, { reducedMotion: this.reduced, measure: domMeasure });
     this.total = this.player.steps.length;
     this.state = { index: 0, total: this.total, predictAt: this.gateIndex, predictResolved: false, played: false };
 
@@ -108,12 +108,18 @@ export class VizPlayer {
     const svg = document.createElementNS(SVGNS, "svg") as SVGSVGElement;
     svg.setAttribute("viewBox", this.cfg.viewBox);
     svg.setAttribute("role", "img");
+    // Crisp orthogonal strokes + scale-to-fit without distorting the grid.
+    svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+    svg.setAttribute("shape-rendering", "geometricPrecision");
 
     const defs = document.createElementNS(SVGNS, "defs");
+    // refX=5.2 lands the arrowhead TIP on the target border (the path already
+    // ends exactly on the border; nudge the marker so its tip, not its base, sits
+    // there and the 1.5u box stroke isn't pierced).
     defs.innerHTML =
       '<marker id="' +
       this.markerId +
-      '" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto" markerUnits="userSpaceOnUse">' +
+      '" markerWidth="9" markerHeight="9" refX="5.2" refY="3" orient="auto" markerUnits="userSpaceOnUse">' +
       '<path d="M0,0 L6,3 L0,6 Z" fill="#C43D28"/></marker>';
     svg.appendChild(defs);
 
@@ -122,7 +128,7 @@ export class VizPlayer {
     let html = "";
     const zones = this.cfg.zones || [];
     for (const z of zones) {
-      html += '<rect class="' + z.cls + '" x="' + z.x + '" y="' + z.y + '" width="' + z.w + '" height="' + z.h + '" rx="14"/>';
+      html += '<rect class="' + z.cls + '" x="' + z.x + '" y="' + z.y + '" width="' + z.w + '" height="' + z.h + '" rx="12"/>';
       html += '<text class="' + z.labelCls + '" x="' + z.lx + '" y="' + z.ly + '" text-anchor="middle">' + z.label + "</text>";
       if (z.sub) {
         const subY = z.subY != null ? z.subY : z.y + 14;

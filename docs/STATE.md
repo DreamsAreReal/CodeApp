@@ -478,3 +478,30 @@ Maximalist-ставка: «self-hosting learning app» — приложение 
   надо. ИЗМЕРИМЫЙ КРИТЕРИЙ (headless): ни один node-text getComputedTextLength > его бокс-региона; каждый
   бокс в пределах [0,vbW]x[0,vbH]; на ВСЕХ сценах 6 уроков; + скриншоты сломанных сегментов чистые; 3
   harness'а зелёные. Потом я: визуально проверю + деплой. Волна 4 (Dockerfile/CI) — после UI.
+- 2026-07-11 — Пользователь (резко, справедливо): анимации непрофессиональны — разнокалиберные боксы,
+  контент вылезает, диагональная «з»-стрелка; просит «погугли дизайн, выровняй каждый бокс по правилам,
+  пройдись по UI/UX». Запустил research-workflow (w9ybhdins, 3 линзы: диаграммы/UI-layout/SVG + синтез) →
+  КОНКРЕТНАЯ спека (docs/design/viz-design-spec.md): GRID=2 snap; высоты по типу {chip28,slot40,ref40,
+  obj44,gate48}; ширина-лестница {56,72,96,120,144,168}; ОРТОГОНАЛЬНАЯ маршрутизация рёбер (порты на
+  гранях, ≤2-3 изгиба, скругления r=6, прямая при colinear) — убивает «з»-стрелку; выравнивание рядов
+  (общий center-Y+высота, ≤4 уникальных центров); rx по типу; stroke единый; preserveAspectRatio meet.
+  Спавню builder: движок (render.ts routeEdge+sizeNode+snap+KIND_RX; vizPlayer preserveAspectRatio;
+  types w/h optional) → расширить viz-fit (height-in-scale/width-ladder/grid-snap/edge-orthogonal/port-on-
+  border/bend/row-baseline/rx/stroke) → нормализовать ВСЕ 6 уроков → viz-fit+harness'ы ALL GREEN +
+  before/after скрины. Потом Я визуально проверяю каждую сцену + деплой. Волна 4 (Dockerfile/CI) — после.
+- 2026-07-11 — BUILDER выполнил viz-redesign по спеке. Движок: render.ts — routeEdge (ортогональный
+  скруглённый path, порты на гранях по доминантной оси, ≤2-3 изгиба, r=6 clamped, colinear→прямая,
+  data-edge для харнеса); snap(v)=Math.round(v/2)*2 на всех коорд; KIND_RX {chip6,slot8,ref8,obj8,gate10};
+  sizeNode(node,measure) — высота по kind {chip28,slot40,ref40,obj44,gate48}+2-line {chip44,obj60,gate60},
+  ширина по лестнице {56,72,96,120,144,168} из измеренного текста (canvas domMeasure для Rubik/mono, fallback
+  0.6·fs); явные w/h снапаются+клампятся на лестницу. dom.ts domMeasure; stepPlayer прокидывает measure;
+  vizPlayer — preserveAspectRatio=xMidYMid meet + shape-rendering=geometricPrecision, zone rx 14→12, marker
+  refX 6→5.2 (кончик стрелки НА границе); types.ts w?/h? optional + DiagramEdge.route?. CSS: stroke боксов
+  унифицирован 1.5 (accent=та же ширина+coral-d), edges 2 (accent та же ширина), edge linejoin/cap round.
+  Харнес verify/viz-fit.mjs расширен 9 новыми проверками (HEIGHT-IN-SCALE, WIDTH-ON-LADDER, GRID-SNAP,
+  EDGE-ORTHOGONAL, EDGE-PORT-ON-BORDER, BEND-COUNT≤3, ROW-BASELINE с exempt для вложенных боксов, RX/STROKE-
+  CONSISTENT) поверх FIT/CLIP/OVERLAP. Нормализованы геометрии ВСЕХ 6 уроков (w/h убраны/на лестницу, x/y
+  snapped, ряды выровнены общим center-Y, разнокалиберные kind'ы разнесены >6u по Y, зоны ≥8u; ТЕКСТ не
+  тронут). РЕЗУЛЬТАТ (исполнено): viz-fit ALL GREEN (12 проверок, 0 нарушений, 6 уроков × все сцены) +
+  run.mjs/shell.mjs/new-lessons.mjs ALL GREEN; npm run build чистый. Before/after скрины (390px, reduced-
+  motion) в docs/evidence/viz-redesign/{before,after}/. НЕ коммитил/деплоил — ждёт визуального ревью + деплоя.

@@ -37,3 +37,38 @@ export function baseXY(vnode: VNode): { x: number; y: number } {
   const m = /translate\(([-\d.]+),([-\d.]+)\)/.exec(String(vnode.attrs.transform || ""));
   return m ? { x: +m[1], y: +m[2] } : { x: 0, y: 0 };
 }
+
+/**
+ * Canvas-backed text measurer for `sizeNode` — uses the SAME fonts the SVG renders
+ * with (mono for values, the display/Rubik stack for zone text), so the auto-derived
+ * ladder rung reflects real glyph advance, not the deterministic 0.6·fontSize
+ * fallback. Falls back to that estimate if a 2D canvas is unavailable (headless).
+ */
+let _ctx: CanvasRenderingContext2D | null | undefined;
+function measureCtx(): CanvasRenderingContext2D | null {
+  if (_ctx !== undefined) return _ctx;
+  try {
+    _ctx = document.createElement("canvas").getContext("2d");
+  } catch {
+    _ctx = null;
+  }
+  return _ctx;
+}
+function fontFamily(varName: string, fallback: string): string {
+  try {
+    const v = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+    return v || fallback;
+  } catch {
+    return fallback;
+  }
+}
+export function domMeasure(text: string, fontSize: number, mono: boolean): number {
+  if (!text) return 0;
+  const ctx = measureCtx();
+  if (!ctx) return text.length * fontSize * 0.6;
+  const fam = mono
+    ? fontFamily("--mono", "ui-monospace, monospace")
+    : fontFamily("--display", "system-ui, sans-serif");
+  ctx.font = `700 ${fontSize}px ${fam}`;
+  return ctx.measureText(text).width;
+}

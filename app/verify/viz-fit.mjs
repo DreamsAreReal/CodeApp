@@ -98,9 +98,24 @@ function measureInPage(lessonId) {
   const fit = [];
   const clip = [];
   const overlap = [];
+  // ---- NEW design-system checks (viz-design-spec.md) ----
+  const height = []; // HEIGHT-IN-SCALE  : rect height ∈ {28,40,44,48,60}
+  const width = []; //  WIDTH-ON-LADDER  : rect width ∈ {56,72,96,120,144,168}
+  const grid = []; //   GRID-SNAP        : x,y,w,h even
+  const ortho = []; //  EDGE-ORTHOGONAL  : each drawn segment axis-aligned (except arcs)
+  const port = []; //   EDGE-PORT-ON-BORDER : edge first/last point on a node border
+  const bend = []; //   BEND-COUNT ≤3
+  const row = []; //    ROW-BASELINE     : near-equal centerY ⇒ identical y + height
+  const rxc = []; //    RX-CONSISTENT    : one rx per kind
+  const strk = []; //   STROKE-CONSISTENT: box kinds share width; solid edges share width
+
   const FIT_TOL = 1;
   const CLIP_TOL = 0.75;
   const OVL_TOL = 1; // px: ignore ≤1px touching edges (adjacent boxes may share a border)
+  const H_ALLOW = [28, 40, 44, 48, 60];
+  const W_ALLOW = [56, 72, 96, 120, 144, 168];
+  const ROW_TOL = 6; // centers within this Y are "the same row"
+  const PORT_TOL = 1; // edge endpoint must sit within this of a node border
   const stages = document.querySelectorAll(".stage");
   const segIds = Object.keys(window.__viz.vizByKey);
   stages.forEach((stage, si) => {
@@ -112,6 +127,9 @@ function measureInPage(lessonId) {
     const vbH = vb.height;
     const nodes = svg.querySelectorAll("g.node");
     const boxes = []; // {id, x0,y0,x1,y1} for the per-scene overlap check
+    const rxByKind = {}; // kind -> rx (RX-CONSISTENT)
+    const strokeByKind = {}; // kind -> stroke-width (STROKE-CONSISTENT)
+    const metrics = []; // {id, kind, w, h, cy} for ROW-BASELINE
     nodes.forEach((g) => {
       // node id lives in the group key "n:<id>" — recover it from the transform
       // group; we tagged nothing else, so read it from the render key via a data hook.
@@ -122,6 +140,11 @@ function measureInPage(lessonId) {
       const h = parseFloat(rect.getAttribute("height") || "0");
       const rx = parseFloat(rect.getAttribute("x") || "0");
       const ry = parseFloat(rect.getAttribute("y") || "0");
+      const rxRadius = parseFloat(rect.getAttribute("rx") || "0");
+      const sw = parseFloat(getComputedStyle(rect).strokeWidth) || 0;
+      // node kind: second class token of the group ("node <kind> …")
+      const cls0 = g.getAttribute("class") || "";
+      const kind = (cls0.split(/\s+/)[1] || "?");
       // node translate
       const tr = g.transform.baseVal.consolidate();
       const tx = tr ? tr.matrix.e : 0;
@@ -132,6 +155,23 @@ function measureInPage(lessonId) {
       const x1 = x0 + w;
       const y1 = y0 + h;
       boxes.push({ id: nodeId, x0, y0, x1, y1 });
+      metrics.push({ id: nodeId, kind, w, h, cy: (y0 + y1) / 2 });
+      // ---- HEIGHT-IN-SCALE ----
+      if (!H_ALLOW.includes(Math.round(h))) height.push({ lesson: lessonId, seg: segId, node: nodeId, h: round(h) });
+      // ---- WIDTH-ON-LADDER ----
+      if (!W_ALLOW.includes(Math.round(w))) width.push({ lesson: lessonId, seg: segId, node: nodeId, w: round(w) });
+      // ---- GRID-SNAP (x,y,w,h even; use the rect's absolute box) ----
+      for (const [k, v] of [["x", x0], ["y", y0], ["w", w], ["h", h]]) {
+        if (Math.round(v) % 2 !== 0) grid.push({ lesson: lessonId, seg: segId, node: nodeId, coord: k, val: round(v) });
+      }
+      // ---- RX-CONSISTENT (one rx per kind within a scene) ----
+      if (rxByKind[kind] == null) rxByKind[kind] = rxRadius;
+      else if (Math.abs(rxByKind[kind] - rxRadius) > 0.01)
+        rxc.push({ lesson: lessonId, seg: segId, node: nodeId, kind, rx: round(rxRadius), expected: round(rxByKind[kind]) });
+      // ---- STROKE-CONSISTENT (box kinds share stroke-width within a scene) ----
+      if (strokeByKind[kind] == null) strokeByKind[kind] = sw;
+      else if (Math.abs(strokeByKind[kind] - sw) > 0.05)
+        strk.push({ lesson: lessonId, seg: segId, node: nodeId, kind, sw: round(sw), expected: round(strokeByKind[kind]) });
       if (x0 < -CLIP_TOL || y0 < -CLIP_TOL || x1 > vbW + CLIP_TOL || y1 > vbH + CLIP_TOL) {
         clip.push({
           lesson: lessonId,
@@ -228,9 +268,128 @@ function measureInPage(lessonId) {
         }
       }
     });
+
+    // ---- ROW-BASELINE: two nodes whose center-Y differ ≤ ROW_TOL must share
+    // an identical center-Y AND height (no "almost aligned" 61 vs 64 rows).
+    // EXEMPT: a node fully CONTAINED in another (nested display-class field slot)
+    // legitimately shares its parent's row — same exemption as the OVERLAP check. ----
+    const rowContains = (o, i) => o.x0 <= i.x0 + OVL_TOL && o.y0 <= i.y0 + OVL_TOL && o.x1 >= i.x1 - OVL_TOL && o.y1 >= i.y1 - OVL_TOL;
+    for (let i = 0; i < metrics.length; i++) {
+      for (let j = i + 1; j < metrics.length; j++) {
+        const a = metrics[i];
+        const b = metrics[j];
+        const ba = boxes[i];
+        const bb = boxes[j];
+        if (rowContains(ba, bb) || rowContains(bb, ba)) continue; // nested — not a row pair
+        const dCy = Math.abs(a.cy - b.cy);
+        if (dCy > 0.5 && dCy <= ROW_TOL) {
+          row.push({ lesson: lessonId, seg: segId, a: a.id, b: b.id, cyA: round(a.cy), cyB: round(b.cy), reason: "center-Y" });
+        } else if (dCy <= 0.5 && Math.abs(a.h - b.h) > 0.5) {
+          row.push({ lesson: lessonId, seg: segId, a: a.id, b: b.id, hA: round(a.h), hB: round(b.h), reason: "height" });
+        }
+      }
+    }
+
+    // ---- EDGE checks: parse each edge <path> d ----
+    // ORTHOGONAL: every DRAWN segment (H/V and lineto) must be axis-aligned, EXCEPT
+    //   corner arcs (A) — OR the whole path is a single straight segment only when its
+    //   endpoints share x or y within 2u. Any free diagonal lineto fails.
+    // PORT-ON-BORDER: the first and last path points must sit on SOME node border
+    //   (within PORT_TOL), not at a node center.
+    // BEND-COUNT: number of direction changes ≤ 3.
+    const edgePaths = svg.querySelectorAll("path.edge");
+    edgePaths.forEach((p) => {
+      const dAttr = p.getAttribute("d") || "";
+      const eid = p.getAttribute("data-edge") || "edge";
+      const parsed = parsePath(dAttr); // {points:[{x,y,kind}], segs:[{axis}], bends}
+      // ORTHOGONAL
+      for (const s of parsed.segs) {
+        if (s.axis === "diag") {
+          ortho.push({ lesson: lessonId, seg: segId, edge: eid, d: dAttr.slice(0, 60) });
+          break;
+        }
+      }
+      // BEND-COUNT
+      if (parsed.bends > 3) bend.push({ lesson: lessonId, seg: segId, edge: eid, bends: parsed.bends });
+      // PORT-ON-BORDER: endpoints must be ON a node border (not a center)
+      const first = parsed.points[0];
+      const last = parsed.points[parsed.points.length - 1];
+      for (const pt of [first, last]) {
+        if (!pt) continue;
+        if (!onAnyBorder(pt, boxes, PORT_TOL)) {
+          port.push({ lesson: lessonId, seg: segId, edge: eid, pt: [round(pt.x), round(pt.y)] });
+        }
+      }
+    });
   });
   function round(n) {
     return Math.round(n * 100) / 100;
+  }
+  // Is a point on the border (not interior, not center) of ANY node box?
+  function onAnyBorder(pt, boxes, tol) {
+    for (const bx of boxes) {
+      const onLR = (Math.abs(pt.x - bx.x0) <= tol || Math.abs(pt.x - bx.x1) <= tol) && pt.y >= bx.y0 - tol && pt.y <= bx.y1 + tol;
+      const onTB = (Math.abs(pt.y - bx.y0) <= tol || Math.abs(pt.y - bx.y1) <= tol) && pt.x >= bx.x0 - tol && pt.x <= bx.x1 + tol;
+      if (onLR || onTB) return true;
+    }
+    return false;
+  }
+  // Parse an SVG path 'd' into points + segment axes + bend count. Understands the
+  // subset the engine emits: M / H / V / L / A (arc). Arcs are corner rounding and
+  // are NOT counted as diagonal segments; a bend is a change of drawn axis.
+  function parsePath(d) {
+    const toks = d.match(/[MLHVA][^MLHVA]*/g) || [];
+    const points = [];
+    const segs = [];
+    let cx = 0, cy = 0, lastAxis = null, bends = 0;
+    const nums = (s) => s.trim().split(/[ ,]+/).map(Number).filter((n) => !Number.isNaN(n));
+    for (const tk of toks) {
+      const type = tk[0];
+      const n = nums(tk.slice(1));
+      if (type === "M") {
+        cx = n[0]; cy = n[1];
+        points.push({ x: cx, y: cy, kind: "M" });
+      } else if (type === "H") {
+        const nx = n[0];
+        if (Math.abs(nx - cx) > 0.01) {
+          if (lastAxis && lastAxis !== "h") bends++;
+          lastAxis = "h";
+          segs.push({ axis: "h" });
+        }
+        cx = nx;
+        points.push({ x: cx, y: cy, kind: "H" });
+      } else if (type === "V") {
+        const ny = n[0];
+        if (Math.abs(ny - cy) > 0.01) {
+          if (lastAxis && lastAxis !== "v") bends++;
+          lastAxis = "v";
+          segs.push({ axis: "v" });
+        }
+        cy = ny;
+        points.push({ x: cx, y: cy, kind: "V" });
+      } else if (type === "L") {
+        const nx = n[0], ny = n[1];
+        const dx = Math.abs(nx - cx), dy = Math.abs(ny - cy);
+        let axis;
+        if (dx <= 2 && dy > 2) axis = "v";
+        else if (dy <= 2 && dx > 2) axis = "h";
+        else if (dx <= 2 && dy <= 2) axis = lastAxis || "h"; // negligible move
+        else axis = "diag"; // a real diagonal — the bug class
+        if (axis !== "diag" && lastAxis && lastAxis !== axis) bends++;
+        if (axis !== "diag") lastAxis = axis;
+        segs.push({ axis });
+        cx = nx; cy = ny;
+        points.push({ x: cx, y: cy, kind: "L" });
+      } else if (type === "A") {
+        // arc: rx ry rot large sweep x y — a corner turn (counts as a bend, not diag)
+        const nx = n[n.length - 2], ny = n[n.length - 1];
+        bends++;
+        cx = nx; cy = ny;
+        points.push({ x: cx, y: cy, kind: "A" });
+        lastAxis = null; // axis is redefined by the next drawn segment
+      }
+    }
+    return { points, segs, bends };
   }
   // Recover a node id from a group by reading its data or falling back to text.
   function rectNodeId(g) {
@@ -239,7 +398,7 @@ function measureInPage(lessonId) {
     const t = g.querySelector("text");
     return "node[" + ((t && t.textContent) || "?").slice(0, 16) + "]";
   }
-  return { fit, clip, overlap };
+  return { fit, clip, overlap, height, width, grid, ortho, port, bend, row, rxc, strk };
 }
 
 async function main() {
@@ -269,9 +428,18 @@ async function main() {
   const allFit = [];
   const allClip = [];
   const allOverlap = [];
+  const allHeight = [];
+  const allWidth = [];
+  const allGrid = [];
+  const allOrtho = [];
+  const allPort = [];
+  const allBend = [];
+  const allRow = [];
+  const allRxc = [];
+  const allStrk = [];
 
   for (const L of LESSONS) {
-    log(`\n== ${L.id}: fit + clip across ${L.segs} segments ==`);
+    log(`\n== ${L.id}: fit + clip + design-system across ${L.segs} segments ==`);
     // openLesson runs runLesson() synchronously; sample readiness with a bounded retry.
     let ready = false;
     for (let attempt = 0; attempt < 40 && !ready; attempt++) {
@@ -294,12 +462,39 @@ async function main() {
     for (const v of res.fit) allFit.push(v);
     for (const v of res.clip) allClip.push(v);
     for (const v of res.overlap) allOverlap.push(v);
+    for (const v of res.height) allHeight.push(v);
+    for (const v of res.width) allWidth.push(v);
+    for (const v of res.grid) allGrid.push(v);
+    for (const v of res.ortho) allOrtho.push(v);
+    for (const v of res.port) allPort.push(v);
+    for (const v of res.bend) allBend.push(v);
+    for (const v of res.row) allRow.push(v);
+    for (const v of res.rxc) allRxc.push(v);
+    for (const v of res.strk) allStrk.push(v);
     assert(res.fit.length === 0, `${L.id}: every node label fits its box region (0 overflow)`);
     assert(res.clip.length === 0, `${L.id}: every node rect lies within its viewBox (0 clip)`);
     assert(res.overlap.length === 0, `${L.id}: no two node boxes overlap in any scene (0 overlap)`);
+    assert(res.height.length === 0, `${L.id}: every node height ∈ {28,40,44,48,60} (HEIGHT-IN-SCALE)`);
+    assert(res.width.length === 0, `${L.id}: every node width ∈ ladder {56,72,96,120,144,168} (WIDTH-ON-LADDER)`);
+    assert(res.grid.length === 0, `${L.id}: every rect x/y/w/h even (GRID-SNAP)`);
+    assert(res.ortho.length === 0, `${L.id}: every edge segment axis-aligned, no free diagonal (EDGE-ORTHOGONAL)`);
+    assert(res.port.length === 0, `${L.id}: every edge endpoint on a node border (EDGE-PORT-ON-BORDER)`);
+    assert(res.bend.length === 0, `${L.id}: every edge ≤3 bends (BEND-COUNT)`);
+    assert(res.row.length === 0, `${L.id}: near-equal center-Y ⇒ identical y+height (ROW-BASELINE)`);
+    assert(res.rxc.length === 0, `${L.id}: one rx per kind (RX-CONSISTENT)`);
+    assert(res.strk.length === 0, `${L.id}: box kinds share stroke-width (STROKE-CONSISTENT)`);
     if (res.fit.length) for (const v of res.fit) log(`      · FIT ${v.seg}/${v.node} [${v.role}] "${v.text}" len=${v.len} > avail=${v.avail}`);
     if (res.clip.length) for (const v of res.clip) log(`      · CLIP ${v.seg}/${v.node} box=${JSON.stringify(v.box)} vb=${JSON.stringify(v.vb)}`);
     if (res.overlap.length) for (const v of res.overlap) log(`      · OVERLAP ${v.seg}: ${v.a} ∩ ${v.b} = ${JSON.stringify(v.over)}`);
+    if (res.height.length) for (const v of res.height) log(`      · HEIGHT ${v.seg}/${v.node} h=${v.h}`);
+    if (res.width.length) for (const v of res.width) log(`      · WIDTH ${v.seg}/${v.node} w=${v.w}`);
+    if (res.grid.length) for (const v of res.grid) log(`      · GRID ${v.seg}/${v.node} ${v.coord}=${v.val}`);
+    if (res.ortho.length) for (const v of res.ortho) log(`      · ORTHO ${v.seg}/${v.edge} d="${v.d}"`);
+    if (res.port.length) for (const v of res.port) log(`      · PORT ${v.seg}/${v.edge} pt=${JSON.stringify(v.pt)}`);
+    if (res.bend.length) for (const v of res.bend) log(`      · BEND ${v.seg}/${v.edge} bends=${v.bends}`);
+    if (res.row.length) for (const v of res.row) log(`      · ROW ${v.seg}: ${v.a} vs ${v.b} (${v.reason}) ${JSON.stringify(v)}`);
+    if (res.rxc.length) for (const v of res.rxc) log(`      · RX ${v.seg}/${v.node} kind=${v.kind} rx=${v.rx} exp=${v.expected}`);
+    if (res.strk.length) for (const v of res.strk) log(`      · STROKE ${v.seg}/${v.node} kind=${v.kind} sw=${v.sw} exp=${v.expected}`);
   }
 
   // ---- Evidence screenshots of the previously-broken segments ----
@@ -355,6 +550,15 @@ async function main() {
   assert(allFit.length === 0, `zero FIT violations across all ${LESSONS.length} lessons (found ${allFit.length})`);
   assert(allClip.length === 0, `zero CLIP violations across all ${LESSONS.length} lessons (found ${allClip.length})`);
   assert(allOverlap.length === 0, `zero OVERLAP violations across all ${LESSONS.length} lessons (found ${allOverlap.length})`);
+  assert(allHeight.length === 0, `zero HEIGHT-IN-SCALE violations across all lessons (found ${allHeight.length})`);
+  assert(allWidth.length === 0, `zero WIDTH-ON-LADDER violations across all lessons (found ${allWidth.length})`);
+  assert(allGrid.length === 0, `zero GRID-SNAP violations across all lessons (found ${allGrid.length})`);
+  assert(allOrtho.length === 0, `zero EDGE-ORTHOGONAL violations across all lessons (found ${allOrtho.length})`);
+  assert(allPort.length === 0, `zero EDGE-PORT-ON-BORDER violations across all lessons (found ${allPort.length})`);
+  assert(allBend.length === 0, `zero BEND-COUNT violations across all lessons (found ${allBend.length})`);
+  assert(allRow.length === 0, `zero ROW-BASELINE violations across all lessons (found ${allRow.length})`);
+  assert(allRxc.length === 0, `zero RX-CONSISTENT violations across all lessons (found ${allRxc.length})`);
+  assert(allStrk.length === 0, `zero STROKE-CONSISTENT violations across all lessons (found ${allStrk.length})`);
   assert(consoleErrors.length === 0, "zero console/page errors across the run" + (consoleErrors.length ? " -> " + JSON.stringify(consoleErrors.slice(0, 5)) : ""));
 
   await browser.close();

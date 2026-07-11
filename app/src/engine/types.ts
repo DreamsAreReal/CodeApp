@@ -28,8 +28,10 @@ export interface DiagramNode {
   kind: NodeKind;
   x: number;
   y: number;
-  w: number;
-  h: number;
+  /** Optional: derived by `sizeNode` from the width ladder when omitted. */
+  w?: number;
+  /** Optional: derived by `sizeNode` from the kind-height map when omitted. */
+  h?: number;
   name?: string;
   value?: string | number;
   typeTag?: string;
@@ -46,6 +48,8 @@ export interface DiagramEdge {
   from: string;
   to: string;
   accent?: boolean;
+  /** 'ortho' (default) = rounded orthogonal L/Z route; 'straight' = plain line. */
+  route?: "ortho" | "straight";
 }
 
 /** A single animation frame: a snapshot of nodes + edges plus synced UI hints. */
