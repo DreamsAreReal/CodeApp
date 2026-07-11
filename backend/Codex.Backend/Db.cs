@@ -107,6 +107,19 @@ public sealed class Database
         """;
 
     /// <summary>
+    /// Migration 2 — add the FSRS-6 lifecycle columns to review_state. Forward-only and safe on the
+    /// live prod DB, which already has review_state rows: existing rows are back-filled to the
+    /// Review state (2) with no step (NULL). That is the correct default for any card that already
+    /// has a stability/difficulty — it had graduated out of the learning phase under the previous
+    /// (long-term-only) scheduler, so treating it as a Review-state card preserves its schedule.
+    /// SQLite ALTER TABLE ADD COLUMN is a cheap metadata-only change (no table rewrite).
+    /// </summary>
+    private const string Migration2StateColumns = """
+        ALTER TABLE review_state ADD COLUMN state INTEGER NOT NULL DEFAULT 2;
+        ALTER TABLE review_state ADD COLUMN step INTEGER;
+        """;
+
+    /// <summary>
     /// Ordered, FORWARD-ONLY migration scripts. Index i is the script that bumps user_version
     /// from i to i+1 (so Migrations[0] == migration 1). Append here for future schema changes;
     /// each new script runs exactly once, in order, inside a transaction. Never edit/reorder a
@@ -115,6 +128,7 @@ public sealed class Database
     private static readonly string[] Migrations =
     {
         Migration1Schema,
+        Migration2StateColumns,
     };
 
     /// <summary>
@@ -213,7 +227,7 @@ public sealed class Database
         using var conn = Open();
         using var cmd = conn.CreateCommand();
         cmd.CommandText = """
-            SELECT difficulty, stability, due, reps, lapses, last_review
+            SELECT difficulty, stability, due, reps, lapses, last_review, state, step
             FROM review_state WHERE user_id = $u AND item_id = $i;
             """;
         cmd.Parameters.AddWithValue("$u", userId);
@@ -222,7 +236,9 @@ public sealed class Database
         if (!r.Read()) return null;
         return new ReviewState(userId, itemId, r.GetDouble(0), r.GetDouble(1),
             ParseIso(r.GetString(2)), r.GetInt32(3), r.GetInt32(4),
-            r.IsDBNull(5) ? null : ParseIso(r.GetString(5)));
+            r.IsDBNull(5) ? null : ParseIso(r.GetString(5)),
+            (CardState)r.GetInt32(6),
+            r.IsDBNull(7) ? null : r.GetInt32(7));
     }
 
     public void UpsertReviewState(ReviewState s)
@@ -230,15 +246,17 @@ public sealed class Database
         using var conn = Open();
         using var cmd = conn.CreateCommand();
         cmd.CommandText = """
-            INSERT INTO review_state (user_id, item_id, difficulty, stability, due, reps, lapses, last_review)
-            VALUES ($u, $i, $d, $s, $due, $reps, $lapses, $last)
+            INSERT INTO review_state (user_id, item_id, difficulty, stability, due, reps, lapses, last_review, state, step)
+            VALUES ($u, $i, $d, $s, $due, $reps, $lapses, $last, $state, $step)
             ON CONFLICT(user_id, item_id) DO UPDATE SET
                 difficulty = excluded.difficulty,
                 stability = excluded.stability,
                 due = excluded.due,
                 reps = excluded.reps,
                 lapses = excluded.lapses,
-                last_review = excluded.last_review;
+                last_review = excluded.last_review,
+                state = excluded.state,
+                step = excluded.step;
             """;
         cmd.Parameters.AddWithValue("$u", s.UserId);
         cmd.Parameters.AddWithValue("$i", s.ItemId);
@@ -248,6 +266,8 @@ public sealed class Database
         cmd.Parameters.AddWithValue("$reps", s.Reps);
         cmd.Parameters.AddWithValue("$lapses", s.Lapses);
         cmd.Parameters.AddWithValue("$last", s.LastReview is { } lr ? Iso(lr) : (object)DBNull.Value);
+        cmd.Parameters.AddWithValue("$state", (int)s.State);
+        cmd.Parameters.AddWithValue("$step", s.Step is { } st ? st : (object)DBNull.Value);
         cmd.ExecuteNonQuery();
     }
 

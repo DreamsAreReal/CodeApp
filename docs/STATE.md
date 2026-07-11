@@ -445,3 +445,14 @@ Maximalist-ставка: «self-hosting learning app» — приложение 
   w17–w19) в волне 3? Мелочь: run-csharp stdout может полироваться host-логами (dev-only; в isolated-тесте
   52/52 не воспроизводится) — почищу в cleanup. Спавню Builder B (фронт Telegram lifecycle + a11y);
   волна 3 (логика повторов: ввод-ответ+объективный грейд+калибровка) — после B, + возможно FSRS-выравнивание.
+- 2026-07-11 — Builder B ГОТОВ + ПРОВЕРЕН (коммит 1e7d718): Telegram safe-area/stable-viewport, lifecycle
+  (disableVerticalSwipes+closingConfirmation во время повтора, нативная BackButton, themeChanged), a11y
+  (axe 0 serious/critical на Home/Lesson/Progress, контраст-токены, focus-visible). Оба harness'а зелёные.
+  Пользователь: «делай как надо, плохо не делай» → FSRS выравниваю под стандарт (решение делегировано мне).
+  Волна 3 разбита: 3a = FSRS-выравнивание (фокус, бэкенд, грунт на РЕАЛЬНОМ py-fsrs — pip+прогон эталона):
+  реализовать short-term термы w17–w19, ошибки (Again) должны переповторяться в ТУ ЖЕ сессию (малый
+  интервал), across-day интервалы совпасть с py-fsrs (в пределах толеранса), golden-vector тест на РЕАЛЬНЫХ
+  py-fsrs числах, старый регресс-тест обновить. Потом 3b = логика повторов (фронт: ввод-ответ+объективный
+  грейд+калибровка) + обновить AUTHORING-AI.md под новый формат карточек + починить run-csharp log-pollution.
+  Потом волна 4 (я: Dockerfile non-root+HEALTHCHECK, CI SHA-деплой+harness+coverlet) → финал → ОДИН деплой.
+  Спавню Builder 3a (FSRS).

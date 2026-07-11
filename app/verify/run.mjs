@@ -140,7 +140,9 @@ async function main() {
   log("  review response: " + JSON.stringify(review));
   assert(review.itemId === "T1.M3.boxing/c1", "review posted for boxing/c1");
   assert(review.grade === "Good", "grade recorded as Good");
-  assert(review.intervalDays >= 3 && review.intervalDays <= 3.5, "new Good -> ~3.26d interval (" + review.intervalDays + ")");
+  // FSRS-6 (py-fsrs 6.3.1): a brand-new Good advances one learning step (600s == ~0.00694 d).
+  // Its due (now + 600s) is in the future, so the card leaves the immediate due queue.
+  assert(review.intervalDays > 0 && review.intervalDays < 0.02, "new Good -> learning-step interval ~600s (" + review.intervalDays + "d)");
   await page.screenshot({ path: `${EV}/F3/390-graded.png`, fullPage: false });
   const dueAfter = await apiGet(`/api/due`);
   assert(dueAfter.count === countBefore - 1, `due count dropped ${countBefore} -> ${dueAfter.count}`);

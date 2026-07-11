@@ -10,13 +10,19 @@ public sealed record ReviewResult(
     double ElapsedDays,
     DateTimeOffset Due,
     int Reps,
-    int Lapses);
+    int Lapses,
+    CardState State);
 
 /// <summary>
 /// The review flow: read prior FSRS state, advance it by the graded rating over the elapsed days,
 /// persist the new schedule, and append the history event. "Now" comes from an injected
 /// <see cref="TimeProvider"/> (default <see cref="TimeProvider.System"/>) so elapsed-days — and
 /// therefore the whole schedule — is deterministic under test (FakeTimeProvider).
+///
+/// The next due time is <c>now + interval</c> where the interval comes straight from the FSRS-6
+/// scheduler: a minute-scale learning/relearning step (so a mistake resurfaces inside the current
+/// session) or a whole-day Review-state interval. This mirrors py-fsrs's
+/// <c>card.due = review_datetime + next_interval</c>.
 /// </summary>
 public sealed class ReviewService
 {
@@ -36,12 +42,12 @@ public sealed class ReviewService
         var now = _clock.GetUtcNow();
         var prev = _db.GetReviewState(userId, itemId);
 
-        FsrsState state;
+        FsrsState prevState;
         int reps, lapses;
         double elapsedDays;
         if (prev is null)
         {
-            state = _fsrs.ReviewNew(rating);
+            prevState = FsrsState.New;
             reps = 1;
             lapses = rating == Rating.Again ? 1 : 0;
             elapsedDays = 0;
@@ -49,19 +55,23 @@ public sealed class ReviewService
         else
         {
             elapsedDays = prev.LastReview is { } lr ? (now - lr).TotalDays : 0;
-            state = _fsrs.Review(new FsrsState(prev.Difficulty, prev.Stability), elapsedDays, rating);
+            prevState = new FsrsState(prev.Difficulty, prev.Stability, prev.State, prev.Step);
             reps = prev.Reps + 1;
             lapses = prev.Lapses + (rating == Rating.Again ? 1 : 0);
         }
 
-        double intervalDays = _fsrs.IntervalDays(state.Stability);
-        var due = now + TimeSpan.FromDays(intervalDays);
+        var schedule = _fsrs.Review(prevState, elapsedDays, rating);
+        var state = schedule.State;
+        double intervalDays = schedule.Interval.TotalDays;
+        var due = now + schedule.Interval;
 
         _db.UpsertReviewState(new ReviewState(
-            userId, itemId, state.Difficulty, state.Stability, due, reps, lapses, now));
+            userId, itemId, state.Difficulty, state.Stability, due, reps, lapses, now,
+            state.State, state.Step));
         _db.AppendProgressEvent(new ProgressEvent(userId, itemId, (int)rating, now));
 
         return new ReviewResult(
-            itemId, rating, state.Difficulty, state.Stability, intervalDays, elapsedDays, due, reps, lapses);
+            itemId, rating, state.Difficulty, state.Stability, intervalDays, elapsedDays, due,
+            reps, lapses, state.State);
     }
 }

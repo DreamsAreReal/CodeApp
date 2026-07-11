@@ -101,7 +101,10 @@ public sealed class ApiTests : IClassFixture<ApiTests.Factory>
 
         var review = await Json(await Post("/api/review", token, new { itemId, grade = 3 }));
         double interval = review.GetProperty("intervalDays").GetDouble();
-        Assert.InRange(interval, 3.0, 3.5); // new Good ~= 3.26 days
+        // A brand-new Good advances one learning step (600s == ~0.00694 d) and stays in Learning,
+        // matching py-fsrs 6.3.1. Its due (now + 600s) is in the future, so it leaves the due queue.
+        Assert.Equal("Learning", review.GetProperty("state").GetString());
+        Assert.InRange(interval, 600.0 / 86400.0 - 1e-4, 600.0 / 86400.0 + 1e-4);
 
         var dueAfter = await Json(await Get("/api/due", token));
         int countAfter = dueAfter.GetProperty("count").GetInt32();

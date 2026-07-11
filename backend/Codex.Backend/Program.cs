@@ -7,6 +7,12 @@ using Microsoft.AspNetCore.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Route host logs to stderr so they never pollute the dev CSharpRunner's captured stdout
+// (it redirects Console.Out to grab a snippet's output). Keeps the authoring answer-execution
+// gate clean and its test non-flaky; logs still surface on stderr (Docker captures both).
+builder.Services.Configure<Microsoft.Extensions.Logging.Console.ConsoleLoggerOptions>(
+    o => o.LogToStandardErrorThreshold = Microsoft.Extensions.Logging.LogLevel.Trace);
+
 // ---- configuration ----
 var cfg = builder.Configuration;
 string botToken = cfg["Telegram:BotToken"] ?? "";
@@ -316,6 +322,7 @@ app.MapPost("/api/review", (HttpContext http, ReviewRequest req, ReviewService r
         due = result.Due,
         reps = result.Reps,
         lapses = result.Lapses,
+        state = result.State.ToString(),
     });
 }).RequireRateLimiting(MutatingLimiter);
 

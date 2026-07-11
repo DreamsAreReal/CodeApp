@@ -30,7 +30,13 @@ function assert(cond, msg) {
   if (cond) log("  ✓ " + msg);
   else { failed++; log("  ✗ FAIL: " + msg); }
 }
-const apiGet = async (p) => (await fetch(API + p)).json();
+// Data API requires a Bearer session token (IDOR fix): mint one for RUN_USER, send it on every call.
+let apiToken = null;
+async function authApi() {
+  const res = await fetch(API + "/api/auth", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ devUserId: RUN_USER }) });
+  apiToken = (await res.json()).token;
+}
+const apiGet = async (p) => (await fetch(API + p, { headers: apiToken ? { Authorization: `Bearer ${apiToken}` } : {} })).json();
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function main() {
@@ -93,7 +99,8 @@ async function main() {
   log("\n== T1.M4.gc: answer card -> grade Good -> POST /api/review moves schedule ==");
   await page.evaluate(() => window.__app.openLesson("T1.M4.gc"));
   await page.waitForFunction(() => window.__viz && window.__viz.ready && window.__lesson.id === "T1.M4.gc", { timeout: 15000 });
-  const dueBefore = await apiGet(`/api/due?userId=${RUN_USER}`);
+  await authApi();
+  const dueBefore = await apiGet(`/api/due`);
   const gcDueBefore = dueBefore.items.some((i) => i.itemId === "T1.M4.gc/c1");
   assert(gcDueBefore, "gc/c1 is due before review");
   const countBefore = dueBefore.count;
@@ -107,9 +114,11 @@ async function main() {
   log("  review response: " + JSON.stringify(review));
   assert(review.itemId === "T1.M4.gc/c1", "review posted for gc/c1");
   assert(review.grade === "Good", "grade recorded as Good");
-  assert(review.intervalDays >= 3 && review.intervalDays <= 3.5, "new Good -> ~3.26d interval (" + review.intervalDays + ")");
+  // FSRS-6 (py-fsrs 6.3.1): a brand-new Good advances one learning step (600s == ~0.00694 d),
+  // due (now + 600s) is in the future, so the card leaves the immediate due queue.
+  assert(review.intervalDays > 0 && review.intervalDays < 0.02, "new Good -> learning-step interval ~600s (" + review.intervalDays + "d)");
   await page.screenshot({ path: `${EV}/GC/390-graded.png`, fullPage: false });
-  const dueAfter = await apiGet(`/api/due?userId=${RUN_USER}`);
+  const dueAfter = await apiGet(`/api/due`);
   assert(dueAfter.count === countBefore - 1, `due count dropped ${countBefore} -> ${dueAfter.count}`);
   assert(!dueAfter.items.some((i) => i.itemId === "T1.M4.gc/c1"), "gc/c1 left the due queue (schedule moved)");
 

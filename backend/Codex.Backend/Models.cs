@@ -6,7 +6,11 @@ public sealed record User(long TgId, DateTimeOffset Created);
 /// <summary>A reviewable item in the catalog, derived from a lesson card.</summary>
 public sealed record Item(string ItemId, string LessonId, string? Prompt, string? ExpectedOutput);
 
-/// <summary>Durable FSRS memory state per (user, item).</summary>
+/// <summary>
+/// Durable FSRS memory state per (user, item). <see cref="State"/> and <see cref="Step"/> carry the
+/// FSRS-6 Learning/Review/Relearning lifecycle (see <see cref="CardState"/>); <see cref="Step"/> is
+/// null once the card is in the Review state.
+/// </summary>
 public sealed record ReviewState(
     long UserId,
     string ItemId,
@@ -15,7 +19,9 @@ public sealed record ReviewState(
     DateTimeOffset Due,
     int Reps,
     int Lapses,
-    DateTimeOffset? LastReview);
+    DateTimeOffset? LastReview,
+    CardState State,
+    int? Step);
 
 /// <summary>Append-only history of a single review action.</summary>
 public sealed record ProgressEvent(long UserId, string ItemId, int Grade, DateTimeOffset Ts);
