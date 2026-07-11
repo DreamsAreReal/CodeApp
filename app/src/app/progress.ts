@@ -8,13 +8,14 @@
  * numbers, an honest grade-mix calibration bar, a 4-week activity heatmap, the
  * forward FSRS schedule (next 7 days), and a per-lesson mastery list.
  */
-import { api, ApiError } from "../api/client.ts";
+import { api } from "../api/client.ts";
 import type { Calibration, DayCount, GradeMix, LessonProgress, ProgressResponse } from "../api/types.ts";
 import { getLesson } from "../lessons/index.ts";
 import { S } from "../strings.ts";
 import { router } from "./router.ts";
 import { tg } from "../telegram/webapp.ts";
 import { navBar, wireNav } from "./nav.ts";
+import { errorCard, errorDetail, skeletonScreen } from "./ui.ts";
 
 function ring(size: number, r: number, sw: number, pct: number, cls: string, label?: string): string {
   const c = 2 * Math.PI * r;
@@ -28,21 +29,21 @@ function ring(size: number, r: number, sw: number, pct: number, cls: string, lab
 }
 
 export async function renderProgress(root: HTMLElement): Promise<void> {
-  root.innerHTML = `<div class="frame"><header class="topbar screen-head"><div class="screen-title">${S.progressTitle}</div></header><div class="home-body"><div class="notice">${S.progressLoading}</div></div>${navBar("progress")}</div>`;
+  root.innerHTML = `<div class="frame"><header class="topbar screen-head"><div class="screen-title">${S.progressTitle}</div></header><div class="home-body">${skeletonScreen()}</div>${navBar("progress")}</div>`;
   wireNav(root);
 
   let p: ProgressResponse;
   try {
     p = await api.progress();
   } catch (e) {
-    const msg = e instanceof ApiError ? e.message : String(e);
+    const msg = errorDetail(e);
     root.innerHTML = `<div class="frame">
       <header class="topbar screen-head"><div class="screen-title">${S.progressTitle}</div></header>
-      <div class="home-body" style="padding-top:24px">
-        <div class="notice err"><b>${S.errorTitle}</b><br/>${S.errorBody}<br/><span style="opacity:.7">${escapeHtml(msg)}</span></div>
-        <button class="cta" id="retry">${S.retry}</button>
-      </div>${navBar("progress")}</div>`;
-    root.querySelector<HTMLButtonElement>("#retry")?.addEventListener("click", () => void renderProgress(root));
+      <div class="home-body" style="padding-top:8px">${errorCard(msg)}</div>${navBar("progress")}</div>`;
+    root.querySelector<HTMLButtonElement>("#retry")?.addEventListener("click", () => {
+      tg.impact("light");
+      void renderProgress(root);
+    });
     wireNav(root);
     (window as unknown as { __progress?: unknown }).__progress = { error: msg };
     return;
@@ -50,7 +51,7 @@ export async function renderProgress(root: HTMLElement): Promise<void> {
 
   // Empty state — a brand-new user with zero reviews.
   if (p.reviewsTotal === 0) {
-    root.innerHTML = `<div class="frame">
+    root.innerHTML = `<div class="frame screen-enter">
       <header class="topbar screen-head"><div class="screen-title">${S.progressTitle}</div></header>
       <div class="home-body">
         <div class="empty">
@@ -78,7 +79,7 @@ export async function renderProgress(root: HTMLElement): Promise<void> {
   const activeDays = p.activity.filter((d) => d.count > 0).length;
 
   root.innerHTML = `
-  <div class="frame">
+  <div class="frame screen-enter">
     <header class="topbar screen-head">
       <div class="screen-title">${S.progressTitle}</div>
     </header>

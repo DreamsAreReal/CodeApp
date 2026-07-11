@@ -12,7 +12,7 @@ import { tg } from "./telegram/webapp.ts";
 import { session } from "./app/session.ts";
 import { router } from "./app/router.ts";
 import { applyReducedMotion } from "./app/settings.ts";
-import { S } from "./strings.ts";
+import { errorCard, errorDetail, skeletonHome } from "./app/ui.ts";
 
 async function boot(): Promise<void> {
   const root = document.getElementById("app");
@@ -21,13 +21,19 @@ async function boot(): Promise<void> {
   tg.ready();
   router.mount(root);
 
-  root.innerHTML = `<div class="frame"><div class="home-body" style="padding-top:40px"><div class="notice">${S.connecting}</div></div></div>`;
+  // Boot loading: the same shaped skeletons as Home, so the very first paint is calm.
+  root.innerHTML = `<div class="frame"><div class="home-body">${skeletonHome()}</div></div>`;
 
   try {
     await session.authenticate();
   } catch (e) {
-    root.innerHTML = `<div class="frame"><div class="home-body" style="padding-top:40px"><div class="notice err"><b>${S.errorTitle}</b><br/>${S.errorBody}<br/><span style="opacity:.7">${(e as Error).message}</span></div><button class="cta" id="retry">${S.retry}</button></div></div>`;
-    root.querySelector("#retry")?.addEventListener("click", () => void boot());
+    // Auth is a network call too — surface it through the SINGLE shared error card + retry,
+    // never a raw failure. Retry re-runs the whole boot (re-auth + home).
+    root.innerHTML = `<div class="frame"><div class="home-body" style="padding-top:20px">${errorCard(errorDetail(e))}</div></div>`;
+    root.querySelector("#retry")?.addEventListener("click", () => {
+      tg.impact("light");
+      void boot();
+    });
     return;
   }
 

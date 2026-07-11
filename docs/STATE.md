@@ -58,6 +58,15 @@ Workspace: /Users/admin/Desktop/test5/docs/
 
 ## Следующий шаг
 
+### ТЕКУЩАЯ ВОЛНА (2026-07-11) — ПРОДУКТОВАЯ ГОТОВНОСТЬ + ОНБОРДИНГ-ДОКИ (пост-VERIFY, DONE≠конец)
+Пользователь: «контент не делай, приложение доведи до продукта + инструкции как добавлять уроки/как
+работают анимации, чтоб быстро разобраться». Гейт (multiSelect) выбрал: петля ежедневного возврата +
+edge/empty/first-run/error/loading + общий UX-полиш (инфра/P2 НЕ берём). Доки: ОБА (человеко-гайд +
+AI-плейбук). Спека: docs/design/product-readiness-spec.md. План: Builder-P (фронт: daily-loop/session-
+complete/empty/first-run/error/loading/хаптика/переходы/консистентность — по спеке, дизайн LOCKED, здоровая
+геймификация без streak-shaming) → визуальное ревью оркестратора всех состояний → Builder-D (docs/GUIDE.md
+человеку + обновить AUTHORING-AI.md, кросс-ссылки) → verify → commit+push. Контент уроков НЕ трогаем.
+
 ### ТЕКУЩАЯ ВОЛНА (2026-07-11) — АВТОЛЕЙАУТ движка (bug-proof authoring) — ЗАВЕРШЕНА, ЗАДЕПЛОЕНА
 СТАТУС: ГОТОВО + запушено (коммит 95a4a40, CI→auto-deploy на VPS). Движок автолейаута (engine/layout.ts
 layoutScene, сетка row×col + вложение + overflow-throw), все 6 уроков на `at` (0 ручных координат),
@@ -511,6 +520,23 @@ Maximalist-ставка: «self-hosting learning app» — приложение 
   types w/h optional) → расширить viz-fit (height-in-scale/width-ladder/grid-snap/edge-orthogonal/port-on-
   border/bend/row-baseline/rx/stroke) → нормализовать ВСЕ 6 уроков → viz-fit+harness'ы ALL GREEN +
   before/after скрины. Потом Я визуально проверяю каждую сцену + деплой. Волна 4 (Dockerfile/CI) — после.
+- 2026-07-11 — ПОЗИЦИОНИРОВАНИЕ УТОЧНЕНО: это ОБЩИЙ обучающий продукт (C# — первый трек; дальше Python,
+  Claude Code и др.), НЕ C#-only. Это исходный мультитрек-замысел брифа; архитектура уже поддерживает
+  (движок+lesson-as-data тематически-агностичны, треки = общие ID). Идентичность ДЕ-C#-ЛОКнута: топбар →
+  только спарк-знак (имени нет), profile about → нейтральный aboutTitle «Ежедневный тренажёр» + purpose
+  обобщён (C# первый трек), onboardTitle → «Учись каждый день», GUIDE §1 обобщён. Лейбл трека «ЯДРО C#» +
+  стартовый CTA остаются (текущий C#-трек). Гейт-выбор пользователя по титулу = нейтральный placeholder.
+  build чист, shell.mjs ALL GREEN (axe 0 crit после фикса aria-prohibited-attr — убрал aria-label с div).
+  Docs-билдер (Builder-D): GUIDE.md (5 разделов, 0 битых путей) + AUTHORING-AI обновлён. → commit+push.
+- 2026-07-11 — ПРОДУКТОВАЯ ГОТОВНОСТЬ (Builder-P) ГОТОВА + ВИЗУАЛЬНО ОТРЕВЬЮЕНА. M1 (петля возврата:
+  home 5 состояний через deriveHomeState — first-run/session/done/empty-new/empty-all; «день закрыт» с
+  XP+стрик+хук на завтра; стрик без shaming) + M2 (единый errorCard/skeleton, согласованная хаптика,
+  .screen-enter переходы, reduced-motion). Данные клиентски из /api/due+progress, новый бэкенд-филд НЕ
+  добавлен. Харнесы: build чист (JS 56.75КБ), run/shell(axe 0 crit)/new-lessons/viz-fit(6/6)/loop.mjs(нов)
+  ALL GREEN. 13 скринов docs/evidence/product-readiness — все состояния ревью ОК (тёплые, на бренде).
+  РЕШЕНИЕ ПОЛЬЗОВАТЕЛЯ (гейт): билдер ввёл титул «Фундамент C#» (топбар/герой/about) — спрошено (имя
+  выдумывать нельзя было; это описательный титул, не бренд). Спавню Builder-D (доки GUIDE+AUTHORING-AI,
+  имя-агностично) параллельно. Далее: решение имени → commit+push app + docs. features.md: PR1-PR9 self-pass.
 - 2026-07-11 — АВТОЛЕЙАУТ v2 — ВСЕ 6 УРОКОВ МИГРИРОВАНЫ + НЕЗАВИСИМО ПРОВЕРЕНО. Builder-2 обобщил
   layoutScene до сетки (row×col: у колонки один стабильный center-X между рядами → даёт 2D-таймлайн
   async-await; одноколоночные зоны = прежний стек, closures пиксель-в-пиксель по SHA-256). Мигрированы

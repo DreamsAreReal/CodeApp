@@ -245,4 +245,12 @@ export const tg = {
   notify(type: NotificationType): void {
     webApp()?.HapticFeedback?.notificationOccurred(type);
   },
+  /**
+   * Selection-change haptic — the light "tick" for moving between peer choices
+   * (Telegram's own tab/segment feedback). Used on bottom-nav tab switches. No-op
+   * outside Telegram (dev fallback stays silent — we never fake haptics).
+   */
+  selection(): void {
+    webApp()?.HapticFeedback?.selectionChanged();
+  },
 };

@@ -1,88 +1,62 @@
-# Прогресс — миграция autolayout v2 (5 уроков) + обобщение layoutScene до сетки
+# Прогресс — волна «продуктовая готовность» (без контента уроков)
 
-North Star: движок диаграмм делает авторинг анимаций визуально без-баговым — ментор
-физически не может собрать кривой кадр. Цель шага: во ВСЕХ 6 уроках 0 ручных координат
-(`viz-fit` → «autolayout: 6/6 lessons fully on at»).
+North Star: TMA, куда сеньор C# заходит КАЖДЫЙ ДЕНЬ освежать фундамент. Продукт должен
+ощущаться ЗАВЕРШЁННЫМ. Дизайн LOCKED (крем #F6F1E9 + коралл #F0533A + Rubik + спарк).
+Здоровая геймификация: 0 streak-shaming, 0 dark patterns.
+
+Спека: docs/design/product-readiness-spec.md.
 
 ## Baseline (до правок), зафиксирован
-- `npm run build` — чисто.
-- `viz-fit.mjs` — ALL GREEN, строка покрытия «autolayout: 1/6 lessons fully on at [T2.M2.closures]».
-- Эталон стиля миграции: `closures.ts` (5 сегментов на `at`), скриншоты-замок в
-  `docs/evidence/autolayout/closures/*.png` — cream+coral, вложение, ортогональные рёбра.
+- `npm run build` — чисто. JS gz = 54.69КБ (бюджет <80КБ, ок).
+- run.mjs / shell.mjs / new-lessons.mjs / viz-fit.mjs — ВСЕ ALL GREEN, 0 console-ошибок.
+- backend :5080 + vite preview :4173 подняты (preview перезапущен на свежий dist).
 
-## МИЛСТОУН 1 — обобщить layoutScene до сетки (row × col)
-Проблема: async-await — 2D-таймлайн, «левые» узлы разных рядов должны делить один X;
-текущее по-рядовое центрирование это ломает.
+## Ключевое архитектурное решение — данные КЛИЕНТСКИ
+Все новые состояния выводятся из уже существующих ответов, НОВЫЙ бэкенд-филд НЕ нужен:
+- home грузит `api.due()` + `api.stats()` + `api.lessons()` + `api.progress()` (уже сейчас).
+- `/api/progress` отдаёт: `upcoming[]` (7 дней, [0]=сегодня [1]=завтра — превью «завтра: N карт»),
+  `activity[]` (28 дней, последний = сегодня — «был ли активен сегодня»), `streakDays`,
+  `reviewsTotal`, `segmentsViewed`, `lessonsCompleted/Total`, `perLesson[].completed/due`.
+- Дерево состояний Home:
+  - first-run: reviewsTotal===0 && segmentsViewed===0 && !seenOnboarding(localStorage) → онбординг-герой.
+  - есть due (knownDue>0): «сессия на сегодня» CTA (число due + минуты).
+  - due=0 & есть непройденные уроки: empty-A «нет карт · пройди новый урок» + CTA урока.
+  - due=0 & все уроки completed: empty-B «всё повторено · вернись завтра» + превью upcoming[1].
+  - session-complete («день закрыт»): due=0 && был активен сегодня (activity today>0 ИЛИ
+    reviewsToday) → XP-за-сегодня + стрик + превью «завтра: N».
+- Стрик без наказания: тёплый «начни новую серию» при streak===0 но есть история; вехи 3/7/30.
 
-### Решение (в layout.ts, функция layoutZone)
-- Зона = сетка ячеек (row,col). Множество колонок = union `col` по всем узлам зоны
-  (нет col → col 0).
-- Ширина колонки = max ширина узла в ней (по всем рядам). Колонки слева-направо с
-  GUTTER_CROSS=16; весь блок колонок центрируется в inner-width зоны. У колонки ОДИН
-  center-X на все ряды (левый край стабилен между рядами).
-- Высота ряда = max высота узла в ряду; ряды сверху-вниз GUTTER_ROW=16; блок центрируется по Y.
-- Узел (row,col) в своей ячейке: центр по center-X колонки и center-Y ряда.
-- Несколько узлов в ОДНОЙ ячейке (row,col) — распределяются горизонтально внутри ячейки
-  (обратная совместимость: старый «ряд из N узлов без col»); ширина такой колонки = max
-  суммарной ширины под-ряда по рядам.
-- Overflow: сначала общая ширина всех колонок > innerW → ужать колонки по лестнице (как
-  раньше ужимали ряд), иначе THROW. Вложение / escape-hatch — без изменений.
+## Статус — M1 + M2 self-pass (всё зелёное)
 
-### Регрессионный замок (обязателен)
-ОДНОКОЛОНОЧНЫЕ зоны (все col=0) обязаны давать РОВНО прежнее поведение — closures s1-s5
-пиксель-в-пиксель как в эталонных скринах. Проверка: `closures-shots.mjs` + сравнение с
-`docs/evidence/autolayout/closures/*.png`.
+### M1 — петля возврата (home.ts + strings.ts + onboarding.ts)
+- `deriveHomeState()` — ЧИСТАЯ ф-я (экспорт, unit-мыслимая): first-run/session/done/empty-new/empty-all.
+  Используется и в render-пути, и в харнессе → «какое состояние» доказуемо изолированно.
+- session-hero: CTA «Начать сессию» + «N карточек · ~M минут» (число due + оценка минут).
+- done-hero («День закрыт»): due=0 && activity today>0 → XP-за-сегодня + стрик + «завтра: N» + come-back.
+- empty-new / empty-all: тёплые, с CTA; empty-all — sage (всё просмотрено, закрепляй).
+- first-run: онбординг-герой + starter value-types + skip; флаг `codex.onboarded` (onboarding.ts, localStorage).
+- streak-line: рост/веха(3/7/14/30/60/100)/тёплый рестарт при 0 (sage) — 0 shaming, без красного/вины.
 
-## МИЛСТОУН 2 — мигрировать 5 уроков (по одному, каждый верифицируя)
-Порядок: value-vs-reference → boxing → gc → hashtable → async-await.
+### M2 — error/loading/хаптика/переходы (ui.ts + main.ts + nav.ts + lessonRunner.ts + webapp.ts)
+- `app/ui.ts`: ЕДИНЫЙ `errorCard()` + `skeleton*()` — home/progress/profile/boot-auth используют одно и то же.
+- Хаптика: верно→success / неверно→error; выбор оценки→impact(medium); смена таба→`tg.selection()`;
+  завершение урока→success. Dev-fallback молчит (не фейкаем хаптику).
+- Переходы: `.screen-enter` (fade+lift 0.26s) на всех экранах; reduced-motion (OS+persisted) → без анимации.
 
-### Статус уроков
-- value-vs-reference: self-pass (4 сцены, stack/heap одноколоночные, чисто; скрины
-  docs/evidence/autolayout/value-vs-reference/s1-4.png; AUTHORING-PROOF 2/6)
-- boxing: self-pass (7 сцен). s5 вложение F в objN через at:{in}. s3 — новая широкая
-  gate-полоса внизу (длинный detail NullReferenceException не влезал в 138-зону).
-  s7 столбик 3 obj-h60 → зона высокая (viewBox 272). Убрал дублирующий chip cp в s4
-  scene3 (давал ROW-BASELINE near-miss n/obj). viz-fit ALL GREEN, покрытие 3/6.
-- gc: self-pass (6 сцен). s2/s4 — 3 gen-зоны, promotion FLIP из gen0→gen1. s1/s5 —
-  широкая куча, объекты в ряд (col). s3/s6 — новые gate-полосы внизу (широкий detail
-  «→ collect gen 0» / «→ using / try-finally» не влезал в узкие зоны). viz-fit ALL GREEN,
-  покрытие 4/6.
-- hashtable: self-pass (6 сцен). s1 table/keys с выровненными рядами (keys h156 чтобы
-  row0 совпал с table по center-Y, иначе ROW near-miss 6px). s2/s3 цепочка entry вправо
-  через col. s4 цепочка chips (bucket сверху→вниз→вправо) + verdict-полоса. s5 сетка 2×2
-  (row×col — прямое применение grid М1) + resize-полоса. Широкие gate вынесены в нижние
-  полосы. viz-fit ALL GREEN, покрытие 5/6.
-- async-await: self-pass (5 сцен). 2D-таймлайн: треки=зоны (caller/io, ui/pool),
-  фазы времени=колонки (col0 до await, col1 после). Треки подняты до h76 (obj-h60
-  стейт-машины нужен PAD≥8), io/pool-label опущен ниже верхнего трека (иначе obj
-  перекрывал подпись). continuation/deadlock — gate в широком треке. viz-fit 6/6 ALL GREEN.
-
-## ИТОГ (всё self-pass)
-- build чисто; viz-fit ALL GREEN + «autolayout: 6/6 lessons fully on at»;
-  run.mjs / new-lessons.mjs / shell.mjs — ALL GREEN.
-- closures пиксель-в-пиксель идентичны эталону после ВСЕХ правок (регресс-замок держит).
-- Скриншоты всех сцен: docs/evidence/autolayout/<lesson>/s*.png (390px, reduced-motion,
-  финальная сцена сегмента).
-- Общий шот-скрипт: app/verify/autolayout-shots.mjs.
-- СПОРНОЕ (куда смотреть ревьюеру): финальные кадры boxing-s3/s6, gc-s3/s6, hashtable-s4/s5,
-  async-s5 показывают gate в нижней полосе, а верхние зоны в ЭТОМ кадре разрежены/пусты
-  (объекты жили в предыдущих сценах сегмента) — это осмысленно (кадр про врата/итог), но
-  зоны выглядят просторно. boxing-s7 высокий (viewBox 272: 3 boxed obj-h60 столбиком).
-
-## МИЛСТОУН 1 — ГОТОВО (self-pass)
-- layoutZone переписан на grid (row × col): union колонок, стабильный center-X колонки
-  между рядами, overflow ужимает по колонкам. Одноузловая колонка сводится к старому
-  вертикальному стеку.
-- Регрессия closures: ПИКСЕЛЬ-В-ПИКСЕЛЬ (SHA-256 всех 5 скринов совпал с эталоном
-  docs/evidence/autolayout/closures/*.png). build чисто, viz-fit ALL GREEN.
+## Верификация (исполнено)
+- `npm run build` — чисто, JS 56.75 КБ gz (бюджет <80).
+- run.mjs / shell.mjs (axe 0 serious/critical) / new-lessons.mjs / viz-fit.mjs (6/6) / loop.mjs — ВСЕ ALL GREEN.
+- loop.mjs (НОВЫЙ) покрывает 9 блоков новых состояний реальными данными бэка.
+- Скриншоты: docs/evidence/product-readiness/*.png (390 + reduced-motion).
 
 ## Решения / грабли
-- `vite preview` кэширует бандл — после правки .ts надо УБИТЬ и перезапустить preview на
-  свежий dist (иначе браузерные проверки/скрины на старом коде). viz-fit AUTHORING-PROOF
-  импортирует layoutScene из .ts напрямую (node type-stripping) — pure-часть свежая всегда.
-- macOS без `timeout` (нет coreutils) — гонять node-скрипты без обёртки.
-- Эквивалентность одноколоночного случая: одна колонка шириной max центрируется в inner,
-  её center-X = innerCx; одиночный узел → cx=snap(innerCx). Совпадает со старым
-  `snap(innerCx - w/2 + w/2)`. Доказано пиксельным сравнением.
+- Данные КЛИЕНТСКИ: done/empty/first-run выведены из `/api/due`+`/api/progress` (upcoming[1]=завтра,
+  activity[последний]=сегодня). Новый бэкенд-филд НЕ добавлял.
+- empty-new/empty-all не форсируются на живом бэке за одну сессию (нужен день без активности при due=0),
+  поэтому проверяются через `window.__forceHomeHero(state)` — РЕАЛЬНЫЙ render-путь с живым контекстом (не мок).
+- `.screen-enter` (opacity 0→1) кратко валит axe color-contrast, если сканировать в середине fade →
+  в харнессах `sleep(320)` перед axe (сканируем УСТОЯВШИЙСЯ кадр, не ослабление).
+- vite preview кэширует dist — после правки .ts: kill+перезапуск preview на свежий build.
+- loop.mjs фильтрует benign `net::ERR_FAILED` из console-gate ТОЛЬКО для намеренного offline-теста (route.abort).
 </content>
 </invoke>

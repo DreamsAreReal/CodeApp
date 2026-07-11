@@ -5,11 +5,18 @@
  * they are the deliverable content and are verified against primary sources.
  */
 export const S = {
-  brand: "Фундамент C#",
+  // No product name yet, and this is a GENERAL daily-learning app (C# is only the first
+  // track; Python, Claude Code, etc. to follow) — so the topbar shows just the spark mark,
+  // and nothing in the shell is C#-specific or a brand. `aboutTitle` is a neutral, general
+  // descriptor used on the profile "about" card. Revisit when a real name is chosen.
+  aboutTitle: "Ежедневный тренажёр",
 
   // ---- home ----
   greetTitle: "С возвращением",
   greetSub: "Продолжим фундамент C# — сегодня закрепим, где живёт память и как работают типы.",
+  // greet subtitle when the daily work is already done / nothing is due (kept coherent
+  // with the hero below it, so the screen never says "продолжим" over "всё повторено").
+  greetSubClear: "Фундамент C# под рукой каждый день — сегодняшняя часть уже позади.",
   heroKicker: "Продолжить сегодня",
   heroContinue: "Продолжить",
   heroCardsDue: (n: number) => `${n} ${plural(n, "карточка", "карточки", "карточек")} к повтору`,
@@ -33,8 +40,49 @@ export const S = {
   authTelegram: "Вошли через Telegram",
   errorTitle: "Нет связи с сервером",
   errorBody:
-    "Не удалось получить расписание. Проверь соединение и потяни вниз, чтобы обновить.",
+    "Не удалось получить данные. Проверь соединение — и попробуй ещё раз.",
   retry: "Повторить",
+
+  // ---- daily-return loop (home session states) ----
+  // session-on-today CTA
+  sessionKicker: "Сессия на сегодня",
+  sessionCta: "Начать сессию",
+  sessionMeta: (n: number, min: number) =>
+    `${n} ${plural(n, "карточка", "карточки", "карточек")} · ~${min} ${plural(min, "минута", "минуты", "минут")}`,
+  // first-run onboarding hero
+  onboardKicker: "С чего начать",
+  onboardTitle: "Учись каждый день",
+  onboardBody:
+    "Короткие сессии на интервальных повторениях: разбираешь нюанс, отвечаешь по памяти, а расписание само возвращает карточку ровно перед тем, как ты её забудешь.",
+  onboardCta: "Начать с value-типов",
+  onboardSkip: "Осмотреться самому",
+  // day-closed / session complete
+  doneKicker: "День закрыт",
+  doneTitle: "Всё повторено на сегодня",
+  doneBody: "Аккуратная работа. Расписание двинулось вперёд — так и держится память.",
+  doneXpToday: (xp: number) => `+${xp} XP за сегодня`,
+  doneStreakLine: (n: number) => `Серия · ${n} ${plural(n, "день", "дня", "дней")} подряд`,
+  doneTomorrow: (n: number) =>
+    n > 0
+      ? `Завтра вернётся ${n} ${plural(n, "карточка", "карточки", "карточек")}`
+      : "Завтра новых повторов пока нет — можно взять свежий урок",
+  doneComeBack: "Возвращайся завтра — серия продолжится",
+  // empty: no due, but lessons left to learn
+  emptyNewKicker: "Нет карт к повтору",
+  emptyNewTitle: "Можно взять свежий урок",
+  emptyNewBody: "На сегодня всё повторено. Двинемся дальше по фундаменту — впереди новая тема.",
+  emptyNewCta: "Открыть новый урок",
+  // empty: no due, everything viewed
+  emptyAllKicker: "Всё пройдено",
+  emptyAllTitle: "Фундамент пройден целиком",
+  emptyAllBody: "Ты просмотрел все темы. Теперь повторы закрепляют их надолго — возвращайся, когда карточки созреют.",
+  emptyAllCta: "Повторить пройденное",
+
+  // ---- streak (supportive, never shaming) ----
+  streakMilestone: (n: number) => `${n} ${plural(n, "день", "дня", "дней")} подряд — так держать`,
+  streakGrow: (n: number) => `Серия растёт · ${n} ${plural(n, "день", "дня", "дней")}`,
+  streakFresh: "Начни серию сегодня",
+  streakRestart: "Готов начать новую серию — с чистого листа",
 
   // ---- nav ----
   navLearn: "Учиться",
@@ -120,7 +168,7 @@ export const S = {
   resetDone: "Прогресс сброшен",
   resetError: "Не удалось сбросить. Попробуйте ещё раз.",
   aboutLabel: "О приложении",
-  aboutPurpose: "Ежедневный тренажёр фундамента C# для сеньоров — на интервальных повторениях.",
+  aboutPurpose: "Тренажёр для сеньоров: обучение через интервальные повторения. Первый трек — фундамент C#, дальше Python, Claude Code и другое.",
   aboutVersion: (v: string) => `Версия ${v}`,
 
   // ---- lesson runner chrome ----

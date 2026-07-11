@@ -42,7 +42,7 @@ export function wireNav(root: HTMLElement): void {
     el.addEventListener("click", () => {
       const target = el.getAttribute("data-nav") as NavTab;
       if (el.classList.contains("active")) return; // already here — no-op
-      tg.impact("light");
+      tg.selection(); // tab switch = selection-change haptic (per Telegram guidelines)
       if (target === "home") void router.showHome();
       else if (target === "progress") void router.showProgress();
       else void router.showProfile();

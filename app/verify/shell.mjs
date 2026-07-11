@@ -148,7 +148,10 @@ async function main() {
   const homeActive = await page.locator('nav.nav .tab.active [aria-hidden], nav.nav .tab.active').first().isVisible();
   assert(homeActive, "a nav tab is marked active on home");
   await page.screenshot({ path: `${EV}/390-home.png`, fullPage: true });
-  // a11y: scan the Home screen (WCAG A + AA) — fail on serious/critical.
+  // a11y: scan the Home screen (WCAG A + AA) — fail on serious/critical. Let the gentle
+  // screen-enter fade settle first so axe measures the FINAL (fully-opaque) frame, not a
+  // transient mid-fade one (opacity < 1 momentarily lowers computed text contrast).
+  await sleep(320);
   await axeScan(page, "Home");
 
   // ===================== (b) Progress tab =====================
@@ -181,6 +184,7 @@ async function main() {
   const activeProg = await page.locator('nav.nav [data-nav="progress"]').getAttribute("class");
   assert(activeProg.includes("active"), "Progress nav tab is active on the Progress screen");
   // a11y: scan the populated Progress dashboard (rings, grade-mix, heatmap, per-lesson).
+  await sleep(320); // let the screen-enter fade settle before measuring contrast (see Home note)
   await axeScan(page, "Progress");
   for (const vp of [375, 768, 1440]) {
     await page.setViewportSize(VIEWPORTS[vp]);

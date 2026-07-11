@@ -249,7 +249,7 @@ export function runLesson(root: HTMLElement, lessonId: string): void {
 
 function shell(lesson: LessonData): string {
   return `
-  <div class="frame">
+  <div class="frame screen-enter">
     <header class="lbar">
       <button class="close" id="btnClose" title="${S.close}" aria-label="${S.close}">${ICON.close}</button>
       <div class="lprog" aria-hidden="true"><i id="lprogFill"></i></div>
@@ -597,7 +597,7 @@ function buildTyped(
     host.querySelectorAll<HTMLButtonElement>(".calib-btn").forEach((b) => (b.disabled = true));
 
     progress.bumpTo(78);
-    tg.notify(ok ? "success" : "warning");
+    tg.notify(ok ? "success" : "error"); // correct -> success, wrong -> error (per spec)
 
     (window as unknown as { __lastAnswer?: unknown }).__lastAnswer = {
       itemId: `${lesson.id}/${card.id}`,
@@ -681,7 +681,7 @@ function buildOptions(
     host.querySelectorAll<HTMLButtonElement>(".calib-btn").forEach((b) => (b.disabled = true));
     check.disabled = true;
     progress.bumpTo(78);
-    tg.notify(ok ? "success" : "warning");
+    tg.notify(ok ? "success" : "error"); // correct -> success, wrong -> error (per spec)
 
     (window as unknown as { __lastAnswer?: unknown }).__lastAnswer = {
       itemId: `${lesson.id}/${card.id}`,

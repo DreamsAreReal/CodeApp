@@ -5,7 +5,7 @@
  * and a heavily-guarded, double-confirmed "reset progress" that only ever deletes THIS
  * user's own FSRS state + history, plus a short honest FSRS meta-transparency exhibit.
  */
-import { api, ApiError } from "../api/client.ts";
+import { api } from "../api/client.ts";
 import type { ProgressResponse } from "../api/types.ts";
 import { S } from "../strings.ts";
 import { session } from "./session.ts";
@@ -13,26 +13,27 @@ import { router } from "./router.ts";
 import { tg } from "../telegram/webapp.ts";
 import { navBar, wireNav } from "./nav.ts";
 import { reducedMotionEnabled, setReducedMotion } from "./settings.ts";
+import { errorCard, errorDetail, skeletonScreen } from "./ui.ts";
 
 /** App version — a single constant, not a fabricated/placeholder value. */
 const APP_VERSION = "0.1.0";
 
 export async function renderProfile(root: HTMLElement): Promise<void> {
-  root.innerHTML = `<div class="frame"><header class="topbar screen-head"><div class="screen-title">${S.profileTitle}</div></header><div class="home-body"><div class="notice">${S.profileLoading}</div></div>${navBar("profile")}</div>`;
+  root.innerHTML = `<div class="frame"><header class="topbar screen-head"><div class="screen-title">${S.profileTitle}</div></header><div class="home-body">${skeletonScreen()}</div>${navBar("profile")}</div>`;
   wireNav(root);
 
   let p: ProgressResponse;
   try {
     p = await api.progress();
   } catch (e) {
-    const msg = e instanceof ApiError ? e.message : String(e);
+    const msg = errorDetail(e);
     root.innerHTML = `<div class="frame">
       <header class="topbar screen-head"><div class="screen-title">${S.profileTitle}</div></header>
-      <div class="home-body" style="padding-top:24px">
-        <div class="notice err"><b>${S.errorTitle}</b><br/>${S.errorBody}<br/><span style="opacity:.7">${escapeHtml(msg)}</span></div>
-        <button class="cta" id="retry">${S.retry}</button>
-      </div>${navBar("profile")}</div>`;
-    root.querySelector<HTMLButtonElement>("#retry")?.addEventListener("click", () => void renderProfile(root));
+      <div class="home-body" style="padding-top:8px">${errorCard(msg)}</div>${navBar("profile")}</div>`;
+    root.querySelector<HTMLButtonElement>("#retry")?.addEventListener("click", () => {
+      tg.impact("light");
+      void renderProfile(root);
+    });
     wireNav(root);
     (window as unknown as { __profile?: unknown }).__profile = { error: msg };
     return;
@@ -52,7 +53,7 @@ export async function renderProfile(root: HTMLElement): Promise<void> {
   const rm = reducedMotionEnabled();
 
   root.innerHTML = `
-  <div class="frame">
+  <div class="frame screen-enter">
     <header class="topbar screen-head">
       <div class="screen-title">${S.profileTitle}</div>
     </header>
@@ -120,7 +121,7 @@ export async function renderProfile(root: HTMLElement): Promise<void> {
       <!-- about -->
       <div class="sec-label">${S.aboutLabel}</div>
       <section class="card pf-about">
-        <div class="pf-about-brand"><span class="pf-mark" aria-hidden="true">${ICON_SPARK}</span><b>${S.brand}</b></div>
+        <div class="pf-about-brand"><span class="pf-mark" aria-hidden="true">${ICON_SPARK}</span><b>${S.aboutTitle}</b></div>
         <div class="pf-about-purpose">${S.aboutPurpose}</div>
         <div class="pf-about-ver mono">${S.aboutVersion(APP_VERSION)}</div>
       </section>

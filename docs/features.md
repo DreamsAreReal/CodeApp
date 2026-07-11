@@ -162,5 +162,30 @@ direct-API-цикл. Мой дифф там — только 4 строки об
 `dotnet test -c Release` → 57/58 PASS (единственный фейл — пред-существующий `RunCSharp_ReturnsRealStdout`,
 host-log pollution, вне скоупа). `cd app && npm run build` чисто (JS 48.86 КБ gz). `node verify/run.mjs` →
 **ALL GREEN** (петля due→review→due через API работает, F3: Good→Learning, интервал 600с, 0 ошибок консоли).
+
+## Волна — продуктовая готовность (без контента уроков, 2026-07-11)
+
+Спека: `docs/design/product-readiness-spec.md`. Цель: приложение ощущается ЗАВЕРШЁННЫМ. Все новые
+состояния выведены КЛИЕНТСКИ из существующих ответов (`/api/due` + `/api/progress`) — новый бэкенд-филд
+НЕ добавлялся. Здоровая геймификация: 0 streak-shaming, 0 dark patterns. Дизайн LOCKED — расширен, не изменён.
+
+| F | Название | Как проверить | Статус | Доказательство |
+|---|---|---|---|---|
+| PR1 | Home — машина состояний петли возврата (`deriveHomeState`, чистая ф-я): session / done / empty-new / empty-all / first-run; session-CTA с числом due + минутами | `loop.mjs` (1,3): state=first-run/session, meta «N карточек · ~M минут» | self-pass | `node verify/loop.mjs` → ALL GREEN; `docs/evidence/product-readiness/390-{first-run,session}.png` |
+| PR2 | Экран «день закрыт» (`done`): due=0 && активность сегодня → XP-за-сегодня + стрик + превью «завтра: N» + тёплый come-back (forward-hook) | `loop.mjs` (4): очистить все due Good → state=done, chip XP «+70 XP», tomorrow-hook, comeback | self-pass | `docs/evidence/product-readiness/390-done.png`; backend activity today>0 подтверждён curl |
+| PR3 | Empty-состояния (тёплые, с действием): empty-new «пройди новый урок»+CTA; empty-all «повторяй, чтобы закрепить»+CTA(sage); превью upcoming | `loop.mjs` (5): `__forceHomeHero` рендерит РЕАЛЬНЫМ render-путём, CTA присутствует, axe 0 crit | self-pass | `docs/evidence/product-readiness/390-{empty-new,empty-all}.png` |
+| PR4 | First-run онбординг (1 экран-герой + starter «value-типы» + skip); флаг `codex.onboarded` в localStorage — показ РОВНО один раз | `loop.mjs` (1,2): first-run→старт урока→флаг=1→reload→state!=first-run, интро исчезло | self-pass | `docs/evidence/product-readiness/390-first-run.png` |
+| PR5 | Стрик БЕЗ наказания: рост/веха/тёплый рестарт при 0 (sage, не красный); вехи 3/7/30 | `loop.mjs` (6): streak-copy без shaming-слов, класс без danger/err/red | self-pass | `node verify/loop.mjs` шаг 6 GREEN |
+| PR6 | Единый error+retry на КАЖДОМ сетевом вызове (`app/ui.ts errorCard`) — home/progress/profile + boot-auth; без сырых 401/500 | `loop.mjs` (7): dead-API→одна `.err-card`+рабочий retry→восстановление; headline без 401/500 | self-pass | `docs/evidence/product-readiness/390-error-retry.png` |
+| PR7 | Loading-скелетоны (не спиннер) на home/progress/profile + boot (`app/ui.ts skeleton*`) | `loop.mjs` (8): `.sk-hero`+`.sk-topic` во время загрузки, 0 спиннеров | self-pass | `docs/evidence/product-readiness/390-loading-skeleton.png` |
+| PR8 | Хаптика согласованно: верно→success / неверно→error (notification), выбор оценки→impact, смена таба→selection, завершение→success; dev-fallback без хаптики | build (типы `tg.selection`); ручной обзор `lessonRunner`/`nav` вызовов | self-pass | код: `telegram/webapp.ts`, `app/nav.ts`, `app/lessonRunner.ts` |
+| PR9 | Плавные переходы (`screen-enter` fade+lift) на всех экранах; reduced-motion (OS+persisted) → без анимации; консистентность (единый error/skeleton/nav) + a11y сохранены | `shell.mjs` axe 0 serious/critical на home/progress/lesson; `loop.mjs` (9) reduced-motion шоты | self-pass | `node verify/shell.mjs` → ALL GREEN (axe 0 crit); `390-{first-run,done}-reduced.png` |
+
+**Верификация (исполнено, backend :5080 + preview :4173).** `cd app && npm run build` → чисто, **JS 56.75 КБ gz**
+(бюджет <80 КБ). Все харнесы **ALL GREEN**, 0 ошибок консоли:
+`node verify/run.mjs` (петля), `verify/shell.mjs` (Progress/Profile + axe 0 serious/critical),
+`verify/new-lessons.mjs`, `verify/viz-fit.mjs` (autolayout 6/6), `verify/loop.mjs` (НОВЫЙ — 9 блоков:
+first-run/session/done/empty-new/empty-all/streak-no-shaming/error-retry/skeleton/reduced-motion).
+Скриншоты всех новых состояний (390px + reduced-motion): `docs/evidence/product-readiness/`.
 </content>
 </invoke>
