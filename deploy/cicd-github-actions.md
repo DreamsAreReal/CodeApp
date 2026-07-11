@@ -5,11 +5,26 @@ GHCR → SSH-деплой на VPS**. После разовой настройк
 PR-ы гоняют только тесты.
 
 ```
-push main ─▶ test (dotnet test + npm build) ─▶ build image ─▶ push ghcr.io/<owner>/<repo>
-                                                                     │
-                                                       ssh VPS ◀─────┘
-                                                       docker compose pull && up -d  (образ обновлён)
+push main ─▶ test (dotnet test + coverlet + npm build + viz-fit headless)
+                 │
+                 ▼
+           build image ─▶ push ghcr.io/<owner>/<repo>:<git-sha> (+ :latest)
+                                          │
+                            ssh VPS ◀─────┘
+                            docker compose pull && up -d  (пин на :<git-sha>)
 ```
+
+**Гейт `test`** гоняет: backend `dotnet test` + покрытие (`coverlet`, публикуется артефактом
+`backend-coverage`), фронт `tsc+vite build`, и headless-приёмку `viz-fit.mjs` (Playwright
+Chromium против живого backend :5080 + preview :4173). Полные live-loop харнесы
+(`verify/run.mjs`, `verify/new-lessons.mjs`) пока НЕ в CI (дорого/хрупко поднимать
+детерминированно) — гоняются локально; помечено TODO в workflow.
+
+**SHA-пиннинг:** образ тегается неизменяемым `${{ github.sha }}` (плюс подвижный `:latest`
+для людей), а деплой ТЯНЕТ именно sha-тег — деплой воспроизводим и откатываем.
+
+**Non-root образ:** рантайм-процесс — непривилегированный `app` (uid 1654), НЕ root;
+у образа есть `HEALTHCHECK` на `/health/ready` (`docker inspect .State.Health` → `healthy`).
 
 Образ single-origin (фронт+API в одном контейнере), SQLite на docker-volume `codexdata`
 (переживает деплои). GHCR-аутентификация — встроенный `GITHUB_TOKEN`, отдельный PAT не нужен.
@@ -66,9 +81,14 @@ pull && up -d` (zero-config, том с базой не трогается). Пр
 затем в @BotFather указать `https://<домен>` как URL Mini App.
 
 ## Что проверено локально (граница честности)
-- `dotnet test` → 12/12 PASS; `npm run build` (tsc+vite) → зелёно — это ровно джоба `test`.
-- Образ собирает то, что проверено спайками: publish под linux-arm64 + нативный SQLite, запуск
-  опубликованного артефакта single-origin, prod-локдаун, SQLite на примонтированном `/data`.
+- `dotnet test` → 62/62 PASS; покрытие (coverlet) собрано: line 92.6% / branch 75.6%.
+- `npm run build` (tsc+vite) → зелёно; `node verify/viz-fit.mjs` против живого backend+preview
+  → ALL GREEN — это ровно джоба `test`.
+- Образ собран локально (`docker build -f deploy/Dockerfile`) и запущен: `HEALTHCHECK` → `healthy`,
+  `/health/ready` 200, `GET /` 200, `/api/lessons` (через реальный HMAC-auth) → 6 уроков,
+  рантайм-процесс `id` → uid 1654 (`app`, НЕ root), `/data` писабелен и `codex.db` создаётся
+  пользователем `app`.
 - Сам GitHub-workflow и SSH-деплой на живой VPS я прогнать не могу (нет доступа к твоему VPS/аккаунту)
   — это выполнится при первом пуше. Шаги подобраны по канонному паттерну (docker/build-push-action
-  + appleboy/ssh-action) и не содержат недоказанных допущений.
+  + appleboy/ssh-action) + добавлены coverlet/viz-fit/sha-пиннинг; YAML провалидирован (safe_load),
+  bash-фрагменты (coverage-репорт, backend+preview wait) прогнаны локально.

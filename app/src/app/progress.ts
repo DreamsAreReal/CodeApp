@@ -124,10 +124,11 @@ export async function renderProgress(root: HTMLElement): Promise<void> {
       </section>
 
       <!-- calibration (confidence vs outcome, typed-answer cards) -->
+      <!-- The caption is rendered by calibrationBlock itself (next to the % ring), so it is
+           NOT repeated here — a duplicated hint below the block was the doubled label. -->
       <div class="sec-label">${S.calibLabel}</div>
       <section class="card">
         ${calibrationBlock(p.calibration)}
-        <div class="hint">${S.calibCaption}</div>
       </section>
 
       <!-- activity heatmap -->

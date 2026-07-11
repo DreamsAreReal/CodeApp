@@ -14,7 +14,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # ---- gate: unit tests + type-check + bundle (fast, deterministic) ----
+  # ---- gate: unit tests + coverage + type-check + bundle + headless acceptance ----
   test:
     runs-on: ubuntu-latest
     steps:
@@ -27,13 +27,74 @@ jobs:
           node-version: '22'
           cache: npm
           cache-dependency-path: app/package-lock.json
-      - name: Backend unit tests (xUnit)
-        run: dotnet test backend/Codex.Backend.Tests/Codex.Backend.Tests.csproj -c Release
+
+      # Backend xUnit + code coverage (coverlet.collector). The threshold is not
+      # enforced yet — we just collect the number and publish it as an artifact.
+      - name: Backend unit tests + coverage (xUnit + coverlet)
+        run: >
+          dotnet test backend/Codex.Backend.Tests/Codex.Backend.Tests.csproj
+          -c Release
+          --collect:"XPlat Code Coverage"
+          --results-directory ${{ github.workspace }}/coverage
+      - name: Report line/branch coverage
+        if: always()
+        run: |
+          f=$(find "${{ github.workspace }}/coverage" -name coverage.cobertura.xml | head -1)
+          if [ -z "$f" ]; then echo "no cobertura report found"; exit 0; fi
+          # Pull the two rate attributes off the <coverage ...> root tag (no XML dep needed).
+          line=$(grep -o 'line-rate="[0-9.]*"' "$f" | head -1 | grep -o '[0-9.]*')
+          branch=$(grep -o 'branch-rate="[0-9.]*"' "$f" | head -1 | grep -o '[0-9.]*')
+          awk -v l="$line" -v b="$branch" 'BEGIN{
+            printf "line coverage:   %.1f%%\n", l*100;
+            printf "branch coverage: %.1f%%\n", b*100 }'
+      - name: Upload coverage artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage
+          path: coverage/**/coverage.cobertura.xml
+          if-no-files-found: warn
+
+      - name: Frontend deps
+        working-directory: app
+        run: npm ci
       - name: Frontend type-check + build
         working-directory: app
+        run: npm run build
+
+      # ---- headless frontend acceptance (viz-fit) against a live backend+preview ----
+      # viz-fit.mjs asserts label FIT / CLIP / OVERLAP for all 6 lessons in a real
+      # Chromium. It needs the .NET backend on :5080 (Development => DevMode auth
+      # bypass) and `vite preview` on :4173, so we spin both up before running it.
+      - name: Install Playwright Chromium
+        working-directory: app
+        run: npx playwright install --with-deps chromium
+      - name: Start backend (:5080) + preview (:4173) for acceptance
+        working-directory: app
         run: |
-          npm ci
-          npm run build
+          # Backend in Development so viz-fit's dev-auth works; throwaway SQLite file.
+          ASPNETCORE_ENVIRONMENT=Development \
+          ASPNETCORE_URLS=http://localhost:5080 \
+          Database__Path=${{ runner.temp }}/codex-ci.db \
+          dotnet run --no-launch-profile \
+            --project ../backend/Codex.Backend/Codex.Backend.csproj -c Release \
+            > "${{ runner.temp }}/backend.log" 2>&1 &
+          npm run preview > "${{ runner.temp }}/preview.log" 2>&1 &
+          # Wait until BOTH endpoints answer (or fail the job after ~60s).
+          for i in $(seq 1 40); do
+            b=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:5080/health/live || true)
+            p=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:4173/ || true)
+            [ "$b" = "200" ] && [ "$p" = "200" ] && { echo "backend+preview up"; exit 0; }
+            sleep 2
+          done
+          echo "backend/preview did not come up"; tail -n 40 "${{ runner.temp }}"/*.log; exit 1
+      - name: Frontend acceptance (viz-fit)
+        working-directory: app
+        run: node verify/viz-fit.mjs
+      # TODO: the full live-loop harnesses (verify/run.mjs, verify/new-lessons.mjs)
+      # exercise the complete review/FSRS loop against real user state and are slow
+      # and state-heavy to stand up deterministically in CI; run them locally for
+      # now. CI covers dotnet test + build + viz-fit, which gate the diagram engine.
 
   # ---- build the single-origin image and push to GHCR (main only) ----
   build-and-push:
@@ -57,9 +118,11 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ghcr.io/${{ github.repository }}
+          # Immutable, reproducible tag = the exact git sha (used by deploy), plus a
+          # moving `latest` for humans. The deploy job pins to the sha, never :latest.
           tags: |
+            type=raw,value=${{ github.sha }}
             type=raw,value=latest,enable={{is_default_branch}}
-            type=sha
       - name: Build & push
         uses: docker/build-push-action@v6
         with:
@@ -85,7 +148,9 @@ jobs:
           GHCR_USER: ${{ github.actor }}
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          IMAGE: ghcr.io/${{ github.repository }}:latest
+          # Pin the deploy to the immutable git-sha tag (reproducible + rollback-able),
+          # never the moving :latest.
+          IMAGE: ghcr.io/${{ github.repository }}:${{ github.sha }}
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
@@ -114,6 +179,7 @@ jobs:
             volumes:
               codexdata:
             YAML
+            # Pin to the exact sha-tagged image so the deploy is reproducible/rollback-able.
             docker compose -f docker-compose.prod.yml pull
             docker compose -f docker-compose.prod.yml up -d
             docker logout ghcr.io || true

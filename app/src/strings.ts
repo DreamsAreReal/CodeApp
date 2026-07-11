@@ -188,8 +188,15 @@ export const S = {
   gradeSending: "Сохраняем…",
   reviewSaved: (days: string) => `Прогресс сохранён на сервере. Следующий повтор — через ${days}.`,
   reviewDaysFmt: (d: number) => {
+    const hours = d * 24;
+    // Sub-hour intervals read in minutes (10 min must not round up to "1 час").
+    if (hours < 1) {
+      const m = Math.max(1, Math.round(hours * 60));
+      return `${m} ${plural(m, "минута", "минуты", "минут")}`;
+    }
+    // Sub-day intervals (>= 1 h) read in hours.
     if (d < 1) {
-      const h = Math.max(1, Math.round(d * 24));
+      const h = Math.max(1, Math.round(hours));
       return `${h} ${plural(h, "час", "часа", "часов")}`;
     }
     const days = Math.round(d);

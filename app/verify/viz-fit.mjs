@@ -512,7 +512,10 @@ function authoringProof() {
   log(`\n== AUTHORING-PROOF (auto-layout v2, pure engine) ==`);
   assert(bad === 0, `layoutScene: every at-scene is in-zone (PAD≥8), nested-contained, row-aligned, non-overlapping, snapped`);
   log(`  autolayout: ${fullyOnAt}/${LESSON_DATA.length} lessons fully on \`at\`${onAtLessons.length ? " [" + onAtLessons.join(", ") + "]" : ""}`);
-  assert(fullyOnAt >= 1, `at least 1/${LESSON_DATA.length} lessons fully migrated to \`at\` (closures)`);
+  // Hard gate: EVERY lesson must be fully migrated to `at` (declarative zone/row placement).
+  // If any lesson still returns hand-authored x/y coordinates, fullyOnAt drops below 6 and this
+  // assert fails — catching a migration regression that `>= 1` would have silently allowed.
+  assert(fullyOnAt === LESSON_DATA.length, `all ${LESSON_DATA.length}/${LESSON_DATA.length} lessons fully migrated to \`at\` (no hand-authored x/y)`);
 }
 
 async function main() {

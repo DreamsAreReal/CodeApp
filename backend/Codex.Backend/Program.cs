@@ -58,8 +58,11 @@ builder.Services.AddCors(o => o.AddDefaultPolicy(p =>
 }));
 
 // Rate limiting: partition by the authenticated tgId (falls back to remote IP before auth),
-// fixed 60/min window. Applied only to the mutating endpoints below via RequireRateLimiting.
+// fixed window. Applied only to the mutating endpoints below via RequireRateLimiting.
+// The per-minute permit count is configurable (RateLimit:PermitPerMinute) so tests can drive a
+// tiny limit deterministically; the production default stays 60/min.
 const string MutatingLimiter = "mutating";
+int permitPerMinute = cfg.GetValue("RateLimit:PermitPerMinute", 60);
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
@@ -70,7 +73,7 @@ builder.Services.AddRateLimiter(options =>
             : $"ip:{ctx.Connection.RemoteIpAddress}";
         return RateLimitPartition.GetFixedWindowLimiter(key, _ => new FixedWindowRateLimiterOptions
         {
-            PermitLimit = 60,
+            PermitLimit = permitPerMinute,
             Window = TimeSpan.FromMinutes(1),
             QueueLimit = 0,
         });
@@ -129,6 +132,11 @@ if (serveFrontend)
     app.UseDefaultFiles(new DefaultFilesOptions { FileProvider = frontend });
     app.UseStaticFiles(new StaticFileOptions { FileProvider = frontend });
 }
+
+// ---- routing must run BEFORE the rate limiter so the limiter can resolve each endpoint's
+//      named RequireRateLimiting policy (endpoint-level policies are a no-op if UseRateLimiter
+//      runs before routing). ----
+app.UseRouting();
 
 // ---- auth gate: validates the Bearer session token on every /api/* except the public routes,
 //      and stashes the authenticated tgId for the handlers. MUST run before the rate limiter so

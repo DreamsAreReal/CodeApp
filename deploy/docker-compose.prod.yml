@@ -1,7 +1,9 @@
 # Production compose that PULLS the prebuilt image from GHCR (no local build).
 # The CI deploy job writes an equivalent file on the VPS automatically; this copy is for
-# manual deploys. Provide CODEX_IMAGE and TELEGRAM_BOT_TOKEN via env or a sibling .env:
-#   CODEX_IMAGE=ghcr.io/<owner>/<repo>:latest TELEGRAM_BOT_TOKEN=... docker compose -f docker-compose.prod.yml up -d
+# manual deploys. Provide CODEX_IMAGE and TELEGRAM_BOT_TOKEN via env or a sibling .env.
+# Pin CODEX_IMAGE to an immutable git-sha tag for reproducible/rollback-able deploys
+# (CI pins to the sha automatically; :latest is only a convenience pointer):
+#   CODEX_IMAGE=ghcr.io/<owner>/<repo>:<git-sha> TELEGRAM_BOT_TOKEN=... docker compose -f docker-compose.prod.yml up -d
 services:
   codex:
     image: ${CODEX_IMAGE:?set CODEX_IMAGE=ghcr.io/<owner>/<repo>:latest}
@@ -9,7 +11,10 @@ services:
     environment:
       Telegram__BotToken: ${TELEGRAM_BOT_TOKEN:?set TELEGRAM_BOT_TOKEN}
     volumes:
-      - codexdata:/data          # durable SQLite (survives restarts/redeploys)
+      # durable SQLite (survives restarts/redeploys). The image runs as non-root
+      # `app` (uid 1654); a fresh volume inherits that owner. Upgrading from an older
+      # root image? chown once: docker run --rm -v codexdata:/data alpine chown -R 1654:1654 /data
+      - codexdata:/data
     ports:
       - "127.0.0.1:8080:8080"    # public edge is your reverse proxy (Caddy), not this port
 

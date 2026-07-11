@@ -1,0 +1,28 @@
+# Raw evidence — verify5 container/CI gate — 2026-07-11
+## docker version
+29.4.0
+## build: exit 0, image codex-verify5 507MB
+## non-root: uid=1654(app) gid=1654(app); PID1 = app dotnet Codex.Backend.dll
+## healthcheck: healthy @ t=2s; 3 probe exit=0 {"status":"ready"}; StartPeriod=20s Interval=30s Retries=3; curl 8.5.0 present
+## endpoints (prod container, port 18080):
+  /health/ready -> 200 {"status":"ready"}
+  /health -> 200 {"status":"ok","fsrs":"fsrs-6","storage":"sqlite"}
+  GET / -> 200 1035 bytes text/html
+  GET /api/lessons (no token) -> 401 (guarded, not public in prod)
+  POST /api/auth devUserId -> 403 (DevMode off)
+  GET /api/dev/sign-initdata -> 403
+## real HMAC auth flow:
+  AUTH_STATUS 200 mode=telegram userId=4242 token minted
+  LESSONS_STATUS 200 LESSONS_COUNT 6
+  LESSON_IDS T1.M2.value-vs-reference,T1.M3.boxing,T1.M4.gc,T2.M1.async-await,T2.M2.closures,T2.M5.hashtable
+  FORGED_AUTH_STATUS 401 (tampered hash rejected)
+## /data: app:app 755, writable, codex.db + wal created on volume
+## seed lessons on disk: 6 files
+## CI review (deploy.yml):
+  needs graph: build-and-push needs test; deploy needs build-and-push
+  sha-pin: deploy IMAGE=ghcr.io/${{ github.repository }}:${{ github.sha }} (never :latest)
+  coverlet: --collect XPlat Code Coverage + upload-artifact backend-coverage
+  viz-fit: node verify/viz-fit.mjs, asserts FIT/CLIP/OVERLAP x6, exit on FAIL
+  caveat: viz-fit runs dev dotnet run (Development), not the prod image
+  caveat: coverage threshold NOT enforced; live-loop harnesses TODO out of CI
+## cleanup: container stopped+removed, anon volume pruned (53.25kB), image removed

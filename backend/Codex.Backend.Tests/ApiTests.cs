@@ -586,4 +586,58 @@ public sealed class ApiTests : IClassFixture<ApiTests.Factory>
         // All n reviews were durably recorded.
         Assert.Equal(n, (await Json(await Get("/api/progress", token))).GetProperty("reviewsTotal").GetInt32());
     }
+
+    // ======================= RATE LIMITING =======================
+
+    /// <summary>
+    /// A factory that overrides RateLimit:PermitPerMinute to a tiny value so the fixed-window
+    /// limiter is provably exercised WITHOUT depending on wall-clock timing: with a 3/min permit
+    /// the 4th request inside the same window is rejected deterministically. The production default
+    /// (60/min, appsettings) is untouched — this override lives only in this test fixture.
+    /// </summary>
+    public sealed class RateLimitFactory : WebApplicationFactory<Program>
+    {
+        private readonly string _dbPath = Path.Combine(
+            Path.GetTempPath(), $"codex-test-rl-{Guid.NewGuid():N}.db");
+
+        protected override void ConfigureWebHost(IWebHostBuilder builder)
+        {
+            // UseSetting writes to host configuration, which wins over appsettings.json in the
+            // minimal-hosting model — unlike ConfigureAppConfiguration's app-config source, which
+            // appsettings.json overrides. This is why the tiny permit actually takes effect.
+            builder.UseSetting("Database:Path", _dbPath);
+            builder.UseSetting("Auth:DevMode", "true");
+            builder.UseSetting("RateLimit:PermitPerMinute", "3");
+        }
+    }
+
+    [Fact]
+    public async Task MutatingEndpoint_ExceedingRateLimit_Returns429()
+    {
+        // A dedicated fixture with PermitPerMinute=3, so the 4th call in the window is over-limit.
+        using var factory = new RateLimitFactory();
+        var client = factory.CreateClient();
+
+        long user = FreshUser();
+        var authResp = await client.PostAsJsonAsync("/api/auth", new { devUserId = user });
+        authResp.EnsureSuccessStatusCode();
+        string token = (await Json(authResp)).GetProperty("token").GetString()!;
+
+        // /api/lesson-progress is rate-limited and idempotent, so repeated calls carry no side effect
+        // that would perturb the count — the limiter, not the handler, decides the outcome.
+        HttpRequestMessage Build() =>
+            Req(HttpMethod.Post, "/api/lesson-progress", token,
+                new { lessonId = "T1.M3.boxing", segmentsSeen = 1, segmentsTotal = 7, completed = false });
+
+        // The first 3 requests fit the permit and succeed (200).
+        for (int i = 1; i <= 3; i++)
+        {
+            var ok = await client.SendAsync(Build());
+            Assert.True(ok.IsSuccessStatusCode, $"request #{i} within the limit must pass (got {(int)ok.StatusCode})");
+        }
+
+        // The 4th request in the same window exceeds the permit -> 429 Too Many Requests.
+        var over = await client.SendAsync(Build());
+        Assert.Equal(HttpStatusCode.TooManyRequests, over.StatusCode);
+    }
 }

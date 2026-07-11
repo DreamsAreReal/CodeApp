@@ -28,8 +28,11 @@ Workspace: /Users/admin/Desktop/test5/docs/
 - [x] 1 RESEARCH (брейншторм + ресерч + review + RS-08..15) — ACCEPT-WITH-NOTES, must-fix закрыты
 - [x] 2 ТЗ — Гейт ТЗ: УТВЕРЖДЕНО 2026-07-09 (name=placeholder/без имени; фокус=C#-ядро вглубь; старт=walking skeleton + пара уроков + AI-инструкция + расширяемое приложение) — чекпойнт после скелета: да
 - [x] 3 DESIGN (дизайн mid LOCKED + формат lesson-as-data/segments + движок RS-08 + бэкенд построен)
-- [ ] 4 BUILD (builder; майлстоуны: 0/~5 [skeleton→loop→lessons→TMA→deploy])
-- [ ] 5 VERIFY (финал + ретро)
+- [x] 4 BUILD (skeleton→loop→6 уроков→TMA→deploy→hardening→FSRS→reviews→UI/viz→автолейаут→инфра Wave 4
+      [Dockerfile non-root+HEALTHCHECK, CI SHA-pin+viz-fit-in-CI+coverlet, strings мин] — всё ГОТОВО)
+- [x] 5 VERIFY (workflow wt9lt4dlq: 5 измерений ВСЕ ПРИНЯТЫ, 0 блокеров; F1-F9→verified. Ступень 3
+      готовый продукт [точность=4]. Фикс-волна поймала РЕАЛЬНЫЙ баг: rate-limiter был no-op из-за порядка
+      middleware → починено+тест 429 [63/63]. Отчёт+ретро: reviews/R-phase5-verify-final.md. P2-backlog вынесен)
 Статусы завершения: «готова волна N» (предложена следующая волна; НЕ конец) | BETA
 (нетерминальный, ждёт решения пользователя) | DONE (пользователь сказал «хватит»)
 
