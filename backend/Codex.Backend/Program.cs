@@ -148,6 +148,9 @@ app.UseRateLimiter();
 // ---- startup: run migrations (user_version-gated) + seed catalog ----
 db.Initialize();
 foreach (var item in lessons.Items) db.SeedItem(item);
+// Prune any catalog item no longer present in the seed (e.g. a card removed from a lesson),
+// so a stale item can never keep appearing as "due". Cascades to that item's user state/events.
+db.ReconcileCatalog(lessons.Items.Select(i => i.ItemId));
 
 // ---- graceful shutdown: fold the WAL into the main DB before SIGTERM on redeploy ----
 var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();

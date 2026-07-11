@@ -91,7 +91,7 @@ function ring(size: number, r: number, sw: number, pct: number, cls: string): st
   );
 }
 
-export async function renderHome(root: HTMLElement): Promise<void> {
+export async function renderHome(root: HTMLElement, navToken: number = router.nav): Promise<void> {
   // Loading: shaped skeletons (not a spinner), inside the real frame so nothing jumps.
   root.innerHTML = `<div class="frame"><div class="home-body">${skeletonHome()}</div>${navBar("home")}</div>`;
   wireNav(root);
@@ -103,6 +103,7 @@ export async function renderHome(root: HTMLElement): Promise<void> {
   try {
     [due, stats, catalog, prog] = await Promise.all([api.due(), api.stats(), api.lessons(), api.progress()]);
   } catch (e) {
+    if (!router.isCurrent(navToken)) return; // a newer navigation won — do not paint over it
     const msg = errorDetail(e);
     root.innerHTML = `<div class="frame"><div class="home-body" style="padding-top:20px">${errorCard(msg)}</div>${navBar("home")}</div>`;
     root.querySelector<HTMLButtonElement>("#retry")?.addEventListener("click", () => {
@@ -113,6 +114,8 @@ export async function renderHome(root: HTMLElement): Promise<void> {
     (window as unknown as { __home?: unknown }).__home = { error: msg, state: "error" };
     return;
   }
+
+  if (!router.isCurrent(navToken)) return; // a newer navigation won — do not paint over it
 
   // Group due items by lesson id (itemId = `${lessonId}/${cardId}`).
   const dueByLesson = new Map<string, { due: number; newCount: number }>();
@@ -151,7 +154,6 @@ export async function renderHome(root: HTMLElement): Promise<void> {
   // falls back to the first with due cards, then the first row.
   const nextUnseen = rows.find((r) => !r.completed);
   const heroRow = nextUnseen ?? rows.find((r) => r.due > 0) ?? rows[0];
-  const estMin = heroRow.lesson.home.estMinutes;
 
   // Was the learner active TODAY? activity[] is 28 days ending today (UTC); the last bucket
   // is today. Used to distinguish "день закрыт" (did work, now clear) from a plain empty day.
@@ -176,12 +178,12 @@ export async function renderHome(root: HTMLElement): Promise<void> {
     heroRow,
     knownDue,
     overallPct,
-    estMin,
     lessonsCompleted: prog.lessonsCompleted,
     lessonsTotal,
     streakDays: stats.streakDays,
     xpToday,
     tomorrowDue,
+    freshLessonId: nextUnseen ? nextUnseen.lesson.id : null,
   };
 
   root.innerHTML = `
@@ -191,11 +193,11 @@ export async function renderHome(root: HTMLElement): Promise<void> {
         <span class="mark" aria-hidden="true">${ICON.spark}</span>
       </div>
       <div class="stats">
-        <span class="stat" title="Стрик (сервер)">
+        <span class="stat" title="Серия (сервер)">
           ${STREAK_ICON}
           <span class="n" id="statStreak">${stats.streakDays}</span><span class="u">${S.statStreakUnitDays(stats.streakDays)}</span>
         </span>
-        <span class="stat" title="Опыт (сервер)">
+        <span class="stat" title="XP (сервер)">
           <svg class="ic-xp" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5l2.4 5 5.5.7-4 3.8 1 5.4-4.9-2.7L7.1 21.4l1-5.4-4-3.8 5.5-.7z"/></svg>
           <span class="n" id="statXp">${stats.xp}</span>
         </span>
@@ -207,7 +209,7 @@ export async function renderHome(root: HTMLElement): Promise<void> {
 
       <div class="sec-label">${S.pathLabel}</div>
       <div class="path" id="path">
-        ${rows.map((r, i) => topicRow(r, r === heroRow && state !== "first-run", i)).join("")}
+        ${rows.map((r, i) => topicRow(r, r === heroRow && state !== "first-run", i, knownDue > 0)).join("")}
       </div>
 
       <div class="notice" id="conn" style="text-align:center">${connLabel} · <b id="connDue">${S.heroCardsDue(knownDue)}</b></div>
@@ -218,10 +220,23 @@ export async function renderHome(root: HTMLElement): Promise<void> {
 
   wireNav(root);
 
+  // Ordered due itemIds straight off the live queue (backend order = FSRS priority).
+  const dueIds = due.items.map((it) => it.itemId);
+
+  // Open a single lesson at its first card (re-view / first-run / no due cards to run).
   const open = (id: string) => {
     markOnboarded(); // starting any lesson counts as onboarded — the intro never nags again
     tg.impact("light");
     router.showLesson(id);
+  };
+
+  // Start a CONTINUOUS session over a set of due itemIds: the runner advances card-to-card
+  // until the queue drains, only then returning home. Falls back to opening `fallbackLessonId`
+  // as a single lesson when there is nothing due to run.
+  const startSession = (itemIds: string[], fallbackLessonId: string) => {
+    markOnboarded();
+    tg.impact("light");
+    if (!router.startSession(itemIds)) router.showLesson(fallbackLessonId);
   };
 
   // Wire the hero CTA + first-run skip for a given state. Extracted so a forced hero
@@ -229,7 +244,10 @@ export async function renderHome(root: HTMLElement): Promise<void> {
   const wireHero = (forState: HomeState) => {
     root.querySelector<HTMLButtonElement>("#heroCta")?.addEventListener("click", (e) => {
       e.stopPropagation();
-      open(ctaTarget(forState, rows, heroRow));
+      // The daily "session" CTA runs the WHOLE due queue as one continuous session; every
+      // other state opens a single lesson (first-run starter, empty-new fresh lesson, revisit).
+      if (forState === "session") startSession(dueIds, ctaTarget(forState, rows, heroRow));
+      else open(ctaTarget(forState, rows, heroRow));
     });
     root.querySelector<HTMLButtonElement>("#onboardSkip")?.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -237,11 +255,23 @@ export async function renderHome(root: HTMLElement): Promise<void> {
       tg.impact("light");
       void renderHome(root);
     });
+    // Optional secondary CTA on a closed day: open the first not-yet-viewed lesson (a fresh lesson,
+    // not the due session). Only present when `heroCtx.freshLessonId` was set (unseen lessons remain).
+    root.querySelector<HTMLButtonElement>("#heroFresh")?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (heroCtx.freshLessonId) open(heroCtx.freshLessonId);
+    });
   };
   wireHero(state);
 
   root.querySelectorAll<HTMLElement>("[data-lesson]").forEach((el) => {
-    el.addEventListener("click", () => open(el.getAttribute("data-lesson")!));
+    el.addEventListener("click", () => {
+      const lessonId = el.getAttribute("data-lesson")!;
+      // Tapping a topic runs ITS due cards as a session; with none due it opens for re-view.
+      const lessonDue = dueIds.filter((id) => id.startsWith(lessonId + "/"));
+      if (lessonDue.length > 0) startSession(lessonDue, lessonId);
+      else open(lessonId);
+    });
   });
 
   // Verification hook — re-render the hero slot for ANY state using the REAL greet/hero render
@@ -318,12 +348,14 @@ interface HeroCtx {
   heroRow: LessonRow;
   knownDue: number;
   overallPct: number;
-  estMin: number;
   lessonsCompleted: number;
   lessonsTotal: number;
   streakDays: number;
   xpToday: number;
   tomorrowDue: number;
+  // id of the first not-yet-viewed lesson (a fresh lesson to take), or null when everything is viewed.
+  // Powers the OPTIONAL secondary "take a fresh lesson" CTA on a closed day.
+  freshLessonId: string | null;
 }
 
 /** Render the hero card for the current state. */
@@ -349,6 +381,9 @@ function onboardingHero(): string {
 
 /** "Сессия на сегодня" — the rewarding daily action (due count + estimated minutes). */
 function sessionHero(c: HeroCtx): string {
+  // Session minutes scale with the number of due cards (~1 min/card, minimum 1) — not a fixed 7,
+  // so a 2-card day never reads as "~7 минут". The card count is the DAY'S leading metric.
+  const min = Math.max(1, Math.round(c.knownDue));
   return `
   <section class="hero" id="hero" aria-label="${esc(c.heroRow.lesson.title)}">
     <div class="hero-top">
@@ -357,7 +392,7 @@ function sessionHero(c: HeroCtx): string {
         <span class="kicker">${S.sessionKicker}</span>
         <div class="hero-title">${esc(c.heroRow.lesson.title)}</div>
         <div class="hero-meta">
-          <span class="mono">${S.sessionMeta(c.knownDue, c.estMin)}</span>
+          <span class="mono">${S.sessionMeta(c.knownDue, min)}</span>
         </div>
       </div>
     </div>
@@ -372,6 +407,11 @@ function doneHero(c: HeroCtx): string {
   const chips =
     `<span class="done-chip xp">${S.doneXpToday(c.xpToday)}</span>` +
     `<span class="done-chip streak">${STREAK_ICON}${S.doneStreakLine(c.streakDays)}</span>`;
+  // The day is DONE — this secondary link is purely optional (only when a fresh lesson exists).
+  // It never pressures: it sits below the come-back line as a quiet "there's more if you want it".
+  const fresh = c.freshLessonId
+    ? `<button class="hero-fresh" id="heroFresh" type="button">${S.doneFreshCta}${ICON.arrowR}</button>`
+    : "";
   return `
   <section class="hero hero-done" id="hero" aria-label="${esc(S.doneTitle)}">
     <span class="done-seal" aria-hidden="true">${SEAL_ICON}</span>
@@ -380,7 +420,8 @@ function doneHero(c: HeroCtx): string {
     <p class="hero-lead">${S.doneBody}</p>
     <div class="done-chips">${chips}</div>
     <div class="done-tomorrow">${TOMORROW_ICON}<span>${S.doneTomorrow(c.tomorrowDue)}</span></div>
-    <div class="done-comeback">${S.doneComeBack}</div>
+    <div class="done-comeback">${S.doneComeBack(c.streakDays)}</div>
+    ${fresh}
   </section>`;
 }
 
@@ -392,22 +433,38 @@ function emptyHero(kind: "new" | "all", c: HeroCtx): string {
   const body = isNew ? S.emptyNewBody : S.emptyAllBody;
   const cta = isNew ? S.emptyNewCta : S.emptyAllCta;
   const tomorrow = c.tomorrowDue > 0 ? `<div class="done-tomorrow">${TOMORROW_ICON}<span>${S.doneTomorrow(c.tomorrowDue)}</span></div>` : "";
+  // Streak forward-hook — a warm "come back tomorrow -> N+1" line, only when a streak is alive
+  // (at 0 the streakLine below already invites a fresh start, so we don't double up).
+  const comeback = c.streakDays > 0 ? `<div class="done-comeback">${S.doneComeBack(c.streakDays)}</div>` : "";
+  // "all" = the whole foundation is viewed: give the completion a heavier seal (mirrors done-hero),
+  // distinct from the routine empty-new which is just "no cards, take a fresh lesson".
+  const seal = isNew ? "" : `<span class="done-seal" aria-hidden="true">${SEAL_ICON}</span>`;
   return `
-  <section class="hero hero-empty" id="hero" aria-label="${esc(title)}">
+  <section class="hero hero-empty${isNew ? "" : " hero-sealed"}" id="hero" aria-label="${esc(title)}">
+    ${seal}
     <span class="kicker ${isNew ? "" : "kicker-sage"}">${kicker}</span>
     <div class="hero-title">${title}</div>
     <p class="hero-lead">${body}</p>
     ${tomorrow}
+    ${comeback}
     <button class="cta" id="heroCta"><span>${cta}</span>${ICON.arrowR}</button>
     ${streakLine(c.streakDays)}
   </section>`;
 }
 
+/**
+ * Topic-progress bar (lessons viewed) — a SECONDARY, longer-horizon metric, deliberately set
+ * apart from the day's leading "N карточек" figure in .hero-meta so the two units never read as
+ * one. Its own quiet label ("Темы курса") makes clear this bar counts topics, not today's cards.
+ */
 function progressBar(c: HeroCtx): string {
   return (
+    `<div class="hero-prog">` +
+    `<div class="hero-prog-h"><span>${S.pathTopicsLabel}</span>` +
+    `<span><span class="mono">${c.lessonsCompleted}</span>/<span class="mono">${c.lessonsTotal}</span></span></div>` +
     `<div class="bar" aria-hidden="true"><i style="width:${c.overallPct.toFixed(0)}%"></i></div>` +
-    `<div class="bar-cap"><span>${S.heroLessonsCompleted(c.lessonsCompleted, c.lessonsTotal)}</span>` +
-    `<span><span class="mono">${c.lessonsCompleted}</span>/<span class="mono">${c.lessonsTotal}</span></span></div>`
+    `<div class="bar-cap"><span>${S.heroLessonsCompleted(c.lessonsCompleted, c.lessonsTotal)}</span></div>` +
+    `</div>`
   );
 }
 
@@ -430,7 +487,7 @@ function streakLine(streakDays: number): string {
   return `<div class="${cls}">${STREAK_ICON}<span>${text}</span></div>`;
 }
 
-function topicRow(r: LessonRow, active: boolean, index: number): string {
+function topicRow(r: LessonRow, active: boolean, index: number, hasSession: boolean): string {
   const icon = TOPIC_ICON[r.lesson.home.icon];
   const smallLabel = r.newCount === r.due && r.due > 0 ? plural(r.due, "новое", "новых", "новых") : S.topicDue;
   let badge: string;
@@ -454,7 +511,7 @@ function topicRow(r: LessonRow, active: boolean, index: number): string {
       <div class="t-body">
         <div class="t-title">${escapeHtml(r.lesson.title)}</div>
         <div class="t-sub">${sub}</div>
-        ${active ? `<span class="pill">${S.topicActive}</span>` : ""}
+        ${active && hasSession ? `<span class="pill">${S.topicActive}</span>` : ""}
       </div>
       ${badge}
     </button>`;

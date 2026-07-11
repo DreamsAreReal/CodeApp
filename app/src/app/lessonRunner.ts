@@ -17,9 +17,23 @@ import { getLesson } from "../lessons/index.ts";
 import type { Card, LessonData, Segment, Source } from "../lessons/types.ts";
 import { S } from "../strings.ts";
 import { router } from "./router.ts";
+import { sessionQueue } from "./sessionQueue.ts";
 import { tg } from "../telegram/webapp.ts";
 
-const REDUCED = prefersReducedMotion();
+/**
+ * Reduced-motion state for the CURRENT lesson render. Refreshed at the start of every
+ * `runLesson` (not cached at module load) so the "Меньше движения" toggle in Profile takes
+ * effect on the next lesson: `prefersReducedMotion()` now also reads the persisted flag, and
+ * the lesson re-renders when reopened. Read by buildSegment / revealGrade during that render.
+ */
+let REDUCED = prefersReducedMotion();
+
+/**
+ * XP the server awards per completed review (Program.cs: `xp = reviewsTotal * 10`). Grading a
+ * card IS one completed review, so we surface exactly this at the grade step — a real, server-
+ * backed number, never a made-up figure. Keep in sync with the backend XP rule.
+ */
+const REVIEW_XP = 10;
 
 const VIZ_UI = {
   stepFmt: S.stepFmt,
@@ -132,13 +146,21 @@ class LessonReporter {
   }
 }
 
-export function runLesson(root: HTMLElement, lessonId: string): void {
+export function runLesson(root: HTMLElement, lessonId: string, cardId?: string): void {
+  // Refresh the reduced-motion decision for THIS render (OS media | ?reduced=1 | persisted toggle),
+  // so flipping "Меньше движения" in Profile silences this lesson's animations on reopen.
+  REDUCED = prefersReducedMotion();
+
   const lesson = getLesson(lessonId);
   if (!lesson) {
     root.innerHTML = `<div class="frame"><div class="lesson-body" style="padding-top:24px"><div class="notice err"><b>${S.errorTitle}</b><br/>Урок «${esc(lessonId)}» не найден.</div><button class="cta" id="back">${S.toHome}</button></div></div>`;
     root.querySelector("#back")?.addEventListener("click", () => void router.showHome());
     return;
   }
+
+  // Render the REQUESTED card (the one the session queue points at), not always cards[0].
+  // Fall back to the first card when no id is given (opening a lesson directly for re-view).
+  const card: Card = (cardId ? lesson.cards.find((c) => c.id === cardId) : undefined) ?? lesson.cards[0];
 
   (window as unknown as { __viz: VizRegistry }).__viz = {
     segments: {},
@@ -169,7 +191,7 @@ export function runLesson(root: HTMLElement, lessonId: string): void {
   });
 
   // ---- MCQ + grade (closes the loop) ----
-  buildMcq(root, lesson, progress, reporter);
+  buildMcq(root, lesson, card, progress, reporter);
 
   // ---- reconstruct + sources ----
   el("#secRecon").innerHTML = reconstruct(lesson);
@@ -248,12 +270,17 @@ export function runLesson(root: HTMLElement, lessonId: string): void {
 // ---------------------------------------------------------------------------
 
 function shell(lesson: LessonData): string {
+  // The "N из M" session counter shows only during a continuous session (total > 0).
+  const sess = sessionQueue.total > 0
+    ? `<span class="sess-count" id="sessCount" title="${S.sessionProgressLabel}" aria-label="${S.sessionProgressLabel}">${esc(S.sessionProgress(sessionQueue.position, sessionQueue.total))}</span>`
+    : "";
   return `
   <div class="frame screen-enter">
     <header class="lbar">
       <button class="close" id="btnClose" title="${S.close}" aria-label="${S.close}">${ICON.close}</button>
+      ${sess}
       <div class="lprog" aria-hidden="true"><i id="lprogFill"></i></div>
-      <span class="xp" id="xpChip" title="Опыт за урок">
+      <span class="xp" id="xpChip" title="XP за урок">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5l2.4 5 5.5.7-4 3.8 1 5.4-4.9-2.7L7.1 21.4l1-5.4-4-3.8 5.5-.7z"/></svg>
         <b id="xpN">0</b><span class="u">${S.xpUnit}</span>
       </span>
@@ -518,8 +545,7 @@ function calibrationMessage(correct: boolean, confidence: boolean | null): strin
 }
 
 // ---- card dispatcher ----
-function buildMcq(root: HTMLElement, lesson: LessonData, progress: LessonProgress, reporter: LessonReporter): void {
-  const card: Card = lesson.cards[0];
+function buildMcq(root: HTMLElement, lesson: LessonData, card: Card, progress: LessonProgress, reporter: LessonReporter): void {
   const host = root.querySelector<HTMLElement>("#mcqCard")!;
   if (isTyped(card)) buildTyped(host, lesson, card, progress, reporter);
   else buildOptions(host, lesson, card, progress, reporter);
@@ -571,6 +597,7 @@ function buildTyped(
     const ok = typedCorrect(card, input.value);
     input.classList.add(ok ? "ok" : "no");
     check.disabled = true;
+    check.classList.add("answered"); // remove the now-dead check button (verdict + grade take over)
 
     const banner = host.querySelector<HTMLElement>("#qBanner")!;
     banner.className = "q-banner show " + (ok ? "ok" : "no");
@@ -680,6 +707,7 @@ function buildOptions(
     }
     host.querySelectorAll<HTMLButtonElement>(".calib-btn").forEach((b) => (b.disabled = true));
     check.disabled = true;
+    check.classList.add("answered"); // remove the now-dead check button (verdict + grade take over)
     progress.bumpTo(78);
     tg.notify(ok ? "success" : "error"); // correct -> success, wrong -> error (per spec)
 
@@ -715,7 +743,13 @@ function gradeStripHtml(): string {
     gradeBtn(2, S.gradeHard, "") +
     gradeBtn(3, S.gradeGood, "") +
     gradeBtn(4, S.gradeEasy, "") +
-    `</div><div class="grade-done" id="gradeDone">${ICON.check}<span id="gradeMsg"></span></div></div>`
+    `</div>` +
+    // success line: green check + saved message + a "+N XP" burst for the completed review
+    // (the review is exactly what the server rewards with REVIEW_XP; honest, not fabricated).
+    `<div class="grade-done" id="gradeDone"><span class="gd-ok" id="gradeOk">${ICON.check}</span><span id="gradeMsg"></span><span class="grade-xp" id="gradeXp" hidden>+${REVIEW_XP} ${S.xpUnit}</span></div>` +
+    // failure line: friendly, NO success check; kept separate so a save error never reads as success
+    `<div class="grade-fail" id="gradeFail" hidden><div class="gf-h">${ICON.warn}<b>${S.reviewFailTitle}</b></div><div class="gf-b">${S.reviewFailBody}</div></div>` +
+    `</div>`
   );
 }
 
@@ -764,6 +798,8 @@ function wireGrade(
 ): void {
   const itemId = `${lesson.id}/${card.id}`;
   const done = host.querySelector<HTMLElement>("#gradeDone")!;
+  const okMark = host.querySelector<HTMLElement>("#gradeOk")!;
+  const fail = host.querySelector<HTMLElement>("#gradeFail")!;
   const msg = host.querySelector<HTMLElement>("#gradeMsg")!;
   const buttons = host.querySelectorAll<HTMLButtonElement>(".grade-btn");
   let sent = false;
@@ -771,6 +807,9 @@ function wireGrade(
   async function post(grade: Grade, btn: HTMLButtonElement): Promise<void> {
     if (sent) return;
     sent = true;
+    // enter "sending": hide any prior failure, show the success line with the sending message.
+    fail.hidden = true;
+    okMark.hidden = false;
     buttons.forEach((b) => {
       b.disabled = true;
       b.classList.remove("sel");
@@ -787,17 +826,33 @@ function wireGrade(
       });
       msg.innerHTML = `<b>${S.reviewSaved(S.reviewDaysFmt(res.intervalDays))}</b>`;
       progress.bumpTo(100);
+      // "+N XP" burst for the completed review — reveal it and play the existing xpBump animation
+      // (reduced-motion-safe: the class-driven animation is disabled by the reduced-motion CSS).
+      const xpBurst = host.querySelector<HTMLElement>("#gradeXp");
+      if (xpBurst) {
+        xpBurst.hidden = false;
+        xpBurst.classList.remove("bump");
+        void xpBurst.offsetWidth; // restart the animation
+        xpBurst.classList.add("bump");
+      }
       // Reaching the grade = the user completed the lesson. Report it (sticky).
       reporter.markCompleted();
       appendNext(host);
       (window as unknown as { __lastReview?: ReviewResponse }).__lastReview = res;
       tg.notify("success");
     } catch (e) {
+      // Save failed: do NOT show the success check or leak the raw error. Show a friendly
+      // failure line and re-enable the grade buttons so the same tap retries (retry already works).
+      void e;
       sent = false;
       buttons.forEach((b) => (b.disabled = false));
       btn.classList.remove("sel");
-      msg.textContent = `Ошибка сохранения: ${(e as Error).message}`;
-      done.classList.add("show");
+      done.classList.remove("show");
+      okMark.hidden = true;
+      msg.textContent = "";
+      fail.hidden = false;
+      tg.notify("error");
+      (window as unknown as { __lastReviewError?: boolean }).__lastReviewError = true;
     }
   }
 
@@ -811,14 +866,43 @@ function wireGrade(
   void preselected; // pre-selection is purely visual; the user confirms by tapping a grade.
 }
 
+/**
+ * Post-grade action area. In a continuous session with cards remaining, the PRIMARY action
+ * advances to the next due card ("Следующая карточка") and "На главную" is a secondary link.
+ * On the last card of the session (or outside a session) the primary action closes the session
+ * and returns home — where the drained due queue makes "День закрыт"/empty states appear.
+ */
 function appendNext(host: HTMLElement): void {
   if (host.querySelector("#btnNext")) return;
-  const btn = document.createElement("button");
-  btn.className = "next-cta";
-  btn.id = "btnNext";
-  btn.innerHTML = `${S.toHome}${ICON.arrowR}`;
-  btn.addEventListener("click", () => void router.showHome());
-  host.appendChild(btn);
+  const wrap = document.createElement("div");
+  wrap.className = "next-wrap";
+
+  const hasNext = sessionQueue.active && sessionQueue.position < sessionQueue.total;
+  const primary = document.createElement("button");
+  primary.className = "next-cta";
+  primary.id = "btnNext";
+  if (hasNext) {
+    primary.innerHTML = `${S.sessionNext}${ICON.arrowR}`;
+    primary.addEventListener("click", () => router.advanceSession());
+    // secondary escape to home (ends the session)
+    const home = document.createElement("button");
+    home.className = "next-home";
+    home.id = "btnHome";
+    home.type = "button";
+    home.textContent = S.toHome;
+    home.addEventListener("click", () => void router.showHome());
+    wrap.appendChild(primary);
+    wrap.appendChild(home);
+  } else {
+    // last card of the session (or no session) -> finish and go home
+    primary.innerHTML = `${sessionQueue.total > 0 ? S.sessionFinish : S.toHome}${ICON.arrowR}`;
+    primary.addEventListener("click", () => {
+      if (sessionQueue.total > 0) router.advanceSession();
+      else void router.showHome();
+    });
+    wrap.appendChild(primary);
+  }
+  host.appendChild(wrap);
 }
 
 // ---- reconstruct ----

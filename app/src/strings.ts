@@ -23,6 +23,9 @@ export const S = {
   heroAllDone: "На сегодня всё повторено",
   heroMinutes: (n: number) => `~${n} мин`,
   pathLabel: "Путь · Ядро C#",
+  // quiet header for the hero's topic-progress bar — makes clear it counts course topics
+  // (a longer-horizon metric), not today's cards-to-review
+  pathTopicsLabel: "Темы курса",
   topicActive: "Активна",
   topicDue: "к повтору",
   topicNew: "новое",
@@ -55,20 +58,23 @@ export const S = {
   onboardBody:
     "Короткие сессии на интервальных повторениях: разбираешь нюанс, отвечаешь по памяти, а расписание само возвращает карточку ровно перед тем, как ты её забудешь.",
   onboardCta: "Начать с value-типов",
-  onboardSkip: "Осмотреться самому",
+  onboardSkip: "Осмотреться",
   // day-closed / session complete
   doneKicker: "День закрыт",
   doneTitle: "Всё повторено на сегодня",
-  doneBody: "Аккуратная работа. Расписание двинулось вперёд — так и держится память.",
+  doneBody: "Сделано чисто. Расписание двинулось вперёд — так и держится память.",
   doneXpToday: (xp: number) => `+${xp} XP за сегодня`,
   doneStreakLine: (n: number) => `Серия · ${n} ${plural(n, "день", "дня", "дней")} подряд`,
   doneTomorrow: (n: number) =>
     n > 0
       ? `Завтра вернётся ${n} ${plural(n, "карточка", "карточки", "карточек")}`
-      : "Завтра новых повторов пока нет — можно взять свежий урок",
-  doneComeBack: "Возвращайся завтра — серия продолжится",
+      : "Завтра новых повторов пока нет — можешь взять свежий урок",
+  // forward-hook: come back tomorrow and the streak ticks up (supportive, no countdown/threats)
+  doneComeBack: (n: number) => `Вернись завтра — серия станет ${n + 1} подряд`,
+  // secondary, opt-in CTA on a closed day when unseen lessons remain (the day is done; this is extra)
+  doneFreshCta: "Взять свежий урок",
   // empty: no due, but lessons left to learn
-  emptyNewKicker: "Нет карт к повтору",
+  emptyNewKicker: "Нет карточек к повтору",
   emptyNewTitle: "Можно взять свежий урок",
   emptyNewBody: "На сегодня всё повторено. Двинемся дальше по фундаменту — впереди новая тема.",
   emptyNewCta: "Открыть новый урок",
@@ -91,21 +97,21 @@ export const S = {
 
   // ---- progress screen ----
   progressTitle: "Прогресс",
-  progressSub: "Всё считает сервер — по вашей истории повторов, без выдуманных цифр.",
-  progressLoading: "Считаем ваш прогресс…",
+  progressSub: "Всё считает сервер — по твоей истории повторов, без выдуманных цифр.",
+  progressLoading: "Считаем твой прогресс…",
   progressEmptyTitle: "Пока нет ни одного повтора",
   progressEmptyBody:
-    "Прогресс появится, как только вы разберёте первую карточку. Расписание и статистика ведутся на сервере.",
+    "Прогресс появится, как только ты разберёшь первую карточку. Расписание и статистика ведутся на сервере.",
   progressEmptyCta: "Начать первый повтор",
-  masteryLabel: "Освоено",
+  masteryLabel: "Закреплено",
   masteryCaption: (m: number, s: number) => `${m} из ${s} карточек закреплено`,
   masteryCaptionEmpty: "Ни одна карточка ещё не закреплена",
   statReviews: "Повторы",
-  statStreak: "Стрик",
+  statStreak: "Серия",
   statStreakUnitDays: (n: number) => plural(n, "день", "дня", "дней"),
-  statXp: "Опыт",
+  statXp: "XP",
   statMastered: "Закреплено",
-  gradeMixLabel: "Как вы отвечали",
+  gradeMixLabel: "Как ты отвечаешь",
   gradeMixCaption: "Честный срез калибровки — доля Снова / Трудно / Хорошо / Легко.",
   gradeMixEmpty: "Оценок пока нет.",
   heatmapLabel: "Активность · 4 недели",
@@ -120,13 +126,13 @@ export const S = {
   upcomingTomorrow: "завтра",
   upcomingCardsUnit: (n: number) => plural(n, "карточка", "карточки", "карточек"),
   perLessonLabel: "Темы: прохождение и закрепление",
-  perLessonDue: (n: number) => `${n} ${plural(n, "к повтору", "к повтору", "к повтору")}`,
+  perLessonDue: (n: number) => `${n} ${plural(n, "карта", "карты", "карт")} к повтору`,
   perLessonMasteredFmt: (m: number, t: number) => `${m}/${t} закреплено`,
   perLessonSeenFmt: (s: number, t: number) => `${s}/${t} открыто`,
   lapsesFmt: (n: number) => `${n} ${plural(n, "срыв", "срыва", "срывов")}`,
   // completion (lesson-viewing) — honest "прохождение", separate from card mastery
   completionLabel: "Прохождение материала",
-  completionCaption: "Сколько тем вы просмотрели целиком — отдельно от закрепления карточек.",
+  completionCaption: "Сколько тем ты просмотрел целиком — отдельно от закрепления карточек.",
   statLessonsCompleted: "Тем пройдено",
   statLessonsStarted: "Начато",
   statSegmentsViewed: "Шагов просмотрено",
@@ -150,23 +156,23 @@ export const S = {
   statDaysActiveWord: (n: number) => plural(n, "активный день", "активных дня", "активных дней"),
   howItWorksLabel: "Как это работает",
   howItWorksBody:
-    "Приложение использует интервальные повторения FSRS-6. Карточка возвращается ровно тогда, когда вы вот-вот её забудете — расписание держит удержание около 90%. Ваши оценки Снова / Трудно / Хорошо / Легко подстраивают интервал каждой карточки лично под вас. Ничего не выдумано: все цифры считает сервер по вашей истории.",
+    "Приложение использует интервальные повторения FSRS-6. Карточка возвращается ровно тогда, когда ты вот-вот её забудешь — расписание держит удержание около 90%. Твои оценки Снова / Трудно / Хорошо / Легко подстраивают интервал каждой карточки лично под тебя. Ничего не выдумано: все цифры считает сервер по твоей истории.",
   settingsLabel: "Настройки",
   reduceMotionLabel: "Меньше движения",
   reduceMotionHint: "Отключить анимации и переходы.",
   reduceMotionOn: "Включено",
   reduceMotionOff: "Выключено",
-  dangerLabel: "Опасная зона",
+  dangerLabel: "Управление данными",
   resetLabel: "Сбросить прогресс",
-  resetHint: "Удалит расписание FSRS и историю повторов. Только ваши данные. Отменить нельзя.",
+  resetHint: "Удалит расписание FSRS и историю повторов. Только твои данные. Отменить нельзя.",
   resetConfirm1: "Сбросить весь прогресс?",
-  resetConfirm1Body: "Расписание и история повторов будут удалены безвозвратно. Это касается только вашего профиля.",
+  resetConfirm1Body: "Расписание и история повторов будут удалены безвозвратно. Это касается только твоего профиля.",
   resetConfirm2: "Точно удалить? Это не отменить",
   resetCancel: "Отмена",
   resetProceed: "Да, сбросить",
   resetProcessing: "Удаляем…",
   resetDone: "Прогресс сброшен",
-  resetError: "Не удалось сбросить. Попробуйте ещё раз.",
+  resetError: "Не удалось сбросить. Попробуй ещё раз.",
   aboutLabel: "О приложении",
   aboutPurpose: "Тренажёр для сеньоров: обучение через интервальные повторения. Первый трек — фундамент C#, дальше Python, Claude Code и другое.",
   aboutVersion: (v: string) => `Версия ${v}`,
@@ -174,12 +180,15 @@ export const S = {
   // ---- lesson runner chrome ----
   close: "Закрыть урок",
   xpUnit: "XP",
+  // continuous-session progress in the lesson chrome: "N из M" (card N of the session's M due)
+  sessionProgress: (n: number, m: number) => `${n} из ${m}`,
+  sessionProgressLabel: "Карточка в сессии",
   labelHook: "Нюанс, не азы",
   hookTag: "Нюанс · читаем как машина",
   labelMcq: "Предскажи вывод",
   labelRecon: "Собираем целое",
   stepFmt: (n: number, t: number) => `${n}/${t}`,
-  predictTitle: "Сначала предскажите",
+  predictTitle: "Сначала предскажи",
   predictShow: "Показать шаг",
   ilBadge: "IL",
   ilCap: "эмитит компилятор",
@@ -207,12 +216,12 @@ export const S = {
   confidenceYes: "Уверен",
   confidenceNo: "Не уверен",
   calibRightSure: "Отлично — знал и был уверен.",
-  calibRightUnsure: "Знал, но не был уверен — доверяй себе чуть больше.",
+  calibRightUnsure: "Знал, но не был уверен — можешь доверять себе спокойнее.",
   calibWrongSure: "Переоценил — обрати внимание на этот нюанс.",
   calibWrongUnsure: "Ожидаемо: не был уверен — как раз для этого и повтор.",
   // Progress calibration stat
   calibLabel: "Калибровка",
-  calibCaption: "Совпадение уверенности с результатом — по вашим ответам.",
+  calibCaption: "Совпадение уверенности с результатом — по твоим ответам.",
   calibPctFmt: (pct: number) => `${pct}% в точку`,
   calibEmpty: "Пока нет ответов с отметкой уверенности.",
   calibOverconfidentFmt: (n: number) => `${n} ${plural(n, "переоценка", "переоценки", "переоценок")}`,
@@ -223,9 +232,9 @@ export const S = {
   specLabel: "спека",
 
   // ---- review (FSRS grade) ----
-  gradeHead: "Оцените, насколько уверенно вспомнили",
+  gradeHead: "Оцени, насколько уверенно вспомнил",
   // objective result is now the main signal; self-rating is secondary and pre-selected
-  gradeHeadObjective: "Оценка выставлена по результату — можете уточнить",
+  gradeHeadObjective: "Оценка выставлена по результату — можешь уточнить",
   gradePreselectedOk: "По результату — Хорошо",
   gradePreselectedNo: "По результату — Снова",
   gradeAgain: "Снова",
@@ -234,6 +243,10 @@ export const S = {
   gradeEasy: "Легко",
   gradeAgainHint: "<1 дн",
   gradeSending: "Сохраняем…",
+  // review POST failed — friendly, no raw error text; grade buttons stay active for a retry
+  reviewFailTitle: "Не удалось сохранить",
+  reviewFailBody: "Похоже, пропала связь. Оценка не потерялась — нажми оценку ещё раз, чтобы повторить.",
+  reviewRetry: "Повторить",
   reviewSaved: (days: string) => `Прогресс сохранён на сервере. Следующий повтор — через ${days}.`,
   reviewDaysFmt: (d: number) => {
     const hours = d * 24;
@@ -251,6 +264,9 @@ export const S = {
     return `${days} ${plural(days, "день", "дня", "дней")}`;
   },
   next: "Дальше",
+  // continuous-session CTAs after grading a card
+  sessionNext: "Следующая карточка",
+  sessionFinish: "Завершить сессию",
   toHome: "На главную",
   lessonDone: "Урок пройден",
 } as const;

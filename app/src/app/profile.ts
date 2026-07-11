@@ -18,7 +18,7 @@ import { errorCard, errorDetail, skeletonScreen } from "./ui.ts";
 /** App version — a single constant, not a fabricated/placeholder value. */
 const APP_VERSION = "0.1.0";
 
-export async function renderProfile(root: HTMLElement): Promise<void> {
+export async function renderProfile(root: HTMLElement, navToken: number = router.nav): Promise<void> {
   root.innerHTML = `<div class="frame"><header class="topbar screen-head"><div class="screen-title">${S.profileTitle}</div></header><div class="home-body">${skeletonScreen()}</div>${navBar("profile")}</div>`;
   wireNav(root);
 
@@ -26,6 +26,7 @@ export async function renderProfile(root: HTMLElement): Promise<void> {
   try {
     p = await api.progress();
   } catch (e) {
+    if (!router.isCurrent(navToken)) return; // a newer navigation won — do not paint over it
     const msg = errorDetail(e);
     root.innerHTML = `<div class="frame">
       <header class="topbar screen-head"><div class="screen-title">${S.profileTitle}</div></header>
@@ -38,6 +39,8 @@ export async function renderProfile(root: HTMLElement): Promise<void> {
     (window as unknown as { __profile?: unknown }).__profile = { error: msg };
     return;
   }
+
+  if (!router.isCurrent(navToken)) return; // a newer navigation won — do not paint over it
 
   const u = tg.user();
   const first = u?.first_name?.trim() ?? "";

@@ -72,17 +72,6 @@
       "verify": "execute",
       "sourceRefs": ["ms-boxing"],
       "fsrsSeed": { "desiredRetention": 0.9 }
-    },
-    {
-      "id": "c2",
-      "type": "find-the-bug",
-      "engagementLevel": "changing",
-      "prompt": "Почему падает и как починить?",
-      "code": "int i = 123; object o = i; int j = (short)o;",
-      "expectedOutput": "System.InvalidCastException",
-      "verify": "execute",
-      "sourceRefs": ["ms-boxing"],
-      "distractors": ["Скомпилируется, j = 123", "Усечёт до short молча"]
     }
   ],
 

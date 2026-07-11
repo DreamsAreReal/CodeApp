@@ -32,6 +32,20 @@
   --locked-bg: #fcfaf6;
   --muted-tile: #f1ece2;
   --code-bg: #fbf7f0;
+  /* heatmap mid step (between --coral-tint and --coral-l) — the 3rd of 4 activity levels */
+  --heat-mid: #f6b3a3;
+
+  /* IL bytecode panel — the one dark "machine level" surface in the app. Its own scoped
+     palette so the panel's slate/steel colours are tokens, not raw hexes. Off/comment greys
+     clear WCAG AA (>=4.5:1) on the panel background. Not part of the warm cream design surface. */
+  --il-bg: #20242a; /* panel background (dark slate) */
+  --il-border: #2c333b; /* panel + line hairlines */
+  --il-badge-bg: #c7d0ae; /* "IL" badge chip (sage-leaning) */
+  --il-cap: #8c97a3; /* caption text */
+  --il-dim: #8f9aa6; /* offsets / comments — AA (5.45:1) on --il-bg */
+  --il-op: #e7ebef; /* opcode text (near-white) */
+  --il-arg: var(--amber); /* operands (amber, matches the app accent) */
+  --il-op-cur: #ff8a70; /* highlighted opcode on the current line (light coral) */
 
   --shadow-1: 0 2px 8px rgba(35, 32, 27, 0.06), 0 8px 22px -10px rgba(35, 32, 27, 0.1);
   --shadow-2: 0 3px 12px rgba(35, 32, 27, 0.08), 0 18px 40px -16px rgba(35, 32, 27, 0.14);

@@ -199,11 +199,13 @@
   color: var(--muted);
   font-weight: 500;
 }
+/* the day's leading figure ("N карточек · ~M минут") carries a touch more weight/ink so it
+   clearly reads as the headline metric, distinct from the quieter topic-progress block below */
 .hero-meta .mono {
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: 12.5px;
   color: var(--ink);
-  font-weight: 500;
+  font-weight: 600;
 }
 .dot {
   width: 3px;
@@ -236,6 +238,34 @@
 }
 .bar-cap .mono {
   font-family: var(--mono);
+  color: var(--ink);
+}
+
+/* Topic-progress block — visually set apart from the day's leading card metric: a hairline
+   divider above it and its own small header make it read as a separate, secondary section
+   (course topics viewed), not part of "N карточек к повтору". */
+.hero-prog {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+.hero-prog .bar {
+  margin-top: 8px;
+}
+.hero-prog-h {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.hero-prog-h .mono {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0;
   color: var(--ink);
 }
 
@@ -731,10 +761,58 @@
   color: var(--muted);
 }
 
+/* optional secondary CTA on a closed day — a quiet ghost link, NOT a second heavy CTA, so it
+   never competes with the finished-day feel. Sits under the come-back line. */
+.hero-fresh {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 12px auto 0;
+  width: auto;
+  border: 1px solid rgba(124, 139, 111, 0.4);
+  background: var(--surface);
+  cursor: pointer;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--sage-text);
+  padding: 9px 15px;
+  border-radius: 12px;
+  box-shadow: var(--shadow-1);
+  transition: transform 0.08s ease, border-color 0.15s ease;
+}
+.hero-fresh svg {
+  width: 15px;
+  height: 15px;
+}
+.hero-fresh:active {
+  transform: scale(0.97);
+}
+.hero-fresh:hover {
+  border-color: var(--sage);
+}
+/* center the secondary CTA block within the (left-aligned) done hero */
+.hero-done {
+  text-align: left;
+}
+.hero-done .hero-fresh {
+  display: flex;
+  justify-content: center;
+}
+
 /* empty heroes reuse .hero + .hero-lead; the "all viewed" variant leans sage */
 .hero-empty .hero-title {
   margin-top: 8px;
   font-size: 21px;
+}
+/* "Фундамент пройден целиком" — a sealed completion, heavier than routine empty-new: sage
+   wash + the same seal medallion the done hero uses, so finishing the whole course reads big. */
+.hero-empty.hero-sealed {
+  background: linear-gradient(180deg, var(--surface), var(--sage-tint));
+  border-color: rgba(124, 139, 111, 0.34);
+}
+.hero-empty.hero-sealed::before {
+  background: radial-gradient(circle, rgba(124, 139, 111, 0.2), rgba(124, 139, 111, 0) 70%);
 }
 
 /* ==========================================================================

@@ -220,6 +220,50 @@ public sealed class Database
         cmd.ExecuteNonQuery();
     }
 
+    /// <summary>
+    /// Reconcile the catalog to exactly the current seed: delete any <c>items</c> row whose
+    /// item_id is NOT in <paramref name="keepItemIds"/>, and cascade to the review_state and
+    /// progress_events that referenced those now-removed items. SeedItem only UPSERTs, so a card
+    /// removed from a lesson JSON (e.g. an unreachable card the front never rendered) would
+    /// otherwise linger in the catalog and keep surfacing in /api/due forever. Returns how many
+    /// catalog items were pruned. Never touches items that are still seeded.
+    /// </summary>
+    public int ReconcileCatalog(IEnumerable<string> keepItemIds)
+    {
+        var keep = new HashSet<string>(keepItemIds, StringComparer.Ordinal);
+        using var conn = Open();
+        using var tx = conn.BeginTransaction();
+
+        // Find catalog item_ids that are no longer seeded.
+        var stale = new List<string>();
+        using (var find = conn.CreateCommand())
+        {
+            find.Transaction = tx;
+            find.CommandText = "SELECT item_id FROM items;";
+            using var r = find.ExecuteReader();
+            while (r.Read())
+            {
+                string id = r.GetString(0);
+                if (!keep.Contains(id)) stale.Add(id);
+            }
+        }
+
+        foreach (var id in stale)
+        {
+            foreach (var table in new[] { "review_state", "progress_events", "items" })
+            {
+                using var del = conn.CreateCommand();
+                del.Transaction = tx;
+                del.CommandText = $"DELETE FROM {table} WHERE item_id = $i;";
+                del.Parameters.AddWithValue("$i", id);
+                del.ExecuteNonQuery();
+            }
+        }
+
+        tx.Commit();
+        return stale.Count;
+    }
+
     public List<Item> AllItems()
     {
         using var conn = Open();

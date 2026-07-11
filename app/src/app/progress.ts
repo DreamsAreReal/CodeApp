@@ -28,7 +28,7 @@ function ring(size: number, r: number, sw: number, pct: number, cls: string, lab
   );
 }
 
-export async function renderProgress(root: HTMLElement): Promise<void> {
+export async function renderProgress(root: HTMLElement, navToken: number = router.nav): Promise<void> {
   root.innerHTML = `<div class="frame"><header class="topbar screen-head"><div class="screen-title">${S.progressTitle}</div></header><div class="home-body">${skeletonScreen()}</div>${navBar("progress")}</div>`;
   wireNav(root);
 
@@ -36,6 +36,7 @@ export async function renderProgress(root: HTMLElement): Promise<void> {
   try {
     p = await api.progress();
   } catch (e) {
+    if (!router.isCurrent(navToken)) return; // a newer navigation won — do not paint over it
     const msg = errorDetail(e);
     root.innerHTML = `<div class="frame">
       <header class="topbar screen-head"><div class="screen-title">${S.progressTitle}</div></header>
@@ -48,6 +49,8 @@ export async function renderProgress(root: HTMLElement): Promise<void> {
     (window as unknown as { __progress?: unknown }).__progress = { error: msg };
     return;
   }
+
+  if (!router.isCurrent(navToken)) return; // a newer navigation won — do not paint over it
 
   // Empty state — a brand-new user with zero reviews.
   if (p.reviewsTotal === 0) {

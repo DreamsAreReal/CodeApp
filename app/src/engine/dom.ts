@@ -3,12 +3,30 @@ import type { VNode } from "./types.ts";
 
 export const SVGNS = "http://www.w3.org/2000/svg";
 
-/** Honour the user's reduced-motion preference (also forceable via ?reduced=1). */
+/**
+ * Honour the user's reduced-motion preference. True when ANY of:
+ *   - the OS `prefers-reduced-motion: reduce` media query matches;
+ *   - the `?reduced=1` URL override is present (used by verification harnesses);
+ *   - the in-app "Меньше движения" toggle is ON (persisted at localStorage `codex.reducedMotion`
+ *     = "1" by app/settings.ts). The key is read directly here — not imported — so the engine
+ *     stays a standalone layer with no dependency on app/. The lesson runner re-reads this on
+ *     every render, so flipping the toggle in Profile silences a lesson's animations on reopen.
+ */
 export function prefersReducedMotion(): boolean {
   return (
     (typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches) ||
-    /(?:\?|&)reduced=1(?:&|$)/.test(location.search)
+    /(?:\?|&)reduced=1(?:&|$)/.test(location.search) ||
+    reducedMotionToggleOn()
   );
+}
+
+/** Read the persisted in-app reduce-motion toggle (settings.ts key). Storage-safe. */
+function reducedMotionToggleOn(): boolean {
+  try {
+    return localStorage.getItem("codex.reducedMotion") === "1";
+  } catch {
+    return false;
+  }
 }
 
 export interface Durations {

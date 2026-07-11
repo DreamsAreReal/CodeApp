@@ -280,8 +280,8 @@
 /* ---- IL bytecode panel (machine level) ---- */
 .il-panel {
   margin-top: 11px;
-  background: #20242a;
-  border: 1px solid #2c333b;
+  background: var(--il-bg);
+  border: 1px solid var(--il-border);
   border-radius: var(--r-m);
   padding: 9px 8px;
   overflow: hidden;
@@ -298,15 +298,15 @@
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #20242a;
-  background: #c7d0ae;
+  color: var(--il-bg);
+  background: var(--il-badge-bg);
   border-radius: 5px;
   padding: 2px 6px;
 }
 .il-cap {
   font-family: var(--mono);
   font-size: 9.5px;
-  color: #8c97a3;
+  color: var(--il-cap);
 }
 .il-line {
   display: flex;
@@ -322,20 +322,20 @@
   letter-spacing: -0.01em;
 }
 .il-off {
-  color: #8f9aa6; /* AA (5.45:1) on the dark IL panel #20242a */
+  color: var(--il-dim); /* AA (5.45:1) on the dark IL panel (--il-bg) */
   font-size: 10px;
   width: 44px;
 }
 .il-op {
-  color: #e7ebef;
+  color: var(--il-op);
   font-weight: 700;
 }
 .il-arg {
-  color: #e8a13a;
+  color: var(--il-arg);
   font-weight: 600;
 }
 .il-cmt {
-  color: #8f9aa6; /* AA (5.45:1) on the dark IL panel #20242a */
+  color: var(--il-dim); /* AA (5.45:1) on the dark IL panel (--il-bg) */
   font-style: italic;
 }
 .il-line.cur {
@@ -343,7 +343,7 @@
   border-left-color: var(--coral-l);
 }
 .il-line.cur .il-op {
-  color: #ff8a70;
+  color: var(--il-op-cur);
 }
 
 /* ---- diagram stage ---- */
@@ -406,7 +406,7 @@
   pointer-events: none;
 }
 .vz-slot {
-  fill: #fff;
+  fill: var(--surface);
   stroke: var(--line);
   stroke-width: 1.5;
 }
@@ -441,7 +441,7 @@
   fill: var(--coral);
 }
 .vz-obj {
-  fill: #fff;
+  fill: var(--surface);
   stroke: var(--coral);
   stroke-width: 1.5;
 }
@@ -480,7 +480,7 @@
   font-family: var(--mono);
   font-size: 13px;
   font-weight: 800;
-  fill: #fff;
+  fill: var(--surface);
 }
 .vz-gate {
   fill: var(--sage-tint);
@@ -612,7 +612,7 @@
   height: 42px;
   border-radius: 13px;
   border: none;
-  color: #fff;
+  color: var(--surface);
   background: linear-gradient(180deg, var(--coral-l), var(--coral));
   box-shadow: 0 4px 0 var(--coral-d), 0 12px 20px -8px rgba(196, 61, 40, 0.5);
 }
@@ -714,7 +714,7 @@
   font-family: var(--display);
   font-weight: 700;
   font-size: 14px;
-  color: #fff;
+  color: var(--surface);
   background: linear-gradient(180deg, var(--coral-l), var(--coral));
   border-radius: 13px;
   padding: 11px 20px;
@@ -759,7 +759,7 @@
   font-size: 10.5px;
   font-weight: 700;
   color: var(--coral-text);
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 6px;
   padding: 1px 6px;
@@ -799,7 +799,7 @@
   font-size: 9.5px;
   font-weight: 600;
   color: var(--sage-text);
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 4px 8px;
@@ -876,7 +876,7 @@
 .opt.sel .mk {
   border-color: var(--coral);
   background: var(--coral);
-  color: #fff;
+  color: var(--surface);
 }
 .opt.correct {
   border-color: var(--sage);
@@ -885,7 +885,7 @@
 .opt.correct .mk {
   border-color: var(--sage);
   background: var(--sage);
-  color: #fff;
+  color: var(--surface);
 }
 .opt.wrong {
   border-color: var(--coral-d);
@@ -894,7 +894,7 @@
 .opt.wrong .mk {
   border-color: var(--coral-d);
   background: var(--coral-d);
-  color: #fff;
+  color: var(--surface);
 }
 .opt.locked {
   pointer-events: none;
@@ -907,7 +907,7 @@
   font-family: var(--display);
   font-weight: 700;
   font-size: 15.5px;
-  color: #fff;
+  color: var(--surface);
   background: linear-gradient(180deg, var(--coral-l), var(--coral));
   border-radius: 14px;
   padding: 13px;
@@ -1293,6 +1293,29 @@
   color: var(--sage);
   flex: none;
 }
+/* "+N XP" review-reward burst next to the saved line — amber chip, bumps in on save. */
+.grade-xp {
+  margin-left: auto;
+  flex: none;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--amber-text);
+  background: var(--amber-tint);
+  border-radius: 8px;
+  padding: 3px 8px;
+  line-height: 1;
+}
+.grade-xp[hidden] {
+  display: none;
+}
+.grade-xp.bump {
+  animation: xpBump 0.5s ease;
+}
+/* reduced-motion (persisted toggle): silence the burst animation, keep the badge visible */
+.reduced-motion .grade-xp.bump {
+  animation: none;
+}
 
 /* ---- section mini-label ---- */
 .sec-label .num {
@@ -1472,7 +1495,7 @@
   font-family: var(--display);
   font-weight: 700;
   font-size: 16px;
-  color: #fff;
+  color: var(--surface);
   background: linear-gradient(180deg, var(--coral-l), var(--coral));
   border-radius: 15px;
   padding: 14px;
@@ -1504,4 +1527,90 @@
 .foot b {
   color: var(--ink);
   font-weight: 600;
+}
+
+/* ---- continuous-session chrome (added: queue-driven session) ---- */
+/* "N из M" session counter in the lesson top bar (mirrors the .xp chip, sage-leaning). */
+.sess-count {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--sage-text);
+  background: var(--sage-tint);
+  border: 1px solid rgba(124, 139, 111, 0.45);
+  border-radius: 11px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* The "Проверить ответ" button is inert once answered — remove it (verdict + grade take over). */
+.q-check.answered {
+  display: none;
+}
+
+/* Grade-strip success mark can be hidden on a save failure (so an error never reads as success). */
+.gd-ok[hidden] {
+  display: none;
+}
+
+/* Friendly review-save failure line: NO success check, warm coral, offers a plain retry hint. */
+.grade-fail {
+  margin-top: 12px;
+  border-radius: 12px;
+  padding: 12px 13px;
+  background: var(--coral-wash);
+  border: 1px solid var(--coral-tint);
+}
+.grade-fail[hidden] {
+  display: none;
+}
+.grade-fail .gf-h {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--display);
+  font-size: 14px;
+  color: var(--coral-text);
+}
+.grade-fail .gf-h b {
+  font-weight: 700;
+}
+.grade-fail .gf-h svg {
+  width: 16px;
+  height: 16px;
+  color: var(--coral);
+  flex: none;
+}
+.grade-fail .gf-b {
+  margin-top: 5px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+/* Post-grade actions: primary "next card" / "finish", with a secondary text link home. */
+.next-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.next-home {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 13.5px;
+  color: var(--muted);
+  padding: 4px 8px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.next-home:active {
+  color: var(--ink);
 }

@@ -211,8 +211,8 @@
   border-color: var(--coral-tint);
 }
 .heat-l2 {
-  background: #f6b3a3;
-  border-color: #f6b3a3;
+  background: var(--heat-mid);
+  border-color: var(--heat-mid);
 }
 .heat-l3 {
   background: var(--coral-l);
