@@ -272,9 +272,10 @@ export class VizPlayer {
         if (divided && /(^|\s)vz-name(\s|$)/.test(tc)) avail = nameAvail;
         else if (divided && /(^|\s)(vz-val|vz-reflbl)(\s|$)/.test(tc)) avail = valAvail;
         else avail = fullAvail;
-        // Idempotent: always drop any prior fit before re-measuring.
+        // Idempotent: reset to the natural (CSS) size before measuring.
         t.removeAttribute("textLength");
         t.removeAttribute("lengthAdjust");
+        t.style.removeProperty("font-size");
         if (!(avail > 0)) return;
         let len = 0;
         try {
@@ -282,9 +283,13 @@ export class VizPlayer {
         } catch {
           return; // not measurable (e.g. not yet laid out) — skip this pass
         }
-        if (len > avail) {
-          t.setAttribute("textLength", String(avail));
-          t.setAttribute("lengthAdjust", "spacingAndGlyphs");
+        if (len > avail + 0.5) {
+          // Shrink the FONT-SIZE (keeps the mono letterforms natural — no glyph
+          // squishing, which read as a "different font"). Floored so it stays
+          // legible; boxes are sized so this rarely bites hard.
+          const natural = parseFloat(getComputedStyle(t).fontSize) || 12;
+          const scale = Math.max(0.74, avail / len);
+          t.style.fontSize = (natural * scale).toFixed(2) + "px";
         }
       });
     });

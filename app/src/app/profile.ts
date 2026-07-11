@@ -78,7 +78,7 @@ export async function renderProfile(root: HTMLElement): Promise<void> {
           ${metric(String(p.streakDays), S.statStreak + " · " + statDaysWord(p.streakDays))}
           ${metric(String(p.xp), S.statXp)}
           ${metric(String(p.reviewsTotal), S.statReviews)}
-          ${metric(String(p.daysActive), S.statDaysActive)}
+          ${metric(String(p.daysActive), S.statDaysActiveWord(p.daysActive))}
         </div>
       </section>
 

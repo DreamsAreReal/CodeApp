@@ -319,7 +319,9 @@ function lessonRow(l: LessonProgress): string {
     : l.segmentsSeen > 0
       ? S.perLessonViewingFmt(Math.round(viewPct))
       : S.perLessonNotStarted;
-  const sub = `${state} · ${S.perLessonMasteryHint(l.mastered, l.total)}`;
+  // Keep the sub-line short so it never truncates against the badge: the long
+  // "закрепляется в повторах" tail is dropped when nothing is mastered yet.
+  const sub = l.mastered > 0 ? `${state} · ${S.perLessonMasteryHint(l.mastered, l.total)}` : state;
   return `
     <button class="topic" data-lesson="${escapeHtml(l.lessonId)}" title="${escapeHtml(title)}">
       ${ring(40, 16, 4, viewPct, "t-ring", "")}

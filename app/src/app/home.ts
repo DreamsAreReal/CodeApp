@@ -120,7 +120,7 @@ export async function renderHome(root: HTMLElement): Promise<void> {
       <div class="stats">
         <span class="stat" title="Стрик (сервер)">
           <svg class="ic-streak" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c3.2 3.2 5 6 5 9a5 5 0 0 1-10 0c0-1.6.7-3 1.8-4 .3 1.6 1.1 2.5 2 2.5-1-2.4-.3-5 1.2-7.5z"/></svg>
-          <span class="n" id="statStreak">${stats.streakDays}</span><span class="u">${S.statStreakUnit}</span>
+          <span class="n" id="statStreak">${stats.streakDays}</span><span class="u">${S.statStreakUnitDays(stats.streakDays)}</span>
         </span>
         <span class="stat" title="Опыт (сервер)">
           <svg class="ic-xp" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5l2.4 5 5.5.7-4 3.8 1 5.4-4.9-2.7L7.1 21.4l1-5.4-4-3.8 5.5-.7z"/></svg>

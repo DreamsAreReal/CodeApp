@@ -52,7 +52,7 @@ export const S = {
   masteryLabel: "Освоено",
   masteryCaption: (m: number, s: number) => `${m} из ${s} карточек закреплено`,
   masteryCaptionEmpty: "Ни одна карточка ещё не закреплена",
-  statReviews: "Повторов",
+  statReviews: "Повторы",
   statStreak: "Стрик",
   statStreakUnitDays: (n: number) => plural(n, "день", "дня", "дней"),
   statXp: "Опыт",
@@ -99,6 +99,7 @@ export const S = {
   profileNoUsername: "без имени пользователя",
   summaryLabel: "Сводка",
   statDaysActive: "Активных дней",
+  statDaysActiveWord: (n: number) => plural(n, "активный день", "активных дня", "активных дней"),
   howItWorksLabel: "Как это работает",
   howItWorksBody:
     "Приложение использует интервальные повторения FSRS-6. Карточка возвращается ровно тогда, когда вы вот-вот её забудете — расписание держит удержание около 90%. Ваши оценки Снова / Трудно / Хорошо / Легко подстраивают интервал каждой карточки лично под вас. Ничего не выдумано: все цифры считает сервер по вашей истории.",
