@@ -204,6 +204,30 @@ function measureInPage(lessonId) {
         }
       }
     }
+    // ---- OVERLAP vs zone labels/sub-labels: a node box must not cover a zone caption ----
+    svg.querySelectorAll(".vz-chrome text").forEach((t) => {
+      let bb;
+      try {
+        bb = t.getBBox();
+      } catch (e) {
+        void e;
+        return;
+      }
+      const l = { x0: bb.x, y0: bb.y, x1: bb.x + bb.width, y1: bb.y + bb.height };
+      for (const a of boxes) {
+        const ox = Math.min(a.x1, l.x1) - Math.max(a.x0, l.x0);
+        const oy = Math.min(a.y1, l.y1) - Math.max(a.y0, l.y0);
+        if (ox > OVL_TOL && oy > OVL_TOL) {
+          overlap.push({
+            lesson: lessonId,
+            seg: segId,
+            a: a.id,
+            b: 'label"' + (t.textContent || "").slice(0, 18) + '"',
+            over: [round(ox), round(oy)],
+          });
+        }
+      }
+    });
   });
   function round(n) {
     return Math.round(n * 100) / 100;

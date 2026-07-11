@@ -20,13 +20,13 @@ import type { LessonData } from "./types.ts";
 // Two horizontal "tracks": the caller thread (top) and the I/O driver (bottom).
 // Not memory zones — reused as a timeline backdrop for the state machine.
 const Z_TRACKS: Zone[] = [
-  { x: 14, y: 34, w: 312, h: 78, cls: "vz-zone", label: "ВЫЗЫВАЮЩИЙ ПОТОК", labelCls: "vz-zlabel sm", lx: 170, ly: 24, sub: "не блокируется", subCls: "vz-zsub", subY: 90 },
-  { x: 14, y: 120, w: 312, h: 82, cls: "vz-zone heap", label: "I/O · ДРАЙВЕР / IOCP", labelCls: "vz-zlabel heap sm", lx: 170, ly: 110, sub: "нет потока", subCls: "vz-zsub heap", subY: 133 },
+  { x: 14, y: 34, w: 312, h: 78, cls: "vz-zone", label: "ВЫЗЫВАЮЩИЙ ПОТОК", labelCls: "vz-zlabel sm", lx: 170, ly: 24 },
+  { x: 14, y: 120, w: 312, h: 82, cls: "vz-zone heap", label: "I/O · ДРАЙВЕР / IOCP", labelCls: "vz-zlabel heap sm", lx: 170, ly: 110 },
 ];
 // Context-contrast backdrop: captured UI context vs the thread pool.
 const Z_CTX: Zone[] = [
-  { x: 14, y: 34, w: 312, h: 78, cls: "vz-zone", label: "UI-ПОТОК · захваченный контекст", labelCls: "vz-zlabel sm", lx: 170, ly: 24, sub: "по одному куску", subCls: "vz-zsub", subY: 90 },
-  { x: 14, y: 120, w: 312, h: 82, cls: "vz-zone good", label: "ПУЛ ПОТОКОВ", labelCls: "vz-zlabel good sm", lx: 170, ly: 110, sub: "ConfigureAwait(false)", subCls: "vz-zsub good", subY: 133 },
+  { x: 14, y: 34, w: 312, h: 78, cls: "vz-zone", label: "UI-ПОТОК · захваченный контекст", labelCls: "vz-zlabel sm", lx: 170, ly: 24 },
+  { x: 14, y: 120, w: 312, h: 82, cls: "vz-zone good", label: "ПУЛ ПОТОКОВ", labelCls: "vz-zlabel good sm", lx: 170, ly: 110 },
 ];
 
 export const asyncAwait: LessonData = {
@@ -118,7 +118,7 @@ export const asyncAwait: LessonData = {
       scenes: [
         { codeLine: 2, caption: '<code>t.Wait()</code> <span class="hl">блокирует</span> UI-поток, ожидая задачу. Но continuation по умолчанию хочет вернуться <b>на этот же</b> контекст.', nodes: [{ id: "ui", kind: "chip", x: 100, y: 64, w: 170, h: 30, value: "UI: .Wait() ⏳", accent: true }, { id: "cont", kind: "chip", x: 100, y: 152, w: 176, h: 30, value: "continuation → UI?" }], edges: [] },
         { codeLine: 2, caption: '<b>Дедлок</b>: «that context already has a thread in it, which is (synchronously) waiting… They\'re each waiting for the other».', nodes: [{ id: "gate", kind: "gate", x: 170, y: 96, w: 230, h: 48, state: "fail", label: "UI занят ↔ continuation ждёт UI", detail: "deadlock" }], edges: [] },
-        { codeLine: 2, caption: 'Выход: <b>await</b> вместо <code>.Result</code>/<code>.Wait()</code> («async all the way»), в библиотеках — <span class="hl">ConfigureAwait(false)</span> (continuation на пул, дедлока нет).', nodes: [{ id: "good", kind: "gate", x: 170, y: 96, w: 230, h: 48, state: "ok", label: "await / CA(false)", detail: "continuation → пул · нет дедлока" }], edges: [] },
+        { codeLine: 2, caption: 'Выход: <b>await</b> вместо <code>.Result</code>/<code>.Wait()</code> («async all the way»), в библиотеках — <span class="hl">ConfigureAwait(false)</span> (continuation на пул, дедлока нет).', nodes: [{ id: "good", kind: "gate", x: 170, y: 158, w: 230, h: 48, state: "ok", label: "await / CA(false)", detail: "continuation → пул · нет дедлока" }], edges: [] },
       ],
       explain: 'Самый частый провал новичка — блокировать async синхронно. «It\'s usually a bad idea to block on async code by calling <code>Task.Wait</code> or <code>Task.Result</code>». Механика на UI/ASP.NET: контекст пропускает «only one chunk of code to run at a time». Дословно: «When the await completes, it attempts to execute the remainder of the async method within the captured context. But <span class="hl">that context already has a thread in it, which is (synchronously) waiting</span> for the async method to complete. They\'re each waiting for the other, causing a deadlock». В консоли дедлока нет — там пул-контекст. Лечение: «async all the way» (не мешать блокировку и async), а в библиотечном коде — <code>ConfigureAwait(false)</code>, который уводит continuation на пул.',
       sources: ["ms-bestpractices", "ms-consume-tap"],
