@@ -236,7 +236,58 @@ export class VizPlayer {
     const idx = this.player.i;
     const res = this.player.goto(idx);
     this.applyTree(res.tree, res.diff, res.flip);
+    this.fitLabels();
     this.syncUI(this.player.steps[idx], idx);
+  }
+
+  /**
+   * Post-pass over the settled node layer: shrink any label wider than its box
+   * region so text never spills its rect — in ANY font, including the device's
+   * (which is wider than the headless fallback). Runs once per settled render
+   * (after applyTree mounts/updates, NOT during the FLIP transition). Idempotent:
+   * prior textLength/lengthAdjust are stripped first so re-renders re-measure.
+   *
+   * Layout mirrors render.ts: obj/chip/gate center over the whole box (avail
+   * = w-10); slot/ref divide the box at the divider (-hw+38) into a small NAME
+   * region on the left and the value region on the right.
+   */
+  private fitLabels(): void {
+    const PAD = 10; // total horizontal padding for a full-box label
+    const nodes = this.nodeLayer.querySelectorAll<SVGGElement>("g.node");
+    nodes.forEach((g) => {
+      const rect = g.querySelector<SVGRectElement>("rect");
+      if (!rect) return;
+      const w = parseFloat(rect.getAttribute("width") || "0");
+      if (!(w > 0)) return;
+      const cls = g.getAttribute("class") || "";
+      const divided = /(^|\s)(slot|ref)(\s|$)/.test(cls);
+      // Available width per text role.
+      const nameAvail = 38 - 8; // slot/ref NAME sits in the left region up to the divider at -hw+38
+      const valAvail = w - 38 - 8; // slot/ref value sits in the right region
+      const fullAvail = w - PAD; // obj/chip/gate span the whole box
+      const texts = g.querySelectorAll<SVGTextElement>("text");
+      texts.forEach((t) => {
+        const tc = t.getAttribute("class") || "";
+        let avail: number;
+        if (divided && /(^|\s)vz-name(\s|$)/.test(tc)) avail = nameAvail;
+        else if (divided && /(^|\s)(vz-val|vz-reflbl)(\s|$)/.test(tc)) avail = valAvail;
+        else avail = fullAvail;
+        // Idempotent: always drop any prior fit before re-measuring.
+        t.removeAttribute("textLength");
+        t.removeAttribute("lengthAdjust");
+        if (!(avail > 0)) return;
+        let len = 0;
+        try {
+          len = t.getComputedTextLength();
+        } catch {
+          return; // not measurable (e.g. not yet laid out) — skip this pass
+        }
+        if (len > avail) {
+          t.setAttribute("textLength", String(avail));
+          t.setAttribute("lengthAdjust", "spacingAndGlyphs");
+        }
+      });
+    });
   }
 
   private syncUI(scene: Scene, idx: number): void {

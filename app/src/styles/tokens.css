@@ -86,6 +86,9 @@
 }
 html {
   -webkit-text-size-adjust: 100%;
+  /* Kill the mobile double-tap-to-zoom (it "squeezed" the layout on a double tap)
+     and the 300ms tap delay. Pinch-zoom is also disabled via the viewport meta. */
+  touch-action: manipulation;
 }
 html,
 body {
