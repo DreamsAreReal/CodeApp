@@ -7,12 +7,9 @@
     <title>Фундамент C#</title>
     <!-- Telegram WebApp bridge: present inside Telegram, absent in a plain browser (dev fallback). -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;600;700;800&family=Onest:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap"
-      rel="stylesheet"
-    />
+    <!-- Fonts are SELF-HOSTED (@fontsource, bundled by Vite) — imported from src/styles/fonts.css.
+         No Google Fonts CDN link/preconnect: the app carries its own woff2 so it works offline and
+         measures text deterministically on every runner (Linux CI has no system Rubik). -->
   </head>
   <body>
     <!-- Skip-link: first focusable element, jumps keyboard/AT users straight to the app content.

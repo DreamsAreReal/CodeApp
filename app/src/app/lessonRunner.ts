@@ -11,7 +11,7 @@
  */
 import { api } from "../api/client.ts";
 import type { Grade, ReviewResponse } from "../api/types.ts";
-import { ICON, VizPlayer, prefersReducedMotion, hlCode, esc } from "../engine/index.ts";
+import { ICON, VizPlayer, prefersReducedMotion, whenFontsReady, hlCode, esc } from "../engine/index.ts";
 import type { VizElements, VizPlayer as VizPlayerType } from "../engine/index.ts";
 import { getLesson } from "../lessons/index.ts";
 import type { Card, LessonData, Segment, Source } from "../lessons/types.ts";
@@ -178,18 +178,6 @@ export function runLesson(root: HTMLElement, lessonId: string, cardId?: string):
   // Server-side lesson-viewing telemetry (segments seen / completion). Fire-and-forget.
   const reporter = new LessonReporter(lesson.id, lesson.segments.length);
 
-  // ---- build animated segments ----
-  const hostTop = el("#segHostTop");
-  const hostRest = el("#segHostRest");
-  const built: Built[] = [];
-  lesson.segments.forEach((seg, i) => {
-    const b = buildSegment(lesson, seg, () => progress.markSeg(seg.id));
-    (i < 2 ? hostTop : hostRest).appendChild(b.card);
-    viz().vizByKey[seg.id] = b.viz;
-    viz().segments[seg.id] = b.viz.state;
-    built.push(b);
-  });
-
   // ---- MCQ + grade (closes the loop) ----
   buildMcq(root, lesson, card, progress, reporter);
 
@@ -204,6 +192,32 @@ export function runLesson(root: HTMLElement, lessonId: string, cardId?: string):
   el<HTMLButtonElement>("#btnNext")?.addEventListener("click", () => void router.showHome());
 
   progress.setPct(6);
+
+  // Build the measuring diagram engine ONLY AFTER the web fonts are ready. The engine
+  // sizes every box from measured glyph advances, so measuring before Rubik/Onest/JetBrains
+  // Mono load would size boxes in the system fallback (wrong metrics) — the race that broke
+  // viz-fit on Linux CI / offline. Fonts are now self-hosted, so this resolves ~immediately;
+  // the shell above has already painted. Autoplay + reduced-motion behaviour is unchanged —
+  // it just starts one microtask/frame later, after the first sizing sees the real font.
+  void whenFontsReady().then(() => {
+    // A newer navigation may have replaced the DOM while we awaited fonts; bail if our shell
+    // is gone (the #segHostTop we captured is detached), so we never mount into a stale tree.
+    if (!hostTop.isConnected) return;
+    buildSegmentsAndWire(lesson); // `lesson` is narrowed to LessonData here (after the guard)
+  });
+
+  // ---- build animated segments + wire autoplay/headless surface (post-fonts.ready) ----
+  const hostTop = el("#segHostTop");
+  const hostRest = el("#segHostRest");
+  function buildSegmentsAndWire(lesson: LessonData): void {
+  const built: Built[] = [];
+  lesson.segments.forEach((seg, i) => {
+    const b = buildSegment(lesson, seg, () => progress.markSeg(seg.id));
+    (i < 2 ? hostTop : hostRest).appendChild(b.card);
+    viz().vizByKey[seg.id] = b.viz;
+    viz().segments[seg.id] = b.viz.state;
+    built.push(b);
+  });
 
   // ---- autoplay on scroll-into-view ----
   if (REDUCED) {
@@ -265,6 +279,7 @@ export function runLesson(root: HTMLElement, lessonId: string, cardId?: string):
   };
   viz().ready = true;
   (window as unknown as { __lesson: unknown }).__lesson = { id: lesson.id, segments: lesson.segments.length };
+  } // end buildSegmentsAndWire
 }
 
 // ---------------------------------------------------------------------------

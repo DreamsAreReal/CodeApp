@@ -29,6 +29,27 @@ function reducedMotionToggleOn(): boolean {
   }
 }
 
+/**
+ * Resolve once the document's web fonts are ready to measure with. The engine sizes
+ * every box from measured glyph advances (`domMeasure` → `sizeNode` / `layoutScene`);
+ * if that runs BEFORE the self-hosted Rubik/Onest/JetBrains Mono faces load, boxes are
+ * sized from the system fallback (wrong metrics) — the race that broke viz-fit on Linux
+ * CI and offline. Callers await this before the first measurement so sizing always uses
+ * the real font. Resolves immediately when fonts are already loaded (the common case, now
+ * that they are bundled), and degrades to a resolved promise where `document.fonts` is
+ * absent (very old engines / non-DOM) so nothing hangs.
+ */
+export function whenFontsReady(): Promise<void> {
+  try {
+    if (typeof document !== "undefined" && document.fonts && document.fonts.ready) {
+      return document.fonts.ready.then(() => undefined);
+    }
+  } catch {
+    /* fall through to the resolved promise */
+  }
+  return Promise.resolve();
+}
+
 export interface Durations {
   enter: number;
   flip: number;

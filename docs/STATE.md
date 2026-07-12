@@ -520,6 +520,13 @@ Maximalist-ставка: «self-hosting learning app» — приложение 
   types w/h optional) → расширить viz-fit (height-in-scale/width-ladder/grid-snap/edge-orthogonal/port-on-
   border/bend/row-baseline/rx/stroke) → нормализовать ВСЕ 6 уроков → viz-fit+harness'ы ALL GREEN +
   before/after скрины. Потом Я визуально проверяю каждую сцену + деплой. Волна 4 (Dockerfile/CI) — после.
+- 2026-07-12 — startup-фикс сработал (workflow стартует), но `test` УПАЛ на шаге viz-fit на Linux (0f58b55).
+  Логи 403 (нет admin). ПРИЧИНА (по коду, высокая уверенность): шрифты с Google Fonts CDN (link в index.html,
+  display=swap), НЕ self-hosted, нигде не ждём document.fonts.ready. На Linux нет системного Rubik → движок
+  меряет текст в fallback → боксы не той ширины → FIT/OVERLAP/LADDER падают. + реальный баг offline-first
+  (без сети шрифты не грузятся). ФИКС-ВОЛНА: self-host 3 семейства (@fontsource, woff2 в бандл) + убрать
+  CDN-link + движок/viz-fit ждут fonts.ready перед измерением. Reproduce (блок CDN→fallback) до фикса,
+  verify после (viz-fit зелёный БЕЗ сети). Потом push + снова watch CI (логи 403 → если упадёт, спросить лог у пользователя).
 - 2026-07-12 — ⚠️ CI БЫЛ КРАСНЫЙ (не проверял — прошляпил; пользователь спросил). Через GitHub API (gh нет):
   ВСЕ последние прогоны failure. ДВЕ причины во времени: (A) до 9b586dc — test падал на шаге «Frontend
   acceptance (viz-fit)» = хардкод macOS-пути evidence на Linux (Builder-2 чинил EVIDENCE_DIR); (B) с 9b586dc —

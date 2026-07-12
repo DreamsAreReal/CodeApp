@@ -17,5 +17,10 @@
     "playwright": "^1.61.1",
     "typescript": "^5.7.3",
     "vite": "^6.0.7"
+  },
+  "dependencies": {
+    "@fontsource/jetbrains-mono": "^5.2.8",
+    "@fontsource/onest": "^5.2.11",
+    "@fontsource/rubik": "^5.2.8"
   }
 }

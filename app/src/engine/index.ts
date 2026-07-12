@@ -15,4 +15,4 @@ export { VizPlayer } from "./vizPlayer.ts";
 export type { VizConfig, VizElements, VizUi, VizState } from "./vizPlayer.ts";
 export { hlCode, esc } from "./hlcode.ts";
 export { ICON } from "./icons.ts";
-export { prefersReducedMotion } from "./dom.ts";
+export { prefersReducedMotion, whenFontsReady } from "./dom.ts";

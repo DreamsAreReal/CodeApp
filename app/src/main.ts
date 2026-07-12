@@ -2,6 +2,7 @@
  * Boot: Telegram ready -> authenticate (initData or dev fallback) -> home.
  * The daily loop starts here: home pulls the live due queue from the server.
  */
+import "./styles/fonts.css"; // self-hosted @fontsource faces (no Google Fonts CDN) — must precede tokens
 import "./styles/tokens.css";
 import "./styles/home.css";
 import "./styles/lesson.css";

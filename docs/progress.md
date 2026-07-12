@@ -316,3 +316,60 @@ node-боксов (getBoundingClientRect → user-units через inverse CTM) 
 - Своп навстречу на одной оси всегда пересекается серединами → нужен bow ОБОИХ (симметрично), иначе
   хвостовое столкновение при возврате на линию (одиночный bow давал остаточный [15,11]u @480ms).
 - viz preview кэширует dist — после каждой правки .ts: rebuild + kill/restart preview на свежий build.
+
+## Волна «фикс CI + offline-first» — self-host шрифтов + fonts.ready (self-pass, всё зелёное)
+
+Проблема: CI падал на шаге `viz-fit` на Linux-раннере (зелёный на маке). Причина: шрифты
+(Rubik/Onest/JetBrains Mono) грузились с Google Fonts CDN и НЕ ожидались перед измерением
+текста. На Linux нет системного Rubik → движок мерил текст в fallback-шрифте → боксы иной
+ширины → geometry-проверки viz-fit падали. Это же баг offline-first (без сети шрифты не грузятся).
+
+### ЗАДАЧА 1 — воспроизведено (причина подтверждена ДО фикса)
+verify/font-fallback-repro.mjs: открывает 6 уроков дважды — (A) CDN доступен, (B) googleapis/
+gstatic ЗАблокированы (route.abort = условие offline Linux-CI) — и ДИФФит ширины боксов.
+ДО фикса: 7 боксов меняют ширину на целую ступень ладдера при отсутствии Rubik
+(boxing/s2/none 120→96, async-await/s2/io 144→120, gc/s2/reclaim 72→56, …; gap на сэмпл-строке
+Rubik 453px vs fallback 429px, Δ24px; loaded font faces при блоке = 0). Геометрия
+шрифто-зависима + шрифты не ожидаются → раннер без Rubik сайзит боксы иначе → viz-fit краснеет.
+
+### ЗАДАЧА 2 — self-host шрифтов (@fontsource, OFL)
+- npm i @fontsource/{rubik,onest,jetbrains-mono} (в dependencies package.json).
+- src/styles/fonts.css — импорт ТОЛЬКО нужных весов и ТОЛЬКО latin/latin-ext/cyrillic/cyrillic-ext
+  (продукт RU/EN; арабский/иврит/греч. не тащим): Rubik 500/600/700/800, Onest 400/500/600/700,
+  JetBrains Mono 500/600/700. Импортируется в main.ts ПЕРЕД tokens.css.
+- index.html: убраны `<link>` + оба preconnect на fonts.googleapis/gstatic.
+- tokens.css без изменений — имена семейств уже совпадают (Rubik / Onest / "JetBrains Mono").
+- Vite бандлит woff2 в dist/assets (fingerprint); браузер по unicode-range тянет только нужные
+  субсеты. grep googleapis/gstatic по index.html И по всему dist = 0. JS gz 59.78КБ (<80КБ, шрифты
+  вне JS-бюджета). woff2 в dist: 440К всего (latin 320 / latin-ext 104 / cyrillic 88 / cyrillic-ext 32).
+
+### ЗАДАЧА 3 — ждать fonts.ready до измерения
+- engine/dom.ts: whenFontsReady() (обёртка над document.fonts.ready, degrade-safe) + экспорт из index.
+- app/lessonRunner.ts: построение измеряющего движка (VizPlayer construction + render, где идёт
+  первый sizeNode/layoutScene) вынесено в buildSegmentsAndWire(lesson) и вызывается ТОЛЬКО после
+  `await whenFontsReady()`. Shell/каркас рендерится синхронно (мгновенная отрисовка); guard
+  hostTop.isConnected — не монтируемся в устаревший DOM при быстрой навигации. Автозапуск/
+  reduced-motion/IntersectionObserver — без изменений, просто стартуют на микротаск позже.
+- verify/viz-fit.mjs: `await document.fonts.ready` перед замером геометрии И перед reduced-motion
+  скринами (belt-and-suspenders). + env BLOCK_FONTS=1 → abort googleapis/gstatic (симуляция
+  offline/Linux-CI) на обоих контекстах.
+
+### Верификация (исполнено, всё зелёное)
+- npm run build — чисто. JS gz 59.78КБ (<80КБ). woff2 в dist, googleapis grep = 0 (index.html + dist).
+- font-fallback-repro ПОСЛЕ фикса: блок googleapis не даёт эффекта — 0 aborted (ничего не идёт на CDN),
+  40 faces грузятся (self-host), сэмпл 453px==453px, 0 расхождений боксов. → причина устранена в корне.
+- verify/viz-fit.mjs — ALL GREEN 6/6 (96 сцен + 189 mid-reads, 0 overlap/clip, 0 console).
+- BLOCK_FONTS=1 node verify/viz-fit.mjs (симуляция Linux-CI/offline) — ТОЖЕ ALL GREEN 6/6, 0 console.
+- run.mjs / shell.mjs / loop.mjs / new-lessons.mjs / polish-flow.mjs — ВСЕ ALL GREEN, 0 console.
+
+### Решения / грабли
+- На маке блок CDN сам по себе НЕ краснит viz-fit: system-ui (San Francisco) по метрикам ≈ Rubik,
+  а fitLabels ужимает шрифт и маскирует FIT. Потому репро строится на ДЕТЕРМИНИРОВАННОМ дифф-е
+  ширин боксов (120 vs 96) между «Rubik загружен» и «заблокирован» — платформо-независимое
+  доказательство шрифто-зависимой геометрии (на Linux fallback ШИРЕ → расхождение больше → красное).
+- Бэкенд для харнессов: нужен `ASPNETCORE_ENVIRONMENT=Development` (dev-auth), иначе /api/auth → 403
+  «Dev-режим выключен». `--no-launch-profile` не поднимает Development сам — задавать env явно.
+- whenFontsReady() резолвится ~мгновенно (шрифты локальные) → задержки для юзера нет; каркас уже
+  отрисован до этого. .then-колбэк — микротаск, `const hostTop` уже инициализирован (нет TDZ).
+- woff-фолбэки (@fontsource src, ", url(...woff)") остаются в dist (~560К) но НЕ фетчатся: все
+  таргеты (Telegram WKWebView/iOS Safari/Chromium CI) поддерживают woff2. Runtime вес не растёт.

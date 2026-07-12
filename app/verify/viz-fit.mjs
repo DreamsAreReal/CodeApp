@@ -74,6 +74,19 @@ const SHOTS = {
 const FIT_TOL = 1; // px tolerance on getComputedTextLength vs available
 const CLIP_TOL = 0.75; // px tolerance on rect bbox vs viewBox
 
+// OFFLINE / LINUX-CI SIMULATION: when BLOCK_FONTS=1, abort every Google-Fonts request so
+// the page cannot reach the CDN — exactly the condition of an offline runner or a Linux CI
+// box with no system Rubik. Because fonts are now SELF-HOSTED (bundled), this must have NO
+// effect: viz-fit stays ALL GREEN. (Pre-fix, with the CDN <link>, this starved the engine of
+// real metrics and broke the geometry checks — the bug this wave fixes.)
+const BLOCK_FONTS = /^(1|true|yes)$/i.test(process.env.BLOCK_FONTS || "");
+async function maybeBlockFonts(ctx) {
+  if (!BLOCK_FONTS) return;
+  const abort = (route) => route.abort();
+  await ctx.route("**://fonts.googleapis.com/**", abort);
+  await ctx.route("**://fonts.gstatic.com/**", abort);
+}
+
 const log = (m) => console.log(m);
 let failed = 0;
 function assert(cond, msg) {
@@ -535,6 +548,7 @@ async function main() {
       void e;
     }
   }, RUN_USER);
+  await maybeBlockFonts(ctx); // BLOCK_FONTS=1 → offline / Linux-CI simulation (no Google Fonts CDN)
   const page = await ctx.newPage();
   page.on("console", (m) => {
     if (m.type() === "error") consoleErrors.push(m.text());
@@ -544,6 +558,11 @@ async function main() {
   await page.goto(APP, { waitUntil: "networkidle" });
   await page.waitForFunction(() => window.__app && window.__app.ready, { timeout: 15000 });
   await page.waitForFunction(() => window.__home && typeof window.__home.userId === "number", { timeout: 15000 });
+  // Belt-and-suspenders: never MEASURE geometry until the web fonts are ready. The product
+  // now self-hosts them and the engine already awaits document.fonts.ready before its first
+  // sizing pass (dom.ts whenFontsReady); this guarantees the harness reads settled, real-font
+  // metrics even if a font were slow, so a font race can never masquerade as a geometry bug.
+  await page.evaluate(() => document.fonts.ready);
 
   const allFit = [];
   const allClip = [];
@@ -721,6 +740,7 @@ async function main() {
       void e;
     }
   }, RUN_USER);
+  await maybeBlockFonts(rmCtx); // same offline/Linux-CI simulation for the reduced-motion evidence pass
   const rmPage = await rmCtx.newPage();
   rmPage.on("console", (m) => {
     if (m.type() === "error") consoleErrors.push(m.text());
@@ -728,6 +748,7 @@ async function main() {
   rmPage.on("pageerror", (e) => consoleErrors.push(String(e)));
   await rmPage.goto(APP, { waitUntil: "networkidle" });
   await rmPage.waitForFunction(() => window.__app && window.__app.ready, { timeout: 15000 });
+  await rmPage.evaluate(() => document.fonts.ready); // settled real-font metrics before screenshots
   let shotCount = 0;
   for (const L of LESSONS) {
     const shots = SHOTS[L.id];

@@ -1,0 +1,67 @@
+/* ==========================================================================
+   Self-hosted fonts (@fontsource, OFL) — replaces the Google Fonts CDN <link>.
+   Vite fingerprints + bundles the referenced woff2 into dist/assets, so the app
+   ships its OWN fonts: no network/CDN dependency at runtime. This is what makes
+   the app work OFFLINE and makes text measurement deterministic on every runner
+   (Linux CI has no system Rubik; without this it fell back to a differently-sized
+   font and the viz-fit geometry checks broke).
+
+   Only the weights actually used by tokens.css / the design are imported, and only
+   the Latin + Cyrillic subsets (the product is RU/EN) — the umbrella `@fontsource/x`
+   entry would additionally pull Arabic/Hebrew/etc. woff2 we never render.
+
+   Family names MUST match tokens.css:  Rubik / Onest / "JetBrains Mono".
+     --display: Rubik        weights 500,600,700,800
+     --body:    Onest        weights 400,500,600,700
+     --mono:    JetBrains Mono weights 500,600,700
+   ========================================================================== */
+
+/* ---- Rubik (display / headings / diagram labels) ---- */
+@import "@fontsource/rubik/latin-500.css";
+@import "@fontsource/rubik/latin-ext-500.css";
+@import "@fontsource/rubik/cyrillic-500.css";
+@import "@fontsource/rubik/cyrillic-ext-500.css";
+@import "@fontsource/rubik/latin-600.css";
+@import "@fontsource/rubik/latin-ext-600.css";
+@import "@fontsource/rubik/cyrillic-600.css";
+@import "@fontsource/rubik/cyrillic-ext-600.css";
+@import "@fontsource/rubik/latin-700.css";
+@import "@fontsource/rubik/latin-ext-700.css";
+@import "@fontsource/rubik/cyrillic-700.css";
+@import "@fontsource/rubik/cyrillic-ext-700.css";
+@import "@fontsource/rubik/latin-800.css";
+@import "@fontsource/rubik/latin-ext-800.css";
+@import "@fontsource/rubik/cyrillic-800.css";
+@import "@fontsource/rubik/cyrillic-ext-800.css";
+
+/* ---- Onest (body text) ---- */
+@import "@fontsource/onest/latin-400.css";
+@import "@fontsource/onest/latin-ext-400.css";
+@import "@fontsource/onest/cyrillic-400.css";
+@import "@fontsource/onest/cyrillic-ext-400.css";
+@import "@fontsource/onest/latin-500.css";
+@import "@fontsource/onest/latin-ext-500.css";
+@import "@fontsource/onest/cyrillic-500.css";
+@import "@fontsource/onest/cyrillic-ext-500.css";
+@import "@fontsource/onest/latin-600.css";
+@import "@fontsource/onest/latin-ext-600.css";
+@import "@fontsource/onest/cyrillic-600.css";
+@import "@fontsource/onest/cyrillic-ext-600.css";
+@import "@fontsource/onest/latin-700.css";
+@import "@fontsource/onest/latin-ext-700.css";
+@import "@fontsource/onest/cyrillic-700.css";
+@import "@fontsource/onest/cyrillic-ext-700.css";
+
+/* ---- JetBrains Mono (code / values / IL) ---- */
+@import "@fontsource/jetbrains-mono/latin-500.css";
+@import "@fontsource/jetbrains-mono/latin-ext-500.css";
+@import "@fontsource/jetbrains-mono/cyrillic-500.css";
+@import "@fontsource/jetbrains-mono/cyrillic-ext-500.css";
+@import "@fontsource/jetbrains-mono/latin-600.css";
+@import "@fontsource/jetbrains-mono/latin-ext-600.css";
+@import "@fontsource/jetbrains-mono/cyrillic-600.css";
+@import "@fontsource/jetbrains-mono/cyrillic-ext-600.css";
+@import "@fontsource/jetbrains-mono/latin-700.css";
+@import "@fontsource/jetbrains-mono/latin-ext-700.css";
+@import "@fontsource/jetbrains-mono/cyrillic-700.css";
+@import "@fontsource/jetbrains-mono/cyrillic-ext-700.css";
