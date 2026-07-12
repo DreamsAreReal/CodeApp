@@ -44,11 +44,11 @@ export const closures: LessonData = {
   ],
 
   spec: [
-    { text: "«If you capture variables in this way, the lambda expression stores them for use even if the variables go out of scope and would normally be garbage collected.»", source: "ms-lambda" },
+    { text: "«Variables that are captured in this manner are stored for use in the lambda expression even if the variables would otherwise go out of scope and be garbage collected.»", source: "ms-lambda" },
   ],
   edgeCases: [
-    { text: "Захваченная переменная <b>переживает</b> свою область видимости: «A variable that you capture isn't garbage collected until the delegate that references it becomes eligible for garbage collection».", source: "ms-lambda" },
-    { text: "<code>static</code>-лямбда <b>не</b> захватывает: «A static lambda can't capture local variables or instance state from enclosing scopes, but it can reference static members and constant definitions».", source: "ms-lambda" },
+    { text: "Захваченная переменная <b>переживает</b> свою область видимости: «A variable that is captured isn't garbage-collected until the delegate that references it becomes eligible for garbage collection».", source: "ms-lambda" },
+    { text: "<code>static</code>-лямбда <b>не</b> захватывает: «A static lambda can't capture local variables or instance state from enclosing scopes, but can reference static members and constant definitions».", source: "ms-lambda" },
     { text: "Лямбда не может <b>прямо</b> захватить <code>in</code>/<code>ref</code>/<code>out</code>-параметр: «A lambda expression can't directly capture an in, ref, or out parameter from the enclosing method».", source: "ms-lambda" },
   ],
 
@@ -89,7 +89,7 @@ export const closures: LessonData = {
         { codeLine: 1, ilLine: 1, caption: 'Локальная <code>n</code> <span class="hl">поднимается</span> (hoisting) и становится <b>полем</b> этого объекта — она больше не живёт просто на стеке.', nodes: [{ id: "dc", kind: "obj", at: { zone: "heap", row: 0 }, typeTag: "DisplayClass", value: "", accent: true }, { id: "nf", kind: "slot", at: { in: "dc" }, name: "n", value: "1" }], edges: [] },
         { codeLine: 1, ilLine: 2, caption: 'Тело лямбды — <b>метод</b> display-класса (<code>&lt;&gt;b__0</code>); делегат <code>add</code> держит ссылку на объект и на этот метод.', nodes: [{ id: "add", kind: "ref", at: { zone: "stack", row: 0 }, name: "add", accent: true }, { id: "dc", kind: "obj", at: { zone: "heap", row: 0 }, typeTag: "DisplayClass", value: "b__0()" }, { id: "nf", kind: "slot", at: { in: "dc" }, name: "n", value: "1" }], edges: [{ id: "e", from: "add", to: "dc", accent: true }] },
       ],
-      explain: 'Захват реализован не магией, а <b>подъёмом переменной в объект на куче</b>. Компилятор синтезирует <i>display class</i> (в IL — <code>&lt;&gt;c__DisplayClass…</code>): захваченная локальная <code>n</code> становится его <b>полем</b>, тело лямбды — методом этого класса, а делегат хранит ссылку на экземпляр. Комбинацию лямбды и захваченных ею переменных называют <b>замыканием</b>. Именно поэтому «the lambda expression stores them for use even if the variables go out of scope» — данные физически живут в объекте на управляемой куче, а не в стековом слоте.',
+      explain: 'Захват реализован не магией, а <b>подъёмом переменной в объект на куче</b>. Компилятор синтезирует <i>display class</i> (в IL — <code>&lt;&gt;c__DisplayClass…</code>): захваченная локальная <code>n</code> становится его <b>полем</b>, тело лямбды — методом этого класса, а делегат хранит ссылку на экземпляр. Комбинацию лямбды и захваченных ею переменных называют <b>замыканием</b>. Именно поэтому «Variables that are captured in this manner are stored for use in the lambda expression even if the variables would otherwise go out of scope and be garbage collected» — данные физически живут в объекте на управляемой куче, а не в стековом слоте.',
       sources: ["ms-lambda", "ms-gc"],
     },
     {
@@ -112,9 +112,9 @@ export const closures: LessonData = {
       scenes: [
         { codeLine: 1, caption: '<code>seed</code> — локальная в <code>Make</code>. Обычно после выхода из метода её слот на стеке исчезает.', nodes: [{ id: "seed", kind: "slot", at: { zone: "stack", row: 0 }, name: "seed", value: "42", accent: true }], edges: [] },
         { codeLine: 2, caption: 'Лямбда <span class="hl">захватывает</span> <code>seed</code> → она уже поле display-класса на <b>куче</b>, а не стековый слот.', nodes: [{ id: "seed", kind: "slot", at: { zone: "stack", row: 0 }, name: "seed", value: "42", state: "" }, { id: "dc", kind: "obj", at: { zone: "heap", row: 0 }, typeTag: "DisplayClass", value: "seed=42", accent: true }], edges: [] },
-        { codeLine: 3, caption: '<code>Make</code> вернулся, стек-кадр ушёл — но объект <span class="hl">жив</span>, пока жив делегат: «isn\'t garbage collected until the delegate… becomes eligible».', nodes: [{ id: "ret", kind: "chip", at: { zone: "stack", row: 0 }, value: "делегат", accent: true }, { id: "dc", kind: "obj", at: { zone: "heap", row: 0 }, typeTag: "DisplayClass", value: "seed=42", accent: true }], edges: [{ id: "e", from: "ret", to: "dc", accent: true }] },
+        { codeLine: 3, caption: '<code>Make</code> вернулся, стек-кадр ушёл — но объект <span class="hl">жив</span>, пока жив делегат: «isn\'t garbage-collected until the delegate… becomes eligible».', nodes: [{ id: "ret", kind: "chip", at: { zone: "stack", row: 0 }, value: "делегат", accent: true }, { id: "dc", kind: "obj", at: { zone: "heap", row: 0 }, typeTag: "DisplayClass", value: "seed=42", accent: true }], edges: [{ id: "e", from: "ret", to: "dc", accent: true }] },
       ],
-      explain: 'Захват меняет <b>время жизни</b> переменной. Обычно локальная умирает с кадром стека; захваченная — нет: «If you capture variables in this way, the lambda expression stores them for use even if the variables go out of scope and would normally be garbage collected». Точный якорь на GC: «A variable that you capture isn\'t garbage collected until the delegate that references it becomes eligible for garbage collection». То есть display-класс на куче держит переменную живой ровно столько, сколько жив ссылающийся на него делегат — типичный источник «утечек» через долгоживущие обработчики событий.',
+      explain: 'Захват меняет <b>время жизни</b> переменной. Обычно локальная умирает с кадром стека; захваченная — нет: «Variables that are captured in this manner are stored for use in the lambda expression even if the variables would otherwise go out of scope and be garbage collected». Точный якорь на GC: «A variable that is captured isn\'t garbage-collected until the delegate that references it becomes eligible for garbage collection». То есть display-класс на куче держит переменную живой ровно столько, сколько жив ссылающийся на него делегат — типичный источник «утечек» через долгоживущие обработчики событий.',
       sources: ["ms-lambda", "ms-gc"],
     },
     {

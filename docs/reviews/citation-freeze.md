@@ -4,8 +4,15 @@
 Меры: (1) поле `Source.archived` (URL веб-архива) — снапшот, к которому «пришпилена» цитата;
 (2) машинные маркеры композитных цитат; (3) нота по CLRS-книге.
 
-Дата извлечения (`source.date`) сохранена без изменений. Тексты цитат/объяснений/вопросов
-НЕ менялись — только метаданные источника + комментарии-маркеры.
+Дата извлечения (`source.date`) сохранена без изменений. В ЗАДАЧЕ 1 (заморозка) тексты
+цитат/объяснений/вопросов НЕ менялись — только метаданные источника + комментарии-маркеры.
+
+> **ПОПРАВКА (accuracy-audit, критическая фикс-волна точности).** Финальный VERIFY вернул
+> гейт точности: ряд англ. «…»-цитат были ПЕРЕФРАЗОМ под видом дословных. Проведён сплошной
+> verbatim-аудит всех «…»-цитат во всех 6 уроках против приколотых снапшотов (`archived`),
+> для 5 незамороженных URL — против live. Расхождения приведены к дословному тексту источника
+> либо (где дословный текст не ложится в русскую фразу) переведены в ЯВНЫЙ пересказ без кавычек.
+> Полный аудит-лог: `docs/reviews/citation-audit.md`. Итог правок ниже.
 
 ## Итог заморозки: 20 из 25 уникальных URL
 
@@ -77,4 +84,32 @@ landing-страницу. Помечено инлайн-комментарием
 - `app/src/lessons/types.ts` — `Source.archived?: string` + соглашение о композитах в шапке.
 - `app/src/lessons/{value-vs-reference,boxing,gc,closures,async-await,hashtable}.ts` —
   `archived`-снапшоты на источники + блоки-маркеры `// COMPOSITE-QUOTES:`.
-- Тексты цитат/вопросов/объяснений — БЕЗ изменений.
+- Тексты цитат/вопросов/объяснений — В ЗАДАЧЕ 1 без изменений (см. поправку в шапке).
+
+## Изменённые цитаты (задача accuracy-audit)
+
+Каждая правка сверена посимвольно против `archived`-снапшота источника (для live — против live).
+`verbatim` = «…»-цитата приведена к дословному тексту источника; `→ пересказ` = ёлочки сняты,
+формулировка переписана как явный пересказ (без заявки на дословность).
+
+| файл · локатор | было (перефраз) | стало | тип |
+|----------------|------------------|-------|-----|
+| closures spec[0] | «If you capture variables in this way, the lambda expression stores them for use even if the variables go out of scope and would normally be garbage collected.» | «Variables that are captured in this manner are stored for use in the lambda expression even if the variables would otherwise go out of scope and be garbage collected.» (ms-lambda) | verbatim |
+| closures edgeCases[0] | «A variable that you capture isn't garbage collected until…» | «A variable that is captured isn't garbage-collected until…» (ms-lambda) | verbatim |
+| closures edgeCases[1] | «…but it can reference static members…» | «…but can reference static members…» (ms-lambda; лишнее "it") | verbatim |
+| closures s2 explain | «the lambda expression stores them for use even if the variables go out of scope» | полная verbatim-цитата ms-lambda (см. spec[0]) | verbatim |
+| closures s4 explain (×2) | те же перефразы spec[0] + edgeCases[0] | обе приведены к verbatim ms-lambda | verbatim |
+| closures s4 caption | «isn't garbage collected until the delegate… becomes eligible» | «isn't garbage-collected until the delegate… becomes eligible» (дефис) | verbatim |
+| value-vs-reference s2 explain | «you copy variable values… you copy the corresponding type instances» (актив) + «the system copies variable values on assignment» (нет в источнике) + «Operations on one variable [don't affect] the other» | «variable values are copied… the corresponding type instances are copied» (пассив, cs-value-types) + «each variable has its own copy of the data, and it's not possible for operations on one variable to affect the other» (cs-reference-types); несуществующая фраза удалена | verbatim |
+| value-vs-reference s1 explain | «the variable holds a reference to an object on the managed heap. The variable doesn't hold the object data itself» | «enough memory is allocated on the managed heap for that specific object, and the variable holds only a reference to the location of said object» + «This reference refers to the new object but doesn't contain the object data itself» (cs-classes) | verbatim |
+| value-vs-reference s3 explain | «Assigning a class variable to another variable copies the reference, so both variables point to the same object» (нет в источнике) | «This code creates two object references that both refer to the same object. Therefore, any changes to the object made through object3 are reflected in subsequent uses of object4» (cs-classes); залоговый перефраз про copy заменён русским текстом + composite из cs-reference-types приведён к «…» | verbatim + пересказ |
+| value-vs-reference s4 explain | «A class is a reference type» (сокращение) | «A type that is defined as a class is a reference type» (cs-classes) | verbatim |
+| gc s6 explain | «Ordinarily, the large object heap (LOH) isn't compacted because copying large objects imposes a performance penalty» (нет в источнике) | «But because compaction is expensive, the GC sweeps the LOH; it makes a free list out of dead objects that can be reused later to satisfy large object allocation requests» (ms-loh) | verbatim |
+| async-await s4 explain | «use the ConfigureAwait method…» (пропущен "Task.") | «use the Task.ConfigureAwait method…» (ms-consume-tap) | verbatim |
+| async-await s4 explain | «it avoids unnecessary context hops and reduces deadlock risk for callers that block» (нет в источнике) | русский пересказ без кавычек (смысл ms-consume-tap) | → пересказ |
+
+**boxing.ts, hashtable.ts — расхождений НЕ найдено**: все «…»-цитаты сверены посимвольно и
+дословны (ms-boxing, ms-il-box 0x8C, ms-il-unbox 0xA5, ms-thread-stack, ms-generics,
+ms-struct-guidelines для boxing; ms-dictionary для hashtable). Незамороженные live-URL
+(ms-il-box, ms-il-unbox, ms-dictionary) на момент аудита резолвятся HTTP 200 и сверены по live.
+CLRS-claims в hashtable — концепт, не verbatim (без ёлочек-заявки), не трогались.

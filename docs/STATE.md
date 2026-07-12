@@ -520,6 +520,17 @@ Maximalist-ставка: «self-hosting learning app» — приложение 
   types w/h optional) → расширить viz-fit (height-in-scale/width-ladder/grid-snap/edge-orthogonal/port-on-
   border/bend/row-baseline/rx/stroke) → нормализовать ВСЕ 6 уроков → viz-fit+harness'ы ALL GREEN +
   before/after скрины. Потом Я визуально проверяю каждую сцену + деплой. Волна 4 (Dockerfile/CI) — после.
+- 2026-07-12 — ФИНАЛЬНЫЙ VERIFY (wl0yuxvry): 4/5 измерений ПРИНЯТО ступень 5 (бэкенд 65/65, фронт 0 регрессий
+  докрутки, контейнер/CI, consumer ПРОЙДЕН sessionContinuous=true — «ощущается готовым продуктом»). НО ГЕЙТ
+  ТОЧНОСТИ = ВОЗВРАТ (риск №1): closures.ts ms-lambda 2 цитаты в «…» = перефраз-под-verbatim (архив
+  опровергает); value-vs-reference copy-quote залоговый перефраз в «…»; citation-freeze.md ложно «тексты не
+  менялись». Прошлый Ф5-accuracy это ПРОПУСТИЛ (single-evaluator ошибся) → урок: re-verify окупился. ФИКС:
+  сплошной verbatim-аудит КАЖДОЙ «…»-цитаты всех 6 уроков против archived/live, каждый mismatch → точный текст
+  источника ЛИБО снять кавычки (перефраз); поправить citation-freeze.md. Потом targeted re-verify accuracy → DONE.
+- 2026-07-12 — Builder-B ГОТОВ (заморозка 20/25 цитат Wayback + композит-маркеры + CLRS-нота; product-P2:
+  иерархия неначатых тем, FSRS-хук в done, спарк→токен). Независимо: backend 65/65, build 58КБ, viz-fit 6/6,
+  все харнесы GREEN. Закоммичено+запушено (9f7e7ce). → ФИНАЛЬНЫЙ VERIFY-фан-аут (регресс-акцент по итоговому
+  коду: сессия/reduced-motion/nav/review-fail держатся, голос/термины сведены, 0 регрессий) → пере-штамп + ретро → DONE.
 - 2026-07-12 — Builder-A ГОТОВ (релиз-строгость): backend 63→65 (multi-user concurrency + review/delete-race +
   усиленный ассерт, все PASS); CI coverage-порог enforce (93.11%), wait-for-healthy, run/loop/shell+prod-смоук
   в CI, HTTP_PORTS warning убран; doc-level a11y (skip-link+role=main, axe document-scope 0 crit); wwwroot не
