@@ -520,6 +520,15 @@ Maximalist-ставка: «self-hosting learning app» — приложение 
   types w/h optional) → расширить viz-fit (height-in-scale/width-ladder/grid-snap/edge-orthogonal/port-on-
   border/bend/row-baseline/rx/stroke) → нормализовать ВСЕ 6 уроков → viz-fit+harness'ы ALL GREEN +
   before/after скрины. Потом Я визуально проверяю каждую сцену + деплой. Волна 4 (Dockerfile/CI) — после.
+- 2026-07-12 — ✅ DONE-WAVE (пайп чист). Accuracy-блокер ЗАКРЫТ: сплошной verbatim-аудит (87 «…»-цитат,
+  14 исправлено→verbatim/пересказ, boxing+hashtable чисты). МОЙ независимый спот-чек 3 фиксов против
+  приколотых архивов (curl): closures spec[0]/edgeCases[0], value-vs-ref copy-quotes, gc s6 LOH — ВСЕ
+  дословно present:YES. citation-freeze.md исправлен, citation-audit.md добавлен. build+viz-fit+new-lessons+
+  run GREEN. Коммит 6580d9b запушен. ИТОГ ФИНАЛЬНОГО VERIFY: ВСЕ 5 измерений зелёные (бэкенд 65/65 · фронт
+  0 регрессий · контейнер/CI · consumer ПРОЙДЕН · ТОЧНОСТЬ теперь PASS). Ступень: ГОТОВЫЙ ПРОДУКТ (3), точность 4,
+  signature = author-proof living-diagram движок + честная калибровка. Не-блокеры (остаток, вынесены): GH Actions
+  пин по мажор-тегу не sha; new-lessons.mjs не в CI; Lighthouse-харнес хрупок; 5 незамороженных SPA-URL (live-OK);
+  concurrency-тесты in-process. Контент волны-1 (6/~10-12) — пауза по слову пользователя. Пользователь останавливает, не P0.
 - 2026-07-12 — ФИНАЛЬНЫЙ VERIFY (wl0yuxvry): 4/5 измерений ПРИНЯТО ступень 5 (бэкенд 65/65, фронт 0 регрессий
   докрутки, контейнер/CI, consumer ПРОЙДЕН sessionContinuous=true — «ощущается готовым продуктом»). НО ГЕЙТ
   ТОЧНОСТИ = ВОЗВРАТ (риск №1): closures.ts ms-lambda 2 цитаты в «…» = перефраз-под-verbatim (архив
