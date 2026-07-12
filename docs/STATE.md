@@ -520,6 +520,12 @@ Maximalist-ставка: «self-hosting learning app» — приложение 
   types w/h optional) → расширить viz-fit (height-in-scale/width-ladder/grid-snap/edge-orthogonal/port-on-
   border/bend/row-baseline/rx/stroke) → нормализовать ВСЕ 6 уроков → viz-fit+harness'ы ALL GREEN +
   before/after скрины. Потом Я визуально проверяю каждую сцену + деплой. Волна 4 (Dockerfile/CI) — после.
+- 2026-07-12 — 🏁 ПАЙП ЗАКРЫТ (терминальный DONE). Пользователь: «уроки не нужно добавлять — отдельная
+  задача». Значит наполнение контента волны-1 ВЫНЕСЕНО из этого пайпа в отдельную будущую задачу (движок +
+  docs/GUIDE.md + AUTHORING-AI.md готовы её принять: добавить урок = data-файл на `at` + seed + реестр).
+  В скоупе не осталось ничего открытого. Все 5 VERIFY-измерений зелёные, весь не-блокер-остаток закрыт,
+  задеплоено (HEAD 9b586dc). Ступень: ГОТОВЫЙ ПРОДУКТ (3), точность 4, signature. Для будущей контент-задачи —
+  точка входа: docs/GUIDE.md §3 «Как добавить урок» + AUTHORING-AI.md. Резюм этого пайпа НЕ требуется.
 - 2026-07-12 — ✅✅ ПАЙП ЧИСТ (все флагнутые не-блокеры ЗАКРЫТЫ). Builder-2 ГОТОВ + НЕЗАВИСИМО ПРОВЕРЕН:
   харнес-портируемость (_util.mjs evidenceDir, grep /Users/admin=0, EVIDENCE_DIR в CI), чистый preflight,
   __home/__progress/__profile пост-резолв (isCurrent-guard), дозаморозка 5/5 (25/25 archived, curl 200).
