@@ -9,11 +9,12 @@
  * Requires: backend on :5080, `vite preview` on :4173. Writes evidence PNGs.
  */
 import { chromium } from "playwright";
-import { mkdirSync } from "node:fs";
+import { evidenceDir, preflight } from "./_util.mjs";
 
 const APP = process.env.APP_BASE || "http://localhost:4173";
 const API = process.env.VITE_API_BASE || "http://localhost:5080";
-const EV = "/Users/admin/Desktop/test5/docs/evidence";
+// CI-portable evidence root: $EVIDENCE_DIR on CI, else repo-relative docs/evidence (no hardcoded path).
+const EV = evidenceDir();
 const RUN_USER = 800000 + Math.floor(Math.random() * 90000);
 
 const EXPECT = [
@@ -40,7 +41,8 @@ const apiGet = async (p) => (await fetch(API + p, { headers: apiToken ? { Author
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function main() {
-  for (const e of EXPECT) mkdirSync(`${EV}/${e.ev}`, { recursive: true });
+  await preflight();
+  for (const e of EXPECT) evidenceDir(`${e.ev}`);
   const browser = await chromium.launch();
   const consoleErrors = [];
 

@@ -13,10 +13,12 @@
  */
 import { chromium } from "playwright";
 import { mkdirSync } from "node:fs";
+import { evidenceDir } from "./_util.mjs";
 
 const APP = process.env.APP_BASE || "http://localhost:4173";
 const API = process.env.VITE_API_BASE || "http://localhost:5080";
-const ROOT = "/Users/admin/Desktop/test5/docs/evidence/autolayout";
+// CI-portable evidence root (no hardcoded path): $EVIDENCE_DIR/autolayout on CI, else repo-relative.
+const ROOT = evidenceDir("autolayout");
 const RUN_USER = 770000 + Math.floor(Math.random() * 90000);
 
 // slug -> { id, dir, segs }

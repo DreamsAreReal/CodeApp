@@ -20,11 +20,12 @@
  * Writes 390px evidence PNGs under docs/evidence/polish-flow.
  */
 import { chromium } from "playwright";
-import { mkdirSync } from "node:fs";
+import { evidenceDir, preflight } from "./_util.mjs";
 
 const APP = process.env.APP_BASE || "http://localhost:4173";
 const API = process.env.VITE_API_BASE || "http://localhost:5080";
-const EV = "/Users/admin/Desktop/test5/docs/evidence/polish-flow";
+// CI-portable evidence dir: $EVIDENCE_DIR/polish-flow on CI, else repo-relative (no hardcoded path).
+const EV = evidenceDir("polish-flow");
 const VP = { width: 390, height: 844 };
 
 const log = (m) => console.log(m);
@@ -40,7 +41,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const FRESH = () => 750000 + Math.floor(Math.random() * 90000);
 
 async function main() {
-  mkdirSync(EV, { recursive: true });
+  await preflight();
   const browser = await chromium.launch();
   const consoleErrors = [];
   const IGNORE = /net::ERR_FAILED|Failed to load resource/i; // benign for the intentional review-abort test

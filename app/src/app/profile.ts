@@ -146,7 +146,9 @@ export async function renderProfile(root: HTMLElement, navToken: number = router
 
   wireReset(root);
 
-  // Headless / debug hook — the real rendered state.
+  // Headless / debug hook — the real rendered state. Guard with router.isCurrent so a stale
+  // render (late fetch) can never publish an out-of-date __profile over the current screen.
+  if (!router.isCurrent(navToken)) return;
   (window as unknown as { __profile?: unknown }).__profile = {
     userId: p.userId,
     mode: session.mode,

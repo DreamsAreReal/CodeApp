@@ -15,16 +15,26 @@ push main ─▶ test (dotnet test + coverlet + npm build + viz-fit headless)
 ```
 
 **Гейт `test`** гоняет: backend `dotnet test` + покрытие (`coverlet`, публикуется артефактом
-`backend-coverage`), фронт `tsc+vite build`, и headless-приёмку `viz-fit.mjs` (Playwright
-Chromium против живого backend :5080 + preview :4173). Полные live-loop харнесы
-(`verify/run.mjs`, `verify/new-lessons.mjs`) пока НЕ в CI (дорого/хрупко поднимать
-детерминированно) — гоняются локально; помечено TODO в workflow.
+`backend-coverage`) с **ЖЁСТКИМ порогом line-coverage ≥ 90%** (текущее ~93%, запас ~3пп),
+фронт `tsc+vite build`, и полную headless-приёмку в реальном Chromium против живого
+backend :5080 + preview :4173: `viz-fit.mjs`, `run.mjs`, `loop.mjs`, `shell.mjs` **и теперь
+`new-lessons.mjs`** (multi-lesson authoring/generation flow). Все харнесы чеканят СЛУЧАЙНЫЕ
+user-id — самоизолируются на общей БД.
 
-**SHA-пиннинг:** образ тегается неизменяемым `${{ github.sha }}` (плюс подвижный `:latest`
-для людей), а деплой ТЯНЕТ именно sha-тег — деплой воспроизводим и откатываем.
+**SHA-пиннинг Actions (supply-chain):** ВСЕ сторонние GitHub Actions запиннены на полный
+40-символьный commit-SHA с комментарием `# vN` для читаемости (`actions/*`, `docker/*` и
+сторонний `appleboy/ssh-action`). Тег может быть переписан на злонамеренный коммит — SHA
+неизменяем, поэтому пайплайн воспроизводим и не подвержен подмене тега. Обновление версий —
+осознанное: заменить SHA + комментарий.
+
+**SHA-пиннинг образа:** образ тегается неизменяемым `${{ github.sha }}` (плюс подвижный
+`:latest` для людей), а деплой ТЯНЕТ именно sha-тег — деплой воспроизводим и откатываем.
 
 **Non-root образ:** рантайм-процесс — непривилегированный `app` (uid 1654), НЕ root;
-у образа есть `HEALTHCHECK` на `/health/ready` (`docker inspect .State.Health` → `healthy`).
+у образа есть `HEALTHCHECK` на `/health/ready`. Проба — **без curl/apt**: чистый bash
+`/dev/tcp` (bash 5.2 уже в base-образе aspnet:10.0) шлёт минимальный HTTP GET и требует
+строго `200`. Это убирает apt/curl-слой (−10 МБ, меньше поверхность атаки), семантика
+`unhealthy`-флипа та же, что была у `curl -fsS` (`docker inspect .State.Health` → `healthy`).
 
 Образ single-origin (фронт+API в одном контейнере), SQLite на docker-volume `codexdata`
 (переживает деплои). GHCR-аутентификация — встроенный `GITHUB_TOKEN`, отдельный PAT не нужен.
@@ -80,15 +90,33 @@ pull && up -d` (zero-config, том с базой не трогается). Пр
 свой домен в `/etc/caddy/Caddyfile` → `reverse_proxy 127.0.0.1:8080`, `systemctl reload caddy`,
 затем в @BotFather указать `https://<домен>` как URL Mini App.
 
+## Допущения деплоя (архитектурная граница)
+- **Single-instance деплой.** Топология — один edge (Caddy) → **один** контейнер приложения
+  на `127.0.0.1:8080`. Это НЕ горизонтально масштабируемая схема, и многоинстансность **не
+  является целью** этого деплоя.
+- **SQLite (WAL) на docker-volume `codexdata`.** Конкурентность решается in-process (WAL даёт
+  одновременные чтения + один писатель внутри одного процесса). Именно поэтому один контейнер:
+  запуск второй реплики на том же файле БД НЕ поддерживается (SQLite не рассчитан на
+  многопроцессную запись по сети/тому). Нужна горизонтальность → это отдельная миграция на
+  клиент-серверную СУБД, вне текущего скоупа.
+- **Прокатка = pull + up -d + ожидание `healthy`, затем prune.** Кратковременный разрыв на
+  рестарт одного контейнера — приемлем для этого продукта (не zero-downtime blue-green).
+- **`appleboy/ssh-action` теперь SHA-запиннен** (см. «SHA-пиннинг Actions»): сторонний деплой-
+  экшен воспроизводим и не подменяем через перезапись тега `v1`.
+
 ## Что проверено локально (граница честности)
 - `dotnet test` → 62/62 PASS; покрытие (coverlet) собрано: line 92.6% / branch 75.6%.
 - `npm run build` (tsc+vite) → зелёно; `node verify/viz-fit.mjs` против живого backend+preview
   → ALL GREEN — это ровно джоба `test`.
-- Образ собран локально (`docker build -f deploy/Dockerfile`) и запущен: `HEALTHCHECK` → `healthy`,
-  `/health/ready` 200, `GET /` 200, `/api/lessons` (через реальный HMAC-auth) → 6 уроков,
-  рантайм-процесс `id` → uid 1654 (`app`, НЕ root), `/data` писабелен и `codex.db` создаётся
-  пользователем `app`.
+- **Coverage-гейт (порог 90):** awk-фрагмент прогнан локально — line=0.93 → PASS exit0;
+  line=0.88 → FAIL exit1; граница line=0.90 → PASS exit0.
+- **Curl-free HEALTHCHECK:** образ пересобран без curl/apt (`command -v curl` → ABSENT,
+  bash present); запущен → `HEALTHCHECK` (bash `/dev/tcp` проба `/health/ready`) → `healthy`
+  за ~6с, health-log `exit=0`, `GET /` 200, `/health/ready` 200; образ уменьшился 507 → 497 МБ.
+- **SHA-пины:** каждый SHA получен из GitHub API (`git/refs/tags/<vN>` → object.sha,
+  дереференс аннотированных тегов) и перепроверен `repos/<a>/commits/<sha>` — все 9 экшенов
+  резолвятся в реальные коммиты; `grep uses:` показывает 11 вхождений, все 40-hex@ + `# vN`.
 - Сам GitHub-workflow и SSH-деплой на живой VPS я прогнать не могу (нет доступа к твоему VPS/аккаунту)
   — это выполнится при первом пуше. Шаги подобраны по канонному паттерну (docker/build-push-action
-  + appleboy/ssh-action) + добавлены coverlet/viz-fit/sha-пиннинг; YAML провалидирован (safe_load),
-  bash-фрагменты (coverage-репорт, backend+preview wait) прогнаны локально.
+  + appleboy/ssh-action) + coverlet/viz-fit/sha-пиннинг; YAML провалидирован (safe_load),
+  bash-фрагменты (coverage-репорт, backend+preview wait, /dev/tcp-проба) прогнаны локально.

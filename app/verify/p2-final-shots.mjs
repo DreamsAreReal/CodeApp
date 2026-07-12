@@ -12,9 +12,11 @@
  */
 import { chromium } from "playwright";
 import { mkdirSync } from "node:fs";
+import { evidenceDir } from "./_util.mjs";
 
 const APP = process.env.APP_BASE || "http://localhost:4173";
-const EV = "/Users/admin/Desktop/test5/docs/evidence/p2-final";
+// CI-portable evidence dir (no hardcoded path): $EVIDENCE_DIR/p2-final on CI, else repo-relative.
+const EV = evidenceDir("p2-final");
 const VP = { width: 390, height: 844 };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const FRESH = () => 640000 + Math.floor(Math.random() * 90000);

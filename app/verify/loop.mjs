@@ -20,11 +20,12 @@
  */
 import { chromium } from "playwright";
 import { AxeBuilder } from "@axe-core/playwright";
-import { mkdirSync } from "node:fs";
+import { evidenceDir, preflight } from "./_util.mjs";
 
 const APP = process.env.APP_BASE || "http://localhost:4173";
 const API = process.env.VITE_API_BASE || "http://localhost:5080";
-const EV = "/Users/admin/Desktop/test5/docs/evidence/product-readiness";
+// CI-portable evidence dir: $EVIDENCE_DIR/product-readiness on CI, else repo-relative (no hardcoded path).
+const EV = evidenceDir("product-readiness");
 const VP = { width: 390, height: 844 };
 
 const log = (m) => console.log(m);
@@ -82,7 +83,7 @@ async function axeScan(page, label) {
 }
 
 async function main() {
-  mkdirSync(EV, { recursive: true });
+  await preflight();
   const browser = await chromium.launch();
   const consoleErrors = [];
 

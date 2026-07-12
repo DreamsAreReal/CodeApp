@@ -25,7 +25,7 @@
  * docs/evidence/viz-fit/ for a human eyeball.
  */
 import { chromium } from "playwright";
-import { mkdirSync } from "node:fs";
+import { evidenceDir, preflight } from "./_util.mjs";
 // Auto-layout v2 (engine) + the lesson registry, imported directly (node strips the
 // TS types) so the AUTHORING-PROOF runs the REAL layoutScene the app runs.
 import { layoutScene } from "../src/engine/layout.ts";
@@ -33,7 +33,8 @@ import { LESSONS as LESSON_DATA } from "../src/lessons/index.ts";
 
 const APP = process.env.APP_BASE || "http://localhost:4173";
 const API = process.env.VITE_API_BASE || "http://localhost:5080";
-const EV = "/Users/admin/Desktop/test5/docs/evidence/viz-fit";
+// CI-portable evidence dir: $EVIDENCE_DIR/viz-fit on CI, else repo-relative (no hardcoded path).
+const EV = evidenceDir("viz-fit");
 const RUN_USER = 700000 + Math.floor(Math.random() * 90000);
 
 // All six lessons in the registry (curriculum order), with segment counts.
@@ -519,7 +520,7 @@ function authoringProof() {
 }
 
 async function main() {
-  mkdirSync(EV, { recursive: true });
+  await preflight();
   authoringProof();
   await authApi();
   const browser = await chromium.launch();

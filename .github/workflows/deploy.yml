@@ -17,12 +17,18 @@ jobs:
   # ---- gate: unit tests + coverage + type-check + bundle + headless acceptance ----
   test:
     runs-on: ubuntu-latest
+    # Every headless harness (viz-fit / run / loop / shell / new-lessons / polish-flow) writes PNG
+    # evidence. Their default evidence dir is a repo-relative docs/evidence, but on the Linux runner
+    # we redirect it to the runner temp so nothing depends on a developer's absolute path. One
+    # job-level env covers all evidence-writing steps below (no hardcoded /Users/... anywhere).
+    env:
+      EVIDENCE_DIR: ${{ runner.temp }}/evidence
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
         with:
           dotnet-version: '10.0.x'
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
           cache: npm
@@ -36,11 +42,11 @@ jobs:
           --collect:"XPlat Code Coverage"
           --results-directory ${{ github.workspace }}/coverage
       # ENFORCED coverage gate: fail the job if line coverage drops below MIN_LINE. Current is
-      # ~93%; the floor is 80% (headroom for honest churn without silently rotting the suite).
+      # ~93%; the floor is 90% (~3pp headroom for honest churn without silently rotting the suite).
       # Parses the cobertura root line-rate (no XML dep) and compares in awk (no float in bash).
-      - name: Enforce line-coverage threshold (>= 80%)
+      - name: Enforce line-coverage threshold (>= 90%)
         env:
-          MIN_LINE: "80"
+          MIN_LINE: "90"
         run: |
           f=$(find "${{ github.workspace }}/coverage" -name coverage.cobertura.xml | head -1)
           if [ -z "$f" ]; then echo "no cobertura report found — cannot enforce coverage"; exit 1; fi
@@ -55,7 +61,7 @@ jobs:
             printf "PASS: line coverage meets the %d%% threshold\n", min }'
       - name: Upload coverage artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: backend-coverage
           path: coverage/**/coverage.cobertura.xml
@@ -109,10 +115,14 @@ jobs:
           node verify/run.mjs
           node verify/loop.mjs
           node verify/shell.mjs
-      # TODO: verify/new-lessons.mjs is intentionally NOT in CI yet — it walks the full
-      # multi-lesson authoring/generation flow and is the slowest/most state-heavy harness;
-      # it is run locally before shipping new lesson content. The loop above already gates the
-      # review/FSRS engine, the shell, and both document- and screen-level accessibility.
+      # Multi-lesson authoring/generation acceptance: new-lessons.mjs walks all wave-1 lessons
+      # (segments render + animation reaches its final frame, a graded card moves the schedule,
+      # zero console errors, reduced-motion static frames). It reuses the SAME live backend:5080
+      # + preview:4173 and mints RANDOM user ids, so it is self-isolating on the shared DB.
+      # (EVIDENCE_DIR comes from the job-level env above — writable runner temp, no hardcoded path.)
+      - name: Frontend multi-lesson acceptance (new-lessons)
+        working-directory: app
+        run: node verify/new-lessons.mjs
 
   # ---- build the single-origin image and push to GHCR (main only) ----
   build-and-push:
@@ -123,17 +133,17 @@ jobs:
       contents: read
       packages: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: docker/setup-buildx-action@v3
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
       - name: Log in to GHCR
-        uses: docker/login-action@v3
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Image tags/labels (lowercased automatically)
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5
         with:
           images: ghcr.io/${{ github.repository }}
           # Immutable, reproducible tag = the exact git sha (used by deploy), plus a
@@ -145,7 +155,7 @@ jobs:
       # can smoke-test the exact artifact before it ever reaches GHCR. The gha cache is populated
       # here and reused by the push below, so the second build is a near-instant cache hit.
       - name: Build prod image (load locally for smoke)
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
         with:
           context: .
           file: deploy/Dockerfile
@@ -187,7 +197,7 @@ jobs:
           echo "PASS: prod-image smoke green"
       # Only now push the vetted image to GHCR (cache hit from the build above).
       - name: Push vetted image to GHCR
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
         with:
           context: .
           file: deploy/Dockerfile
@@ -206,7 +216,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Deploy over SSH (self-provisioning compose)
-        uses: appleboy/ssh-action@v1
+        uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1
         env:
           GHCR_USER: ${{ github.actor }}
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}

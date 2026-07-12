@@ -8,11 +8,13 @@
  */
 import { chromium } from "playwright";
 import { mkdirSync } from "node:fs";
+import { evidenceDir } from "./_util.mjs";
 
 const APP = process.env.APP_BASE || "http://localhost:4173";
 const API = process.env.VITE_API_BASE || "http://localhost:5080";
 const TAG = process.argv[2] || "after";
-const EV = `/Users/admin/Desktop/test5/docs/evidence/viz-redesign/${TAG}`;
+// CI-portable evidence dir (no hardcoded path): $EVIDENCE_DIR/viz-redesign/<tag> on CI, else repo-relative.
+const EV = evidenceDir(`viz-redesign/${TAG}`);
 const RUN_USER = 780000 + Math.floor(Math.random() * 90000);
 
 const SHOTS = {

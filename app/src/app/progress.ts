@@ -170,7 +170,9 @@ export async function renderProgress(root: HTMLElement, navToken: number = route
   });
   wireNav(root);
 
-  // Headless / debug hook — the real rendered state.
+  // Headless / debug hook — the real rendered state. Guard with router.isCurrent so a stale
+  // render (late fetch) can never publish an out-of-date __progress over the current screen.
+  if (!router.isCurrent(navToken)) return;
   (window as unknown as { __progress?: unknown }).__progress = {
     userId: p.userId,
     empty: false,

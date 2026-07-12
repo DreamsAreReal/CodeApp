@@ -25,11 +25,10 @@ RUN dotnet publish ./Codex.Backend/Codex.Backend.csproj -c Release -o /publish
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
 
-# curl is not present in the aspnet base image; install it (minimal) for the HEALTHCHECK.
-# Kept in a single layer with cleanup so the image stays small.
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends curl \
-    && rm -rf /var/lib/apt/lists/*
+# No HTTP client (curl/wget) is installed: the aspnet:10.0 base ships bash 5.2 with the
+# /dev/tcp feature, so the HEALTHCHECK below probes /health/ready over a raw TCP socket in
+# pure bash. This drops the apt/curl layer entirely — smaller image, smaller attack surface,
+# and no package-index round-trip at build time.
 
 # The aspnet base image already ships a non-root user `app` (uid/gid 1654); reuse it.
 # Create the SQLite data dir up front and hand /data to `app` BEFORE `USER`, so a
@@ -59,8 +58,15 @@ USER app
 # Liveness/readiness probe for orchestrators and `docker inspect .State.Health`.
 # /health/ready also proves the SQLite DB is reachable (SELECT 1). start-period covers
 # first-run schema creation; a failing DB flips the container to `unhealthy`.
+#
+# curl-free probe: open a raw TCP socket to Kestrel via bash /dev/tcp, send a minimal HTTP/1.1
+# GET, read the status line and require exactly "200". A refused connection (app not up) or any
+# non-200 (e.g. /health/ready -> 503 when the DB is unreachable) makes the CMD exit non-zero,
+# which flips the container to `unhealthy` — same semantics as the old `curl -fsS`.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-    CMD curl -fsS http://127.0.0.1:8080/health/ready || exit 1
+    CMD bash -c 'exec 3<>/dev/tcp/127.0.0.1/8080 || exit 1; \
+printf "GET /health/ready HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n" >&3; \
+IFS=" " read -r _ code _ <&3; [ "$code" = "200" ]'
 
 # Telegram__BotToken is injected at runtime (compose env / --env). Never baked into the image.
 ENTRYPOINT ["dotnet", "Codex.Backend.dll"]

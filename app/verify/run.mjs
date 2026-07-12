@@ -7,11 +7,12 @@
  * Requires: backend on :5080, `vite preview` on :4173. Writes evidence PNGs.
  */
 import { chromium } from "playwright";
-import { mkdirSync } from "node:fs";
+import { evidenceDir, preflight } from "./_util.mjs";
 
 const APP = process.env.APP_BASE || "http://localhost:4173";
 const API = process.env.VITE_API_BASE || "http://localhost:5080";
-const EV = "/Users/admin/Desktop/test5/docs/evidence";
+// CI-portable evidence root: $EVIDENCE_DIR on CI, else repo-relative docs/evidence (no hardcoded path).
+const EV = evidenceDir();
 const RUN_USER = 900000 + Math.floor(Math.random() * 90000);
 
 const VIEWPORTS = {
@@ -48,7 +49,8 @@ const apiGet = async (p) =>
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function main() {
-  for (const f of ["F1", "F2", "F3", "F4", "F5", "F6"]) mkdirSync(`${EV}/${f}`, { recursive: true });
+  await preflight();
+  for (const f of ["F1", "F2", "F3", "F4", "F5", "F6"]) evidenceDir(`${f}`);
   // Mint a session token for RUN_USER so the harness's direct API calls (Bearer) read the
   // SAME user the browser dev-auths as (both keyed on RUN_USER).
   await apiAuth(RUN_USER);

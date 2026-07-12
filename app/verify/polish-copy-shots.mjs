@@ -15,10 +15,12 @@
  */
 import { chromium } from "playwright";
 import { mkdirSync } from "node:fs";
+import { evidenceDir } from "./_util.mjs";
 
 const APP = process.env.APP_BASE || "http://localhost:4173";
 const API = process.env.VITE_API_BASE || "http://localhost:5080";
-const EV = "/Users/admin/Desktop/test5/docs/evidence/polish-copy";
+// CI-portable evidence dir (no hardcoded path): $EVIDENCE_DIR/polish-copy on CI, else repo-relative.
+const EV = evidenceDir("polish-copy");
 const VP = { width: 390, height: 844 };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const FRESH = () => 860000 + Math.floor(Math.random() * 90000);

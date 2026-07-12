@@ -7,10 +7,12 @@
  */
 import { chromium } from "playwright";
 import { mkdirSync } from "node:fs";
+import { evidenceDir } from "./_util.mjs";
 
 const APP = process.env.APP_BASE || "http://localhost:4173";
 const API = process.env.VITE_API_BASE || "http://localhost:5080";
-const EV = "/Users/admin/Desktop/test5/docs/evidence/verify-consumer";
+// CI-portable evidence dir (no hardcoded path): $EVIDENCE_DIR/verify-consumer on CI, else repo-relative.
+const EV = evidenceDir("verify-consumer");
 const RUN_USER = 610000 + Math.floor(Math.random() * 90000);
 const LESSON = "T1.M3.boxing";
 const VP = { width: 390, height: 844 };

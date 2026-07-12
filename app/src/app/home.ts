@@ -287,6 +287,11 @@ export async function renderHome(root: HTMLElement, navToken: number = router.na
   };
 
   // Headless / debug hook — real state snapshot, now including the derived home state.
+  // Guard the write with router.isCurrent: publish __home ONLY for the render that is still
+  // current, so a slower/stale renderHome (whose fetch resolved late) can never overwrite the
+  // hook with an out-of-date snapshot that no longer matches what is on screen. This does not
+  // change any product behaviour — only the consistency of the debug/auto-check observable.
+  if (!router.isCurrent(navToken)) return;
   (window as unknown as { __home?: unknown }).__home = {
     userId: session.userId,
     mode: session.mode,

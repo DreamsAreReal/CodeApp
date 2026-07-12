@@ -520,6 +520,14 @@ Maximalist-ставка: «self-hosting learning app» — приложение 
   types w/h optional) → расширить viz-fit (height-in-scale/width-ladder/grid-snap/edge-orthogonal/port-on-
   border/bend/row-baseline/rx/stroke) → нормализовать ВСЕ 6 уроков → viz-fit+harness'ы ALL GREEN +
   before/after скрины. Потом Я визуально проверяю каждую сцену + деплой. Волна 4 (Dockerfile/CI) — после.
+- 2026-07-12 — Builder-1 ГОТОВ: 9 GH Actions sha-пин (API-verified), new-lessons в CI, coverage 80→90,
+  healthcheck без curl (bash /dev/tcp, образ −10МБ), single-instance задокументирован. НАХОДКА: run/loop/shell
+  имеют хардкод macOS-пути evidence → упадут на Linux-CI (Builder-1 починил только new-lessons через EVIDENCE_DIR).
+  Builder-2 обязан починить остальные + self-start preview + __home пост-резолв + дозаморозка 5 SPA-цитат.
+- 2026-07-12 — ПОЛЬЗОВАТЕЛЬ: «доводить согласно пайпу» → закрываю остаток не-блокеров. Builder-1 (CI/инфра:
+  sha-пин ВСЕХ GH Actions по commit-sha, new-lessons.mjs в CI, coverage-порог 80→90, healthcheck-поверхность
+  best-effort) → Builder-2 (харнес-робастность self-start preview + Lighthouse; __home пост-резолв; дозаморозка
+  5 SPA-цитат best-effort; документировать single-instance concurrency-допущение) → verify → commit → чистое DONE.
 - 2026-07-12 — ✅ DONE-WAVE (пайп чист). Accuracy-блокер ЗАКРЫТ: сплошной verbatim-аудит (87 «…»-цитат,
   14 исправлено→verbatim/пересказ, boxing+hashtable чисты). МОЙ независимый спот-чек 3 фиксов против
   приколотых архивов (curl): closures spec[0]/edgeCases[0], value-vs-ref copy-quotes, gc s6 LOH — ВСЕ

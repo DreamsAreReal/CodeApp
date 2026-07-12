@@ -8,10 +8,12 @@
  */
 import { chromium } from "playwright";
 import { mkdirSync } from "node:fs";
+import { evidenceDir } from "./_util.mjs";
 
 const APP = process.env.APP_BASE || "http://localhost:4173";
 const API = process.env.VITE_API_BASE || "http://localhost:5080";
-const EV = "/Users/admin/Desktop/test5/docs/evidence/autolayout/closures";
+// CI-portable evidence dir (no hardcoded path): $EVIDENCE_DIR/autolayout/closures on CI, else repo-relative.
+const EV = evidenceDir("autolayout/closures");
 const RUN_USER = 760000 + Math.floor(Math.random() * 90000);
 const LESSON = "T2.M2.closures";
 const SEGS = [

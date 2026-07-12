@@ -66,7 +66,7 @@ export const hashtable: LessonData = {
   //   "upsert" card noText (ms-dictionary "Every key … must be unique"). Stitches
   //   non-adjacent source sentences via «…». CLRS (clrs-ch11) is a CONCEPT source, not verbatim.
   sources: [
-    { id: "ms-dictionary", kind: "doc", org: "Microsoft Learn", title: "Dictionary<TKey,TValue> Class", url: "https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.dictionary-2", date: "2025-09-01" },
+    { id: "ms-dictionary", kind: "doc", org: "Microsoft Learn", title: "Dictionary<TKey,TValue> Class", url: "https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.dictionary-2", date: "2025-09-01", archived: "https://web.archive.org/web/20260712070106/https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.dictionary-2?view=net-10.0" },
     { id: "ms-dict-src", kind: "src", org: "GitHub · dotnet/runtime", title: "Dictionary.cs (реализация: buckets + entries, цепочка по индексу)", url: "https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Collections/Generic/Dictionary.cs", date: "2025-09-01", archived: "https://web.archive.org/web/20250820213713/https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Collections/Generic/Dictionary.cs" },
     // clrs-ch11 is a CONCEPT source (book) — claims are in our own words, NOT verbatim.
     // `archived` pins the publisher landing page only; the book text is not URL-verifiable.
