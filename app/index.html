@@ -15,7 +15,13 @@
     />
   </head>
   <body>
-    <div id="app"></div>
+    <!-- Skip-link: first focusable element, jumps keyboard/AT users straight to the app content.
+         Visually hidden until focused (see .skip-link in styles). Its target is the #app main. -->
+    <a class="skip-link" href="#app">К основному содержимому</a>
+    <!-- #app is the single mount point AND the document's one `main` landmark. Screen renderers
+         only replace its innerHTML (never the element), so the landmark + id are stable across
+         navigation — this is what document-level axe (landmark-one-main / region) checks. -->
+    <div id="app" role="main" aria-label="Фундамент C#" tabindex="-1"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

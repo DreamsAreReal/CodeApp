@@ -171,6 +171,36 @@ code {
   white-space: nowrap;
 }
 
+/* Skip-link: off-screen until it receives keyboard focus, then it slides into the
+   top-left as a coral pill. Lets AT/keyboard users jump past nothing straight into
+   the app content (its target is #app, the one `main` landmark). */
+.skip-link {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 1000;
+  transform: translateY(-150%);
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: var(--coral);
+  color: #fff;
+  font-family: var(--sans, inherit);
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: var(--shadow-2);
+}
+.skip-link:focus,
+.skip-link:focus-visible {
+  transform: translateY(0);
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+/* The main mount point should not draw a focus ring when reached via the skip-link
+   (it is a programmatic scroll target, not an interactive control). */
+#app:focus {
+  outline: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.001ms !important;

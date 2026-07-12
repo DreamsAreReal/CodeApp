@@ -36,12 +36,15 @@ export const boxing: LessonData = {
   version: "3",
   status: "self-pass",
 
+  // COMPOSITE-QUOTES (frozen — do NOT extend, see types.ts):
+  //   seg1 explain (heap/copy) · seg IL explain (box/unbox.any) · gen0 scene caption
+  //   · loop explain (gen0 fill). Each stitches non-adjacent source sentences via «…».
   sources: [
-    { id: "ms-boxing", kind: "doc", org: "Microsoft Learn", title: "Boxing and unboxing (C#)", url: "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/types/boxing-and-unboxing", date: "2025-10-13" },
-    { id: "ms-gc", kind: "doc", org: "Microsoft Learn", title: "Fundamentals of garbage collection", url: "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/fundamentals", date: "2025-10-22" },
-    { id: "ms-generics", kind: "doc", org: "Microsoft Learn", title: "Generics in .NET", url: "https://learn.microsoft.com/en-us/dotnet/standard/generics/", date: "2022-07-26" },
-    { id: "ms-struct", kind: "doc", org: "Microsoft Learn", title: "Choosing between class and struct", url: "https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/choosing-between-class-and-struct", date: "2008-10-22" },
-    { id: "ms-thread-stack", kind: "doc", org: "Microsoft Learn", title: "Thread Stack Size (Win32)", url: "https://learn.microsoft.com/en-us/windows/win32/procthread/thread-stack-size", date: "2025-07-14" },
+    { id: "ms-boxing", kind: "doc", org: "Microsoft Learn", title: "Boxing and unboxing (C#)", url: "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/types/boxing-and-unboxing", date: "2025-10-13", archived: "https://web.archive.org/web/20251029214947/https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/types/boxing-and-unboxing" },
+    { id: "ms-gc", kind: "doc", org: "Microsoft Learn", title: "Fundamentals of garbage collection", url: "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/fundamentals", date: "2025-10-22", archived: "https://web.archive.org/web/20251030225000/https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/fundamentals" },
+    { id: "ms-generics", kind: "doc", org: "Microsoft Learn", title: "Generics in .NET", url: "https://learn.microsoft.com/en-us/dotnet/standard/generics/", date: "2022-07-26", archived: "https://web.archive.org/web/20220925074915/https://learn.microsoft.com/en-us/dotnet/standard/generics/" },
+    { id: "ms-struct", kind: "doc", org: "Microsoft Learn", title: "Choosing between class and struct", url: "https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/choosing-between-class-and-struct", date: "2008-10-22", archived: "https://web.archive.org/web/20220918192058/https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/choosing-between-class-and-struct" },
+    { id: "ms-thread-stack", kind: "doc", org: "Microsoft Learn", title: "Thread Stack Size (Win32)", url: "https://learn.microsoft.com/en-us/windows/win32/procthread/thread-stack-size", date: "2025-07-14", archived: "https://web.archive.org/web/20250708185821/https://learn.microsoft.com/en-us/windows/win32/procthread/thread-stack-size" },
     { id: "ms-thread-ctor", kind: "doc", org: "Microsoft Learn", title: "Thread(ThreadStart, Int32) — maxStackSize", url: "https://learn.microsoft.com/en-us/dotnet/api/system.threading.thread.-ctor", date: "2025-07-01" },
     { id: "ms-il-box", kind: "doc", org: "Microsoft Learn", title: "OpCodes.Box (box, IL 0x8C)", url: "https://learn.microsoft.com/en-us/dotnet/api/system.reflection.emit.opcodes.box", date: "2025-07-01" },
     { id: "ms-il-unbox", kind: "doc", org: "Microsoft Learn", title: "OpCodes.Unbox_Any (unbox.any, IL 0xA5)", url: "https://learn.microsoft.com/en-us/dotnet/api/system.reflection.emit.opcodes.unbox_any", date: "2025-07-01" },

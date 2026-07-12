@@ -25,13 +25,16 @@ export const valueVsReference: LessonData = {
   version: "1",
   status: "self-pass",
 
+  // COMPOSITE-QUOTES (frozen — do NOT extend, see types.ts):
+  //   spec[0] (cs-value-types) · seg "contains-instance" explain · seg copy explain
+  //   · seg struct-vs-class explain. Each stitches non-adjacent source sentences via «…».
   sources: [
-    { id: "cs-value-types", kind: "doc", org: "Microsoft Learn", title: "Value types (C# reference)", url: "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/value-types", date: "2024-09-27" },
-    { id: "cs-reference-types", kind: "doc", org: "Microsoft Learn", title: "Reference types (C# reference)", url: "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/reference-types", date: "2023-03-13" },
-    { id: "cs-classes", kind: "doc", org: "Microsoft Learn", title: "Classes (C# fundamentals)", url: "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/types/classes", date: "2024-11-06" },
-    { id: "cs-struct", kind: "doc", org: "Microsoft Learn", title: "Structure types (C# reference)", url: "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/struct", date: "2024-11-06" },
-    { id: "ms-gc", kind: "doc", org: "Microsoft Learn", title: "Fundamentals of garbage collection", url: "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/fundamentals", date: "2025-10-22" },
-    { id: "ms-struct-guidelines", kind: "doc", org: "Microsoft Learn", title: "Choosing between class and struct", url: "https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/choosing-between-class-and-struct", date: "2008-10-22" },
+    { id: "cs-value-types", kind: "doc", org: "Microsoft Learn", title: "Value types (C# reference)", url: "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/value-types", date: "2024-09-27", archived: "https://web.archive.org/web/20240926112528/https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/value-types" },
+    { id: "cs-reference-types", kind: "doc", org: "Microsoft Learn", title: "Reference types (C# reference)", url: "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/reference-types", date: "2023-03-13", archived: "https://web.archive.org/web/20230319064757/https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/reference-types" },
+    { id: "cs-classes", kind: "doc", org: "Microsoft Learn", title: "Classes (C# fundamentals)", url: "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/types/classes", date: "2024-11-06", archived: "https://web.archive.org/web/20241119160107/https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/types/classes" },
+    { id: "cs-struct", kind: "doc", org: "Microsoft Learn", title: "Structure types (C# reference)", url: "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/struct", date: "2024-11-06", archived: "https://web.archive.org/web/20241116062207/https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/struct" },
+    { id: "ms-gc", kind: "doc", org: "Microsoft Learn", title: "Fundamentals of garbage collection", url: "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/fundamentals", date: "2025-10-22", archived: "https://web.archive.org/web/20251030225000/https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/fundamentals" },
+    { id: "ms-struct-guidelines", kind: "doc", org: "Microsoft Learn", title: "Choosing between class and struct", url: "https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/choosing-between-class-and-struct", date: "2008-10-22", archived: "https://web.archive.org/web/20220918192058/https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/choosing-between-class-and-struct" },
   ],
 
   spec: [{ text: "«A variable of a value type contains an instance of the type… [a] reference type… contains a reference to an instance of the type.»", source: "cs-value-types" }],

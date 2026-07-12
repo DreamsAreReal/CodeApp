@@ -41,8 +41,14 @@ COPY --from=backend --chown=app:app /publish ./
 # Production turns off DevMode (no /api/dev/*, no run-csharp). Listen on all interfaces
 # inside the container; the reverse proxy (Caddy) terminates TLS and forwards here.
 # SQLite lives on a mounted volume so the FSRS schedule survives restarts/redeploys.
+#
+# ASPNETCORE_HTTP_PORTS is set to 8080 by the aspnet base image; leaving it AND setting
+# ASPNETCORE_URLS makes Kestrel log a startup warning ("Overriding HTTP_PORTS ... Binding
+# to values defined by ASPNETCORE_URLS instead"). ASPNETCORE_URLS is our single source of
+# truth for the bind address, so we clear ASPNETCORE_HTTP_PORTS to silence that warning.
 ENV ASPNETCORE_ENVIRONMENT=Production \
     ASPNETCORE_URLS=http://0.0.0.0:8080 \
+    ASPNETCORE_HTTP_PORTS= \
     Database__Path=/data/codex.db
 EXPOSE 8080
 VOLUME ["/data"]

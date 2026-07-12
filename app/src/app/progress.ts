@@ -13,6 +13,7 @@ import type { Calibration, DayCount, GradeMix, LessonProgress, ProgressResponse 
 import { getLesson } from "../lessons/index.ts";
 import { S } from "../strings.ts";
 import { router } from "./router.ts";
+import { TOPIC_ICON } from "./home.ts";
 import { tg } from "../telegram/webapp.ts";
 import { navBar, wireNav } from "./nav.ts";
 import { errorCard, errorDetail, skeletonScreen } from "./ui.ts";
@@ -309,6 +310,13 @@ function lessonRow(l: LessonProgress): string {
   const title = lesson?.title ?? l.lessonId;
   // Ring = HONEST viewing progress (segments seen / total), NOT "cards not due".
   const viewPct = l.segmentsTotal > 0 ? (100 * l.segmentsSeen) / l.segmentsTotal : 0;
+  // Not-started (0%) rows used to stack identical empty gray rings — monotonous. Give the list
+  // a hierarchy: an unstarted topic shows its own line-icon in a calm sage tile (a "waiting" look)
+  // and the whole row is muted, while STARTED rows keep the coral progress ring and full weight.
+  const notStarted = l.segmentsSeen === 0 && !l.completed;
+  const lead = notStarted
+    ? `<div class="t-ic" aria-hidden="true">${lesson ? TOPIC_ICON[lesson.home.icon] : ""}</div>`
+    : ring(40, 16, 4, viewPct, "t-ring", "");
   // Right badge: cards to review, else a completion check ONLY if the lesson was viewed through.
   let badge: string;
   if (l.due > 0) {
@@ -328,8 +336,8 @@ function lessonRow(l: LessonProgress): string {
   // "закрепляется в повторах" tail is dropped when nothing is mastered yet.
   const sub = l.mastered > 0 ? `${state} · ${S.perLessonMasteryHint(l.mastered, l.total)}` : state;
   return `
-    <button class="topic" data-lesson="${escapeHtml(l.lessonId)}" title="${escapeHtml(title)}">
-      ${ring(40, 16, 4, viewPct, "t-ring", "")}
+    <button class="topic${notStarted ? " not-started" : ""}" data-lesson="${escapeHtml(l.lessonId)}" title="${escapeHtml(title)}">
+      ${lead}
       <div class="t-body">
         <div class="t-title">${escapeHtml(title)}</div>
         <div class="t-sub">${escapeHtml(sub)}</div>

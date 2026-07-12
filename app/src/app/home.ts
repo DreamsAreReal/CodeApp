@@ -29,7 +29,7 @@ import { navBar, wireNav } from "./nav.ts";
 import { errorCard, errorDetail, skeletonHome } from "./ui.ts";
 import { hasOnboarded, markOnboarded } from "./onboarding.ts";
 
-const TOPIC_ICON: Record<LessonIcon, string> = {
+export const TOPIC_ICON: Record<LessonIcon, string> = {
   types: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4-8 4-8-4 8-4z"/><path d="M4 12l8 4 8-4"/><path d="M4 17l8 4 8-4"/></svg>',
   async: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10a8 8 0 0 1 13.5-3.5L20 9"/><path d="M20 4v5h-5"/><path d="M20 14a8 8 0 0 1-13.5 3.5L4 15"/><path d="M4 20v-5h5"/></svg>',
   collections: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.6"/></svg>',
@@ -421,6 +421,7 @@ function doneHero(c: HeroCtx): string {
     <div class="done-chips">${chips}</div>
     <div class="done-tomorrow">${TOMORROW_ICON}<span>${S.doneTomorrow(c.tomorrowDue)}</span></div>
     <div class="done-comeback">${S.doneComeBack(c.streakDays)}</div>
+    <div class="done-fsrs">${SCHEDULE_ICON}<span>${S.doneFsrsHook}</span></div>
     ${fresh}
   </section>`;
 }
@@ -521,6 +522,8 @@ const SEAL_ICON =
   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/></svg>';
 const TOMORROW_ICON =
   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M3.5 9.5h17"/><path d="M8 3v4M16 3v4"/></svg>';
+const SCHEDULE_ICON =
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5v5l3 2"/></svg>';
 
 function esc(s: string): string {
   return escapeHtml(s);

@@ -568,23 +568,145 @@ public sealed class ApiTests : IClassFixture<ApiTests.Factory>
         int n = items.GetArrayLength();
         Assert.True(n >= 5, "need several due items to fire concurrently");
 
+        var itemIds = new List<string>();
+        var tasks = new List<Task<HttpResponseMessage>>();
+        for (int i = 0; i < n; i++)
+        {
+            string itemId = items[i].GetProperty("itemId").GetString()!;
+            itemIds.Add(itemId);
+            tasks.Add(Post("/api/review", token, new { itemId, grade = 3 }));
+        }
+        var results = await Task.WhenAll(tasks);
+
+        // Strengthened: every concurrent write must return a real 2xx (not merely "no 'locked'
+        // in the body"): assert the exact success status, that the body never mentions a lock,
+        // that no request degraded to a 500, and that each response is a well-formed review of
+        // the item it was for (proving the write actually happened, not a swallowed error).
+        for (int i = 0; i < results.Length; i++)
+        {
+            var res = results[i];
+            string body = await res.Content.ReadAsStringAsync();
+            Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+            Assert.NotEqual(HttpStatusCode.InternalServerError, res.StatusCode);
+            Assert.DoesNotContain("locked", body, StringComparison.OrdinalIgnoreCase);
+            var j = JsonDocument.Parse(body).RootElement;
+            Assert.Equal(itemIds[i], j.GetProperty("itemId").GetString());
+            Assert.Equal("Good", j.GetProperty("grade").GetString());
+            Assert.False(string.IsNullOrEmpty(j.GetProperty("state").GetString()), "each review returns an FSRS state");
+        }
+
+        // All n reviews were durably recorded, and the grade-mix accounts for exactly n Goods —
+        // nothing was lost or double-counted under the concurrent writes.
+        var prog = await Json(await Get("/api/progress", token));
+        Assert.Equal(n, prog.GetProperty("reviewsTotal").GetInt32());
+        Assert.Equal(n, prog.GetProperty("gradeMix").GetProperty("good").GetInt32());
+        Assert.Equal(n, prog.GetProperty("cards").GetProperty("seen").GetInt32());
+    }
+
+    [Fact]
+    public async Task ConcurrentReviews_ForTwoUsers_KeepDataIsolated_NoDatabaseLocked()
+    {
+        // Two DISTINCT users hammer /api/review AND /api/lesson-progress at the same time.
+        // Proves the many-short-lived-connections + WAL model keeps writes isolated per user
+        // (no cross-contamination), never throws "database is locked", and each user's tallies
+        // are exactly their own work — not the sum of both.
+        long userA = FreshUser();
+        long userB = FreshUser();
+        string tokenA = await AuthToken(userA);
+        string tokenB = await AuthToken(userB);
+
+        var itemsA = (await Json(await Get("/api/due", tokenA))).GetProperty("items");
+        var itemsB = (await Json(await Get("/api/due", tokenB))).GetProperty("items");
+        int nA = Math.Min(5, itemsA.GetArrayLength());
+        int nB = Math.Min(4, itemsB.GetArrayLength());
+        Assert.True(nA >= 3 && nB >= 3, "both users need several due items to interleave");
+
+        var all = new List<Task<HttpResponseMessage>>();
+        // A: nA reviews (all Good) + a lesson-progress report, interleaved with B's work.
+        for (int i = 0; i < nA; i++)
+            all.Add(Post("/api/review", tokenA, new { itemId = itemsA[i].GetProperty("itemId").GetString(), grade = 3 }));
+        all.Add(Post("/api/lesson-progress", tokenA,
+            new { lessonId = "T1.M3.boxing", segmentsSeen = 4, segmentsTotal = 7, completed = false }));
+        // B: nB reviews (all Again -> lapses) + a DIFFERENT lesson-progress report.
+        for (int i = 0; i < nB; i++)
+            all.Add(Post("/api/review", tokenB, new { itemId = itemsB[i].GetProperty("itemId").GetString(), grade = 1 }));
+        all.Add(Post("/api/lesson-progress", tokenB,
+            new { lessonId = "T1.M2.value-vs-reference", segmentsSeen = 7, segmentsTotal = 7, completed = true }));
+
+        var results = await Task.WhenAll(all);
+        foreach (var res in results)
+        {
+            string body = await res.Content.ReadAsStringAsync();
+            Assert.True(res.IsSuccessStatusCode, $"concurrent write failed: {(int)res.StatusCode} {body}");
+            Assert.DoesNotContain("locked", body, StringComparison.OrdinalIgnoreCase);
+        }
+
+        // Each user's totals are EXACTLY their own — the two users' writes never mixed.
+        var progA = await Json(await Get("/api/progress", tokenA));
+        var progB = await Json(await Get("/api/progress", tokenB));
+        Assert.Equal(userA, progA.GetProperty("userId").GetInt64());
+        Assert.Equal(userB, progB.GetProperty("userId").GetInt64());
+        Assert.Equal(nA, progA.GetProperty("reviewsTotal").GetInt32());
+        Assert.Equal(nB, progB.GetProperty("reviewsTotal").GetInt32());
+        // A graded only Good; B graded only Again -> the grade mixes are cleanly separated.
+        Assert.Equal(nA, progA.GetProperty("gradeMix").GetProperty("good").GetInt32());
+        Assert.Equal(0, progA.GetProperty("gradeMix").GetProperty("again").GetInt32());
+        Assert.Equal(nB, progB.GetProperty("gradeMix").GetProperty("again").GetInt32());
+        Assert.Equal(0, progB.GetProperty("gradeMix").GetProperty("good").GetInt32());
+        // Lesson-viewing rollups are per-user too: A started one lesson (not completed),
+        // B completed a (different) one.
+        Assert.Equal(0, progA.GetProperty("lessonsCompleted").GetInt32());
+        Assert.Equal(1, progA.GetProperty("lessonsStarted").GetInt32());
+        Assert.Equal(1, progB.GetProperty("lessonsCompleted").GetInt32());
+    }
+
+    [Fact]
+    public async Task ConcurrentReviewAndDelete_ForOneUser_NoCorruption_EndsClean()
+    {
+        // Race a burst of reviews against a DELETE /api/progress for the SAME user. The delete
+        // runs inside a transaction; the reviews are single-statement UPSERT/INSERTs. Under WAL +
+        // busy_timeout neither must throw "database is locked" or a 500, and the DB must be left
+        // consistent — after a FINAL settling delete, the user reads back completely clean.
+        long user = FreshUser();
+        string token = await AuthToken(user);
+        var items = (await Json(await Get("/api/due", token))).GetProperty("items");
+        int n = Math.Min(6, items.GetArrayLength());
+        Assert.True(n >= 5, "need several due items to race against the delete");
+
         var tasks = new List<Task<HttpResponseMessage>>();
         for (int i = 0; i < n; i++)
         {
             string itemId = items[i].GetProperty("itemId").GetString()!;
             tasks.Add(Post("/api/review", token, new { itemId, grade = 3 }));
+            // Interleave a delete roughly in the middle of the review burst.
+            if (i == n / 2) tasks.Add(Delete("/api/progress", token));
         }
         var results = await Task.WhenAll(tasks);
 
+        // No request may crash the DB: no lock error, no 500. Each individual op either committed
+        // or was cleanly ordered by SQLite — but it never corrupts or throws.
         foreach (var res in results)
         {
             string body = await res.Content.ReadAsStringAsync();
-            Assert.True(res.IsSuccessStatusCode, $"review failed: {(int)res.StatusCode} {body}");
+            Assert.NotEqual(HttpStatusCode.InternalServerError, res.StatusCode);
+            Assert.True(res.IsSuccessStatusCode, $"raced op failed: {(int)res.StatusCode} {body}");
             Assert.DoesNotContain("locked", body, StringComparison.OrdinalIgnoreCase);
         }
 
-        // All n reviews were durably recorded.
-        Assert.Equal(n, (await Json(await Get("/api/progress", token))).GetProperty("reviewsTotal").GetInt32());
+        // Because the interleaved delete may have run before some reviews landed, the intermediate
+        // count is non-deterministic — but the state must be CONSISTENT (readable, well-formed).
+        var mid = await Json(await Get("/api/progress", token));
+        int midTotal = mid.GetProperty("reviewsTotal").GetInt32();
+        Assert.InRange(midTotal, 0, n); // never negative, never over-counts
+        Assert.Equal(midTotal, mid.GetProperty("gradeMix").GetProperty("good").GetInt32()); // internally consistent
+
+        // A FINAL, un-raced delete leaves the user provably clean — proving no rows were orphaned.
+        var del = await Delete("/api/progress", token);
+        del.EnsureSuccessStatusCode();
+        var after = await Json(await Get("/api/progress", token));
+        Assert.Equal(0, after.GetProperty("reviewsTotal").GetInt32());
+        Assert.Equal(0, after.GetProperty("cards").GetProperty("seen").GetInt32());
+        Assert.Equal(0, after.GetProperty("segmentsViewed").GetInt32());
     }
 
     // ======================= RATE LIMITING =======================

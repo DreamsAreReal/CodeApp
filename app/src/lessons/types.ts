@@ -6,6 +6,15 @@
  *
  * Loop contract: the review item id on the backend is `${lesson.id}/${card.id}`,
  * so `lesson.id` and each `card.id` MUST match the backend seed (seed/lessons/*.json).
+ *
+ * COMPOSITE-QUOTE CONVENTION (accuracy guard): some verbatim quotes are stitched
+ * from NON-adjacent sentences of the same source, joined by an ellipsis inside the
+ * guillemets, e.g. «first clause… later clause». These are FROZEN as-is. A future
+ * author MUST NOT extend such a composite (adding another «…» hop can silently
+ * diverge from the source). Each lesson file that contains composites carries a
+ * `// COMPOSITE-QUOTES:` marker block listing them by field locator; grep the repo
+ * for `COMPOSITE-QUOTES` to find every one. Do not paraphrase or lengthen them —
+ * re-verify against `source.archived` (the pinned Wayback snapshot) instead.
  */
 import type { Scene, Zone } from "../engine/index.ts";
 
@@ -16,6 +25,13 @@ export interface Source {
   title: string;
   url: string;
   date: string;
+  /**
+   * Frozen provenance: a Wayback Machine snapshot of `url` captured on `date`.
+   * MS Learn pages are LIVE and can drift; `archived` pins the exact wording the
+   * verbatim quotes were taken from. Optional: a few sources (e.g. the CLRS book,
+   * or URLs Wayback could not capture) legitimately have no snapshot.
+   */
+  archived?: string;
 }
 
 export interface IlLine {

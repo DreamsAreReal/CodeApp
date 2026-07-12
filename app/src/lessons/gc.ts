@@ -42,10 +42,14 @@ export const gc: LessonData = {
   version: "1",
   status: "self-pass",
 
+  // COMPOSITE-QUOTES (frozen — do NOT extend, see types.ts):
+  //   spec[0] (ms-gc) · spec ms-loh · scene captions (heap/gen0/relocate) · explains
+  //   (alloc, generations, roots/promote, mark/relocate/compact, LOH+using) · takeaway "why".
+  //   Each stitches non-adjacent source sentences via «…».
   sources: [
-    { id: "ms-gc", kind: "doc", org: "Microsoft Learn", title: "Fundamentals of garbage collection", url: "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/fundamentals", date: "2025-10-22" },
-    { id: "ms-loh", kind: "doc", org: "Microsoft Learn", title: "The large object heap (LOH)", url: "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/large-object-heap", date: "2021-11-11" },
-    { id: "ms-idisposable", kind: "doc", org: "Microsoft Learn", title: "Using objects that implement IDisposable", url: "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/using-objects", date: "2021-05-18" },
+    { id: "ms-gc", kind: "doc", org: "Microsoft Learn", title: "Fundamentals of garbage collection", url: "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/fundamentals", date: "2025-10-22", archived: "https://web.archive.org/web/20251030225000/https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/fundamentals" },
+    { id: "ms-loh", kind: "doc", org: "Microsoft Learn", title: "The large object heap (LOH)", url: "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/large-object-heap", date: "2021-11-11", archived: "https://web.archive.org/web/20220922232211/https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/large-object-heap" },
+    { id: "ms-idisposable", kind: "doc", org: "Microsoft Learn", title: "Using objects that implement IDisposable", url: "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/using-objects", date: "2021-05-18", archived: "https://web.archive.org/web/20220922232204/https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/using-objects" },
   ],
 
   spec: [

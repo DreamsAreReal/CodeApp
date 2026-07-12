@@ -760,6 +760,26 @@
   font-weight: 500;
   color: var(--muted);
 }
+/* FSRS-meta forward-hook — a thin, quiet reminder of how the schedule works, kept subtle so it
+   never competes with the streak/come-back lines. Reachable even if onboarding was skipped. */
+.done-fsrs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.35;
+  color: var(--muted);
+}
+.done-fsrs svg {
+  flex: none;
+  width: 15px;
+  height: 15px;
+  color: var(--sage);
+  opacity: 0.9;
+}
 
 /* optional secondary CTA on a closed day — a quiet ghost link, NOT a second heavy CTA, so it
    never competes with the finished-day feel. Sits under the come-back line. */

@@ -62,10 +62,15 @@ export const hashtable: LessonData = {
   version: "1",
   status: "self-pass",
 
+  // COMPOSITE-QUOTES (frozen — do NOT extend, see types.ts):
+  //   "upsert" card noText (ms-dictionary "Every key … must be unique"). Stitches
+  //   non-adjacent source sentences via «…». CLRS (clrs-ch11) is a CONCEPT source, not verbatim.
   sources: [
     { id: "ms-dictionary", kind: "doc", org: "Microsoft Learn", title: "Dictionary<TKey,TValue> Class", url: "https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.dictionary-2", date: "2025-09-01" },
-    { id: "ms-dict-src", kind: "src", org: "GitHub · dotnet/runtime", title: "Dictionary.cs (реализация: buckets + entries, цепочка по индексу)", url: "https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Collections/Generic/Dictionary.cs", date: "2025-09-01" },
-    { id: "clrs-ch11", kind: "book", org: "MIT Press · CLRS", title: "Introduction to Algorithms — Chapter 11: Hash Tables", url: "https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/", date: "2022-04-05" },
+    { id: "ms-dict-src", kind: "src", org: "GitHub · dotnet/runtime", title: "Dictionary.cs (реализация: buckets + entries, цепочка по индексу)", url: "https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Collections/Generic/Dictionary.cs", date: "2025-09-01", archived: "https://web.archive.org/web/20250820213713/https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Collections/Generic/Dictionary.cs" },
+    // clrs-ch11 is a CONCEPT source (book) — claims are in our own words, NOT verbatim.
+    // `archived` pins the publisher landing page only; the book text is not URL-verifiable.
+    { id: "clrs-ch11", kind: "book", org: "MIT Press · CLRS", title: "Introduction to Algorithms — Chapter 11: Hash Tables", url: "https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/", date: "2022-04-05", archived: "https://web.archive.org/web/20220812034911/https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/" },
   ],
 
   spec: [

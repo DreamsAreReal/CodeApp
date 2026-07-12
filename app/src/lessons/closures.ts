@@ -32,12 +32,15 @@ export const closures: LessonData = {
   version: "1",
   status: "self-pass",
 
+  // COMPOSITE-QUOTES (frozen — do NOT extend, see types.ts):
+  //   seg display-class explain · "delegate alive" scene caption · foreach scene caption
+  //   · foreach-vs-for explain (cs-spec §13.9.5.2). Each stitches non-adjacent sentences via «…».
   sources: [
-    { id: "ms-lambda", kind: "doc", org: "Microsoft Learn", title: "Lambda expressions (C# reference)", url: "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/lambda-expressions", date: "2026-01-20" },
+    { id: "ms-lambda", kind: "doc", org: "Microsoft Learn", title: "Lambda expressions (C# reference)", url: "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/lambda-expressions", date: "2026-01-20", archived: "https://web.archive.org/web/20260113115930/https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/lambda-expressions" },
     { id: "ms-delegates-lambdas", kind: "doc", org: "Microsoft Learn", title: "Lambda expressions, delegates, and events (C#)", url: "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/types/delegates-lambdas", date: "2024-11-06" },
-    { id: "cs-spec-foreach", kind: "spec", org: "Microsoft Learn · C# language specification", title: "C# language specification · §13.9.5.2 Synchronous foreach", url: "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/statements", date: "2023-06-22" },
-    { id: "cs-history", kind: "doc", org: "Microsoft Learn", title: "The history of C# (C# 5.0)", url: "https://learn.microsoft.com/en-us/dotnet/csharp/whats-new/csharp-version-history", date: "2025-11-18" },
-    { id: "ms-gc", kind: "doc", org: "Microsoft Learn", title: "Fundamentals of garbage collection", url: "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/fundamentals", date: "2025-10-22" },
+    { id: "cs-spec-foreach", kind: "spec", org: "Microsoft Learn · C# language specification", title: "C# language specification · §13.9.5.2 Synchronous foreach", url: "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/statements", date: "2023-06-22", archived: "https://web.archive.org/web/20230623135450/https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/statements" },
+    { id: "cs-history", kind: "doc", org: "Microsoft Learn", title: "The history of C# (C# 5.0)", url: "https://learn.microsoft.com/en-us/dotnet/csharp/whats-new/csharp-version-history", date: "2025-11-18", archived: "https://web.archive.org/web/20251110080950/https://learn.microsoft.com/en-us/dotnet/csharp/whats-new/csharp-version-history" },
+    { id: "ms-gc", kind: "doc", org: "Microsoft Learn", title: "Fundamentals of garbage collection", url: "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/fundamentals", date: "2025-10-22", archived: "https://web.archive.org/web/20251030225000/https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/fundamentals" },
   ],
 
   spec: [

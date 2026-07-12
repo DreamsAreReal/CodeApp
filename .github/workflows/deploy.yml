@@ -28,25 +28,31 @@ jobs:
           cache: npm
           cache-dependency-path: app/package-lock.json
 
-      # Backend xUnit + code coverage (coverlet.collector). The threshold is not
-      # enforced yet — we just collect the number and publish it as an artifact.
+      # Backend xUnit + code coverage (coverlet.collector).
       - name: Backend unit tests + coverage (xUnit + coverlet)
         run: >
           dotnet test backend/Codex.Backend.Tests/Codex.Backend.Tests.csproj
           -c Release
           --collect:"XPlat Code Coverage"
           --results-directory ${{ github.workspace }}/coverage
-      - name: Report line/branch coverage
-        if: always()
+      # ENFORCED coverage gate: fail the job if line coverage drops below MIN_LINE. Current is
+      # ~93%; the floor is 80% (headroom for honest churn without silently rotting the suite).
+      # Parses the cobertura root line-rate (no XML dep) and compares in awk (no float in bash).
+      - name: Enforce line-coverage threshold (>= 80%)
+        env:
+          MIN_LINE: "80"
         run: |
           f=$(find "${{ github.workspace }}/coverage" -name coverage.cobertura.xml | head -1)
-          if [ -z "$f" ]; then echo "no cobertura report found"; exit 0; fi
-          # Pull the two rate attributes off the <coverage ...> root tag (no XML dep needed).
+          if [ -z "$f" ]; then echo "no cobertura report found — cannot enforce coverage"; exit 1; fi
           line=$(grep -o 'line-rate="[0-9.]*"' "$f" | head -1 | grep -o '[0-9.]*')
           branch=$(grep -o 'branch-rate="[0-9.]*"' "$f" | head -1 | grep -o '[0-9.]*')
-          awk -v l="$line" -v b="$branch" 'BEGIN{
-            printf "line coverage:   %.1f%%\n", l*100;
-            printf "branch coverage: %.1f%%\n", b*100 }'
+          awk -v l="$line" -v b="$branch" -v min="$MIN_LINE" 'BEGIN{
+            printf "line coverage:   %.2f%%\n", l*100;
+            printf "branch coverage: %.2f%%\n", b*100;
+            if (l*100 + 1e-9 < min) {
+              printf "FAIL: line coverage %.2f%% is below the %d%% threshold\n", l*100, min;
+              exit 1 }
+            printf "PASS: line coverage meets the %d%% threshold\n", min }'
       - name: Upload coverage artifact
         if: always()
         uses: actions/upload-artifact@v4
@@ -91,10 +97,22 @@ jobs:
       - name: Frontend acceptance (viz-fit)
         working-directory: app
         run: node verify/viz-fit.mjs
-      # TODO: the full live-loop harnesses (verify/run.mjs, verify/new-lessons.mjs)
-      # exercise the complete review/FSRS loop against real user state and are slow
-      # and state-heavy to stand up deterministically in CI; run them locally for
-      # now. CI covers dotnet test + build + viz-fit, which gate the diagram engine.
+      # Full live-loop acceptance against the SAME live backend+preview already up above.
+      # run.mjs proves the walking skeleton (home -> lesson -> grade -> schedule moves);
+      # loop.mjs proves the daily-return loop + product-readiness states (first-run, session,
+      # done, empty, error+retry, skeletons) with real data + a per-screen axe pass. shell.mjs
+      # proves the Progress/Profile shell PLUS document-level a11y (html-lang/title/landmark).
+      # Each harness mints RANDOM user ids, so they are self-isolating on the shared DB.
+      - name: Frontend live-loop acceptance (run + loop + shell)
+        working-directory: app
+        run: |
+          node verify/run.mjs
+          node verify/loop.mjs
+          node verify/shell.mjs
+      # TODO: verify/new-lessons.mjs is intentionally NOT in CI yet — it walks the full
+      # multi-lesson authoring/generation flow and is the slowest/most state-heavy harness;
+      # it is run locally before shipping new lesson content. The loop above already gates the
+      # review/FSRS engine, the shell, and both document- and screen-level accessibility.
 
   # ---- build the single-origin image and push to GHCR (main only) ----
   build-and-push:
@@ -123,7 +141,52 @@ jobs:
           tags: |
             type=raw,value=${{ github.sha }}
             type=raw,value=latest,enable={{is_default_branch}}
-      - name: Build & push
+      # Build the amd64 image and LOAD it into the runner's Docker first (no push yet), so we
+      # can smoke-test the exact artifact before it ever reaches GHCR. The gha cache is populated
+      # here and reused by the push below, so the second build is a near-instant cache hit.
+      - name: Build prod image (load locally for smoke)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: deploy/Dockerfile
+          load: true
+          platforms: linux/amd64
+          tags: codex:smoke
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      # Prod-image smoke: run the REAL built image, wait for the container HEALTHCHECK to go
+      # healthy (proves the SQLite DB is reachable), then assert GET / -> 200 (SPA served from
+      # wwwroot), /health/ready -> 200, and POST /api/auth with bad initData -> 401 (the auth
+      # gate is wired, not 500ing). NB: /api/lessons is auth-gated -> 401 in prod, so it is NOT
+      # a valid unauthenticated smoke target; we smoke the public routes instead.
+      - name: Smoke the built prod image
+        run: |
+          set -euo pipefail
+          docker rm -f codex-smoke >/dev/null 2>&1 || true
+          docker run -d --name codex-smoke -e Telegram__BotToken=ci-smoke-token -p 18080:8080 codex:smoke
+          waited=0
+          while :; do
+            st=$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}nohealth{{end}}' codex-smoke 2>/dev/null || echo missing)
+            echo "  container health=$st (${waited}s)"
+            [ "$st" = "healthy" ] && break
+            if [ "$st" = "unhealthy" ] || [ "$waited" -ge 90 ]; then
+              echo "FAIL: container did not become healthy (last=$st)"; docker logs --tail 60 codex-smoke; exit 1
+            fi
+            sleep 3; waited=$((waited+3))
+          done
+          root=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:18080/)
+          ready=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:18080/health/ready)
+          auth=$(curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:18080/api/auth -H 'Content-Type: application/json' -d '{"initData":"garbage"}')
+          echo "GET / -> $root ; /health/ready -> $ready ; POST /api/auth(bad) -> $auth"
+          # Also assert the startup log is free of the HTTP_PORTS override warning.
+          if docker logs codex-smoke 2>&1 | grep -iq "overriding http_ports"; then
+            echo "FAIL: HTTP_PORTS override warning present in startup log"; exit 1
+          fi
+          docker rm -f codex-smoke >/dev/null 2>&1 || true
+          [ "$root" = "200" ] && [ "$ready" = "200" ] && [ "$auth" = "401" ] || { echo "FAIL: prod-image smoke assertions failed"; exit 1; }
+          echo "PASS: prod-image smoke green"
+      # Only now push the vetted image to GHCR (cache hit from the build above).
+      - name: Push vetted image to GHCR
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -182,5 +245,30 @@ jobs:
             # Pin to the exact sha-tagged image so the deploy is reproducible/rollback-able.
             docker compose -f docker-compose.prod.yml pull
             docker compose -f docker-compose.prod.yml up -d
+            # WAIT FOR HEALTHY before we clean up: poll the container HEALTHCHECK until it reports
+            # `healthy` (proves the new image booted AND its SQLite DB is reachable) with a timeout.
+            # If it never goes healthy, fail the deploy LOUDLY and DO NOT prune — so the previous
+            # image layers survive for a fast manual rollback, and the tunnel keeps the old
+            # container reachable rather than pointing at a broken one.
+            cid=""
+            for i in $(seq 1 20); do
+              cid=$(docker compose -f docker-compose.prod.yml ps -q codex || true)
+              [ -n "$cid" ] && break
+              sleep 1
+            done
+            if [ -z "$cid" ]; then echo "FAIL: no codex container after up -d"; docker compose -f docker-compose.prod.yml logs --tail 60 || true; exit 1; fi
+            waited=0
+            while :; do
+              st=$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}nohealth{{end}}' "$cid" 2>/dev/null || echo missing)
+              echo "deploy health=$st (${waited}s)"
+              [ "$st" = "healthy" ] && { echo "OK: new container healthy"; break; }
+              if [ "$st" = "unhealthy" ] || [ "$waited" -ge 120 ]; then
+                echo "FAIL: new container did not become healthy (last=$st) — leaving old image intact for rollback"
+                docker logs --tail 80 "$cid" || true
+                exit 1
+              fi
+              sleep 5; waited=$((waited+5))
+            done
             docker logout ghcr.io || true
+            # Only prune AFTER a confirmed-healthy deploy, so a failed rollout keeps its rollback layers.
             docker image prune -f

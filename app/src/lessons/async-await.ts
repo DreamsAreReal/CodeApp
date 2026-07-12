@@ -46,11 +46,14 @@ export const asyncAwait: LessonData = {
   version: "1",
   status: "self-pass",
 
+  // COMPOSITE-QUOTES (frozen — do NOT extend, see types.ts):
+  //   spec ConfigureAwait (ms-consume-tap) · ConfigureAwait/deadlock scene captions
+  //   · continuation/context explain. Each stitches non-adjacent source sentences via «…».
   sources: [
-    { id: "ms-tap", kind: "doc", org: "Microsoft Learn", title: "The Task Asynchronous Programming (TAP) model", url: "https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/task-asynchronous-programming-model", date: "2025-10-13" },
-    { id: "ms-async-kw", kind: "doc", org: "Microsoft Learn", title: "async keyword (C# reference)", url: "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/async", date: "2026-01-21" },
-    { id: "ms-consume-tap", kind: "doc", org: "Microsoft Learn", title: "Consuming the Task-based Asynchronous Pattern", url: "https://learn.microsoft.com/en-us/dotnet/standard/asynchronous-programming-patterns/consuming-the-task-based-asynchronous-pattern", date: "2026-04-17" },
-    { id: "ms-bestpractices", kind: "doc", org: "Microsoft Learn · MSDN Magazine", title: "Async/Await — Best Practices in Asynchronous Programming", url: "https://learn.microsoft.com/en-us/archive/msdn-magazine/2013/march/async-await-best-practices-in-asynchronous-programming", date: "2013-03-01" },
+    { id: "ms-tap", kind: "doc", org: "Microsoft Learn", title: "The Task Asynchronous Programming (TAP) model", url: "https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/task-asynchronous-programming-model", date: "2025-10-13", archived: "https://web.archive.org/web/20260703115655/https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/task-asynchronous-programming-model" },
+    { id: "ms-async-kw", kind: "doc", org: "Microsoft Learn", title: "async keyword (C# reference)", url: "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/async", date: "2026-01-21", archived: "https://web.archive.org/web/20260628201314/https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/async" },
+    { id: "ms-consume-tap", kind: "doc", org: "Microsoft Learn", title: "Consuming the Task-based Asynchronous Pattern", url: "https://learn.microsoft.com/en-us/dotnet/standard/asynchronous-programming-patterns/consuming-the-task-based-asynchronous-pattern", date: "2026-04-17", archived: "https://web.archive.org/web/20260419154956/https://learn.microsoft.com/en-us/dotnet/standard/asynchronous-programming-patterns/consuming-the-task-based-asynchronous-pattern" },
+    { id: "ms-bestpractices", kind: "doc", org: "Microsoft Learn · MSDN Magazine", title: "Async/Await — Best Practices in Asynchronous Programming", url: "https://learn.microsoft.com/en-us/archive/msdn-magazine/2013/march/async-await-best-practices-in-asynchronous-programming", date: "2013-03-01", archived: "https://web.archive.org/web/20260627082941/https://learn.microsoft.com/en-us/archive/msdn-magazine/2013/march/async-await-best-practices-in-asynchronous-programming" },
   ],
 
   spec: [

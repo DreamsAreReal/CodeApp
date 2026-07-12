@@ -44,11 +44,14 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
  * the harness on any serious/critical violation. We scan the live #app screen (not a
  * static fixture) so contrast, names/roles and focus are checked on the real render.
  */
-async function axeScan(page, label) {
-  const results = await new AxeBuilder({ page })
-    .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
-    .include("#app")
-    .analyze();
+async function axeScan(page, label, { scope = "#app" } = {}) {
+  // scope "#app" scans the live app screen (contrast/names/roles on the real render);
+  // scope "document" scans the WHOLE page so document-level rules — html-has-lang,
+  // document-title, landmark-one-main, region — are actually exercised (they are not
+  // reachable when the scan is scoped to #app).
+  let builder = new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]);
+  if (scope === "#app") builder = builder.include("#app");
+  const results = await builder.analyze();
   const blocking = results.violations.filter(
     (v) => v.impact === "serious" || v.impact === "critical",
   );
@@ -153,6 +156,10 @@ async function main() {
   // transient mid-fade one (opacity < 1 momentarily lowers computed text contrast).
   await sleep(320);
   await axeScan(page, "Home");
+  // Document-level a11y: scan the WHOLE page (not scoped to #app) so html-has-lang,
+  // document-title, landmark-one-main and region rules are exercised. index.html sets
+  // <html lang="ru">, a meaningful <title>, a skip-link and role="main" on #app to satisfy them.
+  await axeScan(page, "Document (html-lang/title/landmarks)", { scope: "document" });
 
   // ===================== (b) Progress tab =====================
   log("\n== (b) Progress tab -> populated dashboard ==");

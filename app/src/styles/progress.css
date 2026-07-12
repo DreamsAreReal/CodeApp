@@ -297,6 +297,26 @@
 .lesson-list .t-ring .pct {
   color: var(--coral-text);
 }
+/* Not-started (0%) rows: a calm sage line-icon tile instead of an empty ring, and a muted row,
+   so started topics visibly stand forward and the list stops reading as a stack of blanks. The
+   tile is sized to the 40px ring it replaces so the row heights stay aligned. */
+.lesson-list .topic.not-started {
+  background: var(--muted-tile);
+}
+.lesson-list .topic.not-started .t-ic {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  opacity: 0.9;
+}
+.lesson-list .topic.not-started .t-ic svg {
+  width: 21px;
+  height: 21px;
+}
+.lesson-list .topic.not-started .t-title {
+  color: var(--muted);
+  font-weight: 500;
+}
 
 /* ---- empty state ---- */
 .empty {

@@ -253,8 +253,11 @@ function formatDate(iso: string): string {
 
 const ICON_BRAIN =
   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3a3 3 0 0 0-3 3 3 3 0 0 0-1.5 5.6A3 3 0 0 0 6 17a3 3 0 0 0 6 0V4.5A1.5 1.5 0 0 0 10.5 3z"/><path d="M15 3a3 3 0 0 1 3 3 3 3 0 0 1 1.5 5.6A3 3 0 0 1 18 17a3 3 0 0 1-6 0"/></svg>';
+// The spark sits on the coral gradient .pf-mark; color comes from CSS (.pf-mark svg
+// { color: var(--surface) }) so there is no raw hex in the markup. `currentColor`
+// inherits that token; the second glyph keeps its own opacity for depth.
 const ICON_SPARK =
-  '<svg viewBox="0 0 24 24" fill="none"><path d="M14 2.5c.7 3.4 2 4.7 5.4 5.5-3.4.8-4.7 2.1-5.4 5.5-.7-3.4-2-4.7-5.4-5.5 3.4-.8 4.7-2.1 5.4-5.5z" fill="#fff"/><path d="M7.5 12.5c.4 2 1.2 2.8 3.2 3.3-2 .5-2.8 1.3-3.2 3.3-.4-2-1.2-2.8-3.2-3.3 2-.5 2.8-1.3 3.2-3.3z" fill="#fff" opacity=".82"/></svg>';
+  '<svg viewBox="0 0 24 24" fill="none"><path d="M14 2.5c.7 3.4 2 4.7 5.4 5.5-3.4.8-4.7 2.1-5.4 5.5-.7-3.4-2-4.7-5.4-5.5 3.4-.8 4.7-2.1 5.4-5.5z" fill="currentColor"/><path d="M7.5 12.5c.4 2 1.2 2.8 3.2 3.3-2 .5-2.8 1.3-3.2 3.3-.4-2-1.2-2.8-3.2-3.3 2-.5 2.8-1.3 3.2-3.3z" fill="currentColor" opacity=".82"/></svg>';
 
 function escapeHtml(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");

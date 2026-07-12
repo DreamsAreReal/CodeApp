@@ -288,6 +288,8 @@
 .pf-mark svg {
   width: 18px;
   height: 18px;
+  /* white spark on the coral gradient — token, not a raw hex in the SVG markup */
+  color: var(--surface);
 }
 .pf-about-purpose {
   font-size: 13px;

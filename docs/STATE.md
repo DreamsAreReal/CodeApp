@@ -520,6 +520,24 @@ Maximalist-ставка: «self-hosting learning app» — приложение 
   types w/h optional) → расширить viz-fit (height-in-scale/width-ladder/grid-snap/edge-orthogonal/port-on-
   border/bend/row-baseline/rx/stroke) → нормализовать ВСЕ 6 уроков → viz-fit+harness'ы ALL GREEN +
   before/after скрины. Потом Я визуально проверяю каждую сцену + деплой. Волна 4 (Dockerfile/CI) — после.
+- 2026-07-12 — Builder-A ГОТОВ (релиз-строгость): backend 63→65 (multi-user concurrency + review/delete-race +
+  усиленный ассерт, все PASS); CI coverage-порог enforce (93.11%), wait-for-healthy, run/loop/shell+prod-смоук
+  в CI, HTTP_PORTS warning убран; doc-level a11y (skip-link+role=main, axe document-scope 0 crit); wwwroot не
+  tracked+gitignored, освежён. Всё доказано прогоном. → Builder-B (цитаты+product-P2), потом commit+финальный VERIFY.
+- 2026-07-12 — ПОЛЬЗОВАТЕЛЬ: «не-блокеры тоже делай + финальный VERIFY делай». ПЛАН: Builder-A (релиз-строгость:
+  backend multi-user concurrency + review/delete-race тесты + усилить locked-ассерт; CI: coverage-порог enforce,
+  deploy wait-for-healthy, live-loop+prod-image смоук в CI, HTTP_PORTS warning; doc-level a11y html-lang/title/
+  landmark) → Builder-B (заморозка цитат по archive-permalink + пометка композитов + CLRS-нота; product-P2:
+  empty-rings де-акцент, FSRS-мета доступ после skip онбординга, ICON_SPARK токен, stale wwwroot/evidence) →
+  commit+push → ФИНАЛЬНЫЙ VERIFY-фан-аут по итоговому коду (0 регрессий + пере-штамп verified + ретро) → DONE.
+- 2026-07-12 — РЕШЕНИЕ ПОЛЬЗОВАТЕЛЯ: контент НЕ досеваем (карточки в сид не трогаем) — закрыт открытый
+  вопрос дневного объёма. Статус пайпа: фазы 0-5 закрыты; продукт verified (Ф5) + задеплоен, ступень 3.
+  ЧЕСТНЫЙ НЮАНС: после формального Ф5-VERIFY landнуло много (продукт-готовность, де-C#, непрерывная сессия
+  + баг-фиксы + голос) — финальное состояние покрыто харнесами (все GREEN) + builder-proof + моё визуальное
+  ревью, но НЕ проходило СВЕЖИЙ Ф5-фан-аут → verified-штамп F1-F9 частично устарел по коду. Для чистого
+  «DONE по пайпу» осталось: финальный VERIFY на текущем деплое (0 регрессий + пере-штамп verified + ретро).
+  НЕ-блокеры: P2-backlog (permalink-цитаты, multi-user concurrency-тест, CI против prod-образа, doc-level
+  a11y) + контент волны-1 (6/~10-12, пауза по слову пользователя). Предложен финальный VERIFY — ждёт да/нет.
 - 2026-07-11 — Builder-copy ГОТОВ + ВИЗУАЛЬНО ОТРЕВЬЮЕН → ДОКРУТКА ПРОДУКТА ЗАВЕРШЕНА. Единый голос «ты»
   (~14 строк, grep 0 остаточных «вы»/императивов), термины Серия/Закреплено/XP (grep Стрик/Освоено/Опыт=0),
   смягчены doneBody/calib/danger; вовлечение: done-CTA «свежий урок» (при непройденном), forward-hook серии

@@ -71,6 +71,9 @@ export const S = {
       : "Завтра новых повторов пока нет — можешь взять свежий урок",
   // forward-hook: come back tomorrow and the streak ticks up (supportive, no countdown/threats)
   doneComeBack: (n: number) => `Вернись завтра — серия станет ${n + 1} подряд`,
+  // FSRS-meta hook on the closed day — a thin, persistent pointer to how the schedule works,
+  // reachable even if the one-time onboarding intro was skipped (full detail lives in Профиль).
+  doneFsrsHook: "Расписание вернёт эти карточки перед тем, как ты их забудешь",
   // secondary, opt-in CTA on a closed day when unseen lessons remain (the day is done; this is extra)
   doneFreshCta: "Взять свежий урок",
   // empty: no due, but lessons left to learn
