@@ -520,6 +520,15 @@ Maximalist-ставка: «self-hosting learning app» — приложение 
   types w/h optional) → расширить viz-fit (height-in-scale/width-ladder/grid-snap/edge-orthogonal/port-on-
   border/bend/row-baseline/rx/stroke) → нормализовать ВСЕ 6 уроков → viz-fit+harness'ы ALL GREEN +
   before/after скрины. Потом Я визуально проверяю каждую сцену + деплой. Волна 4 (Dockerfile/CI) — после.
+- 2026-07-12 — ✅ ДЕФЕКТ АНИМАЦИИ ЗАКРЫТ + ДЫРА ХАРНЕСА ЗАКРЫТА (коммит 21f26ca, задеплоено). Причина:
+  exit/enter/FLIP-твины стартовали в t=0 → уходящий и новый узел делили ячейку (boxing s4 своп eval→n, s6
+  gate поверх боксов, async s4 своп зон). Движок vizPlayer/dom: переходы СТАДИЯМИ exit→move→enter (exit
+  быстрый fade; move держит старую ячейку до ухода exits, потом FLIP; enter монтируется opacity:0 и всплывает
+  НА месте; size-FLIP для растущих; встречный своп — обход дугой; вложенные exempt; reduced-motion цел).
+  viz-fit: новая фаза — overlap/clip на КАЖДОЙ сцене + сэмпл mid-transition 190/370/560ms = 96 сцен + 189
+  mid-reads, все уроки. NEGATIVE-TEST: откат фикса → харнес КРАСНЕЕТ (8 mid-overlap) — дыра доказанно закрыта.
+  МОЯ независимая проверка: viz-fit ALL GREEN (0 overlap статик+движение), s4 before(сломан)→after(чист),
+  async-swap after чист. Урок: гарантия «без перекрытий» теперь покрывает и ДВИЖЕНИЕ, не только финалы.
 - 2026-07-12 — ⚠️ ПЕРЕОТКРЫТ: пользователь прислал 2 скрина (IMG_6770 boxing-s4, IMG_6771 s5) — блоки
   налезают ВО ВРЕМЯ анимации. Диагноз (воспроизвёл headless + код): осевшие кадры s4 = 0 перекрытий (геометрия),
   т.е. перекрытие = ТРАНЗИЕНТ FLIP-перехода (play активен). КОРЕНЬ ДЫРЫ: viz-fit гонял `forcePlayAll()` →
