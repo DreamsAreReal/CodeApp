@@ -520,7 +520,14 @@ Maximalist-ставка: «self-hosting learning app» — приложение 
   types w/h optional) → расширить viz-fit (height-in-scale/width-ladder/grid-snap/edge-orthogonal/port-on-
   border/bend/row-baseline/rx/stroke) → нормализовать ВСЕ 6 уроков → viz-fit+harness'ы ALL GREEN +
   before/after скрины. Потом Я визуально проверяю каждую сцену + деплой. Волна 4 (Dockerfile/CI) — после.
-- 2026-07-12 — ✅ ДЕФЕКТ АНИМАЦИИ ЗАКРЫТ + ДЫРА ХАРНЕСА ЗАКРЫТА (коммит 21f26ca, задеплоено). Причина:
+- 2026-07-12 — ⚠️ CI БЫЛ КРАСНЫЙ (не проверял — прошляпил; пользователь спросил). Через GitHub API (gh нет):
+  ВСЕ последние прогоны failure. ДВЕ причины во времени: (A) до 9b586dc — test падал на шаге «Frontend
+  acceptance (viz-fit)» = хардкод macOS-пути evidence на Linux (Builder-2 чинил EVIDENCE_DIR); (B) с 9b586dc —
+  startup_failure (0 джоб): job-level `env: EVIDENCE_DIR: ${{ runner.temp }}` — `runner.*` в job-env НЕ
+  разрешён (только github/needs/vars/matrix) → GitHub реджектит workflow. YAML-валидатор это не ловил; все 9
+  sha валидны (не пин). ФИКС: → `${{ github.workspace }}/.evidence`. Провалидировал actionlint 1.7.12: чистый
+  exit0; исходный вариант actionlint флагует «context runner is not allowed here». Пушу и ЖДУ реальный прогон
+  (риск шрифтов Rubik на Linux для viz-fit-геометрии узнаю только там). После — diagnose по логам если упадёт. Причина:
   exit/enter/FLIP-твины стартовали в t=0 → уходящий и новый узел делили ячейку (boxing s4 своп eval→n, s6
   gate поверх боксов, async s4 своп зон). Движок vizPlayer/dom: переходы СТАДИЯМИ exit→move→enter (exit
   быстрый fade; move держит старую ячейку до ухода exits, потом FLIP; enter монтируется opacity:0 и всплывает

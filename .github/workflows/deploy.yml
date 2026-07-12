@@ -19,10 +19,12 @@ jobs:
     runs-on: ubuntu-latest
     # Every headless harness (viz-fit / run / loop / shell / new-lessons / polish-flow) writes PNG
     # evidence. Their default evidence dir is a repo-relative docs/evidence, but on the Linux runner
-    # we redirect it to the runner temp so nothing depends on a developer's absolute path. One
+    # we redirect it under the workspace so nothing depends on a developer's absolute path. One
     # job-level env covers all evidence-writing steps below (no hardcoded /Users/... anywhere).
+    # NOTE: the `runner` context is NOT available in job-level env (only in steps), so use
+    # `github.workspace` here — using runner.* here makes the whole workflow fail to start.
     env:
-      EVIDENCE_DIR: ${{ runner.temp }}/evidence
+      EVIDENCE_DIR: ${{ github.workspace }}/.evidence
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
