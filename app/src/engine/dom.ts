@@ -34,10 +34,22 @@ export interface Durations {
   flip: number;
   exit: number;
   flash: number;
+  /**
+   * STAGED transition offsets (overlap-safe). A scene change plays in ORDER —
+   * exit → move → enter — so that at NO instant do a leaving node and an arriving
+   * node occupy the same space (the mid-FLIP overlap bug). `moveDelay` holds FLIP
+   * moves until exits have cleared their cells; `enterDelay` holds enters until the
+   * moves have (mostly) landed, so a new box never scales in over a box that is
+   * still travelling through / fading out of that spot. Reduced-motion zeroes all.
+   */
+  moveDelay: number;
+  enterDelay: number;
 }
 
 export function durations(reduced: boolean): Durations {
-  return reduced ? { enter: 0, flip: 0, exit: 0, flash: 0 } : { enter: 380, flip: 620, exit: 300, flash: 600 };
+  return reduced
+    ? { enter: 0, flip: 0, exit: 0, flash: 0, moveDelay: 0, enterDelay: 0 }
+    : { enter: 260, flip: 380, exit: 200, flash: 600, moveDelay: 200, enterDelay: 560 };
 }
 
 /** Realise a VNode as a real SVG element (deep). */

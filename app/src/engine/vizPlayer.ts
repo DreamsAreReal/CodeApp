@@ -162,8 +162,25 @@ export class VizPlayer {
     return key.charAt(0) === "e" ? this.edgeLayer : this.nodeLayer;
   }
 
+  /**
+   * Apply one scene transition in OVERLAP-SAFE STAGES: exit → move → enter.
+   *
+   * The mid-FLIP overlap bug came from firing all three at t=0: a box entering at its
+   * final cell scaled in ON TOP of a box that was still exiting / travelling through
+   * that cell (e.g. s4 eval→n swap; s6 boxes vs the gen-0 gate). We now serialise them:
+   *   - exit  [0 .. exit]              — leaving nodes fade FAST and are removed;
+   *   - move  [moveDelay .. +flip]     — FLIP nodes hold their OLD position until exits
+   *                                       have cleared the cells, then travel by transform;
+   *   - enter [enterDelay .. +enter]   — arriving nodes stay INVISIBLE until the moves have
+   *                                       (mostly) landed, then fade/scale in ON their final
+   *                                       spot — never over a box still occupying it.
+   * Every stage keeps its final visual via WAAPI fill, and reduced-motion (all durations 0)
+   * collapses to the instant final frame unchanged.
+   */
   private applyTree(vtree: VNode, d: DiffResult, flip: FlipMove[]): void {
-    // exits
+    const movingKeys = new Set(flip.map((m) => m.key));
+
+    // ---- STAGE 1: exits (fast, immediate) ----
     for (const key of d.exit) {
       const el = this.elMap[key];
       if (el) {
@@ -181,58 +198,213 @@ export class VizPlayer {
       delete this.vmap[key];
     }
 
-    // enters + updates
+    // ---- mount/patch enters + updates (enters mounted INVISIBLE for stage 3) ----
     const children = vtree.children || [];
+    const freshEnters: { elm: SVGElement; vc: VNode }[] = [];
     for (const vc of children) {
       const key = vc.key;
       let elm = this.elMap[key];
       const b = baseXY(vc);
       if (!elm) {
         elm = svgEl(vc);
+        // Hold new nodes hidden until the enter stage begins, so they never flash at
+        // full opacity over a still-clearing cell during exit/move.
+        if (!this.reduced && this.dur.enter > 0) elm.style.opacity = "0";
         this.layerFor(key).appendChild(elm);
         this.elMap[key] = elm;
-        this.enterAnim(elm, vc);
+        freshEnters.push({ elm, vc });
       } else {
-        this.patch(elm, vc, this.vmap[key]);
+        const prevVc = this.vmap[key];
+        this.patch(elm, vc, prevVc);
+        // SIZE-FLIP: when a persisting node's BOX changes size (e.g. a slot value widens
+        // its rect), the patched rect jumps to full size instantly. If a neighbour must
+        // shift to make room, the grown box would poke into it for the frames before the
+        // neighbour's move lands. Animate the rect from its OLD box → new box so the
+        // growth is synchronised with the neighbour's FLIP move (no transient overlap).
+        if (!this.reduced && this.dur.flip > 0) this.sizeFlip(elm, prevVc, vc);
       }
       this.baseMap[key] = b;
       this.vmap[key] = vc;
     }
 
-    // FLIP moves
+    // ---- STAGE 2: FLIP moves ----
+    // moveDelay is ONLY needed to let EXITS vacate a destination cell before a mover
+    // arrives. With no exits this frame, holding movers back would instead let a
+    // simultaneously-RESIZED update node (its rect width is patched instantly) poke into
+    // a neighbour that hasn't started shifting yet — so we start moves at t=0 and let the
+    // grown box + the neighbour's shift interpolate together (no crossing).
+    const moveDelay = d.exit.length > 0 ? this.dur.moveDelay : 0;
     if (!this.reduced) {
+      const bows = this.bowsForCrossingMoves(flip);
       for (const mv of flip) {
         const g = this.elMap[mv.key];
         if (!g) continue;
         const bb = this.baseMap[mv.key];
-        g.animate(
-          [
-            { transform: `translate(${bb.x + mv.dx}px,${bb.y + mv.dy}px)` },
-            { transform: `translate(${bb.x}px,${bb.y}px)` },
-          ],
-          { duration: this.dur.flip, easing: "cubic-bezier(.2,.7,.2,1)" },
-        );
+        const bow = bows.get(mv.key);
+        const frames = bow
+          ? [
+              // Bow a swapping mover perpendicular to its travel at mid-flight so two
+              // boxes exchanging cells arc AROUND each other instead of passing THROUGH
+              // (which read as "two boxes in one cell"). Ends land exactly on target.
+              { transform: `translate(${bb.x + mv.dx}px,${bb.y + mv.dy}px)`, offset: 0 },
+              { transform: `translate(${bb.x + mv.dx / 2 + bow.x}px,${bb.y + mv.dy / 2 + bow.y}px)`, offset: 0.5 },
+              { transform: `translate(${bb.x}px,${bb.y}px)`, offset: 1 },
+            ]
+          : [
+              { transform: `translate(${bb.x + mv.dx}px,${bb.y + mv.dy}px)` },
+              { transform: `translate(${bb.x}px,${bb.y}px)` },
+            ];
+        g.animate(frames, {
+          duration: this.dur.flip,
+          delay: moveDelay,
+          // Hold the OLD position during the pre-move delay and the FINAL position after,
+          // so a mover never jumps ahead of an exit vacating its destination.
+          fill: "both",
+          easing: "cubic-bezier(.2,.7,.2,1)",
+        });
       }
     }
+
+    // ---- STAGE 3: enters (delayed until moves land) ----
+    // How long the arriving nodes must wait: if nothing leaves AND nothing moves this
+    // frame (e.g. the very first frame of a segment, or a pure additive step), enter
+    // IMMEDIATELY; if only exits happen, wait for them to clear; if anything moves, wait
+    // for the moves to land. This keeps simple/first frames snappy and hard cases safe.
+    const hasExit = d.exit.length > 0;
+    const hasMove = movingKeys.size > 0;
+    const enterDelay = hasMove ? this.dur.enterDelay : hasExit ? this.dur.exit : 0;
+    for (const { elm, vc } of freshEnters) this.enterAnim(elm, vc, enterDelay);
   }
 
-  private enterAnim(elm: SVGElement, vc: VNode): void {
-    if (this.dur.enter <= 0) return;
+  private enterAnim(elm: SVGElement, vc: VNode, delay: number): void {
+    if (this.dur.enter <= 0) {
+      elm.style.removeProperty("opacity");
+      return;
+    }
     const b = baseXY(vc);
+    const done = () => elm.style.removeProperty("opacity");
     if (vc.key.charAt(0) === "e") {
-      elm.animate([{ opacity: 0 }, { opacity: 1 }], { duration: this.dur.enter, easing: "ease" });
+      const an = elm.animate([{ opacity: 0 }, { opacity: 1 }], { duration: this.dur.enter, delay, easing: "ease", fill: "both" });
+      an.onfinish = done;
     } else {
-      elm.animate(
+      const an = elm.animate(
         [
           { opacity: 0, transform: `translate(${b.x}px,${b.y}px) scale(.62)` },
           { opacity: 1, transform: `translate(${b.x}px,${b.y}px) scale(1)` },
         ],
-        { duration: this.dur.enter, easing: "cubic-bezier(.2,.8,.2,1)" },
+        { duration: this.dur.enter, delay, easing: "cubic-bezier(.2,.8,.2,1)", fill: "both" },
       );
+      an.onfinish = done;
     }
   }
 
+  /**
+   * Detect FLIP movers that would CROSS (swap cells) and assign each such mover a
+   * perpendicular "bow" vector so the pair arcs around one another instead of passing
+   * straight through (which reads as two boxes momentarily stacked in one cell — the
+   * async-await s4 done↔cont swap). Two movers collide when, at the transition MIDPOINT,
+   * their boxes overlap on both axes. We bow the LATER mover (by key order) away from the
+   * shared centre, perpendicular to its dominant travel axis, by half its box extent + a
+   * gutter — enough to fully clear. Returns key → {x,y} bow offset (empty when no swaps).
+   */
+  private bowsForCrossingMoves(flip: FlipMove[]): Map<string, { x: number; y: number }> {
+    const bows = new Map<string, { x: number; y: number }>();
+    if (flip.length < 2) return bows;
+    // Geometry of each mover at start (old) and end (new) centre, plus half-extents.
+    const geo = new Map<string, { sx: number; sy: number; ex: number; ey: number; hw: number; hh: number }>();
+    for (const mv of flip) {
+      const bb = this.baseMap[mv.key];
+      const rect = this.elMap[mv.key]?.querySelector("rect");
+      if (!bb || !rect) continue;
+      const w = parseFloat(rect.getAttribute("width") || "0");
+      const h = parseFloat(rect.getAttribute("height") || "0");
+      geo.set(mv.key, { sx: bb.x + mv.dx, sy: bb.y + mv.dy, ex: bb.x, ey: bb.y, hw: w / 2, hh: h / 2 });
+    }
+    const mid = (a: number, b: number) => (a + b) / 2;
+    for (let i = 0; i < flip.length; i++) {
+      for (let j = i + 1; j < flip.length; j++) {
+        const a = geo.get(flip[i].key);
+        const b = geo.get(flip[j].key);
+        if (!a || !b) continue;
+        // NESTING EXEMPT: if either box (at its END position) contains the other, they are
+        // a parent↔nested-child pair that translates together — never a swap. Skip.
+        const aContainsB = a.hw >= b.hw && a.hh >= b.hh && Math.abs(a.ex - b.ex) <= a.hw - b.hw + 2 && Math.abs(a.ey - b.ey) <= a.hh - b.hh + 2;
+        const bContainsA = b.hw >= a.hw && b.hh >= a.hh && Math.abs(b.ex - a.ex) <= b.hw - a.hw + 2 && Math.abs(b.ey - a.ey) <= b.hh - a.hh + 2;
+        if (aContainsB || bContainsA) continue;
+        // Boxes at the midpoint of the move.
+        const amx = mid(a.sx, a.ex);
+        const amy = mid(a.sy, a.ey);
+        const bmx = mid(b.sx, b.ex);
+        const bmy = mid(b.sy, b.ey);
+        const ox = a.hw + b.hw - Math.abs(amx - bmx);
+        const oy = a.hh + b.hh - Math.abs(amy - bmy);
+        if (ox > 1 && oy > 1) {
+          // They overlap mid-flight → bow BOTH movers in OPPOSITE perpendicular directions
+          // so they arc symmetrically apart (each carries half the needed clearance, and no
+          // tail collision as they rejoin the line). Bow axis ⟂ the pair's dominant travel.
+          const adx = a.ex - a.sx;
+          const ady = a.ey - a.sy;
+          const bdx = b.ex - b.sx;
+          const bdy = b.ey - b.sy;
+          const horizontal = Math.abs(adx) + Math.abs(bdx) >= Math.abs(ady) + Math.abs(bdy);
+          // Clearance so the two bowed boxes just separate at mid-flight, split evenly.
+          const clearH = (a.hh + b.hh + 10) / 2;
+          const clearW = (a.hw + b.hw + 10) / 2;
+          if (horizontal) {
+            bows.set(flip[i].key, { x: 0, y: -clearH });
+            bows.set(flip[j].key, { x: 0, y: +clearH });
+          } else {
+            bows.set(flip[i].key, { x: -clearW, y: 0 });
+            bows.set(flip[j].key, { x: +clearW, y: 0 });
+          }
+        }
+      }
+    }
+    return bows;
+  }
+
+  /** The box `rect` child of a node VNode (key "bx"), or null. */
+  private rectVNode(vc: VNode | undefined): VNode | null {
+    if (!vc || !vc.children) return null;
+    for (const c of vc.children) if (c.key === "bx" && c.tag === "rect") return c;
+    return null;
+  }
+
+  /**
+   * Animate a persisting node's rect from its OLD box to its NEW box when the size (or
+   * rect origin) changed, over the FLIP duration. Because the rect is patched to the new
+   * geometry synchronously, we set it BACK to the old geometry as the animation's start
+   * keyframe and let WAAPI interpolate to the patched (new) values — so a widening slot
+   * grows in lockstep with its neighbour's shift instead of jumping wide instantly.
+   */
+  private sizeFlip(elm: SVGElement, prevVc: VNode | undefined, vc: VNode): void {
+    const oldR = this.rectVNode(prevVc);
+    const newR = this.rectVNode(vc);
+    if (!oldR || !newR) return;
+    const ow = +oldR.attrs.width;
+    const oh = +oldR.attrs.height;
+    const ox = +oldR.attrs.x;
+    const oy = +oldR.attrs.y;
+    const nw = +newR.attrs.width;
+    const nh = +newR.attrs.height;
+    const nx = +newR.attrs.x;
+    const ny = +newR.attrs.y;
+    if (ow === nw && oh === nh && ox === nx && oy === ny) return; // no size/origin change
+    const rect = elm.querySelector("rect");
+    if (!rect) return;
+    rect.animate(
+      [
+        { width: `${ow}px`, height: `${oh}px`, x: `${ox}px`, y: `${oy}px` },
+        { width: `${nw}px`, height: `${nh}px`, x: `${nx}px`, y: `${ny}px` },
+      ],
+      { duration: this.dur.flip, easing: "cubic-bezier(.2,.7,.2,1)" },
+    );
+  }
+
   private patch(elm: SVGElement, vc: VNode, prevVc: VNode | undefined): void {
+    // A surviving (updated) node is always fully visible; clear any leftover enter-hold
+    // opacity from an interrupted transition so a re-render can't strand it hidden.
+    if (elm.style.opacity) elm.style.removeProperty("opacity");
     for (const k in vc.attrs) elm.setAttribute(k, String(vc.attrs[k]));
     while (elm.firstChild) elm.removeChild(elm.firstChild);
     const ch = vc.children || [];

@@ -26,6 +26,7 @@
  */
 import { chromium } from "playwright";
 import { evidenceDir, preflight } from "./_util.mjs";
+import { PROBE_SRC } from "./_anim-overlap-probe.mjs";
 // Auto-layout v2 (engine) + the lesson registry, imported directly (node strips the
 // TS types) so the AUTHORING-PROOF runs the REAL layoutScene the app runs.
 import { layoutScene } from "../src/engine/layout.ts";
@@ -556,6 +557,13 @@ async function main() {
   const allRow = [];
   const allRxc = [];
   const allStrk = [];
+  // ---- transient (mid-transition) + per-scene overlap/clip totals ----
+  const allTransOverlap = [];
+  const allTransClip = [];
+  const allSceneOverlap = [];
+  let scenesChecked = 0;
+  let transitionsChecked = 0;
+  let midSamplesTaken = 0;
 
   for (const L of LESSONS) {
     log(`\n== ${L.id}: fit + clip + design-system across ${L.segs} segments ==`);
@@ -615,6 +623,89 @@ async function main() {
     if (res.rxc.length) for (const v of res.rxc) log(`      · RX ${v.seg}/${v.node} kind=${v.kind} rx=${v.rx} exp=${v.expected}`);
     if (res.strk.length) for (const v of res.strk) log(`      · STROKE ${v.seg}/${v.node} kind=${v.kind} sw=${v.sw} exp=${v.expected}`);
   }
+
+  // =====================================================================================
+  // NEW — PER-SCENE + MID-TRANSITION overlap/clip (closes the transient-overlap hole).
+  // The settled-frame pass above only ever measured each segment's FINAL scene. A crooked
+  // frame can also appear (a) on an INTERMEDIATE scene, or (b) TRANSIENTLY during the
+  // scene-to-scene FLIP/enter/exit transition. Here, for EVERY lesson × EVERY segment we:
+  //   · goTo(i) through ALL scenes (force) and assert 0 non-nested overlap on each SETTLED
+  //     scene — not just the last one;
+  //   · drive the REAL animated transition i-1 → i (no per-node force delay) and SAMPLE the
+  //     live geometry at ~30% / ~60% / ~90% of the move, asserting 0 non-nested overlap AND
+  //     0 clip mid-flight. Nesting (a child box fully inside its parent) is exempt.
+  // This is the check that would have caught the boxing s4 swap / s6 gate-over-boxes bug.
+  // =====================================================================================
+  const OVL_TOL = 2; // user units — crossings ≤2u are "just touching", not a visible overlap
+  const MID_MS = [190, 370, 560]; // ≈30% / 60% / 90% across the staged transition window
+  for (const L of LESSONS) {
+    log(`\n== ${L.id}: per-scene + mid-transition overlap/clip ==`);
+    let ready = false;
+    for (let attempt = 0; attempt < 40 && !ready; attempt++) {
+      await page.evaluate((id) => window.__app.openLesson(id), L.id);
+      await sleep(120);
+      ready = await page.evaluate(
+        (id) => !!window.__viz && window.__viz.ready === true && !!window.__lesson && window.__lesson.id === id,
+        L.id,
+      );
+    }
+    assert(ready, `${L.id} reopened for transient probe`);
+    const segKeys = await page.evaluate(() => Object.keys(window.__viz.vizByKey));
+    let lessonSceneOvl = 0;
+    let lessonTransOvl = 0;
+    let lessonTransClip = 0;
+    for (let si = 0; si < segKeys.length; si++) {
+      const segKey = segKeys[si];
+      const total = await page.evaluate((k) => window.__viz.vizByKey[k].total, segKey);
+      // reset this segment to frame 0 (force) and settle
+      await page.evaluate((k) => window.__viz.vizByKey[k].goTo(0, { force: true }), segKey);
+      await sleep(650);
+      // scene 0 settled check
+      let r0 = await page.evaluate(([src, idx, tol]) => eval(src)(idx, tol), [PROBE_SRC, si, OVL_TOL]);
+      scenesChecked++;
+      for (const o of r0.overlaps) {
+        lessonSceneOvl++;
+        allSceneOverlap.push({ lesson: L.id, seg: segKey, scene: 0, ...o });
+      }
+      for (let i = 1; i < total; i++) {
+        // drive the REAL transition and sample mid-flight
+        await page.evaluate(([k, idx]) => window.__viz.vizByKey[k].goTo(idx, { force: true }), [segKey, i]);
+        transitionsChecked++;
+        let prev = 0;
+        for (const t of MID_MS) {
+          await sleep(t - prev);
+          prev = t;
+          midSamplesTaken++;
+          const rm = await page.evaluate(([src, idx, tol]) => eval(src)(idx, tol), [PROBE_SRC, si, OVL_TOL]);
+          for (const o of rm.overlaps) {
+            lessonTransOvl++;
+            allTransOverlap.push({ lesson: L.id, seg: segKey, transition: `${i - 1}→${i}`, at: `${t}ms`, ...o });
+          }
+          for (const c of rm.clips || []) {
+            lessonTransClip++;
+            allTransClip.push({ lesson: L.id, seg: segKey, transition: `${i - 1}→${i}`, at: `${t}ms`, ...c });
+          }
+        }
+        // let the transition finish, then settled-scene check on scene i
+        await sleep(360);
+        const rs = await page.evaluate(([src, idx, tol]) => eval(src)(idx, tol), [PROBE_SRC, si, OVL_TOL]);
+        scenesChecked++;
+        for (const o of rs.overlaps) {
+          lessonSceneOvl++;
+          allSceneOverlap.push({ lesson: L.id, seg: segKey, scene: i, ...o });
+        }
+      }
+    }
+    assert(lessonSceneOvl === 0, `${L.id}: 0 non-nested overlap on EVERY settled scene (not just the last)`);
+    assert(lessonTransOvl === 0, `${L.id}: 0 non-nested overlap MID-TRANSITION across all segments`);
+    assert(lessonTransClip === 0, `${L.id}: 0 node clips the viewBox MID-TRANSITION`);
+    for (const v of allSceneOverlap.filter((x) => x.lesson === L.id)) log(`      · SCENE-OVL ${v.seg}/s${v.scene}: ${v.a} ∩ ${v.b} = ${JSON.stringify(v.over)}`);
+    for (const v of allTransOverlap.filter((x) => x.lesson === L.id)) log(`      · MID-OVL ${v.seg} ${v.transition} @${v.at}: ${v.a} ∩ ${v.b} = ${JSON.stringify(v.over)} (op ${v.opA}/${v.opB})`);
+    for (const v of allTransClip.filter((x) => x.lesson === L.id)) log(`      · MID-CLIP ${v.seg} ${v.transition} @${v.at}: ${v.id} box=${JSON.stringify(v.box)} vb=${JSON.stringify(v.vb)}`);
+  }
+  log(
+    `\n  probe coverage: ${scenesChecked} settled scenes + ${transitionsChecked} transitions × ${MID_MS.length} mid-samples = ${midSamplesTaken} mid-transition reads`,
+  );
 
   // ---- Evidence screenshots of the previously-broken segments ----
   // Captured in a SEPARATE reduced-motion context: there, runLesson() draws every
@@ -678,6 +769,19 @@ async function main() {
   assert(allRow.length === 0, `zero ROW-BASELINE violations across all lessons (found ${allRow.length})`);
   assert(allRxc.length === 0, `zero RX-CONSISTENT violations across all lessons (found ${allRxc.length})`);
   assert(allStrk.length === 0, `zero STROKE-CONSISTENT violations across all lessons (found ${allStrk.length})`);
+  // NEW transient/per-scene totals (the closed hole).
+  assert(
+    allSceneOverlap.length === 0,
+    `zero non-nested overlap on EVERY settled scene across all lessons (checked ${scenesChecked} scenes, found ${allSceneOverlap.length})`,
+  );
+  assert(
+    allTransOverlap.length === 0,
+    `zero non-nested overlap MID-TRANSITION across all lessons (${midSamplesTaken} mid-samples over ${transitionsChecked} transitions, found ${allTransOverlap.length})`,
+  );
+  assert(
+    allTransClip.length === 0,
+    `zero viewBox clip MID-TRANSITION across all lessons (found ${allTransClip.length})`,
+  );
   assert(consoleErrors.length === 0, "zero console/page errors across the run" + (consoleErrors.length ? " -> " + JSON.stringify(consoleErrors.slice(0, 5)) : ""));
 
   await browser.close();
