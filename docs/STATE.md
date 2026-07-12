@@ -520,6 +520,14 @@ Maximalist-ставка: «self-hosting learning app» — приложение 
   types w/h optional) → расширить viz-fit (height-in-scale/width-ladder/grid-snap/edge-orthogonal/port-on-
   border/bend/row-baseline/rx/stroke) → нормализовать ВСЕ 6 уроков → viz-fit+harness'ы ALL GREEN +
   before/after скрины. Потом Я визуально проверяю каждую сцену + деплой. Волна 4 (Dockerfile/CI) — после.
+- 2026-07-12 — ✅✅ ПАЙП ЧИСТ (все флагнутые не-блокеры ЗАКРЫТЫ). Builder-2 ГОТОВ + НЕЗАВИСИМО ПРОВЕРЕН:
+  харнес-портируемость (_util.mjs evidenceDir, grep /Users/admin=0, EVIDENCE_DIR в CI), чистый preflight,
+  __home/__progress/__profile пост-резолв (isCurrent-guard), дозаморозка 5/5 (25/25 archived, curl 200).
+  МОЯ проверка: grep хардкод=0, YAML OK, все uses:@sha, archived 200, build 58.6КБ, run/shell(axe Home+Document
+  0 crit)/polish-flow(«6 из 6» непрерывная) ALL GREEN на живом стеке. Коммит 9b586dc. ИТОГ: все 5 VERIFY-измерений
+  зелёные + весь остаток закрыт (sha-пин, new-lessons-CI, coverage-90, curl-free HC, харнес-Linux, preflight,
+  __home, freeze-25/25). Ступень: ГОТОВЫЙ ПРОДУКТ (3), точность 4, signature. ЕДИНСТВЕННОЕ открытое = КОНТЕНТ
+  волны-1 (6/~10-12) — пауза по явному слову пользователя, не дефект. Пайп доведён; дальше — контент или стоп по слову.
 - 2026-07-12 — Builder-1 ГОТОВ: 9 GH Actions sha-пин (API-verified), new-lessons в CI, coverage 80→90,
   healthcheck без curl (bash /dev/tcp, образ −10МБ), single-instance задокументирован. НАХОДКА: run/loop/shell
   имеют хардкод macOS-пути evidence → упадут на Linux-CI (Builder-1 починил только new-lessons через EVIDENCE_DIR).
