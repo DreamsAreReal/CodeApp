@@ -235,7 +235,23 @@ jobs:
     needs: build-and-push
     runs-on: ubuntu-latest
     steps:
+      # Deploy is OPTIONAL: it runs only when the VPS secrets are configured. Without them the job
+      # SUCCEEDS with a clear "skipped" note (CI stays green) instead of failing on an empty SSH host.
+      # Set VPS_HOST / VPS_USER / VPS_SSH_KEY / VPS_PORT + TELEGRAM_BOT_TOKEN to enable hands-off deploy.
+      - name: Check deploy config
+        id: cfg
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+        run: |
+          if [ -z "$VPS_HOST" ]; then
+            echo "VPS secrets not configured — skipping deploy (CI stays green)."
+            echo "Set VPS_HOST / VPS_USER / VPS_SSH_KEY / VPS_PORT + TELEGRAM_BOT_TOKEN to enable auto-deploy."
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
       - name: Deploy over SSH (self-provisioning compose)
+        if: steps.cfg.outputs.configured == 'true'
         uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1
         env:
           GHCR_USER: ${{ github.actor }}

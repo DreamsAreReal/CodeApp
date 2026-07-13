@@ -520,6 +520,16 @@ Maximalist-ставка: «self-hosting learning app» — приложение 
   types w/h optional) → расширить viz-fit (height-in-scale/width-ladder/grid-snap/edge-orthogonal/port-on-
   border/bend/row-baseline/rx/stroke) → нормализовать ВСЕ 6 уроков → viz-fit+harness'ы ALL GREEN +
   before/after скрины. Потом Я визуально проверяю каждую сцену + деплой. Волна 4 (Dockerfile/CI) — после.
+- 2026-07-13 — ✅ CI ЗЕЛЁНЫЙ (test + build-and-push) ВПЕРВЫЕ (прогон 0da2610). Билдер воспроизвёл viz-fit
+  в РЕАЛЬНОМ Linux-контейнере: шрифты грузятся (38 faces, 0×404) — гипотеза «не грузятся» ОПРОВЕРГНУТА;
+  истинная причина = метрик-вариация woff2 CoreText↔FreeType (getComputedTextLength шире, чем canvas мерил →
+  ~1px overflow на границе FIT_TOL + 1×12px). ФИКС: fitLabels геом-гарантия (ужим к avail−0.6px + hard
+  textLength-клэмп если шрифт-скейл не дожал; боксы не раздуты). Пруф: Linux-контейнер FIT 6→0 ALL GREEN;
+  РЕАЛЬНЫЙ CI: JOB test SUCCESS (viz-fit+run+loop+shell+new-lessons на Linux), JOB build-and-push SUCCESS
+  (prod-образ+smoke+push GHCR). Плюс CI-::error::-обёртка (аннотации без admin). ОСТАЁТСЯ: JOB deploy FAIL
+  на шаге SSH — НЕ баг, незаданные секреты VPS_HOST/USER/SSH_KEY/PORT+TELEGRAM_BOT_TOKEN (только пользователь
+  может задать; мне креды вводить нельзя). Опция: сделать deploy graceful-skip при отсутствии секретов (CI
+  полностью зелёный, деплой активируется при добавлении). Self-host шрифтов (9552b5e) — реальный офлайн-фикс, оставлен.
 - 2026-07-13 — CI-падение viz-fit: пользователь скинул лог. ЕДИНСТВЕННЫЙ провал = **FIT: found 4** (всё
   остальное 0, вкл. WIDTH-ON-LADDER, OVERLAP). Т.е. боксы правильной ширины, но ТЕКСТ вылазит за бокс на 4
   узлах. fitLabels жмёт с полом 0.74 → эти 4 настолько шире, что 74% не спасает (~35%+ overflow) → пахнет
