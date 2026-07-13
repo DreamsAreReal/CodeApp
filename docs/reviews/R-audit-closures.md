@@ -78,3 +78,9 @@ foreach», а не в §13.9.5 напрямую. Сам §13.9.5 «The foreach s
 - https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/statements (§13.9.5.2)
 - https://learn.microsoft.com/en-us/dotnet/csharp/whats-new/csharp-version-history (C# 5.0)
 - https://ericlippert.com/2009/11/12/closing-over-the-loop-variable-considered-harmful-part-one/
+
+
+## ЧТО ПЛОХО
+- из спеки §13.9.5.2 и общий раздел capture. Severity: blocker (выдуманная цитата, №1 риск).
+
+ВЕРДИКТ: см. построчный разбор выше

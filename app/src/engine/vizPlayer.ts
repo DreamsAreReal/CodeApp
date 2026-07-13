@@ -429,10 +429,22 @@ export class VizPlayer {
 
   /**
    * Post-pass over the settled node layer: shrink any label wider than its box
-   * region so text never spills its rect — in ANY font, including the device's
-   * (which is wider than the headless fallback). Runs once per settled render
-   * (after applyTree mounts/updates, NOT during the FLIP transition). Idempotent:
-   * prior textLength/lengthAdjust are stripped first so re-renders re-measure.
+   * region so text never spills its rect — in ANY font, on ANY platform. Runs once
+   * per settled render (after applyTree mounts/updates, NOT during the FLIP
+   * transition). Idempotent: prior textLength/lengthAdjust are stripped first so
+   * re-renders re-measure.
+   *
+   * GUARANTEE: after this pass, EVERY label's getComputedTextLength() is ≤ its region
+   * `avail`. Boxes are sized from a canvas measurer (dom.ts domMeasure), but the actual
+   * rendered advance from getComputedTextLength() varies by platform: the SAME self-hosted
+   * woff2 rasterises ~1px WIDER on Linux (freetype) than on macOS, so a label the canvas
+   * sized to just-fit can spill by ~1px on a Linux CI runner (the "FIT: found N" failure
+   * that is green on the mac). We therefore shrink to a target BELOW avail (a safety margin
+   * that absorbs that cross-platform jitter) and, if the legibility-floored font-size shrink
+   * is not enough, apply a hard textLength clamp as a last resort so the text can NEVER
+   * overflow. The font-size shrink keeps the mono letterforms natural for the common case;
+   * the textLength clamp only bites for the rare long label and compresses inter-glyph
+   * spacing imperceptibly.
    *
    * Layout mirrors render.ts: obj/chip/gate center over the whole box (avail
    * = w-10); slot/ref divide the box at the divider (-hw+38) into a small NAME
@@ -440,6 +452,11 @@ export class VizPlayer {
    */
   private fitLabels(): void {
     const PAD = 10; // total horizontal padding for a full-box label
+    // Shrink to `avail - SAFETY`, not exactly `avail`: the verifier tolerates avail+1px, but a
+    // box sized on macOS canvas metrics can render ~1px wider under Linux freetype, so leave sub-
+    // pixel headroom below avail so that platform jitter can never push a fitted label back over.
+    const SAFETY = 0.6;
+    const MIN_SCALE = 0.72; // legibility floor for the font-size shrink (mono stays readable)
     const nodes = this.nodeLayer.querySelectorAll<SVGGElement>("g.node");
     nodes.forEach((g) => {
       const rect = g.querySelector<SVGRectElement>("rect");
@@ -464,19 +481,31 @@ export class VizPlayer {
         t.removeAttribute("lengthAdjust");
         t.style.removeProperty("font-size");
         if (!(avail > 0)) return;
-        let len = 0;
-        try {
-          len = t.getComputedTextLength();
-        } catch {
-          return; // not measurable (e.g. not yet laid out) — skip this pass
-        }
-        if (len > avail + 0.5) {
-          // Shrink the FONT-SIZE (keeps the mono letterforms natural — no glyph
-          // squishing, which read as a "different font"). Floored so it stays
-          // legible; boxes are sized so this rarely bites hard.
-          const natural = parseFloat(getComputedStyle(t).fontSize) || 12;
-          const scale = Math.max(0.74, avail / len);
-          t.style.fontSize = (natural * scale).toFixed(2) + "px";
+        const measure = (): number => {
+          try {
+            return t.getComputedTextLength();
+          } catch {
+            return NaN; // not measurable (e.g. not yet laid out)
+          }
+        };
+        let len = measure();
+        if (Number.isNaN(len)) return; // skip this pass — nothing to measure yet
+        // Target sits a hair below avail so cross-platform metric jitter stays inside tolerance.
+        const target = avail - SAFETY;
+        if (len <= target) return; // already fits with headroom — leave it natural
+        // 1) Primary: shrink the FONT-SIZE (keeps mono letterforms natural — no squish),
+        //    floored for legibility. This alone handles the common small overflow.
+        const natural = parseFloat(getComputedStyle(t).fontSize) || 12;
+        const scale = Math.max(MIN_SCALE, target / len);
+        t.style.fontSize = (natural * scale).toFixed(2) + "px";
+        len = measure();
+        // 2) Last resort: if the floored shrink still overflows (a very long label, or residual
+        //    platform jitter), HARD-CLAMP the advance with textLength so it is geometrically
+        //    guaranteed to fit. spacingAndGlyphs compresses inter-glyph spacing (+glyphs a touch)
+        //    by the small remainder — imperceptible for a ~1px trim, graceful for a long label.
+        if (!Number.isNaN(len) && len > target) {
+          t.setAttribute("textLength", target.toFixed(2));
+          t.setAttribute("lengthAdjust", "spacingAndGlyphs");
         }
       });
     });

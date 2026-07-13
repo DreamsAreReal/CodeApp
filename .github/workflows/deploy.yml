@@ -104,7 +104,13 @@ jobs:
           echo "backend/preview did not come up"; tail -n 40 "${{ runner.temp }}"/*.log; exit 1
       - name: Frontend acceptance (viz-fit)
         working-directory: app
-        run: node verify/viz-fit.mjs
+        run: |
+          # Run the harness UNCHANGED; on failure surface every ✗/FAIL/violation line as a
+          # GitHub ::error:: annotation so the exact geometry failures are visible without log-admin.
+          node verify/viz-fit.mjs 2>&1 | tee /tmp/viz-fit.log
+          c=${PIPESTATUS[0]}
+          [ "$c" -ne 0 ] && grep -aE '✗|FAIL|violation' /tmp/viz-fit.log | sed 's/^/::error::/'
+          exit $c
       # Full live-loop acceptance against the SAME live backend+preview already up above.
       # run.mjs proves the walking skeleton (home -> lesson -> grade -> schedule moves);
       # loop.mjs proves the daily-return loop + product-readiness states (first-run, session,
@@ -114,9 +120,16 @@ jobs:
       - name: Frontend live-loop acceptance (run + loop + shell)
         working-directory: app
         run: |
-          node verify/run.mjs
-          node verify/loop.mjs
-          node verify/shell.mjs
+          # Each harness runs UNCHANGED; on the first failure its ✗/FAIL/violation lines are
+          # emitted as ::error:: annotations, then the job fails with that harness's exit code.
+          for h in run loop shell; do
+            node "verify/$h.mjs" 2>&1 | tee "/tmp/$h.log"
+            c=${PIPESTATUS[0]}
+            if [ "$c" -ne 0 ]; then
+              grep -aE '✗|FAIL|violation' "/tmp/$h.log" | sed "s/^/::error::[$h] /"
+              exit $c
+            fi
+          done
       # Multi-lesson authoring/generation acceptance: new-lessons.mjs walks all wave-1 lessons
       # (segments render + animation reaches its final frame, a graded card moves the schedule,
       # zero console errors, reduced-motion static frames). It reuses the SAME live backend:5080
@@ -124,7 +137,12 @@ jobs:
       # (EVIDENCE_DIR comes from the job-level env above — writable runner temp, no hardcoded path.)
       - name: Frontend multi-lesson acceptance (new-lessons)
         working-directory: app
-        run: node verify/new-lessons.mjs
+        run: |
+          # Harness UNCHANGED; on failure surface ✗/FAIL/violation lines as ::error:: annotations.
+          node verify/new-lessons.mjs 2>&1 | tee /tmp/new-lessons.log
+          c=${PIPESTATUS[0]}
+          [ "$c" -ne 0 ] && grep -aE '✗|FAIL|violation' /tmp/new-lessons.log | sed 's/^/::error::/'
+          exit $c
 
   # ---- build the single-origin image and push to GHCR (main only) ----
   build-and-push:

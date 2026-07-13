@@ -3,7 +3,7 @@
 Дата: 2026-07-12 · Evaluator (внешний, свежий контекст) · порты :5080 (backend live) + :4173 (fresh preview)
 Раунд ≥2 — сверено с предыдущим вердиктом R-VERIFY-front-loop-viz-a11y-perf.md (2026-07-11, ПРИНЯТО).
 
-## ВЕРДИКТ: ПРИНЯТО
+## ВЕРДИКТ — ПРИНЯТО
 
 Все гейты моего чеклиста — PASS на живом стеке, измерено настоящими инструментами
 (vite build + gzip -9, Playwright/Chromium харнесы, @axe-core/playwright, Lighthouse 13.4.0,
@@ -89,3 +89,6 @@ DOCUMENT-scope axe — все PASS. Регрессий против прошло
 
 Сохранён: /private/tmp/.../scratchpad/{viz-fit,run,shell,loop,polish-flow,new-lessons}.txt,
 lh2.json (Lighthouse), FCP-проба (verify/_eval-fcp-probe.mjs, удалён после прогона).
+
+
+ВЕРДИКТ: ПРИНЯТО

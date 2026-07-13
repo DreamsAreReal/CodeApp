@@ -520,7 +520,16 @@ Maximalist-ставка: «self-hosting learning app» — приложение 
   types w/h optional) → расширить viz-fit (height-in-scale/width-ladder/grid-snap/edge-orthogonal/port-on-
   border/bend/row-baseline/rx/stroke) → нормализовать ВСЕ 6 уроков → viz-fit+harness'ы ALL GREEN +
   before/after скрины. Потом Я визуально проверяю каждую сцену + деплой. Волна 4 (Dockerfile/CI) — после.
-- 2026-07-12 — startup-фикс сработал (workflow стартует), но `test` УПАЛ на шаге viz-fit на Linux (0f58b55).
+- 2026-07-13 — CI-падение viz-fit: пользователь скинул лог. ЕДИНСТВЕННЫЙ провал = **FIT: found 4** (всё
+  остальное 0, вкл. WIDTH-ON-LADDER, OVERLAP). Т.е. боксы правильной ширины, но ТЕКСТ вылазит за бокс на 4
+  узлах. fitLabels жмёт с полом 0.74 → эти 4 настолько шире, что 74% не спасает (~35%+ overflow) → пахнет
+  FALLBACK-шрифтом: self-host, похоже, НЕ применяется на Linux (path/serving woff2 ИЛИ fonts.ready резолвится
+  до загрузки), а боксы посчитаны под настоящий шрифт → рассинхрон. МОЙ BLOCK_FONTS-тест был слаб (после
+  удаления CDN блокировать нечего = обычный локальный прогон, Linux-загрузку не проверял). НУЖЕН Linux-РЕПРО
+  (Docker), не гадать. Builder: воспроизвести viz-fit в Linux-контейнере (грузятся ли @fontsource реально?
+  computed font-family текста? 4 FIT-лейбла + overflow), root-cause (fonts-not-applied на Linux ЛИБО метрик-
+  вариация), починить, VERIFY ЗЕЛЁНЫМ В КОНТЕЙНЕРЕ (не на маке), macOS не сломать, + CI ::error::-аннотации
+  на падение харнеса (чтобы логи были видны без admin). Файл: startup-фикс (0f58b55) + self-host (9552b5e) уже в main.
   Логи 403 (нет admin). ПРИЧИНА (по коду, высокая уверенность): шрифты с Google Fonts CDN (link в index.html,
   display=swap), НЕ self-hosted, нигде не ждём document.fonts.ready. На Linux нет системного Rubik → движок
   меряет текст в fallback → боксы не той ширины → FIT/OVERLAP/LADDER падают. + реальный баг offline-first

@@ -113,3 +113,10 @@ landing-страницу. Помечено инлайн-комментарием
 ms-struct-guidelines для boxing; ms-dictionary для hashtable). Незамороженные live-URL
 (ms-il-box, ms-il-unbox, ms-dictionary) на момент аудита резолвятся HTTP 200 и сверены по live.
 CLRS-claims в hashtable — концепт, не verbatim (без ёлочек-заявки), не трогались.
+
+
+## ЧТО ПЛОХО
+- Риск №1 из VERIFY: verbatim-цитаты ссылались на ЖИВЫЕ MS-доки без снапшота → риск дрейфа.
+- maxStackSize, «the lambda expression stores them…», «Every key … must be unique») — низкий риск
+
+ВЕРДИКТ: см. построчный разбор выше
