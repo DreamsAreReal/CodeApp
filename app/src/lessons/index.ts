@@ -19,9 +19,31 @@ import { gc } from "./gc.ts";
 import { closures } from "./closures.ts";
 import { asyncAwait } from "./async-await.ts";
 import { hashtable } from "./hashtable.ts";
+import { pyNamesObjects } from "./py-names-objects.ts";
+import { S } from "../strings.ts";
 
 /** Ordered by the concept DAG (prereqs first). */
-export const LESSONS: LessonData[] = [valueVsReference, boxing, gc, closures, asyncAwait, hashtable];
+export const LESSONS: LessonData[] = [valueVsReference, boxing, gc, closures, asyncAwait, hashtable, pyNamesObjects];
+
+/**
+ * Track groups — the home path renders one SECTION per group (generic: any future
+ * track lands here with a registry line, no per-track UI code). `tracks` lists the
+ * lesson `track` ids belonging to the group; labels live in strings.ts (UI language).
+ */
+export interface TrackGroup {
+  id: string;
+  label: string;
+  /** Optional one-line section subtitle (rendered under the label). */
+  sub?: string;
+  /** Optional badge next to the label (e.g. «новый трек»). */
+  badge?: string;
+  tracks: string[];
+}
+
+export const TRACK_GROUPS: TrackGroup[] = [
+  { id: "csharp", label: S.trackCsharpLabel, tracks: ["T1", "T2"] },
+  { id: "python", label: S.trackPythonLabel, sub: S.trackPythonSub, badge: S.trackNewBadge, tracks: ["PY"] },
+];
 
 const BY_ID = new Map<string, LessonData>(LESSONS.map((l) => [l.id, l]));
 

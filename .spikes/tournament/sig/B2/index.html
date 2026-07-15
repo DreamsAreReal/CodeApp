@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python Closure Lesson - X-Ray Layer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600&family=Onest:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #F6F1E9;
+            font-family: 'Rubik', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .viewport {
+            width: 390px;
+            background: #fff;
+            border-radius: 22px;
+            box-shadow: 0 8px 24px rgba(35, 32, 27, 0.12);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .lesson-card {
+            padding: 28px 20px;
+        }
+
+        .header {
+            margin-bottom: 24px;
+        }
+
+        .title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #23201B;
+            font-family: 'Rubik', sans-serif;
+            margin-bottom: 4px;
+        }
+
+        .subtitle {
+            font-size: 13px;
+            color: #8A8377;
+            font-family: 'Onest', sans-serif;
+        }
+
+        .code-segment {
+            background: #F6F1E9;
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 20px;
+            border: 1px solid #E7DFD2;
+        }
+
+        .code-label {
+            font-size: 11px;
+            color: #8A8377;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-family: 'Onest', sans-serif;
+        }
+
+        .code-content {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #23201B;
+        }
+
+        .code-line {
+            padding: 2px 0;
+        }
+
+        .keyword { color: #F0533A; font-weight: 500; }
+        .variable { color: #23201B; }
+        .number { color: #7C8B6F; }
+        .comment { color: #8A8377; }
+
+        .diagram-container {
+            margin: 24px 0;
+            position: relative;
+            height: 360px;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+            max-width: 340px;
+        }
+
+        .caption {
+            font-size: 12px;
+            color: #23201B;
+            line-height: 1.5;
+            font-family: 'Onest', sans-serif;
+            padding-top: 12px;
+            border-top: 1px solid #E7DFD2;
+            text-align: center;
+        }
+
+        .caption-emphasis {
+            font-weight: 600;
+            color: #F0533A;
+        }
+
+        .layer-label {
+            position: absolute;
+            font-size: 11px;
+            font-weight: 600;
+            color: #8A8377;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-family: 'Onest', sans-serif;
+        }
+
+        .normal-layer-label {
+            top: 8px;
+            left: 12px;
+        }
+
+        .xray-layer-label {
+            top: 160px;
+            left: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="viewport">
+        <div class="lesson-card">
+            <!-- Header -->
+            <div class="header">
+                <h1 class="title">Closures: The Hidden Layer</h1>
+                <p class="subtitle">Python sees what code cannot reveal</p>
+            </div>
+
+            <!-- Code Segment -->
+            <div class="code-segment">
+                <div class="code-label">CODE</div>
+                <div class="code-content">
+                    <div class="code-line"><span class="keyword">def</span> <span class="variable">counter</span>():</div>
+                    <div class="code-line">&nbsp;&nbsp;<span class="variable">n</span> = <span class="number">0</span></div>
+                    <div class="code-line">&nbsp;&nbsp;<span class="keyword">def</span> <span class="variable">inc</span>(): <span class="keyword">nonlocal</span> <span class="variable">n</span>; <span class="variable">n</span> += <span class="number">1</span></div>
+                </div>
+            </div>
+
+            <!-- Diagram with X-Ray Layer -->
+            <div class="diagram-container">
+                <svg viewBox="0 0 340 340" xmlns="http://www.w3.org/2000/svg">
+                    <!-- NORMAL LAYER -->
+                    <!-- Layer label -->
+                    <text x="8" y="18" font-size="10" font-weight="600" fill="#8A8377" letter-spacing="0.5px" text-transform="uppercase">NORMAL</text>
+
+                    <!-- counter box -->
+                    <rect x="60" y="30" width="140" height="50" rx="8" fill="none" stroke="#E7DFD2" stroke-width="2"/>
+                    <text x="130" y="60" font-size="13" font-weight="500" fill="#23201B" text-anchor="middle" font-family="'JetBrains Mono', monospace">counter()</text>
+
+                    <!-- inc box -->
+                    <rect x="90" y="110" width="80" height="40" rx="8" fill="none" stroke="#E7DFD2" stroke-width="2"/>
+                    <text x="130" y="137" font-size="12" font-weight="500" fill="#23201B" text-anchor="middle" font-family="'JetBrains Mono', monospace">inc()</text>
+
+                    <!-- Arrow from counter to inc -->
+                    <defs>
+                        <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                            <polygon points="0 0, 10 3, 0 6" fill="#E7DFD2"/>
+                        </marker>
+                        <marker id="arrowhead-coral" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                            <polygon points="0 0, 10 3, 0 6" fill="#F0533A"/>
+                        </marker>
+                        <pattern id="dashed-pattern" x="0" y="0" width="8" height="4" patternUnits="userSpaceOnUse">
+                            <line x1="0" y1="2" x2="4" y2="2" stroke="#F0533A" stroke-width="2"/>
+                        </pattern>
+                    </defs>
+
+                    <path d="M 130 80 L 130 110" stroke="#E7DFD2" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+
+                    <!-- XRAY LAYER (Backdrop) -->
+                    <!-- Sage backdrop -->
+                    <rect x="30" y="180" width="280" height="130" rx="12" fill="#7C8B6F" opacity="0.12"/>
+
+                    <!-- Layer label -->
+                    <text x="8" y="205" font-size="10" font-weight="600" fill="#8A8377" letter-spacing="0.5px" text-transform="uppercase">X-RAY</text>
+
+                    <!-- Eye icon (simplified SVG line-based) -->
+                    <g transform="translate(280, 198)">
+                        <!-- Eye outline -->
+                        <ellipse cx="0" cy="0" rx="8" ry="5" fill="none" stroke="#8A8377" stroke-width="1.5"/>
+                        <!-- Pupil -->
+                        <circle cx="0" cy="0" r="2" fill="#8A8377"/>
+                    </g>
+
+                    <!-- "HIDDEN" label with pulsing box -->
+                    <text x="130" y="200" font-size="10" font-weight="600" fill="#8A8377" text-anchor="middle" text-transform="uppercase" letter-spacing="0.5px">Hidden: __closure__</text>
+
+                    <!-- Dashed frame around hidden content -->
+                    <rect x="50" y="215" width="180" height="80" rx="8" fill="none" stroke="#F0533A" stroke-width="2" stroke-dasharray="5,4"/>
+
+                    <!-- cell chip -->
+                    <rect x="70" y="235" width="100" height="28" rx="6" fill="none" stroke="#F0533A" stroke-width="1.5"/>
+                    <text x="120" y="255" font-size="11" font-weight="500" fill="#F0533A" text-anchor="middle" font-family="'JetBrains Mono', monospace">cell → n=0</text>
+
+                    <!-- Arrow from counter to cell -->
+                    <path d="M 130 80 Q 100 140 95 235" stroke="#F0533A" stroke-width="2" fill="none" marker-end="url(#arrowhead-coral)" stroke-dasharray="4,3" opacity="0.7"/>
+
+                    <!-- Arrow from inc to cell -->
+                    <path d="M 130 150 Q 160 190 170 235" stroke="#F0533A" stroke-width="2" fill="none" marker-end="url(#arrowhead-coral)" stroke-dasharray="4,3" opacity="0.7"/>
+                </svg>
+            </div>
+
+            <!-- Caption -->
+            <div class="caption">
+                Both functions hold <span class="caption-emphasis">ONE cell</span> — here it is. This is what Python tracks but your code never sees.
+            </div>
+        </div>
+    </div>
+</body>
+</html>

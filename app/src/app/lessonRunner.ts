@@ -337,16 +337,19 @@ function buildSegment(lesson: LessonData, seg: Segment, onComplete: () => void):
   card.className = "card seg";
   card.setAttribute("data-seg", seg.id);
 
+  // Language-aware chrome: Python lessons highlight Python syntax and label the
+  // bytecode panel «dis · байткод» (CPython) instead of «IL» (C# compiler output).
+  const lang = lesson.lang ?? "csharp";
   const codeHTML = seg.code
     ? '<div class="code-panel">' +
       seg.code
-        .map((line, i) => `<div class="cl-line" data-line="${i}"><span class="ln">${i + 1}</span><span>${hlCode(line)}</span></div>`)
+        .map((line, i) => `<div class="cl-line" data-line="${i}"><span class="ln">${i + 1}</span><span>${hlCode(line, lang)}</span></div>`)
         .join("") +
       "</div>"
     : "";
 
   const ilHTML = seg.il
-    ? `<div class="il-panel"><div class="il-head"><span class="il-badge">${S.ilBadge}</span><span class="il-cap">${S.ilCap}</span></div>` +
+    ? `<div class="il-panel"><div class="il-head"><span class="il-badge">${lang === "python" ? S.disBadge : S.ilBadge}</span><span class="il-cap">${lang === "python" ? S.disCap : S.ilCap}</span></div>` +
       seg.il
         .map(
           (l, i) =>

@@ -323,7 +323,31 @@
   background: var(--line);
 }
 
-/* ---- path: C# core topics ---- */
+/* ---- track sections (home path grouped by TRACK_GROUPS) ---- */
+.track-label {
+  color: var(--ink);
+}
+.track-badge {
+  flex: none;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  /* AA pair from the token sheet (same as .pill): coral-as-text on coral-tint */
+  color: var(--coral-text);
+  background: var(--coral-tint);
+  border-radius: 999px;
+  padding: 3px 8px;
+}
+.track-sub {
+  margin-top: -13px;
+  padding: 0 2px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+/* ---- path: track topics ---- */
 .path {
   display: flex;
   flex-direction: column;

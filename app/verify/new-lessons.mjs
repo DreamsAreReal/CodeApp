@@ -22,6 +22,7 @@ const EXPECT = [
   { id: "T2.M2.closures", segs: 5, ev: "CLOSURES" },
   { id: "T2.M1.async-await", segs: 5, ev: "ASYNC" },
   { id: "T2.M5.hashtable", segs: 6, ev: "HASHTABLE" },
+  { id: "PY.M1.names-objects", segs: 8, ev: "PY-NAMES" },
 ];
 
 const VIEWPORTS = { 375: { width: 375, height: 812 }, 768: { width: 768, height: 1024 }, 1440: { width: 1440, height: 900 }, 390: { width: 390, height: 844 } };
@@ -152,6 +153,36 @@ async function main() {
   // Again lands on the 1-minute learning step -> due is a short within-session step in the future.
   const htDueDeltaSec = (new Date(htReview.due).getTime() - Date.now()) / 1000;
   assert(htDueDeltaSec > 0 && htDueDeltaSec < 120, `Again re-queues hashtable/c1 due ${htDueDeltaSec.toFixed(0)}s out (< 2 min, this session)`);
+
+  // ---- the loop (Python track): PY names-objects card -> TYPE multi-line stdout -> Good -> /api/review ----
+  log("\n== PY.M1.names-objects: dis badge + TYPE the real python3.12 stdout -> ✓ -> /api/review moves schedule ==");
+  await page.evaluate(() => window.__app.openLesson("PY.M1.names-objects"));
+  await page.waitForFunction(() => window.__viz && window.__viz.ready && window.__lesson.id === "PY.M1.names-objects", { timeout: 15000 });
+  // multitrack chrome: the bytecode panel is labelled «dis · байткод», not «IL»
+  const disBadge = await page.locator(".il-badge").first().innerText();
+  assert(disBadge.toLowerCase().includes("dis"), `bytecode panel badge is dis-labelled (got "${disBadge}")`);
+  // python syntax highlighting is active (keyword def/for tokens marked in the code panel)
+  assert((await page.locator(".code-panel .tok-ty").count()) > 0, "python keywords are highlighted in the code panel");
+  const pyDueBefore = await apiGet(`/api/due`);
+  assert(pyDueBefore.items.some((i) => i.itemId === "PY.M1.names-objects/c1"), "py names-objects/c1 is due before review");
+  const pyCountBefore = pyDueBefore.count;
+  assert(await page.locator("#qTyped").count() === 1, "py card renders typed-answer input (generation)");
+  await page.locator("#qTyped").scrollIntoViewIfNeeded();
+  await page.fill("#qTyped", "['a']\n['a', 'b']"); // the REAL python3.12 stdout (census-log.txt)
+  await page.click("#qCheck");
+  await page.waitForSelector("#qVerdict", { state: "visible", timeout: 8000 });
+  const pyAnswer = await page.evaluate(() => window.__lastAnswer);
+  assert(pyAnswer.correct === true, "typing the exact python3.12 stdout is graded objectively correct");
+  assert(await page.locator('.grade-btn[data-g="3"].preselected').count() === 1, "correct -> Good (3) pre-selected");
+  await page.click('.grade-btn[data-g="3"]');
+  await page.waitForFunction(() => window.__lastReview && window.__lastReview.itemId === "PY.M1.names-objects/c1", { timeout: 8000 });
+  const pyReview = await page.evaluate(() => window.__lastReview);
+  log("  py review response: " + JSON.stringify(pyReview));
+  assert(pyReview.grade === "Good", "py grade recorded as Good");
+  await page.screenshot({ path: `${EV}/PY-NAMES/390-graded.png`, fullPage: false });
+  const pyDueAfter = await apiGet(`/api/due`);
+  assert(pyDueAfter.count === pyCountBefore - 1, `due count dropped ${pyCountBefore} -> ${pyDueAfter.count}`);
+  assert(!pyDueAfter.items.some((i) => i.itemId === "PY.M1.names-objects/c1"), "py names-objects/c1 left the due queue (schedule moved)");
 
   // ---- reduced-motion static final frames for each new lesson ----
   log("\n== reduced-motion: static final frames ==");

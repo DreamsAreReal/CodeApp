@@ -1,0 +1,10 @@
+small-int cache evidence for segment s7 — Python 3.12.13
+source:
+print(int("256") is int("256"))
+print(int("257") is int("257"))
+---- run 1 ----
+True
+False
+---- run 2 ----
+True
+False

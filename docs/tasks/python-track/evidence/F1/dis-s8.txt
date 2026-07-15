@@ -1,0 +1,13 @@
+dis evidence for segment s8 — Python 3.12.13
+source file:
+x = 257
+y = x
+---- python3.12 -m dis dis_s8.py ----
+  0           0 RESUME                   0
+
+  1           2 LOAD_CONST               0 (257)
+              4 STORE_NAME               0 (x)
+
+  2           6 LOAD_NAME                0 (x)
+              8 STORE_NAME               1 (y)
+             10 RETURN_CONST             1 (None)

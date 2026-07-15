@@ -276,6 +276,9 @@
   color: var(--muted);
   font-style: italic;
 }
+.tok-str {
+  color: var(--amber-text);
+}
 
 /* ---- IL bytecode panel (machine level) ---- */
 .il-panel {

@@ -18,7 +18,8 @@
  */
 import { api } from "../api/client.ts";
 import type { DueResponse, LessonSummary, ProgressResponse, StatsResponse } from "../api/types.ts";
-import { LESSONS } from "../lessons/index.ts";
+import { LESSONS, TRACK_GROUPS } from "../lessons/index.ts";
+import type { TrackGroup } from "../lessons/index.ts";
 import type { LessonData, LessonIcon } from "../lessons/types.ts";
 import { ICON } from "../engine/index.ts";
 import { S, plural } from "../strings.ts";
@@ -207,10 +208,7 @@ export async function renderHome(root: HTMLElement, navToken: number = router.na
     <div class="home-body">
       <div id="heroSlot">${greetBlock(state)}${heroFor(state, heroCtx)}</div>
 
-      <div class="sec-label">${S.pathLabel}</div>
-      <div class="path" id="path">
-        ${rows.map((r, i) => topicRow(r, r === heroRow && state !== "first-run", i, knownDue > 0)).join("")}
-      </div>
+      ${trackSections(rows, heroRow, state, knownDue)}
 
       <div class="notice" id="conn" style="text-align:center">${connLabel} · <b id="connDue">${S.heroCardsDue(knownDue)}</b></div>
     </div>
@@ -491,6 +489,31 @@ function streakLine(streakDays: number): string {
     text = S.streakGrow(streakDays);
   }
   return `<div class="${cls}">${STREAK_ICON}<span>${text}</span></div>`;
+}
+
+/**
+ * The lesson path, grouped into one visible SECTION per track group (C# and Python
+ * side by side, both always visible — tournament winner A1: stacked sections, no
+ * hiding/collapsing). Each section = label (+ optional badge / subtitle) + its rows.
+ * Row animation delays run through a single global index so the whole path cascades.
+ */
+function trackSections(rows: LessonRow[], heroRow: LessonRow, state: HomeState, knownDue: number): string {
+  let idx = 0;
+  const section = (g: TrackGroup): string => {
+    const groupRows = rows.filter((r) => g.tracks.includes(r.lesson.track));
+    if (groupRows.length === 0) return "";
+    const badge = g.badge ? `<span class="track-badge">${esc(g.badge)}</span>` : "";
+    const sub = g.sub ? `<div class="track-sub">${esc(g.sub)}</div>` : "";
+    const body = groupRows
+      .map((r) => topicRow(r, r === heroRow && state !== "first-run", idx++, knownDue > 0))
+      .join("");
+    return (
+      `<div class="sec-label track-label" data-track-group="${esc(g.id)}">${esc(g.label)}${badge}</div>` +
+      sub +
+      `<div class="path" data-track-path="${esc(g.id)}">${body}</div>`
+    );
+  };
+  return TRACK_GROUPS.map(section).join("");
 }
 
 function topicRow(r: LessonRow, active: boolean, index: number, hasSession: boolean): string {

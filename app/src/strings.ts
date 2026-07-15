@@ -12,17 +12,23 @@ export const S = {
   aboutTitle: "Ежедневный тренажёр",
 
   // ---- home ----
+  // Track-neutral greet copy: home now shows several track sections (C#, Python, …),
+  // so the subtitle speaks about the daily mechanism-refresh loop, not one language.
   greetTitle: "С возвращением",
-  greetSub: "Продолжим фундамент C# — сегодня закрепим, где живёт память и как работают типы.",
+  greetSub: "Продолжим — сегодня закрепим механизмы, на которых стоят твои инструменты.",
   // greet subtitle when the daily work is already done / nothing is due (kept coherent
   // with the hero below it, so the screen never says "продолжим" over "всё повторено").
-  greetSubClear: "Фундамент C# под рукой каждый день — сегодняшняя часть уже позади.",
+  greetSubClear: "Фундамент под рукой каждый день — сегодняшняя часть уже позади.",
   heroKicker: "Продолжить сегодня",
   heroContinue: "Продолжить",
   heroCardsDue: (n: number) => `${n} ${plural(n, "карточка", "карточки", "карточек")} к повтору`,
   heroAllDone: "На сегодня всё повторено",
   heroMinutes: (n: number) => `~${n} мин`,
-  pathLabel: "Путь · Ядро C#",
+  // ---- track sections (home path is grouped by TRACK_GROUPS, lessons/index.ts) ----
+  trackCsharpLabel: "Фундамент C#",
+  trackPythonLabel: "Python · фундамент",
+  trackPythonSub: "6 механизмов, из которых сделаны твои инструменты",
+  trackNewBadge: "новый трек",
   // quiet header for the hero's topic-progress bar — makes clear it counts course topics
   // (a longer-horizon metric), not today's cards-to-review
   pathTopicsLabel: "Темы курса",
@@ -193,8 +199,11 @@ export const S = {
   stepFmt: (n: number, t: number) => `${n}/${t}`,
   predictTitle: "Сначала предскажи",
   predictShow: "Показать шаг",
+  // bytecode-panel badge + caption, per lesson language (IL for C#, dis for Python)
   ilBadge: "IL",
   ilCap: "эмитит компилятор",
+  disBadge: "dis · байткод",
+  disCap: "исполняет CPython",
   play: "Проиграть",
   pause: "Пауза",
   back: "Назад",

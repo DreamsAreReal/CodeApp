@@ -98,9 +98,15 @@ export interface Takeaway {
   v: string;
 }
 
+/** Language of the lesson's code panels. Drives syntax highlighting and the
+ *  bytecode-panel badge («IL» for C#, «dis · байткод» for Python). */
+export type LessonLang = "csharp" | "python";
+
 export interface LessonData {
   id: string; // T<track>.M<module>.<slug> — matches backend lessonId
   track: string;
+  /** Code language of the lesson. Default (absent) = "csharp" — existing lessons untouched. */
+  lang?: LessonLang;
   module: string;
   title: string;
   /** Short kicker shown above the lesson title. */

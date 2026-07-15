@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python Lesson: Reference Counting</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600&family=Onest:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #F6F1E9;
+            font-family: 'Onest', sans-serif;
+            color: #23201B;
+            padding: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .viewport {
+            width: 390px;
+            background: #F6F1E9;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 18px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(35, 32, 27, 0.08);
+        }
+
+        .code-block {
+            background: #F6F1E9;
+            border-left: 4px solid #F0533A;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #23201B;
+        }
+
+        .code-line {
+            display: flex;
+            align-items: baseline;
+            margin-bottom: 6px;
+        }
+
+        .code-line.deleted {
+            opacity: 0.4;
+            text-decoration: line-through;
+        }
+
+        .code-line:last-child {
+            margin-bottom: 0;
+        }
+
+        .code-num {
+            color: #8A8377;
+            margin-right: 12px;
+            min-width: 20px;
+            text-align: right;
+        }
+
+        .code-text {
+            color: #23201B;
+        }
+
+        .code-var {
+            color: #F0533A;
+            font-weight: 500;
+        }
+
+        .diagram-container {
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: center;
+        }
+
+        svg {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .ref-badge {
+            font-family: 'Rubik', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            fill: #fff;
+            text-anchor: middle;
+            dominant-baseline: middle;
+        }
+
+        .ref-badge-bg {
+            rx: 12;
+            ry: 12;
+        }
+
+        .zone-label {
+            font-family: 'Onest', sans-serif;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            fill: #8A8377;
+        }
+
+        .name-slot {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            font-weight: 500;
+            fill: #23201B;
+        }
+
+        .name-slot.deleted {
+            fill: #8A8377;
+            opacity: 0.5;
+        }
+
+        .arrow-line {
+            stroke: #E7DFD2;
+            stroke-width: 2;
+            fill: none;
+        }
+
+        .arrow-head {
+            fill: #E7DFD2;
+        }
+
+        .list-box {
+            stroke: #E7DFD2;
+            stroke-width: 2;
+            fill: #f9f7f3;
+        }
+
+        .list-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            fill: #8A8377;
+        }
+
+        .list-content {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            fill: #23201B;
+        }
+
+        .scale-container {
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid #E7DFD2;
+        }
+
+        .scale-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #8A8377;
+            margin-bottom: 12px;
+        }
+
+        .scale-bar {
+            height: 4px;
+            background: linear-gradient(to right, #F0533A, #E7DFD2);
+            border-radius: 2px;
+            position: relative;
+            margin-bottom: 12px;
+        }
+
+        .scale-marker {
+            position: absolute;
+            top: 50%;
+            transform: translateX(-50%);
+            width: 12px;
+            height: 12px;
+            background: #F0533A;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            box-shadow: 0 1px 3px rgba(35, 32, 27, 0.12);
+        }
+
+        .scale-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: #8A8377;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .caption {
+            margin-top: 20px;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #23201B;
+            font-weight: 500;
+        }
+
+        .caption-highlight {
+            color: #F0533A;
+            font-weight: 600;
+        }
+
+        @keyframes pulse-refs {
+            0% {
+                fill: #F0533A;
+            }
+            50% {
+                fill: #ff6b52;
+            }
+            100% {
+                fill: #F0533A;
+            }
+        }
+
+        .ref-badge-bg.updating {
+            animation: pulse-refs 0.6s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="viewport">
+        <div class="card">
+            <!-- Code Block -->
+            <div class="code-block">
+                <div class="code-line" id="line1">
+                    <span class="code-num">1</span>
+                    <span class="code-text"><span class="code-var">a</span> = [1,2]</span>
+                </div>
+                <div class="code-line" id="line2">
+                    <span class="code-num">2</span>
+                    <span class="code-text"><span class="code-var">b</span> = <span class="code-var">a</span></span>
+                </div>
+                <div class="code-line" id="line3">
+                    <span class="code-num">3</span>
+                    <span class="code-text"><span class="code-var">del a</span></span>
+                </div>
+            </div>
+
+            <!-- Diagram -->
+            <div class="diagram-container">
+                <svg width="340" height="280" viewBox="0 0 340 280">
+                    <!-- NAMES Zone -->
+                    <text x="20" y="20" class="zone-label">Names</text>
+
+                    <!-- Name Slot A (before del) -->
+                    <rect x="20" y="35" width="80" height="40" rx="6" ry="6" fill="#f9f7f3" stroke="#E7DFD2" stroke-width="1"/>
+                    <text x="60" y="62" class="name-slot" id="name-a">a</text>
+
+                    <!-- Name Slot A (after del, fading) -->
+                    <rect x="20" y="35" width="80" height="40" rx="6" ry="6" fill="none" stroke="#E7DFD2" stroke-width="1" stroke-dasharray="3,3" id="name-a-deleted" style="display: none;"/>
+                    <text x="60" y="62" class="name-slot deleted" id="name-a-text" style="display: none;">a</text>
+
+                    <!-- Arrow A to Object -->
+                    <line x1="100" y1="55" x2="160" y2="90" class="arrow-line" id="arrow-a"/>
+                    <polygon points="160,90 154,85 158,95" class="arrow-head" id="arrow-a-head"/>
+
+                    <!-- Name Slot B -->
+                    <rect x="20" y="90" width="80" height="40" rx="6" ry="6" fill="#f9f7f3" stroke="#E7DFD2" stroke-width="1"/>
+                    <text x="60" y="117" class="name-slot">b</text>
+
+                    <!-- Arrow B to Object -->
+                    <line x1="100" y1="110" x2="160" y2="110" class="arrow-line"/>
+                    <polygon points="160,110 154,105 158,115" class="arrow-head"/>
+
+                    <!-- OBJECTS Zone -->
+                    <text x="180" y="20" class="zone-label">Objects</text>
+
+                    <!-- List Object -->
+                    <rect x="160" y="75" width="150" height="70" rx="8" ry="8" class="list-box"/>
+                    <text x="175" y="95" class="list-label">list (id: 0x...)</text>
+                    <text x="175" y="115" class="list-content">[1, 2]</text>
+
+                    <!-- Ref Badge -->
+                    <rect x="280" y="70" width="60" height="40" class="ref-badge-bg" id="ref-badge-bg" style="fill: #F0533A;"/>
+                    <text x="310" y="88" class="ref-badge" id="ref-count">refs 2</text>
+
+                    <!-- Arrow Down Indicator (hidden until update) -->
+                    <text x="325" y="120" font-size="18" fill="#F0533A" font-weight="600" text-anchor="middle" id="arrow-down" style="display: none; opacity: 0;">↓</text>
+
+                    <!-- Scale Bar -->
+                    <text x="20" y="170" class="zone-label">Reference Lifecycle</text>
+
+                    <rect x="20" y="185" width="300" height="4" rx="2" ry="2" fill="url(#gradient-scale)"/>
+                    <defs>
+                        <linearGradient id="gradient-scale" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style="stop-color:#F0533A;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#E7DFD2;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+
+                    <!-- Scale Marker (initial at refs=2) -->
+                    <circle cx="240" cy="189" r="6" fill="#F0533A" stroke="#fff" stroke-width="2" id="scale-marker"/>
+
+                    <!-- Scale Labels -->
+                    <text x="20" y="210" font-size="10" fill="#8A8377" font-family="JetBrains Mono">refs = 2</text>
+                    <text x="280" y="210" font-size="10" fill="#8A8377" font-family="JetBrains Mono" text-anchor="end">refs = 0 → dies</text>
+                </svg>
+            </div>
+
+            <!-- Caption -->
+            <div class="caption">
+                <span class="caption-highlight">del</span> removes the NAME, but the object stays alive as long as <span class="caption-highlight">refs > 0</span>. When <span class="caption-highlight">b</span> vanishes too, Python's garbage collector removes the list.
+            </div>
+
+            <!-- Interactive Button -->
+            <button id="trigger-del" style="
+                margin-top: 20px;
+                width: 100%;
+                padding: 12px;
+                background: #F0533A;
+                color: #fff;
+                border: none;
+                border-radius: 14px;
+                font-size: 14px;
+                font-weight: 600;
+                font-family: 'Onest', sans-serif;
+                cursor: pointer;
+                transition: background 0.2s;
+            " onmouseover="this.style.background='#e0442e'" onmouseout="this.style.background='#F0533A'">
+                Execute: del a
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let state = 'initial'; // 'initial' or 'after-del'
+
+        const button = document.getElementById('trigger-del');
+        const refBadgeBg = document.getElementById('ref-badge-bg');
+        const refCount = document.getElementById('ref-count');
+        const arrowA = document.getElementById('arrow-a');
+        const arrowAHead = document.getElementById('arrow-a-head');
+        const nameABox = document.querySelector('[id="line1"]');
+        const nameADeleted = document.getElementById('name-a-deleted');
+        const nameAText = document.getElementById('name-a-text');
+        const scaleMarker = document.getElementById('scale-marker');
+        const arrowDown = document.getElementById('arrow-down');
+
+        button.addEventListener('click', () => {
+            if (state === 'initial') {
+                // Execute: del a
+                state = 'after-del';
+
+                // Cross out line 1 (del a)
+                document.getElementById('line3').classList.add('deleted');
+
+                // Hide name slot a, show deleted state
+                document.querySelector('[id="line1"]').style.opacity = '0.4';
+                document.querySelector('[id="line1"]').style.textDecoration = 'line-through';
+
+                // Hide arrow from a
+                arrowA.style.display = 'none';
+                arrowAHead.style.display = 'none';
+
+                // Pulse ref badge
+                refBadgeBg.classList.add('updating');
+                setTimeout(() => refBadgeBg.classList.remove('updating'), 600);
+
+                // Update ref count: 2 -> 1
+                refCount.textContent = 'refs 1';
+
+                // Move scale marker from 240 to 160 (refs 2 to refs 1)
+                scaleMarker.style.transition = 'cx 0.6s ease-out';
+                scaleMarker.setAttribute('cx', '160');
+
+                // Show arrow down
+                arrowDown.style.display = 'block';
+                arrowDown.style.animation = 'pulse-refs 0.6s ease-in-out';
+
+                // Update button
+                button.textContent = 'del b (next step)';
+                button.disabled = true;
+                button.style.opacity = '0.6';
+                button.style.cursor = 'not-allowed';
+            }
+        });
+    </script>
+</body>
+</html>
