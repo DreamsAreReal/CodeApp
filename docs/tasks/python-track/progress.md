@@ -1,9 +1,13 @@
 # Progress — Python-трек, волна 1 (builder-журнал)
 
-## 2026-07-16 · Такт 2b: F2–F4 + приоритетный фикс Linux FIT (CI run 29446600520)
+## 2026-07-16 · Такт 2b: F2–F6 + приоритетный фикс Linux FIT (CI run 29446600520)
 
 **Сделано.** F2 py-collections-hash (5 сегм, 3 exec-карты) · F3 py-args-unpacking (4 сегм,
-3 exec-карты) · F4 py-closures-scope (6 сегм, рентген __closure__ + dis, 3 exec-карты).
+3 exec-карты) · F4 py-closures-scope (6 сегм, рентген __closure__ + dis, 3 exec-карты) ·
+F5 py-decorators (флагман: 8 сегм, dis @ = CALL+STORE_NAME, refutation «дом ≠ кирпич»,
+4 exec-карты) · F6 py-generators (6 сегм, рентген gi_frame, ЗАМЕР 38.4 MB vs 200 Б,
+4 exec-карты). Итог волны: 17 карточек, ВСЕ exec (MCQ 0%); лесенка predict→modify в
+каждом уроке. МАЙЛСТОУН M2 достигнут — СТОП, жду оценщика.
 Фикс CI: PY.M3 s4 `[1, 2, 3, 4]` len=113.34>110 на Linux → компактные лейблы + явные
 w-ступени по ВСЕМ PY-урокам (M1–M4); новая проба verify/_fit-margins.mjs печатает
 НАТУРАЛЬНЫЕ (без fitLabels-шринка) запасы — после фикса все PY-лейблы ≥6px на маке.

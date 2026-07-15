@@ -27,6 +27,7 @@ const EXPECT = [
   { id: "PY.M3.args-unpacking", segs: 4, ev: "PY-ARGS" },
   { id: "PY.M4.closures-scope", segs: 6, ev: "PY-CLOS" },
   { id: "PY.M5.decorators", segs: 8, ev: "PY-DECO" },
+  { id: "PY.M6.generators", segs: 6, ev: "PY-GEN" },
 ];
 
 const VIEWPORTS = { 375: { width: 375, height: 812 }, 768: { width: 768, height: 1024 }, 1440: { width: 1440, height: 900 }, 390: { width: 390, height: 844 } };

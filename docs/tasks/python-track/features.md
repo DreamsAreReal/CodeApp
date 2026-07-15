@@ -162,9 +162,19 @@ mutable default (кросс-ссылка на M1 внутри трека).
 Зачем: yield = setup/teardown фикстур; «пауза кадра» — невидимое ядро.
 Что: PY.M6: ленивость (c08), замороженный кадр gi_frame (спайк RS-02), исчерпание (c09),
 StopIteration (c10), фикстура yield-паттерном, genexpr vs list (память — замер python3.12).
-Приёмка: [ ] ≥5 сегментов, кадр-«заморозка» анимирован; [ ] карточка; [ ] общая
+Приёмка:
+- [x] 6 сегментов: ленивый старт (GEN_CREATED) · рентген gi_frame (xray-зона: f_locals
+      {'n': 41}, IP; спайк f6_gi_frame_out.txt ×2) · StopIteration с predict-гейтом ·
+      yield-фикстура (teardown гаснет при return; GeneratorExit-киккер A-3) · память
+      ЗАМЕРЕНА: список 1M ≈ 38.4 MB vs genexpr 200 Б (f6_genexpr_memory_out.txt ×2,
+      «~30 MB» из md НЕ цитируется — A-5) · одноразовость с predict-гейтом
+- [x] карточки: c1 predict (created/start/1/middle/2), c2 predict (5\n0), c3 predict
+      (1\nStopIteration), c4 MODIFY (материализация: 5\n5) — все exec, ×2 в census-log.txt
+- [x] общая приёмка: ★-цитата C-6 дословно, только `at` (фикс: gate s4 переехал в test-band —
+      zone-overflow пойман viz-fit), fit-margins чисто, seed синхронен, 0 конс. ошибок;
+      харнессы ALL GREEN, dotnet 65/65; скрины evidence/F6/
 Проверка: harness-набор
-Статус: todo
+Статус: self-pass
 
 ### F7 — Урок py-context-managers [M3]
 Зачем: with = httpx.Client/testcontainers/allure.step; teardown-гарантии.

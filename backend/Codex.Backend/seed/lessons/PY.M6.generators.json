@@ -1,0 +1,118 @@
+{
+  "id": "PY.M6.generators",
+  "track": "PY",
+  "module": "M6.1",
+  "title": "yield: пауза, а не return",
+  "prereqs": ["PY.M4.closures-scope"],
+  "version": "1.0.0",
+  "volatility": "stable",
+  "sourceSnapshot": { "python": "3.12.13" },
+  "reviewBy": "2026-10-01",
+  "status": "published",
+
+  "depth": {
+    "intuition": [
+      { "id": "i1", "text": "Вызов генераторной функции не исполняет тело — создаётся объект; каждый next() бежит до очередного yield и замораживает кадр.", "source": "py-glossary-gen", "status": "fact" }
+    ],
+    "mechanics": [
+      { "id": "m1", "text": "Заморожено всё состояние кадра: локальные переменные, instruction pointer, стек вычислений — доступно рентгеном g.gi_frame.f_locals.", "source": "py-yield-expr", "status": "fact" },
+      { "id": "m2", "text": "Конец тела — StopIteration; for/sum ловят его сами, ручной next() — нет. Генератор одноразов: второй sum(g) → 0.", "source": "py-yield-expr", "status": "fact" },
+      { "id": "m3", "text": "Yield-фикстура pytest: setup до yield, тест на паузе кадра, код после yield — teardown (выполнится и при падении); замена yield → return молча удаляет cleanup.", "source": "py-yield-expr", "status": "fact" }
+    ],
+    "spec": [
+      { "id": "s1", "text": "«By suspended, we mean that all local state is retained, including the current bindings of local variables, the instruction pointer, the internal evaluation stack, and the state of any exception handling.» (Reference, дословно)", "source": "py-yield-expr", "status": "fact" }
+    ]
+  },
+  "edgeCases": [
+    { "id": "e1", "text": "Замер python3.12: список 1M квадратов ≈ 38.4 MB (контейнер 8 448 728 Б + int-объекты), genexpr-объект — 200 Б.", "source": "py-glossary-gen" },
+    { "id": "e2", "text": "При закрытии генератора внутрь влетает GeneratorExit (ветка BaseException) — голый except: в teardown ломает протокол закрытия фикстур.", "source": "py-exc-hierarchy" }
+  ],
+  "misconceptions": [
+    { "wrong": "yield — это такой return.", "correction": "return завершает функцию; yield ставит её на паузу с полным сохранением кадра. В фикстуре замена yield → return молча удаляет teardown.", "source": "py-yield-expr" },
+    { "wrong": "Генератор можно пройти дважды.", "correction": "Он одноразов: состояние живёт в кадре; второй проход получает исчерпанный итератор (sum → 0). Два прохода — материализуй список.", "source": "py-glossary-gen" }
+  ],
+  "rationale": { "id": "r1", "text": "Одна модель «пауза кадра» объясняет ленивость, исчерпание, StopIteration, teardown yield-фикстур и константную память потоков — и является мостом к корутинам async-урока.", "source": "py-yield-expr" },
+
+  "sources": [
+    { "id": "py-yield-expr", "kind": "python-docs", "url": "https://docs.python.org/3/reference/expressions.html#yield-expressions", "section": "Yield expressions", "date": "2026-07-15", "retrieved": "2026-07-15" },
+    { "id": "py-glossary-gen", "kind": "python-docs", "url": "https://docs.python.org/3/glossary.html#term-generator", "section": "Glossary · generator", "date": "2026-07-15", "retrieved": "2026-07-15" },
+    { "id": "py-exc-hierarchy", "kind": "python-docs", "url": "https://docs.python.org/3/library/exceptions.html#exception-hierarchy", "section": "Exception hierarchy", "date": "2026-07-15", "retrieved": "2026-07-15" }
+  ],
+  "identifiers": [
+    { "symbol": "yield", "kind": "keyword", "minVersion": "3.0" },
+    { "symbol": "generator.gi_frame", "kind": "attribute", "minVersion": "3.0" },
+    { "symbol": "StopIteration", "kind": "exception", "minVersion": "3.0" }
+  ],
+
+  "viz": {
+    "model": "frozen-frame",
+    "renderer": "svg",
+    "interaction": "responding",
+    "entities": [
+      { "id": "g2.gen", "zone": "g2", "label": "generator" },
+      { "id": "frame.locals", "zone": "frame", "label": "n = 41" }
+    ],
+    "trace": [
+      { "op": "annotate", "target": "g2.gen", "caption": "next() бежит до yield и замораживает кадр", "signal": "g2.gen" },
+      { "op": "highlight", "target": "frame.locals", "caption": "gi_frame.f_locals: локальные живы между next()", "signal": "frame.locals" }
+    ]
+  },
+
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "gen с двумя yield и print-ами; g = gen(); print(\"created\"); print(next(g)); print(next(g)) — что напечатает (пять строк)?",
+      "code": "def gen():\n    print(\"start\")\n    yield 1\n    print(\"middle\")\n    yield 2\n\ng = gen()\nprint(\"created\")\nprint(next(g))\nprint(next(g))",
+      "expectedOutput": "created\nstart\n1\nmiddle\n2",
+      "verify": "execute",
+      "sourceRefs": ["py-glossary-gen", "py-yield-expr"],
+      "distractors": ["start\ncreated\n1\nmiddle\n2", "created\n1\n2"],
+      "fsrsSeed": { "desiredRetention": 0.9 }
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "g = (x * x for x in range(3)); print(sum(g)); print(sum(g)) — что напечатают обе строки?",
+      "code": "g = (x * x for x in range(3))\nprint(sum(g))\nprint(sum(g))",
+      "expectedOutput": "5\n0",
+      "verify": "execute",
+      "sourceRefs": ["py-glossary-gen"],
+      "distractors": ["5\n5", "5\nStopIteration"],
+      "fsrsSeed": { "desiredRetention": 0.9 }
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "def gen(): yield 1; g = gen(); print(next(g)); второй next(g) под try/except StopIteration — что напечатают обе строки?",
+      "code": "def gen():\n    yield 1\n\ng = gen()\nprint(next(g))\ntry:\n    next(g)\nexcept StopIteration:\n    print(\"StopIteration\")",
+      "expectedOutput": "1\nStopIteration",
+      "verify": "execute",
+      "sourceRefs": ["py-yield-expr"],
+      "distractors": ["1\nNone", "1\n1"],
+      "fsrsSeed": { "desiredRetention": 0.9 }
+    },
+    {
+      "id": "c4",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Код c2 починили материализацией: g = [x * x for x in range(3)]; print(sum(g)); print(sum(g)) — что напечатают теперь?",
+      "code": "g = [x * x for x in range(3)]\nprint(sum(g))\nprint(sum(g))",
+      "expectedOutput": "5\n5",
+      "verify": "execute",
+      "sourceRefs": ["py-glossary-gen"],
+      "distractors": ["5\n0", "0\n0"],
+      "fsrsSeed": { "desiredRetention": 0.9 }
+    }
+  ],
+
+  "verification": {
+    "gates": { "G-SCHEMA": "pass", "G-CITE": "pass", "G-EXEC-PY": "pass", "G-VIZ": "pass" },
+    "citationCoverage": 1.0,
+    "execLog": "docs/tasks/python-track/evidence/py-cards/census-log.txt",
+    "reviewDate": "2026-07-15"
+  }
+}
