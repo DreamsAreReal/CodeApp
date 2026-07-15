@@ -107,9 +107,17 @@ list-ключа — спайк c22), устройство dict (buckets/chain-п
 Зачем: *args/**kwargs — везде в фикстурах/декораторах; пререквизит decorators.
 Что: PY.M3: позиционные/именованные, *args/**kwargs, распаковка вызова, порядок параметров,
 mutable default (кросс-ссылка на M1 внутри трека).
-Приёмка: [ ] ≥3 сегмента; [ ] карточка predict-output; [ ] общая приёмка
+Приёмка:
+- [x] 4 сегмента (упаковка в tuple/dict; find_element(*locator); порядок сигнатуры с
+      SyntaxError-гейтом; first,*rest = list по PEP 3132); mutable default — edgeCase-кросс
+- [x] карточки: c1 predict (`1 (2, 3) {'x': 4}`), c2 modify (тот же вызов через */**),
+      c3 predict (`1\n[2, 3, 4]`) — все exec, python3.12 ×2 в census-log.txt
+- [x] общая приёмка: цитаты дословно (Tutorial controlflow + PEP 3132, URL фетч-проверены),
+      Q3-мисконцепция (*locator ≠ магия Selenium), только `at`, seed синхронен, 0 конс. ошибок;
+      харнессы viz-fit/new-lessons/verify/shell/loop/multicard ALL GREEN, dotnet 65/65;
+      скрины evidence/F3/
 Проверка: harness-набор
-Статус: todo
+Статус: self-pass
 
 ### F4 — Урок py-closures-scope [M2] [золотой путь]
 Зачем: замыкания = основа декораторов/фикстур; собес-ловушка late binding.

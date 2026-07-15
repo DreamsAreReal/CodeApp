@@ -1,0 +1,106 @@
+{
+  "id": "PY.M3.args-unpacking",
+  "track": "PY",
+  "module": "M3.1",
+  "title": "*args, **kwargs и распаковка",
+  "prereqs": ["PY.M1.names-objects"],
+  "version": "1.0.0",
+  "volatility": "stable",
+  "sourceSnapshot": { "python": "3.12.13" },
+  "reviewBy": "2026-10-01",
+  "status": "published",
+
+  "depth": {
+    "intuition": [
+      { "id": "i1", "text": "Лишние позиционные аргументы упаковываются в tuple (*args), лишние именованные — в dict (**kwargs); * и ** в вызове распаковывают контейнеры обратно в аргументы.", "source": "py-tut-args", "status": "fact" }
+    ],
+    "mechanics": [
+      { "id": "m1", "text": "find_element(*locator) — обычная распаковка кортежа в позиционные аргументы, не синтаксис Selenium.", "source": "py-tut-unpack", "status": "fact" },
+      { "id": "m2", "text": "Порядок параметров один: позиционные → *args → keyword-only → **kwargs; нарушение — SyntaxError на компиляции.", "source": "py-tut-args", "status": "fact" },
+      { "id": "m3", "text": "first, *rest = ... собирает в rest СПИСОК (PEP 3132); *args в сигнатуре — кортеж.", "source": "pep3132", "status": "fact" }
+    ],
+    "spec": [
+      { "id": "s1", "text": "«These arguments will be wrapped up in a tuple.» (Tutorial, дословно)", "source": "py-tut-args", "status": "fact" }
+    ]
+  },
+  "edgeCases": [
+    { "id": "e1", "text": "Параметры после *args — keyword-only: передать их позиционно нельзя.", "source": "py-tut-args" },
+    { "id": "e2", "text": "*rest при присваивании — list, *args в сигнатуре — tuple: рифма-ловушка собеса.", "source": "pep3132" }
+  ],
+  "misconceptions": [
+    { "wrong": "*locator в find_element(*locator) — специальный синтаксис Selenium.", "correction": "Это распаковка языка: * раскрывает список/кортеж в позиционные аргументы, ** — словарь в именованные; работает в любом вызове.", "source": "py-tut-unpack" }
+  ],
+  "rationale": { "id": "r1", "text": "Пара «упаковка в кадре / распаковка в вызове» — фундамент универсальных wrapper-ов: def wrapper(*args, **kwargs) пробрасывает любую сигнатуру — на этом стоят декораторы и фикстуры следующих уроков.", "source": "py-tut-args" },
+
+  "sources": [
+    { "id": "py-tut-args", "kind": "python-docs", "url": "https://docs.python.org/3/tutorial/controlflow.html#keyword-arguments", "section": "More on Defining Functions", "date": "2026-07-15", "retrieved": "2026-07-15" },
+    { "id": "py-tut-unpack", "kind": "python-docs", "url": "https://docs.python.org/3/tutorial/controlflow.html#unpacking-argument-lists", "section": "Unpacking Argument Lists", "date": "2026-07-15", "retrieved": "2026-07-15" },
+    { "id": "pep3132", "kind": "pep", "url": "https://peps.python.org/pep-3132/", "section": "Extended Iterable Unpacking", "date": "2026-07-15", "retrieved": "2026-07-15" },
+    { "id": "py-defaults", "kind": "python-docs", "url": "https://docs.python.org/3/tutorial/controlflow.html#default-argument-values", "section": "Default argument values", "date": "2026-07-15", "retrieved": "2026-07-15" }
+  ],
+  "identifiers": [
+    { "symbol": "*args", "kind": "syntax", "minVersion": "3.0" },
+    { "symbol": "**kwargs", "kind": "syntax", "minVersion": "3.0" },
+    { "symbol": "starred assignment", "kind": "syntax", "minVersion": "3.0" }
+  ],
+
+  "viz": {
+    "model": "pack-unpack",
+    "renderer": "svg",
+    "interaction": "responding",
+    "entities": [
+      { "id": "call.v2", "zone": "call", "label": "2" },
+      { "id": "frame.args", "zone": "frame", "label": "args = (2, 3)" }
+    ],
+    "trace": [
+      { "op": "highlight", "target": "call.v2", "caption": "лишний позиционный аргумент", "signal": "call.v2" },
+      { "op": "annotate", "target": "frame.args", "caption": "упакован в tuple args", "signal": "frame.args" }
+    ]
+  },
+
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "def f(a, *args, **kwargs): print(a, args, kwargs); f(1, 2, 3, x=4) — что напечатает?",
+      "code": "def f(a, *args, **kwargs):\n    print(a, args, kwargs)\n\nf(1, 2, 3, x=4)",
+      "expectedOutput": "1 (2, 3) {'x': 4}",
+      "verify": "execute",
+      "sourceRefs": ["py-tut-args"],
+      "distractors": ["1 [2, 3] {'x': 4}", "1 (2, 3, 4) {}"],
+      "fsrsSeed": { "desiredRetention": 0.9 }
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Тот же f, но вызов через распаковку: pos = [2, 3]; kw = {\"x\": 4}; f(1, *pos, **kw) — что напечатает?",
+      "code": "def f(a, *args, **kwargs):\n    print(a, args, kwargs)\n\npos = [2, 3]\nkw = {\"x\": 4}\nf(1, *pos, **kw)",
+      "expectedOutput": "1 (2, 3) {'x': 4}",
+      "verify": "execute",
+      "sourceRefs": ["py-tut-unpack"],
+      "distractors": ["1 ([2, 3],) {'kw': {'x': 4}}", "TypeError"],
+      "fsrsSeed": { "desiredRetention": 0.9 }
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "first, *rest = [1, 2, 3, 4]; print(first); print(rest) — что напечатают обе строки?",
+      "code": "first, *rest = [1, 2, 3, 4]\nprint(first)\nprint(rest)",
+      "expectedOutput": "1\n[2, 3, 4]",
+      "verify": "execute",
+      "sourceRefs": ["pep3132"],
+      "distractors": ["1\n(2, 3, 4)", "ValueError"],
+      "fsrsSeed": { "desiredRetention": 0.9 }
+    }
+  ],
+
+  "verification": {
+    "gates": { "G-SCHEMA": "pass", "G-CITE": "pass", "G-EXEC-PY": "pass", "G-VIZ": "pass" },
+    "citationCoverage": 1.0,
+    "execLog": "docs/tasks/python-track/evidence/py-cards/census-log.txt",
+    "reviewDate": "2026-07-15"
+  }
+}

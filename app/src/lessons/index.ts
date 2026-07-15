@@ -21,6 +21,7 @@ import { asyncAwait } from "./async-await.ts";
 import { hashtable } from "./hashtable.ts";
 import { pyNamesObjects } from "./py-names-objects.ts";
 import { pyCollectionsHash } from "./py-collections-hash.ts";
+import { pyArgsUnpacking } from "./py-args-unpacking.ts";
 import { S } from "../strings.ts";
 
 /** Ordered by the concept DAG (prereqs first). */
@@ -33,6 +34,7 @@ export const LESSONS: LessonData[] = [
   hashtable,
   pyNamesObjects,
   pyCollectionsHash,
+  pyArgsUnpacking,
 ];
 
 /**
