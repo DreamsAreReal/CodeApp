@@ -530,9 +530,12 @@ function trackArea(rows: LessonRow[], heroRow: LessonRow, state: HomeState, know
     // The "new" cue matters for DISCOVERY — on the chip you are NOT looking at;
     // once the track is active the marker disappears (you are already there).
     const badge = t.badge && !active ? `<span class="track-tab-badge">${esc(t.badge)}</span>` : "";
+    // With a badge inside the button the accessible name would concatenate
+    // ("Python для AQAновый") — give assistive tech an explicit, separated name.
+    const aria = t.badge && !active ? ` aria-label="${esc(S.trackTabWithBadgeAria(t.label, t.badge))}"` : "";
     return (
       `<button class="track-tab${active ? " active" : ""}" type="button" data-track-tab="${esc(t.id)}"` +
-      ` aria-pressed="${active}">${esc(t.label)}${badge}</button>`
+      ` aria-pressed="${active}"${aria}>${esc(t.label)}${badge}</button>`
     );
   };
   const tabs = `<div class="track-tabs" role="group" aria-label="${esc(S.trackTabsLabel)}">${TRACK_GROUPS.map(chip).join("")}</div>`;

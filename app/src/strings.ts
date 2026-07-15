@@ -30,6 +30,10 @@ export const S = {
   trackPythonLabel: "Python для AQA",
   trackPythonSub: "6 механизмов, из которых сделаны твои инструменты",
   trackNewBadge: "новый",
+  // Screen-reader name for a track chip carrying a badge: without an explicit
+  // aria-label the visible label and the badge concatenate into one word for
+  // assistive tech ("Python для AQAновый").
+  trackTabWithBadgeAria: (label: string, badge: string) => `${label} — ${badge}`,
   trackTabsLabel: "Треки курса",
   // quiet header for the hero's topic-progress bar — makes clear it counts course topics
   // (a longer-horizon metric), not today's cards-to-review

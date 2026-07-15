@@ -86,7 +86,7 @@ s7 подрезка, устаревший принт viz-fit; карточка c
 - [x] харнессы ALL GREEN на финальном билде: build чисто (70.11 KB gz < 200), viz-fit,
       npm run verify, new-lessons, shell (axe AA), loop, multicard-session; dotnet test 65/65
 Проверка: harness-набор + скрины evidence/F1b/
-Статус: self-pass
+Статус: verified (R-M2-evaluator: ПРИНЯТО; переключатель доказан headless-прогоном оценщика: чипы/лента одного трека/персист через reload/last-opened-wins; multicard-session честный)
 
 ### F2 — Урок py-collections-hash [M2]
 Зачем: dict/set = хребет тестовых данных; собес-классика O(1)/hashable.
@@ -101,7 +101,7 @@ list-ключа — спайк c22), устройство dict (buckets/chain-п
 - [x] харнессы: viz-fit ALL GREEN (8/8 уроков) · new-lessons ALL GREEN (PY-COLL) ·
       verify/shell/loop/multicard ALL GREEN · dotnet test 65/65; скрины evidence/F2/
 Проверка: viz-fit + new-lessons(PY) + census-лог
-Статус: self-pass
+Статус: verified (R-M2-evaluator: ПРИНЯТО; 5 сегм, цитаты дословны против живых URL, карточки stdout==expect ×2)
 
 ### F3 — Урок py-args-unpacking [M2]
 Зачем: *args/**kwargs — везде в фикстурах/декораторах; пререквизит decorators.
@@ -117,7 +117,7 @@ mutable default (кросс-ссылка на M1 внутри трека).
       харнессы viz-fit/new-lessons/verify/shell/loop/multicard ALL GREEN, dotnet 65/65;
       скрины evidence/F3/
 Проверка: harness-набор
-Статус: self-pass
+Статус: verified (R-M2-evaluator: ПРИНЯТО; 4 сегм; примечание: s3 псевдокод — единственный, G2-риска нет)
 
 ### F4 — Урок py-closures-scope [M2] [золотой путь]
 Зачем: замыкания = основа декораторов/фикстур; собес-ловушка late binding.
@@ -135,7 +135,7 @@ mutable default (кросс-ссылка на M1 внутри трека).
       синхронен, 0 конс. ошибок; харнессы ALL GREEN (viz-fit после фикса MID-OVL s1 —
       константные лейблы чипов), dotnet 65/65; скрины evidence/F4/
 Проверка: harness-набор
-Статус: self-pass
+Статус: verified (R-M2-evaluator: ПРИНЯТО; 6 сегм, dis s5 сверен python3.12 -m dis байт-в-байт, рентген __closure__)
 
 ### F5 — Урок py-decorators [M2] [золотой путь]
 Зачем: «декоратор — это pytest»: @fixture/@parametrize/@allure.step; ядро собес-флоу.
@@ -156,7 +156,7 @@ mutable default (кросс-ссылка на M1 внутри трека).
       только `at`, fit-margins чисто (кроме slot-имени «add» 4.8 — прецедент C#), seed
       синхронен, 0 конс. ошибок; харнессы ALL GREEN, dotnet 65/65; скрины evidence/F5/
 Проверка: harness-набор
-Статус: self-pass
+Статус: verified (R-M2-evaluator: ПРИНЯТО; 8 сегм, dis s8 сверен; margin 4.8px принят по hard-clamp+зелёному Linux CI)
 
 ### F6 — Урок py-generators [M2]
 Зачем: yield = setup/teardown фикстур; «пауза кадра» — невидимое ядро.
@@ -174,7 +174,7 @@ StopIteration (c10), фикстура yield-паттерном, genexpr vs list 
       zone-overflow пойман viz-fit), fit-margins чисто, seed синхронен, 0 конс. ошибок;
       харнессы ALL GREEN, dotnet 65/65; скрины evidence/F6/
 Проверка: harness-набор
-Статус: self-pass
+Статус: verified (R-M2-evaluator: ПРИНЯТО; 6 сегм, замер 38.4MB vs 200Б воспроизведён оценщиком ×2; G1 такт: due 27→26, SQLite persisted)
 
 ### F7 — Урок py-context-managers [M3]
 Зачем: with = httpx.Client/testcontainers/allure.step; teardown-гарантии.

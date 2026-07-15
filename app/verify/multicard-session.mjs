@@ -8,7 +8,10 @@
  *   (3) a card graded AGAIN is RE-QUEUED at the end of the SAME session (the FSRS
  *       ~1-min learning-step promise): M grows 3 -> 4, the missed card returns as
  *       card 4, and only after it is graded does the finish CTA appear;
- *   (4) the re-queue is capped at once per card (failing it again does NOT grow M).
+ *   (4) the re-queue is capped at once per card (failing it again does NOT grow M);
+ *   (5) a SECOND 4-card lesson (PY.M5.decorators, M2-evaluator note: the counter
+ *       harness covered only PY.M1) walks the happy path 1/4 -> 4/4 with a stable M
+ *       and the finish CTA strictly on the last card.
  * Requires: backend on :5080, `npm run build && npm run preview` on :4173.
  */
 import { chromium } from "playwright";
@@ -91,6 +94,27 @@ async function main() {
   await sleep(600);
   const backHome = await page.evaluate(() => !!window.__home);
   assert(backHome, "finishing the session returns home");
+
+  // ---- second 4-card lesson: happy path, M must stay 4 the whole way ----
+  const LESSON2 = "PY.M5.decorators";
+  const RIGHT2 = { c1: "before\nafter\n5", c2: "wrapper", c3: "None", c4: "decorating foo\ndone" };
+  log(`\n== ${LESSON2}: 4-card happy path — stable M, finish only on card 4 ==`);
+  // the python group is already the persisted default (last opened lesson), but the
+  // click is idempotent — keep the harness independent of pref state
+  await page.click('[data-track-tab="python"]');
+  await page.click(`[data-lesson="${LESSON2}"]`);
+  await page.waitForFunction(() => window.__viz && window.__viz.ready, { timeout: 15000 });
+  for (const [pos, cid] of [[1, "c1"], [2, "c2"], [3, "c3"], [4, "c4"]]) {
+    assert((await currentCard()) === cid, `card ${pos} is ${cid} (got ${await currentCard()})`);
+    assert((await counter()) === `${pos} из 4`, `card ${pos} counter reads "${pos} из 4" (got "${await counter()}")`);
+    await grade(RIGHT2[cid], 3);
+    const cta = await primaryCta();
+    if (pos < 4) assert(cta.includes("Следующая"), `card ${pos} CTA is next-card (got "${cta}")`);
+    else assert(cta.includes("Завершить"), `finish CTA appears only on card 4 (got "${cta}")`);
+    await page.click("#btnNext");
+    await sleep(400);
+  }
+  assert(await page.evaluate(() => !!window.__home), "finishing the second session returns home");
 
   log("\n== console errors ==");
   assert(consoleErrors.length === 0, "zero console/page errors" + (consoleErrors.length ? " -> " + JSON.stringify(consoleErrors.slice(0, 3)) : ""));

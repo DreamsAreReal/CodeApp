@@ -13,6 +13,12 @@
  *   - the `dis` opcodes in s8 are copied from a real `python3.12 -m dis` run —
  *     evidence/spikes/f5_dis_decorator.txt.
  *
+ * DIS-ARG-ABBREV (track convention): a LOAD_CONST argument shown as a code object —
+ *   `(<code object add at 0x…>)` in the raw dis output — is abbreviated to the
+ *   function name, `(add)`. Display shortening only (a raw memory address is both
+ *   meaningless and forbidden in expects per RS-03); offsets/opcodes stay
+ *   byte-for-byte with the logged run.
+ *
  * COMPOSITE-QUOTES: segments[s4].explain — «func = f1(arg)(f2(func))» and «except
  * that the original function is not temporarily bound to the name func» are two
  * fragments of ONE sentence from compound_stmts.html#function-definitions (the

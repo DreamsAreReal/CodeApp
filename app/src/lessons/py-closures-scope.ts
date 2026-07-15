@@ -14,6 +14,12 @@
  *     evidence/spikes/f4_dis_closure.txt; cell facts (`__closure__[0].cell_contents`
  *     → 2/3) — evidence/spikes/f4_xray_cells.py.
  *
+ * DIS-ARG-ABBREV (track convention): a LOAD_CONST argument shown as a code object —
+ *   `(<code object multiply at 0x…>)` in the raw dis output — is abbreviated to the
+ *   function name, `(multiply)`. Display shortening only (a raw memory address is
+ *   both meaningless and forbidden in expects per RS-03); offsets/opcodes stay
+ *   byte-for-byte with the logged run.
+ *
  * Loop: cards c1..c3 map to backend review items `PY.M4.closures-scope/c{1..3}`.
  */
 import type { Zone } from "../engine/index.ts";
