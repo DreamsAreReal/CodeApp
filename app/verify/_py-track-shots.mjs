@@ -35,10 +35,23 @@ await sleep(300);
 await page.screenshot({ path: `${EV}/390-lesson-head-hook.png` });
 
 const segIds = ["s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8"];
-// natural autoplay pass: segments with a predict gate stop AT the gate (the "before" frame)
-for (const id of segIds) {
+// Scroll a segment so its TOP clears the sticky lesson bar — otherwise the bar overlays
+// the first code line in the captured frame (M1 evidence artefact on s7).
+async function scrollClearOfBar(id) {
   const el = page.locator(`[data-seg="${id}"]`);
   await el.scrollIntoViewIfNeeded();
+  await page.evaluate((segId) => {
+    const seg = document.querySelector(`[data-seg="${segId}"]`);
+    const bar = document.querySelector(".lbar");
+    const barBottom = bar ? bar.getBoundingClientRect().bottom : 0;
+    const top = seg.getBoundingClientRect().top;
+    if (top < barBottom + 6) window.scrollBy(0, top - barBottom - 6);
+  }, id);
+  return el;
+}
+// natural autoplay pass: segments with a predict gate stop AT the gate (the "before" frame)
+for (const id of segIds) {
+  const el = await scrollClearOfBar(id);
   await sleep(3800); // let autoplay run to gate/final
   await el.screenshot({ path: `${EV}/390-seg-${id}-autoplay.png` });
 }
@@ -46,8 +59,7 @@ for (const id of segIds) {
 await page.evaluate(() => window.__viz.forcePlayAll());
 await sleep(600);
 for (const id of segIds) {
-  const el = page.locator(`[data-seg="${id}"]`);
-  await el.scrollIntoViewIfNeeded();
+  const el = await scrollClearOfBar(id);
   await sleep(250);
   await el.screenshot({ path: `${EV}/390-seg-${id}-final.png` });
 }

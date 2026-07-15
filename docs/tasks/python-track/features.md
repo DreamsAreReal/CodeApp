@@ -46,7 +46,46 @@ G-EXEC-PY: evidence/py-cards/census-log.txt (python3.12.13, ×2, stderr пуст
 Турниры: победители A1+грефты (две секции, сабтайтл, бейдж) и B1+грефты (dis-панель + refs-чип
 с coral-вспышкой) интегрированы (.spikes/tournament/VERDICT.md).
 Отклонение (задокументировано): карточки = ровно c1–c3 predict-output по D-3 RS-01 (контракт F1);
-лесенка modify/explain для M1 не добавлялась — решение на чекпойнте M1 (см. progress.md).
+лесенка modify/explain для M1 не добавлялась — решение оркестратора: c4 (modify-предикт) в такте M2.
+Статус: verified (R-M1-evaluator.md: ПРИНЯТО; G1 доказан curl+SQLite оценщика: due 9→8, review_state
+persisted; G2 выборка 14 проверок 0 расхождений; G3 8/8 сегментов анимированы; глазами 23 PNG)
+
+### F1b — Переключатель треков на home + фиксы M1 [M2]
+Зачем: решение пользователя на чекпойнте M1 («в одну кучу не кидай, сделай переключатель —
+уроков будет дохуя»); масштабируемость на N треков.
+Что: чипы-переключатель треков над лентой (актив — коралл, скролл при N>3), лента одного
+трека, выбор персистится, hero/due — глобальные; лейблы «Фундамент C#» / «Python для AQA».
++ фиксы M1: viz-fit browser-список из реестра; assert predict-гейта в new-lessons;
+sessionQueue multicard-счётчик честный; кнопки оценки после выставления; s1 плотность,
+s7 подрезка, устаревший принт viz-fit; карточка c4 (modify-предикт) в PY.M1.
+Приёмка:
+- [x] home 390: переключатель работает (скрины evidence/F1b/390-switcher-{csharp,python}.png),
+      выбор переживает перезагрузку (390-switcher-python-after-reload.png; __home.activeTrack:
+      csharp → python → python после reload → csharp после открытия C#-урока — лог _f1b-shots)
+- [x] все фиксы M1 доказаны:
+      a) viz-fit browser-список из реестра (`LESSONS = LESSON_DATA.map(...)`), принт «all 6»
+         убран; прогон ПОКРЫЛ PY.M1 и ВСКРЫЛ 3 реальных ROW-BASELINE-нарушения (s2/s4/s8,
+         Δ6px слот↔объект) → починены структурно (refs-чип → typeTag объекта, паттерн
+         boxing/closures) → `node verify/viz-fit.mjs` ALL GREEN;
+      b) assert predict-гейта в new-lessons.mjs (блокирует / показывает вопрос / resolve
+         разблокирует) → `node verify/new-lessons.mjs` ALL GREEN;
+      c) sessionQueue multicard: причина «1 из 3 → 2 из 2» = прерывание сессии + перезаход
+         (новая сессия из остатка). Очередь сделана честной: Again-карта ре-энкьюится в ТУ ЖЕ
+         сессию (обещание AUTHORING-AI §3, кап ×1 на карту — без вечного цикла), M растёт
+         честно, «Завершить сессию» только на истинно последней карте → новый харнесс
+         `node verify/multicard-session.mjs` ALL GREEN (1 из 4 → Again → 1 из 5 → … → 5 из 5);
+      d) кнопки оценки/уверенности ПОСЛЕ оценки: функционально disabled (headless-прогон:
+         gradeDisabled=[true×4], повторный клик не шлёт второй /api/review) и предсуществующее
+         (git show 5772ad5 = тот же код до волны) → НЕ трогал, строка в progress.md;
+      e) s1: +4-й кадр (межмеханизменные связи, цитата PEP 492) — скрин 390-seg-s1-final.png;
+         s7-подрезка: hairline-шов .lbar + скролл-оффсет в скрин-скриптах — 390-s7-under-bar-seam.png;
+      f) s6 «немедленно и детерминированно» → «деталь реализации CPython, не гарантия
+         спецификации» (caption + explain + edgeCase + title) — скрин 390-seg-s6-final.png;
+      g) карточка c4 (modify-ступень: починенный дефолт из s5) + seed; expect `['a']\n['b']` =
+         stdout python3.12 ×2 (census-log.txt, stderr пуст; чеклист RS-03 соблюдён)
+- [x] харнессы ALL GREEN на финальном билде: build чисто (70.11 KB gz < 200), viz-fit,
+      npm run verify, new-lessons, shell (axe AA), loop, multicard-session; dotnet test 65/65
+Проверка: harness-набор + скрины evidence/F1b/
 Статус: self-pass
 
 ### F2 — Урок py-collections-hash [M2]

@@ -101,6 +101,18 @@
       "sourceRefs": ["py-datamodel"],
       "distractors": ["TypeError", "(1, [2, 3])"],
       "fsrsSeed": { "desiredRetention": 0.9 }
+    },
+    {
+      "id": "c4",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Код c1 починили дефолтом-стражем (items=None + новый список в теле) — что напечатают print(add_item(\"a\")) и print(add_item(\"b\")) теперь?",
+      "code": "def add_item(item, items=None):\n    if items is None:\n        items = []\n    items.append(item)\n    return items\n\nprint(add_item(\"a\"))\nprint(add_item(\"b\"))",
+      "expectedOutput": "['a']\n['b']",
+      "verify": "execute",
+      "sourceRefs": ["py-defaults", "py-faq-defaults"],
+      "distractors": ["['a']\n['a', 'b']", "['b']\n['b']"],
+      "fsrsSeed": { "desiredRetention": 0.9 }
     }
   ],
 

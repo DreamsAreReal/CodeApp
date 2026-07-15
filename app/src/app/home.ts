@@ -20,6 +20,7 @@ import { api } from "../api/client.ts";
 import type { DueResponse, LessonSummary, ProgressResponse, StatsResponse } from "../api/types.ts";
 import { LESSONS, TRACK_GROUPS } from "../lessons/index.ts";
 import type { TrackGroup } from "../lessons/index.ts";
+import { activeGroupId, setActiveGroup } from "./trackPref.ts";
 import type { LessonData, LessonIcon } from "../lessons/types.ts";
 import { ICON } from "../engine/index.ts";
 import { S, plural } from "../strings.ts";
@@ -208,7 +209,7 @@ export async function renderHome(root: HTMLElement, navToken: number = router.na
     <div class="home-body">
       <div id="heroSlot">${greetBlock(state)}${heroFor(state, heroCtx)}</div>
 
-      ${trackSections(rows, heroRow, state, knownDue)}
+      <div id="trackArea">${trackArea(rows, heroRow, state, knownDue, activeGroupId())}</div>
 
       <div class="notice" id="conn" style="text-align:center">${connLabel} · <b id="connDue">${S.heroCardsDue(knownDue)}</b></div>
     </div>
@@ -262,15 +263,34 @@ export async function renderHome(root: HTMLElement, navToken: number = router.na
   };
   wireHero(state);
 
-  root.querySelectorAll<HTMLElement>("[data-lesson]").forEach((el) => {
-    el.addEventListener("click", () => {
-      const lessonId = el.getAttribute("data-lesson")!;
-      // Tapping a topic runs ITS due cards as a session; with none due it opens for re-view.
-      const lessonDue = dueIds.filter((id) => id.startsWith(lessonId + "/"));
-      if (lessonDue.length > 0) startSession(lessonDue, lessonId);
-      else open(lessonId);
+  // Wire the track area (switcher chips + the active track's lesson rows). Re-run after
+  // every chip switch, which re-renders #trackArea with the SAME live data (no refetch —
+  // the hero/due stay global and untouched; the switcher controls the path only).
+  const wireTrackArea = () => {
+    const area = root.querySelector<HTMLElement>("#trackArea");
+    if (!area) return;
+    area.querySelectorAll<HTMLElement>("[data-lesson]").forEach((el) => {
+      el.addEventListener("click", () => {
+        const lessonId = el.getAttribute("data-lesson")!;
+        // Tapping a topic runs ITS due cards as a session; with none due it opens for re-view.
+        const lessonDue = dueIds.filter((id) => id.startsWith(lessonId + "/"));
+        if (lessonDue.length > 0) startSession(lessonDue, lessonId);
+        else open(lessonId);
+      });
     });
-  });
+    area.querySelectorAll<HTMLButtonElement>("[data-track-tab]").forEach((el) => {
+      el.addEventListener("click", () => {
+        const groupId = el.getAttribute("data-track-tab")!;
+        if (groupId === activeGroupId()) return;
+        setActiveGroup(groupId); // persists (localStorage) — survives a reload
+        tg.impact("light");
+        area.innerHTML = trackArea(rows, heroRow, state, knownDue, groupId);
+        wireTrackArea();
+        publishHome(groupId);
+      });
+    });
+  };
+  wireTrackArea();
 
   // Verification hook — re-render the hero slot for ANY state using the REAL greet/hero render
   // functions and the CURRENT live context. This lets the headless harness screenshot + DOM-assert
@@ -284,41 +304,46 @@ export async function renderHome(root: HTMLElement, navToken: number = router.na
     (window as unknown as { __homeForced?: string }).__homeForced = s;
   };
 
-  // Headless / debug hook — real state snapshot, now including the derived home state.
+  // Headless / debug hook — real state snapshot, now including the derived home state and
+  // the ACTIVE TRACK GROUP (re-published on every switcher tap so harnesses can assert it).
   // Guard the write with router.isCurrent: publish __home ONLY for the render that is still
   // current, so a slower/stale renderHome (whose fetch resolved late) can never overwrite the
   // hook with an out-of-date snapshot that no longer matches what is on screen. This does not
   // change any product behaviour — only the consistency of the debug/auto-check observable.
-  if (!router.isCurrent(navToken)) return;
-  (window as unknown as { __home?: unknown }).__home = {
-    userId: session.userId,
-    mode: session.mode,
-    state,
-    streak: stats.streakDays,
-    xp: stats.xp,
-    xpToday,
-    tomorrowDue,
-    todayCount,
-    knownDue,
-    knownTotal,
-    overallPct: Math.round(overallPct),
-    lessonsCompleted: prog.lessonsCompleted,
-    lessonsStarted: prog.lessonsStarted,
-    lessonsTotal,
-    segmentsViewed: prog.segmentsViewed,
-    reviewsTotal: prog.reviewsTotal,
-    allViewed,
-    onboarded,
-    lessons: rows.map((r) => ({
-      id: r.lesson.id,
-      title: r.lesson.title,
-      due: r.due,
-      total: r.total,
-      mastered: r.mastered,
-      viewPct: Math.round(r.viewPct),
-      completed: r.completed,
-    })),
-  };
+  function publishHome(activeTrack: string): void {
+    if (!router.isCurrent(navToken)) return;
+    (window as unknown as { __home?: unknown }).__home = {
+      userId: session.userId,
+      mode: session.mode,
+      state,
+      activeTrack,
+      streak: stats.streakDays,
+      xp: stats.xp,
+      xpToday,
+      tomorrowDue,
+      todayCount,
+      knownDue,
+      knownTotal,
+      overallPct: Math.round(overallPct),
+      lessonsCompleted: prog.lessonsCompleted,
+      lessonsStarted: prog.lessonsStarted,
+      lessonsTotal,
+      segmentsViewed: prog.segmentsViewed,
+      reviewsTotal: prog.reviewsTotal,
+      allViewed,
+      onboarded,
+      lessons: rows.map((r) => ({
+        id: r.lesson.id,
+        title: r.lesson.title,
+        due: r.due,
+        total: r.total,
+        mastered: r.mastered,
+        viewPct: Math.round(r.viewPct),
+        completed: r.completed,
+      })),
+    };
+  }
+  publishHome(activeGroupId());
 }
 
 /** Where the primary CTA leads, per state. */
@@ -492,28 +517,31 @@ function streakLine(streakDays: number): string {
 }
 
 /**
- * The lesson path, grouped into one visible SECTION per track group (C# and Python
- * side by side, both always visible — tournament winner A1: stacked sections, no
- * hiding/collapsing). Each section = label (+ optional badge / subtitle) + its rows.
- * Row animation delays run through a single global index so the whole path cascades.
+ * The track SWITCHER + the path of ONE track group (checkpoint-M1 user decision:
+ * "все уроки в одну кучу не кидай — сделай переключатель", scalable to N tracks).
+ * A row of chips (one per TRACK_GROUPS entry; the row scrolls horizontally as
+ * tracks grow) sits above the lesson path; ONLY the active group's lessons render.
+ * The hero and the due queue stay GLOBAL — the switcher controls the path alone.
  */
-function trackSections(rows: LessonRow[], heroRow: LessonRow, state: HomeState, knownDue: number): string {
-  let idx = 0;
-  const section = (g: TrackGroup): string => {
-    const groupRows = rows.filter((r) => g.tracks.includes(r.lesson.track));
-    if (groupRows.length === 0) return "";
-    const badge = g.badge ? `<span class="track-badge">${esc(g.badge)}</span>` : "";
-    const sub = g.sub ? `<div class="track-sub">${esc(g.sub)}</div>` : "";
-    const body = groupRows
-      .map((r) => topicRow(r, r === heroRow && state !== "first-run", idx++, knownDue > 0))
-      .join("");
+function trackArea(rows: LessonRow[], heroRow: LessonRow, state: HomeState, knownDue: number, activeId: string): string {
+  const g = TRACK_GROUPS.find((x) => x.id === activeId) ?? TRACK_GROUPS[0];
+  const chip = (t: TrackGroup): string => {
+    const active = t.id === g.id;
+    // The "new" cue matters for DISCOVERY — on the chip you are NOT looking at;
+    // once the track is active the marker disappears (you are already there).
+    const badge = t.badge && !active ? `<span class="track-tab-badge">${esc(t.badge)}</span>` : "";
     return (
-      `<div class="sec-label track-label" data-track-group="${esc(g.id)}">${esc(g.label)}${badge}</div>` +
-      sub +
-      `<div class="path" data-track-path="${esc(g.id)}">${body}</div>`
+      `<button class="track-tab${active ? " active" : ""}" type="button" data-track-tab="${esc(t.id)}"` +
+      ` aria-pressed="${active}">${esc(t.label)}${badge}</button>`
     );
   };
-  return TRACK_GROUPS.map(section).join("");
+  const tabs = `<div class="track-tabs" role="group" aria-label="${esc(S.trackTabsLabel)}">${TRACK_GROUPS.map(chip).join("")}</div>`;
+  const sub = g.sub ? `<div class="track-sub">${esc(g.sub)}</div>` : "";
+  const groupRows = rows.filter((r) => g.tracks.includes(r.lesson.track));
+  const body = groupRows
+    .map((r, i) => topicRow(r, r === heroRow && state !== "first-run", i, knownDue > 0))
+    .join("");
+  return tabs + sub + `<div class="path" data-track-path="${esc(g.id)}">${body}</div>`;
 }
 
 function topicRow(r: LessonRow, active: boolean, index: number, hasSession: boolean): string {

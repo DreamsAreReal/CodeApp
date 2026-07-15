@@ -7,10 +7,13 @@
  * Only then does the flow return home, where the "День закрыт" / empty states become naturally
  * reachable (the due count really dropped to 0), with no test-only forcing.
  *
- * The FSRS schedule on the server stays the single source of truth: the queue is a fixed
- * snapshot of what was due when the session began, so grading (which may re-schedule a card for
- * later today) never makes the session loop forever. `total` is that snapshot size; `position`
- * is the 1-based index of the card currently being answered → the "N из M" progress counter.
+ * The FSRS schedule on the server stays the single source of truth: the queue is built once
+ * from what was due when the session began. ONE honest exception (the product's promise —
+ * AUTHORING-AI §3: a missed card "returns within the same session", the FSRS-6 ~1-min learning
+ * step): a card graded AGAIN is RE-QUEUED at the end of the current session, at most ONCE per
+ * card, so the session cannot loop forever yet never claims "finished" while a just-missed card
+ * is seconds from being due again. `total` = current queue length (grows by honest re-queues);
+ * `position` is the 1-based index of the card being answered → the "N из M" progress counter.
  */
 
 export interface SessionItem {
@@ -28,13 +31,13 @@ export function parseItemId(itemId: string): SessionItem | null {
 class SessionQueue {
   private items: SessionItem[] = [];
   private idx = 0; // index of the card currently being answered
-  private startTotal = 0; // snapshot size at session start (the M in "N из M")
+  private requeued = new Set<string>(); // itemIds already re-queued once (the loop guard)
 
   /** Begin a session from a live-ordered list of due itemIds. Unparseable ids are skipped. */
   start(itemIds: string[]): void {
     this.items = itemIds.map(parseItemId).filter((x): x is SessionItem => x !== null);
     this.idx = 0;
-    this.startTotal = this.items.length;
+    this.requeued.clear();
     this.expose();
   }
 
@@ -50,12 +53,30 @@ class SessionQueue {
 
   /** 1-based position of the current card in the session ("N" in "N из M"). */
   get position(): number {
-    return Math.min(this.idx + 1, this.startTotal);
+    return Math.min(this.idx + 1, this.items.length);
   }
 
-  /** Total cards this session started with ("M" in "N из M"). */
+  /** Total cards in this session ("M" in "N из M"); grows when a missed card is re-queued. */
   get total(): number {
-    return this.startTotal;
+    return this.items.length;
+  }
+
+  /**
+   * A card was graded AGAIN: put it back at the END of the current session (the same-session
+   * return the FSRS ~1-min learning step promises), at most ONCE per card so a repeatedly
+   * missed card cannot loop the session forever — after the second miss it stays with the
+   * server schedule for the next session. No-op outside a live session or past the cap.
+   * Returns true when the card was actually re-queued (the counter's M just grew).
+   */
+  requeueCurrent(): boolean {
+    const cur = this.current;
+    if (!cur) return false;
+    const key = `${cur.lessonId}/${cur.cardId}`;
+    if (this.requeued.has(key)) return false;
+    this.requeued.add(key);
+    this.items.push({ ...cur });
+    this.expose();
+    return true;
   }
 
   /** Advance past the just-graded card. Returns the next card, or null when the queue is empty. */
@@ -69,7 +90,7 @@ class SessionQueue {
   clear(): void {
     this.items = [];
     this.idx = 0;
-    this.startTotal = 0;
+    this.requeued.clear();
     this.expose();
   }
 

@@ -54,6 +54,7 @@ export const pyNamesObjects: LessonData = {
     { id: "pep8", kind: "pep", org: "peps.python.org", title: "PEP 8 · Programming Recommendations", url: "https://peps.python.org/pep-0008/#programming-recommendations", date: "2026-07-15" },
     { id: "py-dis", kind: "doc", org: "docs.python.org", title: "dis — Disassembler for Python bytecode", url: "https://docs.python.org/3/library/dis.html", date: "2026-07-15" },
     { id: "py-glossary-deco", kind: "doc", org: "docs.python.org", title: "Glossary · decorator", url: "https://docs.python.org/3/glossary.html#term-decorator", date: "2026-07-15" },
+    { id: "pep492", kind: "pep", org: "peps.python.org", title: "PEP 492 · Coroutines with async and await syntax", url: "https://peps.python.org/pep-0492/", date: "2026-07-15" },
   ],
 
   spec: [
@@ -62,7 +63,7 @@ export const pyNamesObjects: LessonData = {
   edgeCases: [
     { text: "Неизменяемость <code>tuple</code> — мелкая: слоты заморожены, но объект-список ВНУТРИ остаётся изменяемым — <code>t[1].append(4)</code> работает (реальный прогон python3.12: <code>(1, [2, 3, 4])</code>).", source: "py-datamodel" },
     { text: "Identity малых <code>int</code> — деталь реализации: «CPython keeps an array of integer objects for all integers between -5 and 256» — поэтому <code>is</code> на числах — баг, а не проверка равенства.", source: "py-int-cache" },
-    { text: "<code>del</code> удаляет <b>имя</b>, а не объект: объект живёт, пока на него есть ссылки (счётчик), и умирает при нуле.", source: "py-gc" },
+    { text: "<code>del</code> удаляет <b>имя</b>, а не объект: объект живёт, пока на него есть ссылки; на нуле CPython освобождает его — тайминг освобождения — деталь реализации, не гарантия спецификации.", source: "py-gc" },
   ],
 
   misconceptions: [
@@ -110,10 +111,29 @@ export const pyNamesObjects: LessonData = {
           ],
         },
         {
-          caption: '<code>with httpx.Client()</code> — контекст-менеджер, <code>AsyncClient</code> — event loop. А <span class="hl">фундамент всех шести</span> — модель «имена → объекты». С неё и начинаем.',
+          caption: '<code>with httpx.Client()</code> — контекст-менеджер, <code>AsyncClient</code> — event loop. Все четыре инструмента разобраны на механизмы.',
+          nodes: [
+            { id: "m-obj", kind: "chip", at: { zone: "mech", row: 0, col: 0 }, value: "объекты" },
+            { id: "m-clo", kind: "chip", at: { zone: "mech", row: 0, col: 1 }, value: "замыкания" },
+            { id: "m-wit", kind: "chip", at: { zone: "mech", row: 0, col: 2 }, value: "with", accent: true },
+            { id: "m-dec", kind: "chip", at: { zone: "mech", row: 1, col: 0 }, value: "декораторы" },
+            { id: "m-gen", kind: "chip", at: { zone: "mech", row: 1, col: 1 }, value: "генераторы" },
+            { id: "m-asy", kind: "chip", at: { zone: "mech", row: 1, col: 2 }, value: "async", accent: true },
+            { id: "t-fix", kind: "chip", at: { zone: "tools", row: 0, col: 0 }, value: "@pytest.fixture" },
+            { id: "t-htx", kind: "chip", at: { zone: "tools", row: 0, col: 1 }, value: "with httpx", accent: true },
+            { id: "t-yld", kind: "chip", at: { zone: "tools", row: 1, col: 0 }, value: "yield-фикстуры" },
+            { id: "t-acl", kind: "chip", at: { zone: "tools", row: 1, col: 1 }, value: "AsyncClient", accent: true },
+          ],
+          edges: [
+            { id: "e-wit", from: "m-wit", to: "t-htx", accent: true },
+            { id: "e-asy", from: "m-asy", to: "t-acl", accent: true },
+          ],
+        },
+        {
+          caption: 'Механизмы <span class="hl">выводятся друг из друга</span>: декоратор — функция, замкнувшая другую; корутина — родственник генератора. Забыл деталь — восстанови её из соседнего блока. Фундамент всех шести — <span class="hl">имена → объекты</span>: с него и начинаем.',
           nodes: [
             { id: "m-obj", kind: "chip", at: { zone: "mech", row: 0, col: 0 }, value: "объекты", accent: true },
-            { id: "m-clo", kind: "chip", at: { zone: "mech", row: 0, col: 1 }, value: "замыкания" },
+            { id: "m-clo", kind: "chip", at: { zone: "mech", row: 0, col: 1 }, value: "замыкания", accent: true },
             { id: "m-wit", kind: "chip", at: { zone: "mech", row: 0, col: 2 }, value: "with" },
             { id: "m-dec", kind: "chip", at: { zone: "mech", row: 1, col: 0 }, value: "декораторы" },
             { id: "m-gen", kind: "chip", at: { zone: "mech", row: 1, col: 1 }, value: "генераторы" },
@@ -124,13 +144,13 @@ export const pyNamesObjects: LessonData = {
             { id: "t-acl", kind: "chip", at: { zone: "tools", row: 1, col: 1 }, value: "AsyncClient" },
           ],
           edges: [
-            { id: "e-wit", from: "m-wit", to: "t-htx", accent: true },
-            { id: "e-asy", from: "m-asy", to: "t-acl", accent: true },
+            { id: "e-clo", from: "m-clo", to: "m-dec", accent: true },
+            { id: "e-gen", from: "m-gen", to: "m-asy", accent: true },
           ],
         },
       ],
-      explain: 'Хребет трека: каждый инструмент AQA — тонкая обёртка над механизмом языка. <code>@pytest.fixture</code> и <code>@allure.step</code> — декораторы: «A function returning another function, usually applied as a function transformation using the <code>@wrapper</code> syntax». Фикстура с teardown — генератор (код после <code>yield</code>), <code>with httpx.Client()</code> / testcontainers — протокол контекст-менеджера, <code>AsyncClient</code> и нагрузка — event loop. Понял механизм — инструмент перестаёт быть магией; забыл деталь на собесе — выведи её из соседнего блока этой карты.',
-      sources: ["py-glossary-deco", "py-datamodel"],
+      explain: 'Хребет трека: каждый инструмент AQA — тонкая обёртка над механизмом языка. <code>@pytest.fixture</code> и <code>@allure.step</code> — декораторы: «A function returning another function, usually applied as a function transformation using the <code>@wrapper</code> syntax». Фикстура с teardown — генератор (код после <code>yield</code>), <code>with httpx.Client()</code> / testcontainers — протокол контекст-менеджера, <code>AsyncClient</code> и нагрузка — event loop. Механизмы связаны и между собой — про корутины это зафиксировано дословно: «Internally, coroutines are a special kind of generators, every await is suspended by a yield somewhere down the chain of await calls». Понял механизм — инструмент перестаёт быть магией; забыл деталь на собесе — выведи её из соседнего блока этой карты.',
+      sources: ["py-glossary-deco", "pep492", "py-datamodel"],
     },
 
     {
@@ -143,8 +163,7 @@ export const pyNamesObjects: LessonData = {
           caption: '<code>x = 257</code> не кладёт значение «в переменную»: создаётся <b>объект</b> <code>int</code> в куче, а имя <code>x</code> лишь <span class="hl">ссылается</span> на него.',
           nodes: [
             { id: "x", kind: "slot", at: { zone: "names", row: 0 }, name: "x", value: "" },
-            { id: "o1", kind: "obj", at: { zone: "objs", row: 0 }, typeTag: "int", value: "257", accent: true },
-            { id: "rc", kind: "chip", at: { zone: "objs", row: 1 }, value: "refs: 1" },
+            { id: "o1", kind: "obj", at: { zone: "objs", row: 0 }, typeTag: "int · refs: 1", value: "257", accent: true },
           ],
           edges: [{ id: "e1", from: "x", to: "o1", accent: true }],
         },
@@ -153,8 +172,8 @@ export const pyNamesObjects: LessonData = {
           caption: 'Переприсваивание <span class="hl">перекидывает ссылку</span>: у имени нет типа — тип живёт у объекта. Старый <code>int 257</code> остался без ссылок.',
           nodes: [
             { id: "x", kind: "slot", at: { zone: "names", row: 0 }, name: "x", value: "" },
-            { id: "o2", kind: "obj", at: { zone: "objs", row: 0 }, typeTag: "str", value: "'hi'", accent: true },
-            { id: "o1", kind: "obj", at: { zone: "objs", row: 1 }, typeTag: "int", value: "257", ghost: true },
+            { id: "o2", kind: "obj", at: { zone: "objs", row: 0 }, typeTag: "str · refs: 1", value: "'hi'", accent: true },
+            { id: "o1", kind: "obj", at: { zone: "objs", row: 1 }, typeTag: "int · refs: 0", value: "257", ghost: true },
           ],
           edges: [{ id: "e2", from: "x", to: "o2", accent: true }],
         },
@@ -164,8 +183,7 @@ export const pyNamesObjects: LessonData = {
           nodes: [
             { id: "x", kind: "slot", at: { zone: "names", row: 0 }, name: "x", value: "" },
             { id: "y", kind: "slot", at: { zone: "names", row: 1 }, name: "y", value: "", accent: true },
-            { id: "o2", kind: "obj", at: { zone: "objs", row: 0 }, typeTag: "str", value: "'hi'" },
-            { id: "rc", kind: "chip", at: { zone: "objs", row: 1 }, value: "refs: 2", accent: true },
+            { id: "o2", kind: "obj", at: { zone: "objs", row: 0 }, typeTag: "str · refs: 2", value: "'hi'", accent: true },
           ],
           edges: [
             { id: "e2", from: "x", to: "o2" },
@@ -188,8 +206,7 @@ export const pyNamesObjects: LessonData = {
           nodes: [
             { id: "a", kind: "slot", at: { zone: "names", row: 0 }, name: "a", value: "" },
             { id: "b", kind: "slot", at: { zone: "names", row: 1 }, name: "b", value: "" },
-            { id: "lst", kind: "obj", at: { zone: "objs", row: 0 }, typeTag: "list", value: "[1,2]" },
-            { id: "rc", kind: "chip", at: { zone: "objs", row: 1 }, value: "refs: 2" },
+            { id: "lst", kind: "obj", at: { zone: "objs", row: 0 }, typeTag: "list · refs: 2", value: "[1,2]" },
           ],
           edges: [
             { id: "ea", from: "a", to: "lst" },
@@ -202,8 +219,7 @@ export const pyNamesObjects: LessonData = {
           nodes: [
             { id: "a", kind: "slot", at: { zone: "names", row: 0 }, name: "a", value: "" },
             { id: "b", kind: "slot", at: { zone: "names", row: 1 }, name: "b", value: "" },
-            { id: "lst", kind: "obj", at: { zone: "objs", row: 0 }, typeTag: "list", value: "[1,2,3]", accent: true },
-            { id: "rc", kind: "chip", at: { zone: "objs", row: 1 }, value: "refs: 2" },
+            { id: "lst", kind: "obj", at: { zone: "objs", row: 0 }, typeTag: "list · refs: 2", value: "[1,2,3]", accent: true },
           ],
           edges: [
             { id: "ea", from: "a", to: "lst", accent: true },
@@ -247,8 +263,7 @@ export const pyNamesObjects: LessonData = {
           caption: 'Список создан один раз; имя <code>a</code> ссылается на него.',
           nodes: [
             { id: "a", kind: "slot", at: { zone: "names", row: 0 }, name: "a", value: "" },
-            { id: "lst", kind: "obj", at: { zone: "objs", row: 0 }, typeTag: "list", value: "[1,2,3]" },
-            { id: "rc", kind: "chip", at: { zone: "objs", row: 1 }, value: "refs: 1" },
+            { id: "lst", kind: "obj", at: { zone: "objs", row: 0 }, typeTag: "list · refs: 1", value: "[1,2,3]" },
           ],
           edges: [{ id: "ea", from: "a", to: "lst" }],
         },
@@ -258,8 +273,7 @@ export const pyNamesObjects: LessonData = {
           nodes: [
             { id: "a", kind: "slot", at: { zone: "names", row: 0 }, name: "a", value: "" },
             { id: "b", kind: "slot", at: { zone: "names", row: 1 }, name: "b", value: "", accent: true },
-            { id: "lst", kind: "obj", at: { zone: "objs", row: 0 }, typeTag: "list", value: "[1,2,3]" },
-            { id: "rc", kind: "chip", at: { zone: "objs", row: 1 }, value: "refs: 2", accent: true },
+            { id: "lst", kind: "obj", at: { zone: "objs", row: 0 }, typeTag: "list · refs: 2", value: "[1,2,3]", accent: true },
           ],
           edges: [
             { id: "ea", from: "a", to: "lst" },
@@ -272,8 +286,7 @@ export const pyNamesObjects: LessonData = {
           nodes: [
             { id: "a", kind: "slot", at: { zone: "names", row: 0 }, name: "a", value: "" },
             { id: "b", kind: "slot", at: { zone: "names", row: 1 }, name: "b", value: "" },
-            { id: "lst", kind: "obj", at: { zone: "objs", row: 0 }, typeTag: "list", value: "[1,2,3,4]", accent: true },
-            { id: "rc", kind: "chip", at: { zone: "objs", row: 1 }, value: "refs: 2" },
+            { id: "lst", kind: "obj", at: { zone: "objs", row: 0 }, typeTag: "list · refs: 2", value: "[1,2,3,4]", accent: true },
           ],
           edges: [
             { id: "ea", from: "a", to: "lst" },
@@ -286,8 +299,7 @@ export const pyNamesObjects: LessonData = {
           nodes: [
             { id: "a", kind: "slot", at: { zone: "names", row: 0 }, name: "a", value: "", accent: true },
             { id: "b", kind: "slot", at: { zone: "names", row: 1 }, name: "b", value: "" },
-            { id: "lst", kind: "obj", at: { zone: "objs", row: 0 }, typeTag: "list", value: "[1,2,3,4]", accent: true },
-            { id: "rc", kind: "chip", at: { zone: "objs", row: 1 }, value: "refs: 2" },
+            { id: "lst", kind: "obj", at: { zone: "objs", row: 0 }, typeTag: "list · refs: 2", value: "[1,2,3,4]", accent: true },
           ],
           edges: [
             { id: "ea", from: "a", to: "lst", accent: true },
@@ -300,8 +312,7 @@ export const pyNamesObjects: LessonData = {
           nodes: [
             { id: "a", kind: "slot", at: { zone: "names", row: 0 }, name: "a", value: "" },
             { id: "b", kind: "slot", at: { zone: "names", row: 1 }, name: "b", value: "" },
-            { id: "lst", kind: "obj", at: { zone: "objs", row: 0 }, typeTag: "list", value: "[1,2,3,4]" },
-            { id: "idc", kind: "chip", at: { zone: "objs", row: 1 }, value: "id: одна", accent: true },
+            { id: "lst", kind: "obj", at: { zone: "objs", row: 0 }, typeTag: "list · id: одна", value: "[1,2,3,4]", accent: true },
           ],
           edges: [
             { id: "ea", from: "a", to: "lst", accent: true },
@@ -376,9 +387,9 @@ export const pyNamesObjects: LessonData = {
     },
 
     {
-      id: "s6", num: "06", kicker: "Время жизни · refcount + циклический gc", title: "del удаляет имя — объект умирает при нуле ссылок",
+      id: "s6", num: "06", kicker: "Время жизни · refcount + циклический gc", title: "del удаляет имя — объект живёт по счётчику ссылок",
       viewBox: "0 0 340 210", zones: MM_ZONES,
-      code: ["a = [1, 2]; b = a", "del a         # refs: 2 → 1", "del b         # refs: 0 → умер", "# кольцо: a.append(a) → gc"],
+      code: ["a = [1, 2]; b = a", "del a         # refs: 2 → 1", "del b         # refs: 0", "# кольцо: a.append(a) → gc"],
       scenes: [
         {
           codeLine: 0,
@@ -386,8 +397,7 @@ export const pyNamesObjects: LessonData = {
           nodes: [
             { id: "a", kind: "slot", at: { zone: "names", row: 0 }, name: "a", value: "" },
             { id: "b", kind: "slot", at: { zone: "names", row: 1 }, name: "b", value: "" },
-            { id: "lst", kind: "obj", at: { zone: "objs", row: 0 }, typeTag: "list", value: "[1,2]" },
-            { id: "rc", kind: "chip", at: { zone: "objs", row: 1 }, value: "refs: 2" },
+            { id: "lst", kind: "obj", at: { zone: "objs", row: 0 }, typeTag: "list · refs: 2", value: "[1,2]" },
           ],
           edges: [
             { id: "ea", from: "a", to: "lst" },
@@ -399,17 +409,15 @@ export const pyNamesObjects: LessonData = {
           caption: '<code>del a</code> удаляет <b>имя</b>, не объект: счётчик падает до <span class="hl">1</span>, объект жив — <code>b</code> продолжает работать.',
           nodes: [
             { id: "b", kind: "slot", at: { zone: "names", row: 0 }, name: "b", value: "" },
-            { id: "lst", kind: "obj", at: { zone: "objs", row: 0 }, typeTag: "list", value: "[1,2]" },
-            { id: "rc", kind: "chip", at: { zone: "objs", row: 1 }, value: "refs: 1", accent: true },
+            { id: "lst", kind: "obj", at: { zone: "objs", row: 0 }, typeTag: "list · refs: 1", value: "[1,2]", accent: true },
           ],
           edges: [{ id: "eb", from: "b", to: "lst" }],
         },
         {
           codeLine: 2,
-          caption: 'Последняя ссылка ушла — счётчик <span class="hl">0</span>, CPython освобождает объект <b>немедленно и детерминированно</b>.',
+          caption: 'Последняя ссылка ушла — счётчик <span class="hl">0</span>, CPython освобождает объект (обычно сразу). Но это <b>деталь реализации CPython</b>, не гарантия спецификации языка.',
           nodes: [
-            { id: "lst", kind: "obj", at: { zone: "objs", row: 0 }, typeTag: "list", value: "[1,2]", ghost: true },
-            { id: "rc", kind: "chip", at: { zone: "objs", row: 1 }, value: "refs: 0", accent: true },
+            { id: "lst", kind: "obj", at: { zone: "objs", row: 0 }, typeTag: "list · refs: 0", value: "[1,2]", ghost: true },
           ],
           edges: [],
         },
@@ -418,14 +426,13 @@ export const pyNamesObjects: LessonData = {
           caption: 'Кольцо ссылок счётчик не спасёт: объект ссылается <span class="hl">сам на себя</span>, refs никогда не 0 — такие циклы находит <b>циклический сборщик</b>.',
           nodes: [
             { id: "gc", kind: "gate", at: { zone: "names", row: 0 }, state: "ok", label: "циклический gc", detail: "нашёл кольцо" },
-            { id: "cyc", kind: "obj", at: { zone: "objs", row: 0 }, typeTag: "list" },
+            { id: "cyc", kind: "obj", at: { zone: "objs", row: 0 }, typeTag: "list · refs: 1" },
             { id: "self", kind: "chip", at: { in: "cyc" }, value: "→ сам себя", accent: true },
-            { id: "rc", kind: "chip", at: { zone: "objs", row: 1 }, value: "refs: 1", accent: true },
           ],
           edges: [],
         },
       ],
-      explain: 'Память CPython держится на двух механизмах. Основной — <b>счётчик ссылок</b>: каждая привязка имени/контейнера увеличивает его, каждая потеря — уменьшает; ноль — объект освобождается сразу. Второй — циклический сборщик: «the collector supplements the reference counting already used in Python» — он ловит кольца, до которых счётчик не дотягивается. Практическое следствие для тестов: <code>del f</code> или конец функции не «закрывают файл по расписанию GC» гарантированно читаемым образом — детерминированный cleanup делай через <code>with</code> (урок context managers).',
+      explain: 'Память CPython держится на двух механизмах. Основной — <b>счётчик ссылок</b>: каждая привязка имени/контейнера увеличивает его, каждая потеря — уменьшает; на нуле CPython освобождает объект — обычно сразу, но это <span class="hl">деталь реализации CPython</span>, а не гарантия спецификации языка. Второй — циклический сборщик: «the collector supplements the reference counting already used in Python» — он ловит кольца, до которых счётчик не дотягивается. Практическое следствие для тестов: не строй cleanup на «объект умрёт вот здесь» — файл или клиент закрывай явно через <code>with</code> (урок context managers).',
       sources: ["py-gc"],
     },
 
@@ -494,7 +501,7 @@ export const pyNamesObjects: LessonData = {
           codeLine: 0, ilLine: 1,
           caption: '<code>LOAD_CONST</code> кладёт на стек VM <span class="hl">ссылку на объект</span> <code>257</code> из констант кадра — значение уже живёт объектом.',
           nodes: [
-            { id: "o", kind: "obj", at: { zone: "objs", row: 0 }, typeTag: "int", value: "257", accent: true },
+            { id: "o", kind: "obj", at: { zone: "objs", row: 0 }, typeTag: "int · refs: 0", value: "257", accent: true },
           ],
           edges: [],
         },
@@ -503,8 +510,7 @@ export const pyNamesObjects: LessonData = {
           caption: '<code>STORE_NAME x</code> — вот она, привязка: имя <code>x</code> начинает <span class="hl">ссылаться</span> на объект. Ни одного «копирования значения».',
           nodes: [
             { id: "x", kind: "slot", at: { zone: "names", row: 0 }, name: "x", value: "", accent: true },
-            { id: "o", kind: "obj", at: { zone: "objs", row: 0 }, typeTag: "int", value: "257" },
-            { id: "rc", kind: "chip", at: { zone: "objs", row: 1 }, value: "refs: 1" },
+            { id: "o", kind: "obj", at: { zone: "objs", row: 0 }, typeTag: "int · refs: 1", value: "257", accent: true },
           ],
           edges: [{ id: "ex", from: "x", to: "o", accent: true }],
         },
@@ -513,8 +519,7 @@ export const pyNamesObjects: LessonData = {
           caption: '<code>LOAD_NAME x</code> достаёт из фрейма ссылку, спрятанную за именем <code>x</code>.',
           nodes: [
             { id: "x", kind: "slot", at: { zone: "names", row: 0 }, name: "x", value: "", accent: true },
-            { id: "o", kind: "obj", at: { zone: "objs", row: 0 }, typeTag: "int", value: "257" },
-            { id: "rc", kind: "chip", at: { zone: "objs", row: 1 }, value: "refs: 1" },
+            { id: "o", kind: "obj", at: { zone: "objs", row: 0 }, typeTag: "int · refs: 1", value: "257" },
           ],
           edges: [{ id: "ex", from: "x", to: "o", accent: true }],
         },
@@ -524,8 +529,7 @@ export const pyNamesObjects: LessonData = {
           nodes: [
             { id: "x", kind: "slot", at: { zone: "names", row: 0 }, name: "x", value: "" },
             { id: "y", kind: "slot", at: { zone: "names", row: 1 }, name: "y", value: "", accent: true },
-            { id: "o", kind: "obj", at: { zone: "objs", row: 0 }, typeTag: "int", value: "257" },
-            { id: "rc", kind: "chip", at: { zone: "objs", row: 1 }, value: "refs: 2", accent: true },
+            { id: "o", kind: "obj", at: { zone: "objs", row: 0 }, typeTag: "int · refs: 2", value: "257", accent: true },
           ],
           edges: [
             { id: "ex", from: "x", to: "o" },
@@ -565,6 +569,17 @@ export const pyNamesObjects: LessonData = {
       noText: 'Tuple запрещает <b>перепривязку слотов</b> (<code>t[0] = 9</code> — TypeError), но слот 1 держит ссылку на mutable-список — и сам список менять можно. Реальный вывод python3.12: <code>(1, [2, 3, 4])</code>. Отсюда же: такой tuple нехэшируем (ключом dict не станет).',
       verify: { kind: "exec", run: "python3.12 PY.M1_c3.py", expect: "(1, [2, 3, 4])" },
       sourceRefs: ["py-datamodel"],
+    },
+    {
+      // The MODIFY rung of the recall ladder (predict -> modify -> explain): the code of c1
+      // repaired with the sentinel default from segment s5 — predict the CHANGED behaviour.
+      id: "c4", type: "predict-output", engagementLevel: "responding",
+      question: 'Код из первой карточки <b>починили</b> дефолтом-стражем:<br/><code>def add_item(item, items=None):<br/>&nbsp;&nbsp;if items is None: items = []<br/>&nbsp;&nbsp;items.append(item); return items</code><br/><code>print(add_item("a"))</code> затем <code>print(add_item("b"))</code> — что напечатают обе строки теперь?',
+      options: ["['a'] и ['b']", "['a'] и ['a', 'b']", "['b'] и ['b']", "None и None"], correctIndex: 0, xp: 10,
+      okText: 'Именно так работает починка: дефолт теперь <code>None</code> — immutable-страж, вычисленный один раз при <code>def</code>, — а <span class="hl">новый список создаётся в теле</span> на каждый вызов. Состояние больше не переживает вызов: <code>[\'a\']</code>, затем <code>[\'b\']</code>. Это идиома для хелперов и фикстур.',
+      noText: 'Сравни с c1: там общий список жил в <code>__defaults__</code> и копил состояние. Здесь дефолт — <code>None</code>, а список рождается <b>внутри вызова</b>, каждый раз новый. Реальный вывод python3.12: <code>[\'a\']</code>, затем <code>[\'b\']</code>.',
+      verify: { kind: "exec", run: "python3.12 PY.M1_c4.py", expect: "['a']\n['b']" },
+      sourceRefs: ["py-defaults", "py-faq-defaults"],
     },
   ],
 

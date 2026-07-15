@@ -8,6 +8,7 @@ import { runLesson } from "./lessonRunner.ts";
 import { renderProgress } from "./progress.ts";
 import { renderProfile } from "./profile.ts";
 import { sessionQueue } from "./sessionQueue.ts";
+import { rememberLessonOpened } from "./trackPref.ts";
 import { tg } from "../telegram/webapp.ts";
 
 export type Screen = "home" | "lesson" | "progress" | "profile";
@@ -113,6 +114,7 @@ class Router {
     this.screen = "lesson";
     this.lessonId = id;
     this.cardId = cardId ?? null;
+    rememberLessonOpened(id); // the lesson's track group becomes home's default (last-opened wins)
     this.syncChrome("lesson");
     window.scrollTo(0, 0);
     runLesson(this.root, id, cardId);

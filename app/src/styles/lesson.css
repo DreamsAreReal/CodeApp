@@ -13,6 +13,9 @@
   top: 0;
   z-index: 5;
   background: var(--bg);
+  /* hairline seam: content (e.g. a code panel's first line) visibly slides UNDER a
+     defined bar edge instead of looking torn mid-glyph (M1 polish: s7 first line) */
+  box-shadow: 0 1px 0 var(--line);
 }
 .close {
   flex: none;

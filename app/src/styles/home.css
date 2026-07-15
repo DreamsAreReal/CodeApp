@@ -323,12 +323,51 @@
   background: var(--line);
 }
 
-/* ---- track sections (home path grouped by TRACK_GROUPS) ---- */
-.track-label {
-  color: var(--ink);
+/* ---- track switcher (chips over the path; ONE track's lessons visible) ---- */
+/* #trackArea wraps tabs + sub + path in ONE home-body flex child, so it carries
+   its own column gap (the parent's 18px gap no longer applies between them). */
+#trackArea {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
 }
-.track-badge {
+.track-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto; /* scales to N tracks: the chip row scrolls horizontally */
+  padding: 2px;
+  scrollbar-width: none;
+}
+.track-tabs::-webkit-scrollbar {
+  display: none;
+}
+.track-tab {
   flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1.5px solid var(--line);
+  background: var(--surface);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 12.5px;
+  letter-spacing: 0.01em;
+  color: var(--muted);
+  cursor: pointer;
+  transition:
+    color 0.12s ease,
+    background 0.12s ease,
+    border-color 0.12s ease;
+}
+.track-tab.active {
+  /* coral active chip — coral-d keeps the white label AA-readable at this size */
+  background: var(--coral-d);
+  border-color: var(--coral-d);
+  color: var(--surface);
+}
+.track-tab-badge {
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -337,10 +376,11 @@
   color: var(--coral-text);
   background: var(--coral-tint);
   border-radius: 999px;
-  padding: 3px 8px;
+  padding: 2px 7px;
 }
 .track-sub {
-  margin-top: -13px;
+  /* pulls just slightly toward the chips it annotates (home-body gap is 18px) */
+  margin-top: -8px;
   padding: 0 2px;
   font-size: 12px;
   line-height: 1.45;

@@ -855,6 +855,19 @@ function wireGrade(
       }
       // Reaching the grade = the user completed the lesson. Report it (sticky).
       reporter.markCompleted();
+      // Honest same-session return (AUTHORING-AI §3: a missed card comes back this session —
+      // the FSRS ~1-min learning step): grade AGAIN re-queues the card at the session's end
+      // (once per card, see sessionQueue). Done BEFORE the next-action buttons are built so
+      // the primary CTA and the "N из M" counter reflect the grown queue immediately.
+      if (
+        grade === 1 &&
+        sessionQueue.current &&
+        `${sessionQueue.current.lessonId}/${sessionQueue.current.cardId}` === itemId &&
+        sessionQueue.requeueCurrent()
+      ) {
+        const sc = document.querySelector("#sessCount");
+        if (sc) sc.textContent = S.sessionProgress(sessionQueue.position, sessionQueue.total);
+      }
       appendNext(host);
       (window as unknown as { __lastReview?: ReviewResponse }).__lastReview = res;
       tg.notify("success");

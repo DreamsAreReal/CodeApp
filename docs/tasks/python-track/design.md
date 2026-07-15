@@ -16,9 +16,13 @@ Python-фундамент своей AQA-подготовки; собес-воп
 1. `lessons/types.ts`: `LessonData.lang?: "csharp" | "python"` (default `"csharp"`).
 2. `lessons/index.ts`: реестр `TRACK_GROUPS: {id, label, tracks[]}[]` —
    `[{csharp, S.trackCsharp, ["T1","T2"]}, {python, S.trackPython, ["PY"]}]`.
-3. `app/home.ts`: группировка `rows` по TRACK_GROUPS → две РАЗДЕЛЬНЫЕ секции пути
-   (лейбл секции из реестра; хардкод `pathLabel «Путь · Ядро C#»` убирается;
-   существующая метка «в фокусе»/hero — внутри своей секции). Треки не пересекаются.
+3. `app/home.ts`: ПЕРЕКЛЮЧАТЕЛЬ ТРЕКОВ (решение пользователя на чекпойнте M1, заменяет
+   секции-стопкой A1): ряд чипов/пилюль по TRACK_GROUPS над лентой уроков (активный —
+   коралл; масштабируется горизонтальным скроллом чипов при N треков), видна лента ОДНОГО
+   трека; выбор персистится (localStorage, ключ в settings-паттерне); дефолт при входе =
+   трек последнего открытого урока, иначе первый. Hero «продолжить»/сегодняшняя очередь —
+   ГЛОБАЛЬНЫЕ (due охватывает все треки), переключатель управляет только лентой уроков.
+   Лейблы: csharp «Фундамент C#», python «Python для AQA» (решение пользователя).
 4. `engine/hlcode.ts`: `hlCode(line, lang)` — для python: keywords (def/class/return/
    yield/async/await/with/for/if/import/lambda/None/True/False/…), builtins
    (print/len/range/isinstance/…), комменты `#`, строки `'…'/"…"/f"…"`; C#-путь не тронут.

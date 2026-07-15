@@ -24,11 +24,13 @@ export const S = {
   heroCardsDue: (n: number) => `${n} ${plural(n, "карточка", "карточки", "карточек")} к повтору`,
   heroAllDone: "На сегодня всё повторено",
   heroMinutes: (n: number) => `~${n} мин`,
-  // ---- track sections (home path is grouped by TRACK_GROUPS, lessons/index.ts) ----
+  // ---- track switcher (home path shows ONE group at a time — chips over the path;
+  //      groups come from TRACK_GROUPS in lessons/index.ts) ----
   trackCsharpLabel: "Фундамент C#",
-  trackPythonLabel: "Python · фундамент",
+  trackPythonLabel: "Python для AQA",
   trackPythonSub: "6 механизмов, из которых сделаны твои инструменты",
-  trackNewBadge: "новый трек",
+  trackNewBadge: "новый",
+  trackTabsLabel: "Треки курса",
   // quiet header for the hero's topic-progress bar — makes clear it counts course topics
   // (a longer-horizon metric), not today's cards-to-review
   pathTopicsLabel: "Темы курса",

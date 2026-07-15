@@ -163,6 +163,23 @@ async function main() {
   assert(disBadge.toLowerCase().includes("dis"), `bytecode panel badge is dis-labelled (got "${disBadge}")`);
   // python syntax highlighting is active (keyword def/for tokens marked in the code panel)
   assert((await page.locator(".code-panel .tok-ty").count()) > 0, "python keywords are highlighted in the code panel");
+  // predict gate BLOCKS until resolved: s4 declares predictAt=3 — goTo(3) must refuse,
+  // show the predict prompt, and succeed only after resolvePredict().
+  const gate = await page.evaluate(() => {
+    const v = window.__viz.vizByKey["s4"];
+    v.pause();
+    v.goTo(2);
+    const blocked = !v.goTo(3); // the gate refuses the advance
+    const el = document.querySelector('[data-seg="s4"] .vz-predict');
+    const promptShown = !!el && !el.hidden;
+    const idxAtGate = v.state.index;
+    v.resolvePredict();
+    const passed = v.goTo(3);
+    return { blocked, promptShown, idxAtGate, passed, after: v.state.index };
+  });
+  assert(gate.blocked && gate.idxAtGate === 2, "predict gate blocks advancing past predictAt until resolved");
+  assert(gate.promptShown, "blocked advance shows the predict prompt");
+  assert(gate.passed && gate.after === 3, "resolving the predict unblocks the gated scene");
   const pyDueBefore = await apiGet(`/api/due`);
   assert(pyDueBefore.items.some((i) => i.itemId === "PY.M1.names-objects/c1"), "py names-objects/c1 is due before review");
   const pyCountBefore = pyDueBefore.count;

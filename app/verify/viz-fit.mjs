@@ -1,8 +1,9 @@
 /**
  * Headless verification for the living-diagram FIT + CLIP fix (viz-fit).
  * Reuses the Playwright/Chromium + dev-auth pattern from run.mjs. Against the
- * LIVE backend (:5080) + preview (:4173), for EVERY lesson in the registry (all
- * 6) and EVERY segment, it opens the lesson, forces every segment to its final
+ * LIVE backend (:5080) + preview (:4173), for EVERY lesson in the registry
+ * (derived from the import — never a hardcoded list) and EVERY segment, it
+ * opens the lesson, forces every segment to its final
  * frame (window.__viz.forcePlayAll()), then measures the SETTLED SVG in user
  * units and asserts:
  *
@@ -18,7 +19,7 @@
  *       touching tolerance). Proves the layout stays legible.
  *
  * Every violation is reported with lesson id + segment id + node id. Prints
- * `ALL GREEN` only when there are ZERO violations across all 6 lessons.
+ * `ALL GREEN` only when there are ZERO violations across every registered lesson.
  *
  * Requires: backend on :5080, `npm run build && npm run preview` on :4173.
  * Captures element-screenshots of the previously-broken segments into
@@ -38,15 +39,10 @@ const API = process.env.VITE_API_BASE || "http://localhost:5080";
 const EV = evidenceDir("viz-fit");
 const RUN_USER = 700000 + Math.floor(Math.random() * 90000);
 
-// All six lessons in the registry (curriculum order), with segment counts.
-const LESSONS = [
-  { id: "T1.M2.value-vs-reference", segs: 4 },
-  { id: "T1.M3.boxing", segs: 7 },
-  { id: "T1.M4.gc", segs: 6 },
-  { id: "T2.M2.closures", segs: 5 },
-  { id: "T2.M1.async-await", segs: 5 },
-  { id: "T2.M5.hashtable", segs: 6 },
-];
+// Every lesson in the registry (curriculum order), with segment counts — DERIVED
+// from the real registry import above, so a newly registered lesson (any track)
+// is covered by the browser checks automatically and can never be forgotten here.
+const LESSONS = LESSON_DATA.map((l) => ({ id: l.id, segs: l.segments.length }));
 
 // Element-screenshots of the previously-broken segments (id -> stage index, filename).
 const SHOTS = {
