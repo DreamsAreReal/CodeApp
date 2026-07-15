@@ -187,7 +187,7 @@ export const pyCollectionsHash: LessonData = {
           nodes: [
             { id: "t", kind: "obj", at: { zone: "key", row: 0 }, typeTag: "tuple", accent: true },
             { id: "inner", kind: "chip", at: { in: "t" }, value: "1 · [2, 3]" },
-            { id: "g", kind: "gate", at: { zone: "buckets", row: 0 }, state: "fail", label: "hash(t)", detail: "TypeError · list внутри" },
+            { id: "g", kind: "gate", at: { zone: "buckets", row: 0 }, state: "fail", label: "hash(t)", detail: "TypeError" },
           ],
           edges: [{ id: "e", from: "t", to: "g", accent: true }],
         },
@@ -218,7 +218,7 @@ export const pyCollectionsHash: LessonData = {
           caption: '<code>expected - actual</code> → <code>{2}</code>: разность множеств называет <b>пропавший ID</b> сама — и «A set is an unordered collection with no duplicate elements», дубликаты не замаскируют дыру.',
           nodes: [
             { id: "e1", kind: "chip", at: { zone: "exp", row: 0 }, value: "id: 1", ghost: true },
-            { id: "e2", kind: "chip", at: { zone: "exp", row: 1 }, value: "id: 2 · пропал", accent: true },
+            { id: "e2", kind: "chip", at: { zone: "exp", row: 1 }, value: "id: 2 пропал", w: 120, accent: true },
             { id: "e3", kind: "chip", at: { zone: "exp", row: 2 }, value: "id: 3", ghost: true },
             { id: "a1", kind: "chip", at: { zone: "act", row: 0 }, value: "id: 1", ghost: true },
             { id: "a3", kind: "chip", at: { zone: "act", row: 2 }, value: "id: 3", ghost: true },

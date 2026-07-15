@@ -336,7 +336,7 @@ export const pyNamesObjects: LessonData = {
           codeLine: 0, out: "",
           caption: '<code>def</code> — исполняемый оператор: он создаёт <b>объект-функцию</b> и <span class="hl">один раз</span> вычисляет дефолт <code>[]</code>, пряча его у функции.',
           nodes: [
-            { id: "fn", kind: "slot", at: { zone: "names", row: 0 }, name: "add", value: "" },
+            { id: "fn", kind: "slot", at: { zone: "names", row: 0 }, name: "fn", value: "" },
             { id: "fo", kind: "obj", at: { zone: "objs", row: 0 }, typeTag: "function", value: "add", accent: true },
             { id: "df", kind: "obj", at: { zone: "objs", row: 1 }, typeTag: "__defaults__", value: "[]", accent: true },
           ],
@@ -349,7 +349,7 @@ export const pyNamesObjects: LessonData = {
           codeLine: 2, out: "['a']",
           caption: 'Вызов без <code>items</code> берёт <span class="hl">тот самый</span> список из <code>__defaults__</code> и мутирует его: <code>[\'a\']</code>.',
           nodes: [
-            { id: "fn", kind: "slot", at: { zone: "names", row: 0 }, name: "add", value: "" },
+            { id: "fn", kind: "slot", at: { zone: "names", row: 0 }, name: "fn", value: "" },
             { id: "fo", kind: "obj", at: { zone: "objs", row: 0 }, typeTag: "function", value: "add" },
             { id: "df", kind: "obj", at: { zone: "objs", row: 1 }, typeTag: "__defaults__", value: "['a']", accent: true },
           ],
@@ -362,7 +362,7 @@ export const pyNamesObjects: LessonData = {
           codeLine: 3, out: "['a', 'b']",
           caption: 'Второй вызов приходит в <b>тот же объект</b>: <code>[\'a\', \'b\']</code> (реальный прогон). Состояние пережило вызов — дефолт не пересоздаётся.',
           nodes: [
-            { id: "fn", kind: "slot", at: { zone: "names", row: 0 }, name: "add", value: "" },
+            { id: "fn", kind: "slot", at: { zone: "names", row: 0 }, name: "fn", value: "" },
             { id: "fo", kind: "obj", at: { zone: "objs", row: 0 }, typeTag: "function", value: "add" },
             { id: "df", kind: "obj", at: { zone: "objs", row: 1 }, typeTag: "__defaults__", value: "['a','b']", accent: true },
           ],
@@ -375,7 +375,7 @@ export const pyNamesObjects: LessonData = {
           codeLine: 0, out: "",
           caption: 'Починка — сторожевой дефолт: <code>items=None</code>, и <span class="hl">новый список в теле</span> на каждый вызов.',
           nodes: [
-            { id: "fn", kind: "slot", at: { zone: "names", row: 0 }, name: "add", value: "" },
+            { id: "fn", kind: "slot", at: { zone: "names", row: 0 }, name: "fn", value: "" },
             { id: "fo", kind: "obj", at: { zone: "objs", row: 0 }, typeTag: "function", value: "add" },
             { id: "fix", kind: "gate", at: { zone: "objs", row: 1 }, state: "ok", label: "починка", detail: "items = None" },
           ],
@@ -474,8 +474,8 @@ export const pyNamesObjects: LessonData = {
           codeLine: 1, out: "False",
           caption: 'Вывод: identity малых int — <b>деталь реализации</b>. Значения сравнивай <code>==</code>; <code>is</code> оставь для <code>None</code>.',
           nodes: [
-            { id: "gate", kind: "gate", at: { zone: "names", row: 0 }, state: "fail", label: "is на числах", detail: "деталь реализации" },
-            { id: "ok", kind: "gate", at: { zone: "objs", row: 0 }, state: "ok", label: "x == 257 · значение", detail: "x is None · identity" },
+            { id: "gate", kind: "gate", at: { zone: "names", row: 0 }, state: "fail", label: "is на числах", detail: "деталь CPython" },
+            { id: "ok", kind: "gate", at: { zone: "objs", row: 0 }, state: "ok", label: "== — значение", detail: "is — для None" },
           ],
           edges: [],
         },

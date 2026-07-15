@@ -101,7 +101,7 @@ export const pyArgsUnpacking: LessonData = {
             { id: "v3", kind: "chip", at: { zone: "call", row: 0, col: 2 }, value: "3", accent: true },
             { id: "v4", kind: "chip", at: { zone: "call", row: 1, col: 0 }, value: "x=4" },
             { id: "pa", kind: "chip", at: { zone: "frame", row: 0, col: 0 }, value: "a = 1" },
-            { id: "pargs", kind: "chip", at: { zone: "frame", row: 0, col: 1 }, value: "args = (2, 3)", accent: true },
+            { id: "pargs", kind: "chip", at: { zone: "frame", row: 0, col: 1 }, value: "args=(2,3)", accent: true },
           ],
           edges: [
             { id: "e2", from: "v2", to: "pargs", accent: true },
@@ -117,8 +117,8 @@ export const pyArgsUnpacking: LessonData = {
             { id: "v3", kind: "chip", at: { zone: "call", row: 0, col: 2 }, value: "3", ghost: true },
             { id: "v4", kind: "chip", at: { zone: "call", row: 1, col: 0 }, value: "x=4", accent: true },
             { id: "pa", kind: "chip", at: { zone: "frame", row: 0, col: 0 }, value: "a = 1" },
-            { id: "pargs", kind: "chip", at: { zone: "frame", row: 0, col: 1 }, value: "args = (2, 3)" },
-            { id: "pkw", kind: "chip", at: { zone: "frame", row: 1, col: 0 }, value: "kwargs = {'x': 4}", accent: true },
+            { id: "pargs", kind: "chip", at: { zone: "frame", row: 0, col: 1 }, value: "args=(2,3)" },
+            { id: "pkw", kind: "chip", at: { zone: "frame", row: 1, col: 0 }, value: "kwargs={'x':4}", w: 144, accent: true },
           ],
           edges: [{ id: "e4", from: "v4", to: "pkw", accent: true }],
         },
@@ -225,7 +225,7 @@ export const pyArgsUnpacking: LessonData = {
           codeLine: 0, out: "",
           caption: 'Справа — обычный список из четырёх элементов.',
           nodes: [
-            { id: "srcl", kind: "obj", at: { zone: "src", row: 0 }, typeTag: "list", value: "[1, 2, 3, 4]", accent: true },
+            { id: "srcl", kind: "obj", at: { zone: "src", row: 0 }, typeTag: "list", value: "[1,2,3,4]", w: 120, accent: true },
           ],
           edges: [],
         },
@@ -233,9 +233,9 @@ export const pyArgsUnpacking: LessonData = {
           codeLine: 0, out: "1\n[2, 3, 4]",
           caption: '<code>first</code> забирает голову, <code>*rest</code> — «assigned a <b>list</b> of all items… that are not assigned to any of the mandatory expressions». Заметь: это <span class="hl">list</span>, а <code>*args</code> в сигнатуре — tuple.',
           nodes: [
-            { id: "t1", kind: "chip", at: { zone: "tgt", row: 0 }, value: "first = 1", accent: true },
-            { id: "t2", kind: "chip", at: { zone: "tgt", row: 1 }, value: "rest = [2, 3, 4]", accent: true },
-            { id: "srcl", kind: "obj", at: { zone: "src", row: 0 }, typeTag: "list", value: "[1, 2, 3, 4]" },
+            { id: "t1", kind: "chip", at: { zone: "tgt", row: 0 }, value: "first=1", accent: true },
+            { id: "t2", kind: "chip", at: { zone: "tgt", row: 1 }, value: "rest=[2,3,4]", w: 120, accent: true },
+            { id: "srcl", kind: "obj", at: { zone: "src", row: 0 }, typeTag: "list", value: "[1,2,3,4]", w: 120 },
           ],
           edges: [
             { id: "d1", from: "srcl", to: "t1", accent: true },
