@@ -142,9 +142,21 @@ mutable default (кросс-ссылка на M1 внутри трека).
 Что: PY.M5 (флагман ≥6): функция-объект, def-time исполнение (c06), слои/порядок (c04),
 потеря имени → functools.wraps (c05), параметризованный декоратор (фабрика), связка
 @pytest.fixture; dis/байткод-кадр MAKE_FUNCTION/ячейки.
-Приёмка: [ ] ≥6 сегментов; [ ] карточки лесенкой (порядок слоёв/что напечатает); [ ] общая
+Приёмка:
+- [x] 8 сегментов: @ = перепривязка имени (A-9 «roughly equivalent») · def-time с
+      predict-гейтом · порядок wrapper-а · стек снизу вверх (композит C-5.1) · фабрика
+      @repeat(3) с xray-замыканием («это и есть @fixture(scope=…)») · wraps ·
+      refutation «декоратор ≠ фикстура» (ecommpay, дом ≠ кирпич) · dis-кадр
+      LOAD_NAME/MAKE_FUNCTION/CALL/STORE_NAME + MAKE_CELL (реальный прогон —
+      spikes/f5_dis_decorator.txt)
+- [x] карточки лесенкой: c1 predict (before/after/5), c2 predict (wrapper), c3 MODIFY
+      (return убран → None), c4 predict def-time (decorating foo/done) — все exec,
+      python3.12 ×2 в census-log.txt
+- [x] общая приёмка: цитаты C-5 банка дословно (композит помечен COMPOSITE-QUOTES),
+      только `at`, fit-margins чисто (кроме slot-имени «add» 4.8 — прецедент C#), seed
+      синхронен, 0 конс. ошибок; харнессы ALL GREEN, dotnet 65/65; скрины evidence/F5/
 Проверка: harness-набор
-Статус: todo
+Статус: self-pass
 
 ### F6 — Урок py-generators [M2]
 Зачем: yield = setup/teardown фикстур; «пауза кадра» — невидимое ядро.

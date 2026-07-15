@@ -1,0 +1,121 @@
+{
+  "id": "PY.M5.decorators",
+  "track": "PY",
+  "module": "M5.1",
+  "title": "Декораторы: из чего сделан pytest",
+  "prereqs": ["PY.M4.closures-scope"],
+  "version": "1.0.0",
+  "volatility": "stable",
+  "sourceSnapshot": { "python": "3.12.13" },
+  "reviewBy": "2026-10-01",
+  "status": "published",
+
+  "depth": {
+    "intuition": [
+      { "id": "i1", "text": "@log — синтаксический сахар для add = log(add): вызов декоратора и перепривязка имени; wrapper держит оригинал в замыкании.", "source": "py-glossary-deco", "status": "fact" }
+    ],
+    "mechanics": [
+      { "id": "m1", "text": "Декоратор исполняется на def-time (при импорте модуля), не при вызове функции; ошибки декоратора валят collection до первого теста.", "source": "py-compound-def", "status": "fact" },
+      { "id": "m2", "text": "Стек декораторов применяется снизу вверх: @a @b def f → f = a(b(f)); имя связывается один раз, после применения всех.", "source": "py-compound-def", "status": "fact" },
+      { "id": "m3", "text": "Декоратор с аргументами — фабрика: repeat(3) возвращает декоратор, замкнувший times=3 в ячейку; так устроен @pytest.fixture(scope=…).", "source": "py-glossary-deco", "status": "fact" },
+      { "id": "m4", "text": "Без functools.wraps __name__ обёрнутой функции — 'wrapper'; wraps копирует __name__/__qualname__/__doc__/__module__ и добавляет __wrapped__.", "source": "py-functools-wraps", "status": "fact" }
+    ],
+    "spec": [
+      { "id": "s1", "text": "«A function returning another function, usually applied as a function transformation using the @wrapper syntax.» (Glossary, дословно)", "source": "py-glossary-deco", "status": "fact" }
+    ]
+  },
+  "edgeCases": [
+    { "id": "e1", "text": "Wrapper без return «съедает» результат: задекорированный вызов возвращает None.", "source": "py-glossary-deco" },
+    { "id": "e2", "text": "В байткоде у @ нет своего опкода: LOAD_NAME log → MAKE_FUNCTION → CALL → STORE_NAME (реальный dis 3.12).", "source": "py-dis" }
+  ],
+  "misconceptions": [
+    { "wrong": "Декораторы в целом — это и есть фикстуры.", "correction": "Декоратор — механизм языка; фикстура — конструкция pytest для setup/teardown, реализованная ЧЕРЕЗ декоратор. Дом сделан из кирпича, но дом ≠ кирпич.", "source": "py-glossary-deco" },
+    { "wrong": "Декоратор сработает, когда функцию вызовут.", "correction": "Декоратор исполняется на def-time — при импорте модуля; decorating foo печатается до done без единого вызова foo().", "source": "py-compound-def" }
+  ],
+  "rationale": { "id": "r1", "text": "Декоратор = перепривязка имени + замыкание, исполненные на def-time. Из этой формулы выводятся порядок стека, фабрики @fixture(scope=…), потеря __name__ и все грабли самописных обёрток.", "source": "py-glossary-deco" },
+
+  "sources": [
+    { "id": "py-glossary-deco", "kind": "python-docs", "url": "https://docs.python.org/3/glossary.html#term-decorator", "section": "Glossary · decorator", "date": "2026-07-15", "retrieved": "2026-07-15" },
+    { "id": "py-compound-def", "kind": "python-docs", "url": "https://docs.python.org/3/reference/compound_stmts.html#function-definitions", "section": "Function definitions", "date": "2026-07-15", "retrieved": "2026-07-15" },
+    { "id": "py-functools-wraps", "kind": "python-docs", "url": "https://docs.python.org/3/library/functools.html#functools.wraps", "section": "functools.wraps", "date": "2026-07-15", "retrieved": "2026-07-15" },
+    { "id": "pep318", "kind": "pep", "url": "https://peps.python.org/pep-0318/", "section": "Decorators for Functions and Methods", "date": "2026-07-15", "retrieved": "2026-07-15" },
+    { "id": "py-dis", "kind": "python-docs", "url": "https://docs.python.org/3/library/dis.html", "section": "dis — Disassembler", "date": "2026-07-15", "retrieved": "2026-07-15" }
+  ],
+  "identifiers": [
+    { "symbol": "functools.wraps", "kind": "function", "minVersion": "3.0" },
+    { "symbol": "function.__name__", "kind": "attribute", "minVersion": "3.0" },
+    { "symbol": "@", "kind": "syntax", "minVersion": "3.0" }
+  ],
+
+  "viz": {
+    "model": "name-rebinding-decorator",
+    "renderer": "svg",
+    "interaction": "responding",
+    "entities": [
+      { "id": "objs.wrapper", "zone": "objs", "label": "wrapper" },
+      { "id": "names.add", "zone": "names", "label": "add" }
+    ],
+    "trace": [
+      { "op": "alloc", "target": "objs.wrapper", "caption": "log(add) вернул новую функцию", "signal": "objs.wrapper" },
+      { "op": "annotate", "target": "names.add", "caption": "имя add перепривязано на wrapper", "signal": "names.add" }
+    ]
+  },
+
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Лог-декоратор (before/func/after/return result) на add(a, b); print(add(2, 3)) — что напечатает (три строки)?",
+      "code": "def log(func):\n    def wrapper(*args, **kwargs):\n        print(\"before\")\n        result = func(*args, **kwargs)\n        print(\"after\")\n        return result\n    return wrapper\n\n@log\ndef add(a, b):\n    return a + b\n\nprint(add(2, 3))",
+      "expectedOutput": "before\nafter\n5",
+      "verify": "execute",
+      "sourceRefs": ["py-glossary-deco"],
+      "distractors": ["before\n5\nafter", "5\nbefore\nafter"],
+      "fsrsSeed": { "desiredRetention": 0.9 }
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Декоратор без functools.wraps; @deco def greet(): pass; print(greet.__name__) — что напечатает?",
+      "code": "def deco(f):\n    def wrapper(*args, **kwargs):\n        return f(*args, **kwargs)\n    return wrapper\n\n@deco\ndef greet():\n    pass\n\nprint(greet.__name__)",
+      "expectedOutput": "wrapper",
+      "verify": "execute",
+      "sourceRefs": ["py-functools-wraps"],
+      "distractors": ["greet", "deco"],
+      "fsrsSeed": { "desiredRetention": 0.9 }
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Из wrapper-а карточки c1 убрали return; print(add(2, 3)) — что напечатает теперь?",
+      "code": "def deco(f):\n    def wrapper(*args, **kwargs):\n        f(*args, **kwargs)\n    return wrapper\n\n@deco\ndef add(a, b):\n    return a + b\n\nprint(add(2, 3))",
+      "expectedOutput": "None",
+      "verify": "execute",
+      "sourceRefs": ["py-glossary-deco"],
+      "distractors": ["5", "TypeError"],
+      "fsrsSeed": { "desiredRetention": 0.9 }
+    },
+    {
+      "id": "c4",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "deco печатает decorating <имя> и возвращает f; @deco def foo(): pass; print(\"done\") — что и в каком порядке напечатает запуск файла (foo не вызывают)?",
+      "code": "def deco(f):\n    print(\"decorating\", f.__name__)\n    return f\n\n@deco\ndef foo():\n    pass\n\nprint(\"done\")",
+      "expectedOutput": "decorating foo\ndone",
+      "verify": "execute",
+      "sourceRefs": ["py-glossary-deco", "py-compound-def"],
+      "distractors": ["done", "done\ndecorating foo"],
+      "fsrsSeed": { "desiredRetention": 0.9 }
+    }
+  ],
+
+  "verification": {
+    "gates": { "G-SCHEMA": "pass", "G-CITE": "pass", "G-EXEC-PY": "pass", "G-VIZ": "pass" },
+    "citationCoverage": 1.0,
+    "execLog": "docs/tasks/python-track/evidence/py-cards/census-log.txt",
+    "reviewDate": "2026-07-15"
+  }
+}

@@ -23,6 +23,7 @@ import { pyNamesObjects } from "./py-names-objects.ts";
 import { pyCollectionsHash } from "./py-collections-hash.ts";
 import { pyArgsUnpacking } from "./py-args-unpacking.ts";
 import { pyClosuresScope } from "./py-closures-scope.ts";
+import { pyDecorators } from "./py-decorators.ts";
 import { S } from "../strings.ts";
 
 /** Ordered by the concept DAG (prereqs first). */
@@ -37,6 +38,7 @@ export const LESSONS: LessonData[] = [
   pyCollectionsHash,
   pyArgsUnpacking,
   pyClosuresScope,
+  pyDecorators,
 ];
 
 /**
