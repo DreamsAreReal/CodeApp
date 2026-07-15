@@ -12,7 +12,8 @@ LOG=census-log.txt
   echo "date: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
   echo "rule: expect == stdout byte-for-byte; stderr captured separately and MUST be empty"
   echo "============================================================"
-  for f in PY.M1_c1.py PY.M1_c2.py PY.M1_c3.py PY.M1_c4.py; do
+  for f in PY.M1_c1.py PY.M1_c2.py PY.M1_c3.py PY.M1_c4.py \
+           PY.M2_c1.py PY.M2_c2.py PY.M2_c3.py; do
     echo ""
     echo "---- $f ----"
     for run in 1 2; do

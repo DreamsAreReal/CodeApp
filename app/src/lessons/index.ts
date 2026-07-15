@@ -20,10 +20,20 @@ import { closures } from "./closures.ts";
 import { asyncAwait } from "./async-await.ts";
 import { hashtable } from "./hashtable.ts";
 import { pyNamesObjects } from "./py-names-objects.ts";
+import { pyCollectionsHash } from "./py-collections-hash.ts";
 import { S } from "../strings.ts";
 
 /** Ordered by the concept DAG (prereqs first). */
-export const LESSONS: LessonData[] = [valueVsReference, boxing, gc, closures, asyncAwait, hashtable, pyNamesObjects];
+export const LESSONS: LessonData[] = [
+  valueVsReference,
+  boxing,
+  gc,
+  closures,
+  asyncAwait,
+  hashtable,
+  pyNamesObjects,
+  pyCollectionsHash,
+];
 
 /**
  * Track groups — the home path renders one SECTION per group (generic: any future

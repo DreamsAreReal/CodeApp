@@ -93,10 +93,15 @@ s7 подрезка, устаревший принт viz-fit; карточка c
 Что: PY.M2: list vs tuple vs set vs dict (выбор структуры), hashable-ключи (TypeError
 list-ключа — спайк c22), устройство dict (buckets/chain-примитивы), insertion order 3.7+.
 Приёмка:
-- [ ] ≥4 сегмента с buckets-виз; карточка на hashable/lookup
-- [ ] общая приёмка уроков (шапка) зелёная
+- [x] 5 сегментов с buckets-виз (скан vs hash-прыжок, hash-гейты, set-дифф, порядок dict);
+      карточки c1 (c22: `TypeError\nok`), c2 modify (tuple(lst)-ключ: `ok\nTrue`),
+      c3 (insertion order: `['b', 'a', 'c']`) — все exec, python3.12 ×2 в census-log.txt
+- [x] общая приёмка: A-6 вплетена («в среднем O(1), worst O(n)»), цитаты RS-02 C-3 дословно,
+      собес-блок mayflower → misconception, только `at`, seed синхронен, 0 ошибок консоли
+- [x] харнессы: viz-fit ALL GREEN (8/8 уроков) · new-lessons ALL GREEN (PY-COLL) ·
+      verify/shell/loop/multicard ALL GREEN · dotnet test 65/65; скрины evidence/F2/
 Проверка: viz-fit + new-lessons(PY) + census-лог
-Статус: todo
+Статус: self-pass
 
 ### F3 — Урок py-args-unpacking [M2]
 Зачем: *args/**kwargs — везде в фикстурах/декораторах; пререквизит decorators.

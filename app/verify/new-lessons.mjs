@@ -23,6 +23,7 @@ const EXPECT = [
   { id: "T2.M1.async-await", segs: 5, ev: "ASYNC" },
   { id: "T2.M5.hashtable", segs: 6, ev: "HASHTABLE" },
   { id: "PY.M1.names-objects", segs: 8, ev: "PY-NAMES" },
+  { id: "PY.M2.collections-hash", segs: 5, ev: "PY-COLL" },
 ];
 
 const VIEWPORTS = { 375: { width: 375, height: 812 }, 768: { width: 768, height: 1024 }, 1440: { width: 1440, height: 900 }, 390: { width: 390, height: 844 } };
