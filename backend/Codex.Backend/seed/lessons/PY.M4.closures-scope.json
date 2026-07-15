@@ -1,0 +1,107 @@
+{
+  "id": "PY.M4.closures-scope",
+  "track": "PY",
+  "module": "M4.1",
+  "title": "LEGB и замыкания",
+  "prereqs": ["PY.M1.names-objects"],
+  "version": "1.0.0",
+  "volatility": "stable",
+  "sourceSnapshot": { "python": "3.12.13" },
+  "reviewBy": "2026-10-01",
+  "status": "published",
+
+  "depth": {
+    "intuition": [
+      { "id": "i1", "text": "Чтение имени идёт по цепочке LEGB (Local → Enclosing → Global → Built-in); присваивание по умолчанию пишет в локальный scope.", "source": "py-tut-scopes", "status": "fact" }
+    ],
+    "mechanics": [
+      { "id": "m1", "text": "Присваивание где угодно в теле делает имя локальным НА КОМПИЛЯЦИИ; чтение до записи — UnboundLocalError (не «создаётся локальная»).", "source": "py-faq-unbound", "status": "fact" },
+      { "id": "m2", "text": "Замыкание хранит захваченные имена ячейками: __closure__ — кортеж cell-объектов, значение читается через cell_contents / LOAD_DEREF.", "source": "py-datamodel-func", "status": "fact" },
+      { "id": "m3", "text": "Захватывается переменная, не значение: лямбды одного цикла делят одну ячейку (late binding → [2, 2, 2]); дефолт-аргумент i=i фиксирует значение при создании.", "source": "py-datamodel-func", "status": "fact" }
+    ],
+    "spec": [
+      { "id": "s1", "text": "«At any time during execution, there are 3 or 4 nested scopes whose namespaces are directly accessible.» (Tutorial, дословно)", "source": "py-tut-scopes", "status": "fact" }
+    ]
+  },
+  "edgeCases": [
+    { "id": "e1", "text": "Каждый вызов фабрики создаёт свой scope: make_multiplier(2)/(3) дают разные ячейки — 10 15, не 10 10.", "source": "py-datamodel-func" },
+    { "id": "e2", "text": "global в тестах — shared state между тестами; состояние пробрасывай фикстурами.", "source": "py-tut-scopes" }
+  ],
+  "misconceptions": [
+    { "wrong": "double(5), triple(5) вернут 10 10 — фабрики делят один factor.", "correction": "Каждый вызов фабрики — новый scope и новая ячейка: 10 15; проверяемо рентгеном double.__closure__[0].cell_contents == 2.", "source": "py-datamodel-func" },
+    { "wrong": "Без global «создастся локальная переменная».", "correction": "Имя становится локальным на этапе компиляции; чтение до присваивания падает UnboundLocalError — ничего не «создаётся».", "source": "py-faq-unbound" }
+  ],
+  "rationale": { "id": "r1", "text": "Одна модель «имена красятся на компиляции + захват ячейками» объясняет UnboundLocalError, nonlocal-счётчики, независимость фабрик и late binding — фундамент декораторов и фикстур.", "source": "py-datamodel-func" },
+
+  "sources": [
+    { "id": "py-tut-scopes", "kind": "python-docs", "url": "https://docs.python.org/3/tutorial/classes.html#python-scopes-and-namespaces", "section": "Python Scopes and Namespaces", "date": "2026-07-15", "retrieved": "2026-07-15" },
+    { "id": "py-faq-unbound", "kind": "python-docs", "url": "https://docs.python.org/3/faq/programming.html#why-am-i-getting-an-unboundlocalerror-when-the-variable-has-a-value", "section": "FAQ · UnboundLocalError", "date": "2026-07-15", "retrieved": "2026-07-15" },
+    { "id": "py-datamodel-func", "kind": "python-docs", "url": "https://docs.python.org/3/reference/datamodel.html", "section": "Callable types · function attributes", "date": "2026-07-15", "retrieved": "2026-07-15" },
+    { "id": "py-dis", "kind": "python-docs", "url": "https://docs.python.org/3/library/dis.html", "section": "dis — Disassembler", "date": "2026-07-15", "retrieved": "2026-07-15" }
+  ],
+  "identifiers": [
+    { "symbol": "nonlocal", "kind": "keyword", "minVersion": "3.0" },
+    { "symbol": "function.__closure__", "kind": "attribute", "minVersion": "3.0" },
+    { "symbol": "cell.cell_contents", "kind": "attribute", "minVersion": "3.0" }
+  ],
+
+  "viz": {
+    "model": "scopes-and-cells",
+    "renderer": "svg",
+    "interaction": "responding",
+    "entities": [
+      { "id": "xray.cell", "zone": "xray", "label": "cell · factor" },
+      { "id": "fn.multiply", "zone": "fn", "label": "multiply" }
+    ],
+    "trace": [
+      { "op": "alloc", "target": "xray.cell", "caption": "MAKE_CELL: параметр станет ячейкой", "signal": "xray.cell" },
+      { "op": "annotate", "target": "fn.multiply", "caption": "MAKE_FUNCTION 8 (closure): функция + кортеж ячеек", "signal": "fn.multiply" }
+    ]
+  },
+
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "funcs = [lambda: i for i in range(3)]; print([f() for f in funcs]); затем funcs = [lambda i=i: i for i in range(3)]; print([f() for f in funcs]) — что напечатают обе строки?",
+      "code": "funcs = [lambda: i for i in range(3)]\nprint([f() for f in funcs])\nfuncs = [lambda i=i: i for i in range(3)]\nprint([f() for f in funcs])",
+      "expectedOutput": "[2, 2, 2]\n[0, 1, 2]",
+      "verify": "execute",
+      "sourceRefs": ["py-datamodel-func", "py-faq-unbound"],
+      "distractors": ["[0, 1, 2]\n[0, 1, 2]", "[2, 2, 2]\n[2, 2, 2]"],
+      "fsrsSeed": { "desiredRetention": 0.9 }
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "make_counter с nonlocal n; c = make_counter(); print(c(), c(), c()) — что напечатает?",
+      "code": "def make_counter():\n    n = 0\n    def inc():\n        nonlocal n\n        n += 1\n        return n\n    return inc\n\nc = make_counter()\nprint(c(), c(), c())",
+      "expectedOutput": "1 2 3",
+      "verify": "execute",
+      "sourceRefs": ["py-faq-unbound", "py-tut-scopes"],
+      "distractors": ["1 1 1", "UnboundLocalError"],
+      "fsrsSeed": { "desiredRetention": 0.9 }
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "double = make_multiplier(2); triple = make_multiplier(3); print(double(5), triple(5)) — что напечатает?",
+      "code": "def make_multiplier(factor):\n    def multiply(x):\n        return x * factor\n    return multiply\n\ndouble = make_multiplier(2)\ntriple = make_multiplier(3)\nprint(double(5), triple(5))",
+      "expectedOutput": "10 15",
+      "verify": "execute",
+      "sourceRefs": ["py-datamodel-func", "py-tut-scopes"],
+      "distractors": ["10 10", "15 15"],
+      "fsrsSeed": { "desiredRetention": 0.9 }
+    }
+  ],
+
+  "verification": {
+    "gates": { "G-SCHEMA": "pass", "G-CITE": "pass", "G-EXEC-PY": "pass", "G-VIZ": "pass" },
+    "citationCoverage": 1.0,
+    "execLog": "docs/tasks/python-track/evidence/py-cards/census-log.txt",
+    "reviewDate": "2026-07-15"
+  }
+}

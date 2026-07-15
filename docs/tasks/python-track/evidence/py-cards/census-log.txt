@@ -1,5 +1,5 @@
 G-EXEC-PY census — Python 3.12.13 (/opt/homebrew/bin/python3.12)
-date: 2026-07-15T19:37:23Z
+date: 2026-07-15T19:55:17Z
 rule: expect == stdout byte-for-byte; stderr captured separately and MUST be empty
 ============================================================
 
@@ -93,4 +93,30 @@ run 1 stderr: <empty>
 run 2 stdout:
 1
 [2, 3, 4]
+run 2 stderr: <empty>
+
+---- PY.M4_c1.py ----
+run 1 stdout:
+[2, 2, 2]
+[0, 1, 2]
+run 1 stderr: <empty>
+run 2 stdout:
+[2, 2, 2]
+[0, 1, 2]
+run 2 stderr: <empty>
+
+---- PY.M4_c2.py ----
+run 1 stdout:
+1 2 3
+run 1 stderr: <empty>
+run 2 stdout:
+1 2 3
+run 2 stderr: <empty>
+
+---- PY.M4_c3.py ----
+run 1 stdout:
+10 15
+run 1 stderr: <empty>
+run 2 stdout:
+10 15
 run 2 stderr: <empty>

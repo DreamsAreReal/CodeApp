@@ -14,7 +14,8 @@ LOG=census-log.txt
   echo "============================================================"
   for f in PY.M1_c1.py PY.M1_c2.py PY.M1_c3.py PY.M1_c4.py \
            PY.M2_c1.py PY.M2_c2.py PY.M2_c3.py \
-           PY.M3_c1.py PY.M3_c2.py PY.M3_c3.py; do
+           PY.M3_c1.py PY.M3_c2.py PY.M3_c3.py \
+           PY.M4_c1.py PY.M4_c2.py PY.M4_c3.py; do
     echo ""
     echo "---- $f ----"
     for run in 1 2; do

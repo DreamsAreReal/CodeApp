@@ -123,9 +123,19 @@ mutable default (кросс-ссылка на M1 внутри трека).
 Зачем: замыкания = основа декораторов/фикстур; собес-ловушка late binding.
 Что: PY.M4: LEGB, global/UnboundLocalError (фикс md A-1), nonlocal, cells/__closure__
 (невидимое), late binding в цикле [2,2,2]→[0,1,2] (спайк c20).
-Приёмка: [ ] ≥5 сегментов, cells показаны анимацией; [ ] карточка late-binding; [ ] общая
+Приёмка:
+- [x] 6 сегментов: LEGB-цепочка · компилятор красит имена (A-1/B-12: UnboundLocalError,
+      реальный текст 3.12 — spikes/f4_unboundlocal.py) · nonlocal · фабрики с разными cells ·
+      РЕНТГЕН __closure__ (xray-зона, грефт B2 из VERDICT) + dis-кадр MAKE_CELL/LOAD_CLOSURE/
+      MAKE_FUNCTION(closure)/LOAD_DEREF (реальный прогон — spikes/f4_dis_closure.txt) ·
+      late binding с predict-гейтом
+- [x] карточки: c1 late-binding `[2, 2, 2]\n[0, 1, 2]` (predict+modify в одной), c2 nonlocal
+      `1 2 3`, c3 фабрики `10 15` — все exec, python3.12 ×2 в census-log.txt
+- [x] общая приёмка: цитаты C-4 банка дословно, мисконцепция «10 10», только `at`, seed
+      синхронен, 0 конс. ошибок; харнессы ALL GREEN (viz-fit после фикса MID-OVL s1 —
+      константные лейблы чипов), dotnet 65/65; скрины evidence/F4/
 Проверка: harness-набор
-Статус: todo
+Статус: self-pass
 
 ### F5 — Урок py-decorators [M2] [золотой путь]
 Зачем: «декоратор — это pytest»: @fixture/@parametrize/@allure.step; ядро собес-флоу.

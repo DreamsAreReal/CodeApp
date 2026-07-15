@@ -374,6 +374,16 @@
 .vz-zone.good {
   fill: var(--sage-tint);
 }
+/* x-ray zone (tournament graft B2, generic): dashed outline for RUNTIME-INVISIBLE
+   structures made visible — __closure__ cells, frozen generator frames, etc. */
+.vz-zone.xray {
+  fill: none;
+  stroke: var(--muted);
+  stroke-dasharray: 5 4;
+}
+.vz-zlabel.xray {
+  fill: var(--muted);
+}
 .vz-zlabel {
   font-family: var(--display);
   font-size: 11px;
