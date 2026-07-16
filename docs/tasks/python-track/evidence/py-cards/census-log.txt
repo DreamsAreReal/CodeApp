@@ -364,3 +364,46 @@ run 2 stdout:
 default
 found
 run 2 stderr: <empty>
+
+---- PY.M11_c1.py ----
+run 1 stdout:
+coroutine
+42
+run 1 stderr: PY.M11_c1.py:11: RuntimeWarning: coroutine 'fetch' was never awaited
+run 2 stdout:
+coroutine
+42
+run 2 stderr: PY.M11_c1.py:11: RuntimeWarning: coroutine 'fetch' was never awaited
+NOTE: c1 stderr contains RuntimeWarning BY DESIGN (never-awaited coroutine, RS-03/RS-01 c19); expect compares stdout only.
+
+---- PY.M11_c2.py ----
+run 1 stdout:
+['slow', 'fast']
+run 1 stderr: <empty>
+run 2 stdout:
+['slow', 'fast']
+run 2 stderr: <empty>
+
+---- PY.M11_c3.py ----
+run 1 stdout:
+done: fast
+done: slow
+['slow', 'fast']
+run 1 stderr: <empty>
+run 2 stdout:
+done: fast
+done: slow
+['slow', 'fast']
+run 2 stderr: <empty>
+
+---- PY.M11_c4.py ----
+run 1 stdout:
+block start
+block end
+other
+run 1 stderr: <empty>
+run 2 stdout:
+block start
+block end
+other
+run 2 stderr: <empty>

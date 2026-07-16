@@ -1,0 +1,10 @@
+# python3.12 (Python 3.12.13) — run 1
+block start
+block end
+other
+# stderr run 1: 
+# run 2
+block start
+block end
+other
+# stderr run 2: 

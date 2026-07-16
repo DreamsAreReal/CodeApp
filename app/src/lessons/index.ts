@@ -29,6 +29,7 @@ import { pyContextManagers } from "./py-context-managers.ts";
 import { pyObjectModel } from "./py-object-model.ts";
 import { pyExceptions } from "./py-exceptions.ts";
 import { pyTypeHints } from "./py-type-hints.ts";
+import { pyAsyncAwait } from "./py-async-await.ts";
 import { S } from "../strings.ts";
 
 /** Ordered by the concept DAG (prereqs first). */
@@ -49,6 +50,7 @@ export const LESSONS: LessonData[] = [
   pyObjectModel,
   pyExceptions,
   pyTypeHints,
+  pyAsyncAwait,
 ];
 
 /**

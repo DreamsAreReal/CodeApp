@@ -1,0 +1,10 @@
+# python3.12 (Python 3.12.13) — run 1
+done: fast
+done: slow
+['slow', 'fast']
+# stderr run 1: 
+# run 2
+done: fast
+done: slow
+['slow', 'fast']
+# stderr run 2: 

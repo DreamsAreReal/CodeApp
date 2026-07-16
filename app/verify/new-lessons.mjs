@@ -32,6 +32,7 @@ const EXPECT = [
   { id: "PY.M8.object-model", segs: 8, ev: "PY-OBJ" },
   { id: "PY.M9.exceptions", segs: 5, ev: "PY-EXC" },
   { id: "PY.M10.type-hints", segs: 4, ev: "PY-HINTS" },
+  { id: "PY.M11.async-await", segs: 7, ev: "PY-ASYNC" },
 ];
 
 const VIEWPORTS = { 375: { width: 375, height: 812 }, 768: { width: 768, height: 1024 }, 1440: { width: 1440, height: 900 }, 390: { width: 390, height: 844 } };
