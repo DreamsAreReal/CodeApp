@@ -241,7 +241,10 @@ export const pyGenerators: LessonData = {
           nodes: [
             { id: "big", kind: "obj", at: { zone: "list", row: 0 }, typeTag: "list · 1M", value: "38.4 MB", w: 96, ghost: true },
             { id: "items", kind: "chip", at: { zone: "list", row: 1 }, value: "int × 1M", w: 96, ghost: true },
-            { id: "tiny", kind: "obj", at: { zone: "lazy", row: 0 }, typeTag: "genexpr", value: "200 байт", w: 96, accent: true },
+            // Label compacted to "200 Б" (measured value unchanged): natural mono width
+            // of "200 байт" was 86.4px vs avail 86 — a Linux/FreeType FIT risk (wave rule:
+            // natural headroom >=6px, see progress.md).
+            { id: "tiny", kind: "obj", at: { zone: "lazy", row: 0 }, typeTag: "genexpr", value: "200 Б", w: 96, accent: true },
             { id: "one", kind: "chip", at: { zone: "lazy", row: 1 }, value: "по одному", w: 96, accent: true },
           ],
           edges: [{ id: "m1", from: "tiny", to: "one", accent: true }],

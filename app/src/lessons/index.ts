@@ -25,6 +25,7 @@ import { pyArgsUnpacking } from "./py-args-unpacking.ts";
 import { pyClosuresScope } from "./py-closures-scope.ts";
 import { pyDecorators } from "./py-decorators.ts";
 import { pyGenerators } from "./py-generators.ts";
+import { pyContextManagers } from "./py-context-managers.ts";
 import { S } from "../strings.ts";
 
 /** Ordered by the concept DAG (prereqs first). */
@@ -41,6 +42,7 @@ export const LESSONS: LessonData[] = [
   pyClosuresScope,
   pyDecorators,
   pyGenerators,
+  pyContextManagers,
 ];
 
 /**

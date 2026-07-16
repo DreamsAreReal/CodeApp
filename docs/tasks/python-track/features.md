@@ -180,9 +180,27 @@ StopIteration (c10), фикстура yield-паттерном, genexpr vs list 
 Зачем: with = httpx.Client/testcontainers/allure.step; teardown-гарантии.
 Что: PY.M7: протокол __enter__/__exit__ (c11), подавление исключений возвратом True,
 @contextlib.contextmanager (c14 — мост от генераторов), with vs try/finally.
-Приёмка: [ ] ≥4 сегмента (gate-примитив для exit-решения); [ ] карточка; [ ] общая
-Проверка: harness-набор
-Статус: todo
+Приёмка:
+- [x] 5 сегментов, gate-примитив для exit-решения есть (s2: return True ok-gate «подавлено» /
+      return False fail-gate «reraised»; s4: fail-gate «elapsed не напечатан» → ok-gate «finally»):
+      s1 протокол enter/exit · s2 подавление (predict-гейт) · s3 @contextmanager (мост от PY.M6,
+      пауза кадра) · s4 ловушка «yield без try/finally теряет teardown» (predict-гейт; спайк
+      evidence/spikes/f7_cm_no_finally_out.txt ×2) · s5 with vs try/finally (PEP 343)
+- [x] карточки лесенкой 4 exec: c1 predict (подавление: `enter\nbody\nexit\nafter`), c2 MODIFY
+      (False → `enter\nbody\nexit\nValueError`), c3 predict (`setup\n42\nteardown`), c4 MODIFY
+      (raise без finally → `setup\nValueError`) — все python3.12.13 ×2, stdout==expect
+      байт-в-байт, stderr пуст (census-log.txt перегнан 2026-07-16, front==seed==census
+      проверено скриптом)
+- [x] общая приёмка: только `at`; 6 EN-цитат перепроверены фетчем живых страниц (compound_stmts
+      ×2, contextlib ×3, PEP 343) — дословны; собес-блок «зачем with, если try/finally» →
+      misconception-hook; takeaway «httpx.Client/testcontainers/allure.step/pytest.raises»;
+      без C#; seed синхронен; 0 ошибок консоли; estMinutes 7; headroom: худший лейбл M7 = 6.8px ≥ 6
+Проверка: build чисто (104.57 KB gz < 200) · viz-fit ALL GREEN (221 сцена, 13 уроков) ·
+npm run verify ALL GREEN · new-lessons ALL GREEN (PY.M7 5 сегм + reduced-motion) ·
+multicard-session ALL GREEN · shell ALL GREEN · dotnet 65/65; скрины evidence/F7/ (13 PNG,
+смотрел глазами). Попутный фикс: PY.M6 s5 лейбл «200 байт» natural margin −0.4px → «200 Б»
+(margin 7) — профилактика Linux FIT по канону волны.
+Статус: self-pass
 
 ### F8 — Урок py-object-model [M3]
 Зачем: POM/BasePage; собес: MRO, classmethod/staticmethod, property.

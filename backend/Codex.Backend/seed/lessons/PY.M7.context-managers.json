@@ -1,0 +1,118 @@
+{
+  "id": "PY.M7.context-managers",
+  "track": "PY",
+  "module": "M7.1",
+  "title": "with: протокол enter/exit",
+  "prereqs": ["PY.M6.generators"],
+  "version": "1.0.0",
+  "volatility": "stable",
+  "sourceSnapshot": { "python": "3.12.13" },
+  "reviewBy": "2026-10-01",
+  "status": "published",
+
+  "depth": {
+    "intuition": [
+      { "id": "i1", "text": "with — протокол из двух методов: __enter__ на входе (возврат → as-имя), __exit__ на выходе; cleanup не зависит от того, как тело закончилось.", "source": "py-with-stmt", "status": "fact" }
+    ],
+    "mechanics": [
+      { "id": "m1", "text": "Исключение из тела передаётся в __exit__ аргументами (type, value, traceback); truthy-возврат подавляет его, falsy (в т.ч. None без return) — отпускает наружу.", "source": "py-with-stmt", "status": "fact" },
+      { "id": "m2", "text": "@contextmanager делает CM из генератора с одним yield: до yield — setup, отданное значение — в as, после — teardown; тело with исполняется на паузе кадра.", "source": "py-contextlib", "status": "fact" },
+      { "id": "m3", "text": "Исключение из тела with вбрасывается в генератор на точке yield — без try/finally вокруг yield код после него не исполняется (teardown потерян).", "source": "py-contextlib", "status": "fact" }
+    ],
+    "spec": [
+      { "id": "s1", "text": "«The with statement guarantees that if the __enter__() method returns without an error, then __exit__() will always be called.» (Reference, дословно)", "source": "py-with-stmt", "status": "fact" }
+    ]
+  },
+  "edgeCases": [
+    { "id": "e1", "text": "Вернуть из __exit__ истину — подавить ЛЮБОЕ исключение тела, включая AssertionError проверок: случайный truthy-возврат делает тесты вечно зелёными.", "source": "py-with-stmt" },
+    { "id": "e2", "text": "Если бросил сам __enter__ — __exit__ не вызывается (гарантия начинается «if the __enter__() method returns without an error»); частично захваченный ресурс чисти в самом __enter__.", "source": "py-with-stmt" }
+  ],
+  "misconceptions": [
+    { "wrong": "with — это синтаксис для файлов.", "correction": "with работает с любым объектом с __enter__/__exit__ и придуман, чтобы «factor out standard uses of try/finally statements» (PEP 343): httpx.Client, testcontainers, allure.step, pytest.raises — всё CM.", "source": "pep343" },
+    { "wrong": "Голый yield в @contextmanager — это уже setup/teardown.", "correction": "Исключение из тела with влетает в генератор на точке yield: без try/finally строка после yield недостижима — teardown теряется молча. То же правило для yield-фикстур.", "source": "py-contextlib" }
+  ],
+  "rationale": { "id": "r1", "text": "Одна модель «протокол двух методов + пауза генератора» объясняет гарантию cleanup, право __exit__ гасить исключения, @contextmanager и правило try/finally вокруг yield — фундамент httpx/testcontainers/allure.step/pytest.raises.", "source": "py-with-stmt" },
+
+  "sources": [
+    { "id": "py-with-stmt", "kind": "python-docs", "url": "https://docs.python.org/3/reference/compound_stmts.html#the-with-statement", "section": "The with statement", "date": "2026-07-16", "retrieved": "2026-07-16" },
+    { "id": "pep343", "kind": "pep", "url": "https://peps.python.org/pep-0343/", "section": "PEP 343 · Abstract", "date": "2026-07-16", "retrieved": "2026-07-16" },
+    { "id": "py-contextlib", "kind": "python-docs", "url": "https://docs.python.org/3/library/contextlib.html#contextlib.contextmanager", "section": "contextlib.contextmanager", "date": "2026-07-16", "retrieved": "2026-07-16" }
+  ],
+  "identifiers": [
+    { "symbol": "object.__enter__", "kind": "special-method", "minVersion": "3.0" },
+    { "symbol": "object.__exit__", "kind": "special-method", "minVersion": "3.0" },
+    { "symbol": "contextlib.contextmanager", "kind": "decorator", "minVersion": "3.0" }
+  ],
+
+  "viz": {
+    "model": "enter-exit-protocol",
+    "renderer": "svg",
+    "interaction": "responding",
+    "entities": [
+      { "id": "proto.exit", "zone": "proto", "label": "__exit__()" },
+      { "id": "cmg.pause", "zone": "cmg", "label": "yield · пауза" }
+    ],
+    "trace": [
+      { "op": "annotate", "target": "proto.exit", "caption": "__exit__ вызван всегда; его возврат решает судьбу исключения", "signal": "proto.exit" },
+      { "op": "highlight", "target": "cmg.pause", "caption": "тело with исполняется на паузе генератора @contextmanager", "signal": "cmg.pause" }
+    ]
+  },
+
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "CM печатает enter/exit, __exit__ возвращает True; with CM(): print(\"body\"); raise ValueError(\"boom\"); затем print(\"after\") — что напечатает (четыре строки)?",
+      "code": "class CM:\n    def __enter__(self):\n        print(\"enter\")\n        return self\n    def __exit__(self, *exc):\n        print(\"exit\")\n        return True\n\nwith CM():\n    print(\"body\")\n    raise ValueError(\"boom\")\nprint(\"after\")",
+      "expectedOutput": "enter\nbody\nexit\nafter",
+      "verify": "execute",
+      "sourceRefs": ["py-with-stmt"],
+      "distractors": ["enter\nbody\nexit и traceback", "enter\nbody\nafter"],
+      "fsrsSeed": { "desiredRetention": 0.9 }
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Тот же CM, но __exit__ возвращает False; with обёрнут в try/except ValueError as e: print(type(e).__name__) — что напечатает теперь (четыре строки)?",
+      "code": "class CM:\n    def __enter__(self):\n        print(\"enter\")\n        return self\n    def __exit__(self, *exc):\n        print(\"exit\")\n        return False\n\ntry:\n    with CM():\n        print(\"body\")\n        raise ValueError(\"boom\")\n    print(\"after\")\nexcept ValueError as e:\n    print(type(e).__name__)",
+      "expectedOutput": "enter\nbody\nexit\nValueError",
+      "verify": "execute",
+      "sourceRefs": ["py-with-stmt"],
+      "distractors": ["enter\nbody\nValueError\nexit", "enter\nbody\nexit\nafter"],
+      "fsrsSeed": { "desiredRetention": 0.9 }
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "@contextmanager def cm(): print(\"setup\"); yield 42; print(\"teardown\"); затем with cm() as v: print(v) — что напечатает (три строки)?",
+      "code": "from contextlib import contextmanager\n\n@contextmanager\ndef cm():\n    print(\"setup\")\n    yield 42\n    print(\"teardown\")\n\nwith cm() as v:\n    print(v)",
+      "expectedOutput": "setup\n42\nteardown",
+      "verify": "execute",
+      "sourceRefs": ["py-contextlib"],
+      "distractors": ["setup\nteardown\n42", "42\nsetup\nteardown"],
+      "fsrsSeed": { "desiredRetention": 0.9 }
+    },
+    {
+      "id": "c4",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Тот же cm() (yield без try/finally), но тело with бросает ValueError, пойманную снаружи try/except с print(type(e).__name__) — что напечатает (две строки)?",
+      "code": "from contextlib import contextmanager\n\n@contextmanager\ndef cm():\n    print(\"setup\")\n    yield 42\n    print(\"teardown\")\n\ntry:\n    with cm() as v:\n        raise ValueError(\"boom\")\nexcept ValueError as e:\n    print(type(e).__name__)",
+      "expectedOutput": "setup\nValueError",
+      "verify": "execute",
+      "sourceRefs": ["py-contextlib"],
+      "distractors": ["setup\nteardown\nValueError", "setup\nValueError\nteardown"],
+      "fsrsSeed": { "desiredRetention": 0.9 }
+    }
+  ],
+
+  "verification": {
+    "gates": { "G-SCHEMA": "pass", "G-CITE": "pass", "G-EXEC-PY": "pass", "G-VIZ": "pass" },
+    "citationCoverage": 1.0,
+    "execLog": "docs/tasks/python-track/evidence/py-cards/census-log.txt",
+    "reviewDate": "2026-07-16"
+  }
+}

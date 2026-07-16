@@ -1,0 +1,12 @@
+python3.12 f7_cm_no_finally.py — run 1:
+start
+bad: ValueError
+start
+elapsed
+good: ValueError
+run 2:
+start
+bad: ValueError
+start
+elapsed
+good: ValueError
