@@ -1,0 +1,122 @@
+{
+  "id": "PY.M8.object-model",
+  "track": "PY",
+  "module": "M8.1",
+  "title": "Объектная модель: атрибуты, MRO, дескрипторы",
+  "prereqs": ["PY.M7.context-managers"],
+  "version": "1.0.0",
+  "volatility": "stable",
+  "sourceSnapshot": { "python": "3.12.13" },
+  "reviewBy": "2026-10-01",
+  "status": "published",
+
+  "depth": {
+    "intuition": [
+      { "id": "i1", "text": "Атрибуты живут в словарях: у инстанса свой __dict__, у класса общий; чтение идёт цепочкой инстанс → класс → базы, запись через инстанс — всегда в словарь объекта (тень).", "source": "py-tut-classes", "status": "fact" }
+    ],
+    "mechanics": [
+      { "id": "m1", "text": "MRO (C3-линеаризация) — единый порядок поиска атрибутов: для D(B, C) это [D, B, C, A, object]; поиск останавливается на первом совпадении.", "source": "py-mro-howto", "status": "fact" },
+      { "id": "m2", "text": "super() делегирует следующему классу в MRO инстанса — в diamond это может быть sibling, а не родитель (фикс формулировки конспекта, RS-02 A-7).", "source": "py-funcs", "status": "fact" },
+      { "id": "m3", "text": "Функция в словаре класса — дескриптор: точка вызывает её __get__(instance, owner) и возвращает bound method; property/classmethod/staticmethod — тот же протокол.", "source": "py-desc-howto", "status": "fact" },
+      { "id": "m4", "text": "Name mangling: __x в теле класса текстуально переименован в _P__x — защита от переопределения в наследнике, не приватность (снаружи p._P__x читается).", "source": "py-tut-classes", "status": "fact" }
+    ],
+    "spec": [
+      { "id": "s1", "text": "«the linearization of C is the sum of C plus the merge of the linearizations of the parents and the list of the parents.» (MRO HOWTO, дословно)", "source": "py-mro-howto", "status": "fact" }
+    ]
+  },
+  "edgeCases": [
+    { "id": "e1", "text": "Первая запись self.total = self.total + 1 читает из класса, а пишет в инстанс: «общий» счётчик молча расщепляется по объектам.", "source": "py-tut-classes" },
+    { "id": "e2", "text": "super() в diamond уходит к sibling-классу («delegates method calls to a parent or sibling class of type») — кооперативная цепочка обходит все классы по одному разу.", "source": "py-funcs" }
+  ],
+  "misconceptions": [
+    { "wrong": "Полиморфизм — это выучить пример дословно.", "correction": "Пример конспекта без __init__ падает AttributeError при запуске (RS-02 A-2). Механизм: у объектов одинаковый метод, точка находит его по классу инстанса; исправленный код (Circle(2), Rectangle(3, 4)) печатает 12.56 и 12.", "source": "py-tut-classes" },
+    { "wrong": "__x — приватное поле.", "correction": "Mangling — текстовая замена __x → _P__x в теле класса; снаружи p._P__x читается свободно: «nothing in Python makes it possible to enforce data hiding — it is all based upon convention».", "source": "py-tut-classes" }
+  ],
+  "rationale": { "id": "r1", "text": "Одна модель «атрибуты — словари, порядок — MRO, точка — дескриптор» объясняет тени атрибутов, diamond-наследование, bound methods, property и mangling — фундамент Page Object и фабрик-фикстур.", "source": "py-desc-howto" },
+
+  "sources": [
+    { "id": "py-tut-classes", "kind": "python-docs", "url": "https://docs.python.org/3/tutorial/classes.html", "section": "9.3.5 Class and Instance Variables · 9.6 Private Variables", "date": "2026-07-16", "retrieved": "2026-07-16" },
+    { "id": "py-mro-howto", "kind": "python-docs", "url": "https://docs.python.org/3/howto/mro.html", "section": "The Python 2.3 Method Resolution Order", "date": "2026-07-16", "retrieved": "2026-07-16" },
+    { "id": "py-desc-howto", "kind": "python-docs", "url": "https://docs.python.org/3/howto/descriptor.html", "section": "Descriptor Guide", "date": "2026-07-16", "retrieved": "2026-07-16" },
+    { "id": "py-funcs", "kind": "python-docs", "url": "https://docs.python.org/3/library/functions.html", "section": "classmethod / staticmethod / super", "date": "2026-07-16", "retrieved": "2026-07-16" }
+  ],
+  "identifiers": [
+    { "symbol": "type.__mro__", "kind": "attribute", "minVersion": "3.0" },
+    { "symbol": "object.__get__", "kind": "special-method", "minVersion": "3.0" },
+    { "symbol": "property", "kind": "builtin", "minVersion": "3.0" },
+    { "symbol": "classmethod", "kind": "builtin", "minVersion": "3.0" },
+    { "symbol": "staticmethod", "kind": "builtin", "minVersion": "3.0" }
+  ],
+
+  "viz": {
+    "model": "attribute-lookup-mro",
+    "renderer": "svg",
+    "interaction": "responding",
+    "entities": [
+      { "id": "inst.shadow", "zone": "inst", "label": "total: 5" },
+      { "id": "xray.get", "zone": "xray", "label": "__get__" }
+    ],
+    "trace": [
+      { "op": "annotate", "target": "inst.shadow", "caption": "запись через инстанс создаёт тень; классовый атрибут не тронут", "signal": "inst.shadow" },
+      { "op": "highlight", "target": "xray.get", "caption": "точка зовёт __get__ — функция становится bound method", "signal": "xray.get" }
+    ]
+  },
+
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "class Counter: total = 0; c1 = Counter(); c2 = Counter(); c1.total = 5 — что напечатает print(c1.total, c2.total, Counter.total)?",
+      "code": "class Counter:\n    total = 0\n    def __init__(self):\n        self.count = 0\n\nc1 = Counter()\nc2 = Counter()\nc1.total = 5\nprint(c1.total, c2.total, Counter.total)",
+      "expectedOutput": "5 0 0",
+      "verify": "execute",
+      "sourceRefs": ["py-tut-classes"],
+      "distractors": ["5 5 5", "5 0 5"],
+      "fsrsSeed": { "desiredRetention": 0.9 }
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Тот же Counter, но def inc(self): Counter.total += 1; после c1.inc(); c2.inc() — что напечатает print(c1.total, c2.total, Counter.total)?",
+      "code": "class Counter:\n    total = 0\n    def inc(self):\n        Counter.total += 1\n\nc1 = Counter()\nc2 = Counter()\nc1.inc()\nc2.inc()\nprint(c1.total, c2.total, Counter.total)",
+      "expectedOutput": "2 2 2",
+      "verify": "execute",
+      "sourceRefs": ["py-tut-classes"],
+      "distractors": ["1 1 2", "2 0 2"],
+      "fsrsSeed": { "desiredRetention": 0.9 }
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "B(A) и C(A) переопределяют hello (\"B\"/\"C\"), class D(B, C): pass — что напечатают print(D().hello()) и print([c.__name__ for c in D.__mro__])?",
+      "code": "class A:\n    def hello(self): return \"A\"\nclass B(A):\n    def hello(self): return \"B\"\nclass C(A):\n    def hello(self): return \"C\"\nclass D(B, C):\n    pass\n\nprint(D().hello())\nprint([c.__name__ for c in D.__mro__])",
+      "expectedOutput": "B\n['D', 'B', 'C', 'A', 'object']",
+      "verify": "execute",
+      "sourceRefs": ["py-mro-howto"],
+      "distractors": ["C\n['D', 'C', 'B', 'A', 'object']", "B\n['D', 'B', 'A', 'C', 'object']"],
+      "fsrsSeed": { "desiredRetention": 0.9 }
+    },
+    {
+      "id": "c4",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "class P: __init__ делает self.__x = 1. Снаружи print(p._P__x), затем print(p.__x) под try/except AttributeError — что напечатает?",
+      "code": "class P:\n    def __init__(self):\n        self.__x = 1\n\np = P()\nprint(p._P__x)\ntry:\n    print(p.__x)\nexcept AttributeError:\n    print(\"AttributeError\")",
+      "expectedOutput": "1\nAttributeError",
+      "verify": "execute",
+      "sourceRefs": ["py-tut-classes"],
+      "distractors": ["AttributeError\n1", "1\n1"],
+      "fsrsSeed": { "desiredRetention": 0.9 }
+    }
+  ],
+
+  "verification": {
+    "gates": { "G-SCHEMA": "pass", "G-CITE": "pass", "G-EXEC-PY": "pass", "G-VIZ": "pass" },
+    "citationCoverage": 1.0,
+    "execLog": "docs/tasks/python-track/evidence/py-cards/census-log.txt",
+    "reviewDate": "2026-07-16"
+  }
+}

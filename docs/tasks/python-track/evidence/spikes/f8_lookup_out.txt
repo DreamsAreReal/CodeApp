@@ -1,0 +1,6 @@
+python3.12 f8_lookup.py — run 1:
+0
+{}
+run 2:
+0
+{}

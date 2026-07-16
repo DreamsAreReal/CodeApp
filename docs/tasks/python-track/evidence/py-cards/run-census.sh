@@ -18,7 +18,8 @@ LOG=census-log.txt
            PY.M4_c1.py PY.M4_c2.py PY.M4_c3.py \
            PY.M5_c1.py PY.M5_c2.py PY.M5_c3.py PY.M5_c4.py \
            PY.M6_c1.py PY.M6_c2.py PY.M6_c3.py PY.M6_c4.py \
-           PY.M7_c1.py PY.M7_c2.py PY.M7_c3.py PY.M7_c4.py; do
+           PY.M7_c1.py PY.M7_c2.py PY.M7_c3.py PY.M7_c4.py \
+           PY.M8_c1.py PY.M8_c2.py PY.M8_c3.py PY.M8_c4.py; do
     echo ""
     echo "---- $f ----"
     for run in 1 2; do

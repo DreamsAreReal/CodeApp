@@ -1,0 +1,6 @@
+python3.12 f8_cls_static.py — run 1:
+ApiClient
+pong
+run 2:
+ApiClient
+pong

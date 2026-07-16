@@ -207,9 +207,29 @@ multicard-session ALL GREEN · shell ALL GREEN · dotnet 65/65; скрины evi
 Что: PY.M8 (≥6): класс/инстанс-атрибуты (shadowing c15), MRO C3 (c16), дескрипторы →
 bound method (невидимое, B-5), property, name mangling (c17), classmethod vs staticmethod;
 полиморфизм-пример md ИСПРАВЛЕН (A-2).
-Приёмка: [ ] ≥6 сегментов; [ ] карточка MRO/shadowing; [ ] общая
-Проверка: harness-набор
-Статус: todo
+Приёмка:
+- [x] 8 сегментов (≥6): s1 атрибуты = два словаря (чтение цепочкой, спайк f8_lookup ×2) ·
+      s2 shadowing c15 с predict-гейтом (`5 0 0`) · s3 MRO C3 c16 (chips D→B→C→A, gate «стоп
+      на первом», `D.__mro__`) · s4 super() → следующий по MRO, в diamond — sibling (A-7 фикс;
+      спайк f8_super_mro ×2: `D->B->C->A`) · s5 дескрипторы → bound method (B-5, xray-зона
+      «РЕНТГЕН · __get__», спайк f8_descriptor ×2: function→method) · s6 property = тот же
+      протокол с гейтом setter (f8_property ×2: 100/250/ValueError) · s7 classmethod vs
+      staticmethod (f8_cls_static ×2) · s8 mangling c17 с predict-гейтом (1/AttributeError);
+      полиморфизм-пример md ИСПРАВЛЕН (A-2) в misconception-hook (f8_polymorphism_fixed ×2:
+      12.56/12)
+- [x] карточки лесенкой 4 exec: c1 predict shadowing (`5 0 0`), c2 MODIFY (запись через класс →
+      `2 2 2`), c3 predict MRO (`B` + список __mro__), c4 predict mangling (`1\nAttributeError`) —
+      python3.12.13 ×2, stdout==expect байт-в-байт, stderr пуст, front==seed==census скриптом
+- [x] общая приёмка: только `at`; 6 EN-цитат (tutorial/classes ×3, mro-howto, descriptor-howto,
+      library/functions ×3) перепроверены фетчем — дословны; собес-блоки mayflower
+      (полиморфизм-hook + classmethod/staticmethod s7); takeaway «BasePage/mixins по MRO,
+      фабрики from_env, property-инварианты»; без C#; seed синхронен; 0 ошибок консоли;
+      estMinutes 10; headroom: худший лейбл M8 = 6.9px ≥ 6
+Проверка: build чисто (112.4 KB gz < 200) · viz-fit ALL GREEN (245 сцен, 14 уроков) ·
+new-lessons ALL GREEN (PY.M8: 8 сегм, autoplay s1, reduced-motion) · npm run verify ALL GREEN ·
+multicard-session ALL GREEN · shell ALL GREEN · dotnet 65/65; скрины evidence/F8/ (13 PNG,
+смотрел глазами)
+Статус: self-pass
 
 ### F9 — Урок py-exceptions [M3]
 Зачем: try/except в каждом тесте; собес: иерархия, finally-gotcha.

@@ -1,0 +1,10 @@
+python3.12 f8_descriptor.py — run 1:
+function
+method
+True
+True
+run 2:
+function
+method
+True
+True
