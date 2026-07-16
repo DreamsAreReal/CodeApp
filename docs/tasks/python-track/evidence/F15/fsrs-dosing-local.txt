@@ -1,0 +1,50 @@
+FSRS-дозирование дневной очереди — замер приёмки F15
+=====================================================
+СТЕНД: ЛОКАЛЬНЫЙ (backend :5080 + vite preview :4173, HEAD 0105f39 + правки цитат
+этого такта). Это НЕ прод-замер: прод-цифры снимаются после деплоя тем же скриптом
+с APP_BASE/VITE_API_BASE на прод-URL.
+
+Команда (дата 2026-07-17):
+  cd app && node verify/_fsrs-dosing.mjs
+
+Полный вывод прогона:
+  == FSRS dosing measurement · LOCAL stand · fresh user 978422 ==
+  (a) /api/due BEFORE session: total=59 new=59 (PY=53, C#=6)
+  (b) session started: header counter "1 из 59" (queue M=59)
+    ...10 cards graded (at PY.M11.async-await/c2)
+    ...20 cards graded (at PY.M13.stdlib-idioms/c2)
+    429-window wait: no review for PY.M13.stdlib-idioms/c3 in 15s — sleeping 61s, re-clicking grade
+    ...30 cards graded (at PY.M3.args-unpacking/c3)
+    ...40 cards graded (at PY.M6.generators/c3)
+    429-window wait: no review for PY.M6.generators/c4 in 15s — sleeping 61s, re-clicking grade
+    ...50 cards graded (at PY.M9.exceptions/c1)
+  (b) session finished: 59 cards answered in ONE session (finish CTA after card 59: "Завершить сессию"; M stayed 59)
+  (c) /api/due AFTER session: total=0 new=0 (PY=0, C#=0)
+  console errors: 5 -> ["Failed to load resource: the server responded with a status of 429 (Too Many Requests)", ...]
+  ==== MEASURED · runUser=978422 ====
+
+Числа (свежий пользователь, ПОСЛЕ сида PY-волны):
+  (а) GET /api/due: 59 карт, все 59 new (53 Python + 6 C#).
+  (б) Одна непрерывная сессия (hero CTA) предлагает ВСЕ 59 карт: счётчик в шапке
+      «1 из 59», CTA «Завершить сессию» появляется только после 59-й карты.
+      Дозирования new-карт НЕТ ни на бэке (Db.GetDue отдаёт все new без лимита),
+      ни на фронте (home.ts передаёт в startSession полный dueIds).
+  (в) После прохождения сессии GET /api/due = 0 (все 59 ушли в расписание FSRS).
+
+Вывод для приёмки F15: формулировка «new-карты входят постепенно» ФАКТАМИ НЕ
+ПОДТВЕРЖДАЕТСЯ — первая сессия свежего пользователя = стена из 59 карт (риск из
+R-M4 «ЧТО ПЛОХО» подтверждён замером). Число зафиксировано; решение о лимите
+new-карт/день (дозирование) — диспозиция оркестратора, в скоуп этого такта не
+входит.
+
+Примечания честности:
+- 429 в логе — рейт-лимитер бэка (60 мутирующих запросов/мин на пользователя,
+  Program.cs RateLimit:PermitPerMinute): харнесс отвечает на карты быстрее человека
+  (~2 с/карта, ~2 POST на карту). Скрипт ждёт окно 61 с и повторяет оценку —
+  оба ретрая успешны, все 59 review записаны (due 59 -> 0 это доказывает).
+  Реальный пользователь в лимит не упирается.
+- Ответы вводились заведомо неверные («measurement-pass»), оценка всегда Good —
+  замер меряет ДОЗИРОВАНИЕ (сколько карт предлагается), а не правильность;
+  Good исключает same-session re-queue, чтобы M не рос и счёт был чистым.
+- Пользователь одноразовый (978422), локальная БД; на прод-замере пользователь
+  тоже должен быть свежим.

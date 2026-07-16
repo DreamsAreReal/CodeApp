@@ -95,7 +95,7 @@ export const pyAsyncAwait: LessonData = {
   misconceptions: [
     {
       wrong: "await — это «подожди здесь», можно писать в любой функции",
-      hook: 'Собес-вопрос из конспекта: <code>def get_users()</code>, внутри <code>async with</code> и <code>await</code> — «объясни, почему не работает, и почини». Багов два. Первый: «It is a <code>SyntaxError</code> to use <code>await</code> outside of an <code>async def</code> function» (PEP 492 дословно). Второй тоньше: даже после замены на <code>async def</code> вызов вернёт <span class="wrong">coroutine-объект, а не результат</span> — «simply calling a coroutine will not schedule it to be executed». И всё это — <b>один поток</b>. Ниже семь разборов: от диспетчера до замка GIL.',
+      hook: 'Собес-вопрос из конспекта: <code>def get_users()</code>, внутри <code>async with</code> и <code>await</code> — «объясни, почему не работает, и почини». Багов два. Первый: «It is a <code>SyntaxError</code> to use <code>await</code> outside of an <code>async def</code> function» (PEP 492 дословно). Второй тоньше: даже после замены на <code>async def</code> вызов вернёт <span class="wrong">coroutine-объект, а не результат</span> — «Note that simply calling a coroutine will not schedule it to be executed». И всё это — <b>один поток</b>. Ниже семь разборов: от диспетчера до замка GIL.',
       source: "pep-492",
     },
   ],
@@ -159,7 +159,7 @@ export const pyAsyncAwait: LessonData = {
         },
         {
           codeLine: 2, out: "coroutine",
-          caption: 'В консоли — <code>coroutine</code>, не <code>42</code>: «simply calling a coroutine will not schedule it to be executed». Результата ещё не существует.',
+          caption: 'В консоли — <code>coroutine</code>, не <code>42</code>: «Note that simply calling a coroutine will not schedule it to be executed». Результата ещё не существует.',
           nodes: [
             { id: "call", kind: "chip", at: { zone: "callz", row: 0 }, value: "c = fetch()", w: 120, ghost: true },
             { id: "notr", kind: "chip", at: { zone: "callz", row: 1 }, value: "не результат", w: 120, accent: true },
@@ -422,7 +422,7 @@ export const pyAsyncAwait: LessonData = {
       question: '<code>async def fetch(): return 42</code><br/><code>print(type(fetch()).__name__)</code>, затем <code>print(asyncio.run(fetch()))</code> — что напечатают обе строки?',
       options: ["coroutine и 42", "42 и 42", "int и 42", "function и coroutine"], correctIndex: 0, xp: 10,
       okText: 'Вызов <code>async def</code> строит coroutine-объект, тело не бежит — <code>type</code> видит <code>coroutine</code>. Запускает только луп: <code>asyncio.run</code> довозит <code>42</code>. (Первая корутина умерла без await — её <code>RuntimeWarning</code> уйдёт в stderr, не в вывод.)',
-      noText: 'Ключ — как у генераторов: вызов создаёт объект, исполняет луп. «Simply calling a coroutine will not schedule it to be executed». Реальный stdout python3.12: <code>coroutine</code>, затем <code>42</code>.',
+      noText: 'Ключ — как у генераторов: вызов создаёт объект, исполняет луп. «Note that simply calling a coroutine will not schedule it to be executed». Реальный stdout python3.12: <code>coroutine</code>, затем <code>42</code>.',
       verify: { kind: "exec", run: "python3.12 PY.M11_c1.py", expect: "coroutine\n42" },
       sourceRefs: ["py-asyncio-task"],
     },

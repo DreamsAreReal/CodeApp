@@ -15,7 +15,7 @@
       { "id": "i1", "text": "Event loop — диспетчер на одном потоке: исполняется ровно одна задача, переключение происходит только в точках await (ожидание сети/диска). Это конкурентность, не параллельность — CPU-счёт async не ускоряет.", "source": "py-asyncio-task", "status": "fact" }
     ],
     "mechanics": [
-      { "id": "m1", "text": "Вызов async def строит coroutine-объект, тело не бежит: «simply calling a coroutine will not schedule it to be executed». Запускает луп (await / asyncio.run / Task); забытая корутина пишет RuntimeWarning в stderr.", "source": "py-asyncio-task", "status": "fact" },
+      { "id": "m1", "text": "Вызов async def строит coroutine-объект, тело не бежит: «Note that simply calling a coroutine will not schedule it to be executed». Запускает луп (await / asyncio.run / Task); забытая корутина пишет RuntimeWarning в stderr.", "source": "py-asyncio-task", "status": "fact" },
       { "id": "m2", "text": "await — точка передачи управления, не блокировка и не новый поток: корутина приостановлена, поток занят другими задачами, возобновление ровно с места паузы.", "source": "pep-492", "status": "fact" },
       { "id": "m3", "text": "gather стартует awaitables конкурентно и кладёт результаты в порядке АРГУМЕНТОВ («The order of result values corresponds to the order of awaitables in aws») — порядок завершения не влияет; спайк 3.12 ×2: done: fast раньше done: slow, res = ['slow', 'fast'].", "source": "py-asyncio-task", "status": "fact" },
       { "id": "m4", "text": "Корутина — родственник генератора по реализации: send(None) ведёт её без лупа, cr_frame.f_locals показывает замороженный кадр, результат приезжает как StopIteration.value (спайк 3.12 ×2).", "source": "pep-492", "status": "fact" },

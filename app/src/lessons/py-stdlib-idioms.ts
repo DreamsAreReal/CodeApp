@@ -251,7 +251,7 @@ export const pyStdlibIdioms: LessonData = {
       question: '<code>for v in ["", [], {}, "0"]: print(bool(v))</code> — что напечатают четыре строки?',
       options: ["False False False True", "False False False False", "True True True True", "False True False True"], correctIndex: 0, xp: 10,
       okText: 'Пустые строка, список и словарь — falsy («empty sequences and collections»), а <code>"0"</code> — НЕпустая строка: <code>len == 1</code> → truthy.',
-      noText: '«By default, an object is considered true unless its class defines either a __bool__() method that returns False or a __len__() method that returns zero» — falsy здесь только пустые коллекции. Реальный вывод python3.12: <code>False</code> ×3, затем <code>True</code>.',
+      noText: '«By default, an object is considered true unless its class defines either a __bool__() method that returns False or a __len__() method that returns zero, when called with the object» — falsy здесь только пустые коллекции. Реальный вывод python3.12: <code>False</code> ×3, затем <code>True</code>.',
       verify: { kind: "exec", run: "python3.12 PY.M13_c5.py", expect: "False\nFalse\nFalse\nTrue" },
       sourceRefs: ["py-truth"],
     },
