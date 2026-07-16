@@ -1,0 +1,10 @@
+== f13_pathlib run 1 (python3.12 3.12.13)
+tests/users.json
+.json users
+users.json
+('tests', 'users.json')
+== f13_pathlib run 2
+tests/users.json
+.json users
+users.json
+('tests', 'users.json')

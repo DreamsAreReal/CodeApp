@@ -365,9 +365,35 @@ ALL GREEN · multicard-session ALL GREEN · shell ALL GREEN · dotnet 65/65; MCQ
 Зачем: §13–15 md: то, что дергаешь в тестах ежедневно.
 Что: PY.M13: pathlib-путь (анимация Path/glob), json round-trip, EAFP vs LBYL,
 truthiness-таблица, enumerate/zip; колода 4–6 карточек.
-Приёмка: [ ] 2–3 сегмента; [ ] колода; [ ] общая
-Проверка: harness-набор
-Статус: todo
+Приёмка:
+- [x] 3 сегмента с сюжетом: s1 pathlib (слэш собирает Path-объект → анатомия
+      suffix/stem без I/O → glob-фильтр: 2 файла accent, 2 ghost; спайки f13_pathlib +
+      f13_glob ×2) · s2 json round-trip с predict-гейтом на ключ-int (dumps по таблице
+      True→true/None→null → loads возвращает живые типы → fail-gate «ключ 1 → '1'»;
+      спайк f13_json_roundtrip ×2) · s3 EAFP vs LBYL с predict-гейтом на KeyError
+      (LBYL два шага → ok-gate «except KeyError · пойман» → d.get(key, default);
+      спайк f13_eafp ×2); truthiness/enumerate-zip — в edgeCases + колоде (по RS-01
+      «truthiness-таблица → карточки»); predictAt не на s1 (канон волны)
+- [x] колода 6 exec-карточек по чеклисту RS-03: c1 pathlib (`.json\nusers`), c2 dumps
+      (`{"ok": true, "err": null}`), c3 round-trip (`{'1': 'a'}\nFalse`), c4 EAFP/get
+      (`Anonymous\nKeyError`, имя исключения через type(e).__name__), c5 truthiness
+      (`False\nFalse\nFalse\nTrue`), c6 zip/enumerate (`1 1 a\n2 2 b`) — python3.12.13
+      ×2, stdout==expect байт-в-байт, stderr пуст (census-log.txt, блок PY.M13);
+      front==seed==stdout: .verify/seedsync.py FAILURES: 0 (53 карты волны)
+- [x] общая приёмка: только `at` (viz-fit: autolayout 19/19); 15+ EN-цитат фетчем живых
+      страниц 2026-07-17 (pathlib intro/slash/pure-concrete/glob-order, json dumps/keys-
+      coerced/loads!=x, glossary EAFP+LBYL+race, truth-value testing, zip shortest,
+      enumerate count) — дословны; собес-блок md §15 (LBYL «стиль из других языков») →
+      misconception-hook EAFP; takeaway «Path(__file__).parent/data, glob артефактов,
+      json в API-тестах, EAFP=pytest.raises, enumerate(start=1)»; без C#; seed синхронен;
+      0 ошибок консоли (скрин-прогон: console errors: 0); estMinutes 6; _fit-margins:
+      худший лейбл M13 = 8px ≥ 6 (после структурного фикса glob-чипа w168+I/O w56);
+      6 карт M13 входят в /api/due свежего пользователя (59 total)
+Проверка: build чисто (141.53 KB gz < 200) · viz-fit ALL GREEN (316 сцен, 19 уроков) ·
+new-lessons ALL GREEN (PY.M13: 3 сегм, autoplay s1, reduced-motion) · npm run verify
+ALL GREEN · multicard-session ALL GREEN · shell ALL GREEN · dotnet 65/65; MCQ волны 0%
+(53/53 exec); скрины evidence/F13/ (9 PNG, смотрел глазами)
+Статус: self-pass
 
 ### F14 — Прогресс/стата по трекам — честная проверка [M4]
 Зачем: два трека не должны смешивать ощущение прогресса.

@@ -1,0 +1,16 @@
+== f13_truthiness run 1 (python3.12 3.12.13)
+'' False
+[] False
+{} False
+set() False
+0 False
+'0' True
+[0] True
+== f13_truthiness run 2
+'' False
+[] False
+{} False
+set() False
+0 False
+'0' True
+[0] True

@@ -31,6 +31,7 @@ import { pyExceptions } from "./py-exceptions.ts";
 import { pyTypeHints } from "./py-type-hints.ts";
 import { pyAsyncAwait } from "./py-async-await.ts";
 import { pyStringsFlow } from "./py-strings-flow.ts";
+import { pyStdlibIdioms } from "./py-stdlib-idioms.ts";
 import { S } from "../strings.ts";
 
 /** Ordered by the concept DAG (prereqs first). */
@@ -53,6 +54,7 @@ export const LESSONS: LessonData[] = [
   pyTypeHints,
   pyAsyncAwait,
   pyStringsFlow,
+  pyStdlibIdioms,
 ];
 
 /**

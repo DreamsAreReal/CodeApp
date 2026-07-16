@@ -1,0 +1,147 @@
+{
+  "id": "PY.M13.stdlib-idioms",
+  "track": "PY",
+  "module": "M13.1",
+  "title": "Шпаргалка: stdlib и идиомы",
+  "prereqs": ["PY.M9.exceptions"],
+  "version": "1.0.0",
+  "volatility": "stable",
+  "sourceSnapshot": { "python": "3.12.13" },
+  "reviewBy": "2026-10-01",
+  "status": "published",
+
+  "depth": {
+    "intuition": [
+      { "id": "i1", "text": "Шпаргалка по справочным разделам конспекта (§13 stdlib, §14 pathlib, §15 идиомы): три механизма с сюжетом (путь-объект, json round-trip, EAFP vs LBYL) + колода на ежедневный API (truthiness, enumerate/zip).", "source": "py-pathlib", "status": "fact" }
+    ],
+    "mechanics": [
+      { "id": "m1", "text": "Слэш строит дочерний путь («The slash operator helps create child paths, like os.path.join()»); suffix/stem/parts — pure-часть без I/O, glob/read_text — concrete-часть с I/O; порядок glob не гарантирован — sorted(). Спайки 3.12 ×2.", "source": "py-pathlib", "status": "fact" },
+      { "id": "m2", "text": "json.dumps идёт по таблице конверсии (True → true, None → null); ключи JSON — только строки, int-ключ коэрчится в str, поэтому loads(dumps(x)) != x при нестроковых ключах (спайк ×2: False).", "source": "py-json", "status": "fact" },
+      { "id": "m3", "text": "EAFP — «пробуй и лови» (try/except KeyError → default), LBYL — «проверь заранее» (if key in d) с риском гонки между проверкой и чтением; d.get(key, default) не бросает вовсе. Спайк ×2.", "source": "py-glossary", "status": "fact" },
+      { "id": "m4", "text": "Truthiness: falsy — только пустое и нулевое ('', (), [], {}, set(), 0), непустая строка \"0\" — truthy; zip останавливается на короткой стороне, enumerate нумерует со start. Спайки ×2.", "source": "py-truth", "status": "fact" }
+    ],
+    "spec": [
+      { "id": "s1", "text": "«Keys in key/value pairs of JSON are always of the type str. When a dictionary is converted into JSON, all the keys of the dictionary are coerced to strings.» (json docs, дословно)", "source": "py-json", "status": "fact" }
+    ]
+  },
+  "edgeCases": [
+    { "id": "e1", "text": "zip([1, 2, 3], \"ab\") даёт две пары: «By default, zip() stops when the shortest iterable is exhausted.» (спайк ×2).", "source": "py-funcs" },
+    { "id": "e2", "text": "\"0\" — непустая строка, truthy; [0] — непустой список, truthy; falsy — только «empty sequences and collections: '', (), [], {}, set(), range(0)» (спайк ×2).", "source": "py-truth" },
+    { "id": "e3", "text": "«The paths are returned in no particular order. If you need a specific order, sort the results.» — glob в assert только через sorted(...).", "source": "py-pathlib" }
+  ],
+  "misconceptions": [
+    { "wrong": "Безопасно взять ключ можно только проверив заранее (if key in d); try/except — дорогой хак.", "correction": "Питоничный стиль — EAFP: «assumes the existence of valid keys or attributes and catches exceptions if the assumption proves false»; LBYL ещё и гоночный между «посмотрел» и «взял». Третий путь — d.get(key, default) (спайк ×2).", "source": "py-glossary" },
+    { "wrong": "json.loads(json.dumps(x)) всегда вернёт исходный объект.", "correction": "Ключи JSON — только строки: int-ключ коэрчится в str, «loads(dumps(x)) != x if x has non-string keys» (спайк ×2: {'1': 'a'}, False).", "source": "py-json" }
+  ],
+  "rationale": { "id": "r1", "text": "Справочные разделы md сохранены без раздувания: механизмы с сюжетом анимированы (путь-объект, round-trip, EAFP), перечни API уехали в predict-колоду — формат шпаргалки по решению гейта (без обязательной modify/explain-лесенки).", "source": "py-pathlib" },
+
+  "sources": [
+    { "id": "py-pathlib", "kind": "python-docs", "url": "https://docs.python.org/3/library/pathlib.html", "section": "intro · slash operator · glob", "date": "2026-07-17", "retrieved": "2026-07-17" },
+    { "id": "py-json", "kind": "python-docs", "url": "https://docs.python.org/3/library/json.html", "section": "dumps/loads · key coercion", "date": "2026-07-17", "retrieved": "2026-07-17" },
+    { "id": "py-glossary", "kind": "python-docs", "url": "https://docs.python.org/3/glossary.html#term-EAFP", "section": "EAFP / LBYL", "date": "2026-07-17", "retrieved": "2026-07-17" },
+    { "id": "py-truth", "kind": "python-docs", "url": "https://docs.python.org/3/library/stdtypes.html#truth-value-testing", "section": "Truth Value Testing", "date": "2026-07-17", "retrieved": "2026-07-17" },
+    { "id": "py-funcs", "kind": "python-docs", "url": "https://docs.python.org/3/library/functions.html#zip", "section": "zip / enumerate", "date": "2026-07-17", "retrieved": "2026-07-17" }
+  ],
+  "identifiers": [
+    { "symbol": "pathlib.Path", "kind": "class", "minVersion": "3.4" },
+    { "symbol": "PurePath.suffix", "kind": "attribute", "minVersion": "3.4" },
+    { "symbol": "PurePath.stem", "kind": "attribute", "minVersion": "3.4" },
+    { "symbol": "Path.glob", "kind": "method", "minVersion": "3.4" },
+    { "symbol": "json.dumps", "kind": "function", "minVersion": "3.0" },
+    { "symbol": "json.loads", "kind": "function", "minVersion": "3.0" },
+    { "symbol": "dict.get", "kind": "method", "minVersion": "3.0" },
+    { "symbol": "zip", "kind": "builtin", "minVersion": "3.0" },
+    { "symbol": "enumerate", "kind": "builtin", "minVersion": "3.0" }
+  ],
+
+  "viz": {
+    "model": "cheatsheet-stdlib-idioms",
+    "renderer": "svg",
+    "interaction": "responding",
+    "entities": [
+      { "id": "pres.pr", "zone": "pres", "label": "tests/users.json" },
+      { "id": "wire.gk", "zone": "wire", "label": "ключ 1 → '1'" },
+      { "id": "eafp.ge", "zone": "eafp", "label": "except KeyError" }
+    ],
+    "trace": [
+      { "op": "annotate", "target": "pres.pr", "caption": "слэш собрал новый Path — без I/O", "signal": "pres.pr" },
+      { "op": "annotate", "target": "wire.gk", "caption": "int-ключ коэрчится в строку — round-trip не тождество", "signal": "wire.gk" },
+      { "op": "annotate", "target": "eafp.ge", "caption": "EAFP: KeyError пойман, печатается default", "signal": "eafp.ge" }
+    ]
+  },
+
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "p = Path(\"tests\") / \"data\" / \"users.json\" — что напечатают print(p.suffix) и print(p.stem)?",
+      "code": "from pathlib import Path\np = Path(\"tests\") / \"data\" / \"users.json\"\nprint(p.suffix)\nprint(p.stem)",
+      "expectedOutput": ".json\nusers",
+      "verify": "execute",
+      "sourceRefs": ["py-pathlib"],
+      "distractors": ["json\nusers.json", ".json\nusers.json"],
+      "fsrsSeed": { "desiredRetention": 0.9 }
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Что напечатает print(json.dumps({\"ok\": True, \"err\": None}))?",
+      "code": "import json\nprint(json.dumps({\"ok\": True, \"err\": None}))",
+      "expectedOutput": "{\"ok\": true, \"err\": null}",
+      "verify": "execute",
+      "sourceRefs": ["py-json"],
+      "distractors": ["{\"ok\": True, \"err\": None}", "{'ok': true, 'err': null}"],
+      "fsrsSeed": { "desiredRetention": 0.9 }
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "d = json.loads(json.dumps({1: \"a\"})) — что напечатают print(d) и print(d == {1: \"a\"})?",
+      "code": "import json\nd = json.loads(json.dumps({1: \"a\"}))\nprint(d)\nprint(d == {1: \"a\"})",
+      "expectedOutput": "{'1': 'a'}\nFalse",
+      "verify": "execute",
+      "sourceRefs": ["py-json"],
+      "distractors": ["{1: 'a'}\nTrue", "{'1': 'a'}\nTrue"],
+      "fsrsSeed": { "desiredRetention": 0.9 }
+    },
+    {
+      "id": "c4",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "d = {\"role\": \"qa\"} — что напечатают print(d.get(\"name\", \"Anonymous\")) и print(d[\"name\"]) под try/except KeyError as e: print(type(e).__name__)?",
+      "code": "d = {\"role\": \"qa\"}\nprint(d.get(\"name\", \"Anonymous\"))\ntry:\n    print(d[\"name\"])\nexcept KeyError as e:\n    print(type(e).__name__)",
+      "expectedOutput": "Anonymous\nKeyError",
+      "verify": "execute",
+      "sourceRefs": ["py-glossary"],
+      "distractors": ["KeyError\nAnonymous", "None\nKeyError"],
+      "fsrsSeed": { "desiredRetention": 0.9 }
+    },
+    {
+      "id": "c5",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "for v in [\"\", [], {}, \"0\"]: print(bool(v)) — что напечатают четыре строки?",
+      "code": "for v in [\"\", [], {}, \"0\"]:\n    print(bool(v))",
+      "expectedOutput": "False\nFalse\nFalse\nTrue",
+      "verify": "execute",
+      "sourceRefs": ["py-truth"],
+      "distractors": ["False\nFalse\nFalse\nFalse", "False\nTrue\nFalse\nTrue"],
+      "fsrsSeed": { "desiredRetention": 0.9 }
+    },
+    {
+      "id": "c6",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "for i, (a, b) in enumerate(zip([1, 2, 3], \"ab\"), start=1): print(i, a, b) — что напечатает?",
+      "code": "for i, (a, b) in enumerate(zip([1, 2, 3], \"ab\"), start=1):\n    print(i, a, b)",
+      "expectedOutput": "1 1 a\n2 2 b",
+      "verify": "execute",
+      "sourceRefs": ["py-funcs"],
+      "distractors": ["1 1 a\n2 2 b\n3 3", "0 1 a\n1 2 b"],
+      "fsrsSeed": { "desiredRetention": 0.9 }
+    }
+  ]
+}
