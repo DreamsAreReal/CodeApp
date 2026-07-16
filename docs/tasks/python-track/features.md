@@ -264,9 +264,29 @@ multicard-session ALL GREEN · shell ALL GREEN · dotnet 65/65; скрины evi
 Зачем: hints → Pydantic-контракты API-тестов.
 Что: PY.M10: hints ≠ принуждение (c18), __annotations__ (r2_c28), Optional/Union и
 PEP 604 «3.10+» (RS-03: без exec-ловушек на 3.9), Pydantic-preview (валидация = рантайм).
-Приёмка: [ ] ≥4 сегмента; [ ] карточка __annotations__; [ ] общая
-Проверка: harness-набор
-Статус: todo
+Приёмка:
+- [x] 4 сегмента: s1 гейта нет (c18: add("a","b") → ab; ok-gate «проверки типов нет»,
+      спайк f10_hints_runtime ×2) · s2 РЕНТГЕН __annotations__ (xray-зона: dict на объекте
+      функции; f10_annotations ×2) · s3 PEP 604 «синтаксис 3.10+» БЕЗ версии-ловушки
+      (RS-03; невидимое: type(int | None).__name__ → UnionType; predict-гейт «label(0):
+      default или found?»; f10_pep604 ×2) · s4 Pydantic-гейт (predict-гейт коэрции;
+      ok-gate «приведено: 1 (int)» / fail-gate «ValidationError»; спайк f10_pydantic ×2
+      в authoring-venv python 3.12.13 + pydantic 2.13.4 — версии в out-логе)
+- [x] карточка __annotations__: c2 (r2_c28: `int\nstr`); лесенка: c1 predict (`ab`),
+      c3 MODIFY (isinstance-гейт руками → `5\nTypeError` — «Pydantic делает это системно»),
+      c4 predict PEP604+is None (`default\nfound`) — 4 exec, python3.12.13 ×2,
+      stdout==expect байт-в-байт, stderr пуст (census-log.txt 37 карт)
+- [x] общая приёмка: только `at`; 8 EN-цитат перепроверены фетчем (PEP 484 ×2, typing ×3,
+      PEP 604, pydantic.dev ×2 — дословно); собес-блок md §10 («хинты = проверка») →
+      misconception-hook; takeaway «Pydantic-контракт API/mypy в CI/хинты фикстур»; без C#;
+      seed синхронен; 0 ошибок консоли; estMinutes 5; _fit-margins: худший лейбл M10 =
+      7 ≥ 6; MCQ волны по-прежнему 0% (37/37 exec)
+Проверка: build чисто (123.05 KB gz < 200) · viz-fit ALL GREEN (273 сцены, 16 уроков) ·
+new-lessons ALL GREEN (PY.M10: 4 сегм, autoplay s1 после сноса predict-гейта с первого
+сегмента, reduced-motion) · npm run verify ALL GREEN · multicard-session ALL GREEN ·
+shell ALL GREEN · dotnet 65/65; /api/due свежего пользователя содержит все 8 карт M9+M10;
+скрины evidence/F10/ (11 PNG, смотрел глазами)
+Статус: self-pass
 
 ### F11 — Урок py-async-await [M4] [золотой путь]
 Зачем: AsyncClient/нагрузка; собес: «await ≠ поток», GIL.
