@@ -1,0 +1,121 @@
+{
+  "id": "PY.M9.exceptions",
+  "track": "PY",
+  "module": "M9.1",
+  "title": "Исключения: дерево, порядок, finally",
+  "prereqs": ["PY.M8.object-model"],
+  "version": "1.0.0",
+  "volatility": "stable",
+  "sourceSnapshot": { "python": "3.12.13" },
+  "reviewBy": "2026-10-01",
+  "status": "published",
+
+  "depth": {
+    "intuition": [
+      { "id": "i1", "text": "Исключения — дерево классов: FileNotFoundError и ConnectionError — подклассы OSError (фикс схемы конспекта, RS-02 A-3), поэтому один except OSError ловит файловые и сетевые ошибки разом.", "source": "py-exc-hier", "status": "fact" }
+    ],
+    "mechanics": [
+      { "id": "m1", "text": "Поиск обработчика идёт по except-ам в порядке записи до первого совпавшего; совпадение — по классу или его базовому классу. Общий класс раньше специфичного делает специфичный обработчик недостижимым.", "source": "py-try-stmt", "status": "fact" },
+      { "id": "m2", "text": "else выполняется только когда try завершился без исключения (и без return/continue/break); finally выполняется на обоих путях.", "source": "py-try-stmt", "status": "fact" },
+      { "id": "m3", "text": "return/break/continue внутри finally отбрасывает сохранённое исключение и перезаписывает return из try; PEP 765 (Final) вводит SyntaxWarning с 3.14.", "source": "pep-765", "status": "fact" },
+      { "id": "m4", "text": "raise X from e пристёгивает e как __cause__ нового исключения; при необработанной цепочке печатаются оба исключения.", "source": "py-raise-stmt", "status": "fact" }
+    ],
+    "spec": [
+      { "id": "s1", "text": "«If the finally clause executes a return, break or continue statement, the saved exception is discarded.» (Reference · The try statement, дословно)", "source": "py-try-stmt", "status": "fact" }
+    ]
+  },
+  "edgeCases": [
+    { "id": "e1", "text": "except Exception ≠ голый except: — system-exiting-ветки BaseException (KeyboardInterrupt, SystemExit, GeneratorExit) пролетают мимо Exception-обработчика.", "source": "py-exc-hier" },
+    { "id": "e2", "text": "Успешный код после рискованной строки уноси в else: внутри try он случайно накрыт твоим же except-ом.", "source": "py-try-stmt" }
+  ],
+  "misconceptions": [
+    { "wrong": "finally — это «просто выполнится в конце».", "correction": "return в finally перезаписывает return из try И стирает летящее исключение («the saved exception is discarded») — собес-блок конспекта; спайк python3.12 ×2: done / from finally. PEP 765: с 3.14 SyntaxWarning.", "source": "py-try-stmt" },
+    { "wrong": "except-ы можно писать в любом порядке.", "correction": "Поиск останавливается на первом совпавшем; except OSError над except FileNotFoundError делает точную ветку недостижимой (спайк ×2 печатает A).", "source": "py-try-stmt" }
+  ],
+  "rationale": { "id": "r1", "text": "Одна модель «дерево классов + first-match + два пути (else/finally) + цепочка __cause__» закрывает собес-блок §11 конспекта и объясняет pytest.raises, retry по OSError и доменные обёртки ошибок в API-тестах.", "source": "py-try-stmt" },
+
+  "sources": [
+    { "id": "py-exc-hier", "kind": "python-docs", "url": "https://docs.python.org/3/library/exceptions.html#exception-hierarchy", "section": "Exception hierarchy · OSError / ConnectionError / FileNotFoundError", "date": "2026-07-16", "retrieved": "2026-07-16" },
+    { "id": "py-try-stmt", "kind": "python-docs", "url": "https://docs.python.org/3/reference/compound_stmts.html#the-try-statement", "section": "8.4 The try statement", "date": "2026-07-16", "retrieved": "2026-07-16" },
+    { "id": "py-raise-stmt", "kind": "python-docs", "url": "https://docs.python.org/3/reference/simple_stmts.html#the-raise-statement", "section": "7.8 The raise statement", "date": "2026-07-16", "retrieved": "2026-07-16" },
+    { "id": "pep-765", "kind": "pep", "url": "https://peps.python.org/pep-0765/", "section": "Abstract (Final, 3.14)", "date": "2026-07-16", "retrieved": "2026-07-16" }
+  ],
+  "identifiers": [
+    { "symbol": "OSError", "kind": "builtin", "minVersion": "3.3" },
+    { "symbol": "FileNotFoundError", "kind": "builtin", "minVersion": "3.3" },
+    { "symbol": "ConnectionError", "kind": "builtin", "minVersion": "3.3" },
+    { "symbol": "BaseException.__cause__", "kind": "attribute", "minVersion": "3.0" }
+  ],
+
+  "viz": {
+    "model": "exception-tree-and-flow",
+    "renderer": "svg",
+    "interaction": "responding",
+    "entities": [
+      { "id": "tree.oserror", "zone": "tree", "label": "OSError" },
+      { "id": "frm.gate", "zone": "frm", "label": "return в finally" }
+    ],
+    "trace": [
+      { "op": "annotate", "target": "tree.oserror", "caption": "FileNotFoundError и ConnectionError — подклассы OSError: один except ловит обе ветки", "signal": "tree.oserror" },
+      { "op": "highlight", "target": "frm.gate", "caption": "return в finally: сохранённое исключение отброшено", "signal": "frm.gate" }
+    ]
+  },
+
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "def read(): в try — raise ValueError(\"bad\"), в finally — return \"done\". Что напечатает print(read())?",
+      "code": "def read():\n    try:\n        raise ValueError(\"bad\")\n    finally:\n        return \"done\"\n\nprint(read())",
+      "expectedOutput": "done",
+      "verify": "execute",
+      "sourceRefs": ["py-try-stmt", "pep-765"],
+      "distractors": ["ValueError", "None"],
+      "fsrsSeed": { "desiredRetention": 0.9 }
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "finally починили: только print(\"cleanup\"), без return. Снаружи print(read()) под try/except ValueError as e: print(type(e).__name__) — что напечатает?",
+      "code": "def read():\n    try:\n        raise ValueError(\"bad\")\n    finally:\n        print(\"cleanup\")\n\ntry:\n    print(read())\nexcept ValueError as e:\n    print(type(e).__name__)",
+      "expectedOutput": "cleanup\nValueError",
+      "verify": "execute",
+      "sourceRefs": ["py-try-stmt"],
+      "distractors": ["ValueError\ncleanup", "cleanup\nNone"],
+      "fsrsSeed": { "desiredRetention": 0.9 }
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "try: x = 1; except ValueError: print(\"err\"); else: print(\"else\"); finally: print(\"finally\") — что напечатает?",
+      "code": "try:\n    x = 1\nexcept ValueError:\n    print(\"err\")\nelse:\n    print(\"else\")\nfinally:\n    print(\"finally\")",
+      "expectedOutput": "else\nfinally",
+      "verify": "execute",
+      "sourceRefs": ["py-try-stmt"],
+      "distractors": ["finally", "err\nfinally"],
+      "fsrsSeed": { "desiredRetention": 0.9 }
+    },
+    {
+      "id": "c4",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Летит ConnectionError. Цепочка: except FileNotFoundError → except OSError as e: print(\"os:\", type(e).__name__) → except Exception. Что напечатает?",
+      "code": "try:\n    raise ConnectionError(\"api down\")\nexcept FileNotFoundError:\n    print(\"file\")\nexcept OSError as e:\n    print(\"os:\", type(e).__name__)\nexcept Exception:\n    print(\"exc\")",
+      "expectedOutput": "os: ConnectionError",
+      "verify": "execute",
+      "sourceRefs": ["py-exc-hier", "py-try-stmt"],
+      "distractors": ["file", "exc"],
+      "fsrsSeed": { "desiredRetention": 0.9 }
+    }
+  ],
+
+  "verification": {
+    "gates": { "G-SCHEMA": "pass", "G-CITE": "pass", "G-EXEC-PY": "pass", "G-VIZ": "pass" },
+    "citationCoverage": 1.0,
+    "execLog": "docs/tasks/python-track/evidence/py-cards/census-log.txt",
+    "reviewDate": "2026-07-16"
+  }
+}

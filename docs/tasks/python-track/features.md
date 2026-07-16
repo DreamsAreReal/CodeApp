@@ -235,9 +235,30 @@ multicard-session ALL GREEN · shell ALL GREEN · dotnet 65/65; скрины evi
 Зачем: try/except в каждом тесте; собес: иерархия, finally-gotcha.
 Что: PY.M9: иерархия ОТ OSError (фикс md A-3), except-порядок, else/finally (c13),
 finally-return глотает исключение (c12), raise from, pytest.raises-связка.
-Приёмка: [ ] ≥5 сегментов (gate-примитив = перехват); [ ] карточка finally-return; [ ] общая
-Проверка: harness-набор
-Статус: todo
+Приёмка:
+- [x] 5 сегментов, gate-примитив = перехват (s1: ok-gate «except OSError · ловит подклассы»
+      принимает FileNotFoundError И ConnectionError; s2: ok-gate «первый · совпал» +
+      мёртвая точная ветка; s4: fail-gate «return в finally · исключение стёрто»):
+      s1 дерево от OSError (A-3 фикс; спайк f9_hierarchy ×2: __mro__ обоих через OSError) ·
+      s2 first-match порядок с predict-гейтом (f9_except_order ×2: `A`) · s3 else/finally
+      оба пути (f9_flow_paths ×2: else/finally + err2/finally2) · s4 finally-return
+      с predict-гейтом (f9_finally_swallow ×2: done + from finally) · s5 raise from /
+      __cause__ (f9_raise_from ×2: RuntimeError/ValueError)
+- [x] карточка finally-return: c1 predict (`done`) + c2 MODIFY (finally починен →
+      `cleanup\nValueError`); ещё c3 else/finally (`else\nfinally`), c4 порядок+иерархия
+      (`os: ConnectionError`) — 4 exec, имена исключений только через type(e).__name__,
+      python3.12.13 ×2, stdout==expect байт-в-байт, stderr пуст (census-log.txt 33 карты)
+- [x] общая приёмка: только `at`; 10 EN-цитат перепроверены фетчем живых страниц
+      (compound_stmts try ×4, exceptions ×4, simple_stmts raise ×3, PEP 765 ×2 — дословно);
+      собес-блок md §11 (finally-return) → misconception-hook; takeaway
+      «pytest.raises(match)/retry по OSError/raise from в обёртках API»; без C#;
+      seed синхронен; 0 ошибок консоли; estMinutes 7; _fit-margins: у PY.M9 ни одного
+      лейбла с natural margin <10 (после фикса: gate не делит grid-колонку с чипами)
+Проверка: build чисто (117.73 KB gz < 200) · viz-fit ALL GREEN (260 сцен, 15 уроков) ·
+new-lessons ALL GREEN (PY.M9: 5 сегм + reduced-motion) · npm run verify ALL GREEN ·
+multicard-session ALL GREEN · shell ALL GREEN · dotnet 65/65; скрины evidence/F9/ (13 PNG,
+смотрел глазами)
+Статус: self-pass
 
 ### F10 — Урок py-type-hints [M3]
 Зачем: hints → Pydantic-контракты API-тестов.

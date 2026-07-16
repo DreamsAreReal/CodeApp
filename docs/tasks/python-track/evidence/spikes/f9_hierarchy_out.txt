@@ -1,0 +1,12 @@
+# python3.12 (Python 3.12.13) — run 1
+FileNotFoundError
+ConnectionError
+['FileNotFoundError', 'OSError', 'Exception', 'BaseException', 'object']
+['ConnectionError', 'OSError', 'Exception', 'BaseException', 'object']
+# stderr run 1: 
+# run 2
+FileNotFoundError
+ConnectionError
+['FileNotFoundError', 'OSError', 'Exception', 'BaseException', 'object']
+['ConnectionError', 'OSError', 'Exception', 'BaseException', 'object']
+# stderr run 2: 

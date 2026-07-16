@@ -30,6 +30,7 @@ const EXPECT = [
   { id: "PY.M6.generators", segs: 6, ev: "PY-GEN" },
   { id: "PY.M7.context-managers", segs: 5, ev: "PY-CM" },
   { id: "PY.M8.object-model", segs: 8, ev: "PY-OBJ" },
+  { id: "PY.M9.exceptions", segs: 5, ev: "PY-EXC" },
 ];
 
 const VIEWPORTS = { 375: { width: 375, height: 812 }, 768: { width: 768, height: 1024 }, 1440: { width: 1440, height: 900 }, 390: { width: 390, height: 844 } };
