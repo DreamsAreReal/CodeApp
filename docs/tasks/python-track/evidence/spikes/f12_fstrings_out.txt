@@ -1,0 +1,10 @@
+# python3.12 (Python 3.12.13) — run 1
+99.50 0007
+'Alice'
+name='Alice'
+# stderr run 1: 
+# run 2
+99.50 0007
+'Alice'
+name='Alice'
+# stderr run 2: 

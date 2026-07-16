@@ -1,0 +1,143 @@
+{
+  "id": "PY.M12.strings-flow",
+  "track": "PY",
+  "module": "M12.1",
+  "title": "Шпаргалка: строки и поток управления",
+  "prereqs": ["PY.M1.names-objects"],
+  "version": "1.0.0",
+  "volatility": "stable",
+  "sourceSnapshot": { "python": "3.12.13" },
+  "reviewBy": "2026-10-01",
+  "status": "published",
+
+  "depth": {
+    "intuition": [
+      { "id": "i1", "text": "Шпаргалка по справочным разделам конспекта (§2 строки, §4 поток): три механизма с сюжетом (срезы, format-spec, for-else) + колода на ежедневный API.", "source": "py-stdtypes", "status": "fact" }
+    ],
+    "mechanics": [
+      { "id": "m1", "text": "Срез s[i:j:k] — полуинтервал со шагом («slice of s from i to j with step k»): старт включён, стоп нет; отрицательный индекс — len(s)+i; s[::-1] — реверс; границы среза прощаются (s[1:100] → est), одиночный индекс — нет (IndexError). Спайки 3.12 ×2.", "source": "py-stdtypes", "status": "fact" },
+      { "id": "m2", "text": "f-строка — выражение рантайма: после двоеточия — спека формата (.2f → 99.50, 04d → 0007, .1% → 85.0%), !r — repr с кавычками, {x=} — «имя=значение». Спайки 3.12 ×2.", "source": "pep-498", "status": "fact" },
+      { "id": "m3", "text": "else у цикла = «break не сработал»; выполняется и на пустой коллекции (спайк ×2: else ran). Каркас wait_for-поллинга: break при успехе, else → TimeoutError.", "source": "py-tut-flow", "status": "fact" },
+      { "id": "m4", "text": "Walrus (n := expr) привязывает имя И возвращает значение — проверка и переменная в одном выражении (спайк ×2: 3).", "source": "py-ref-expr", "status": "fact" }
+    ],
+    "spec": [
+      { "id": "s1", "text": "«In a for or while loop the break statement may be paired with an else clause. If the loop finishes without executing the break, the else clause executes.» (Tutorial, дословно)", "source": "py-tut-flow", "status": "fact" }
+    ]
+  },
+  "edgeCases": [
+    { "id": "e1", "text": "Срез за границы — не ошибка: \"Test\"[1:100] → est; одиночный индекс \"Test\"[100] → IndexError (спайк ×2).", "source": "py-stdtypes" },
+    { "id": "e2", "text": "f-строка — не константа: «an f-string is really an expression evaluated at run time, not a constant value» (PEP 498).", "source": "pep-498" },
+    { "id": "e3", "text": "Мутабельного строкового типа нет: «There is also no mutable string type, but str.join() or io.StringIO can be used to efficiently construct strings from multiple fragments.»", "source": "py-stdtypes" }
+  ],
+  "misconceptions": [
+    { "wrong": "else у цикла сработает после break («нашли — обработали»).", "correction": "Ровно наоборот: «If the loop finishes without executing the break, the else clause executes» — else значит «break НЕ было»; на пустой коллекции else тоже выполнится (спайк ×2).", "source": "py-tut-flow" },
+    { "wrong": "join зовётся у списка: [\"a\",\"b\"].join(\",\").", "correction": "join — метод РАЗДЕЛИТЕЛЯ: \",\".join([\"a\",\"b\",\"c\"]) → a,b,c (спайк ×2); у списка метода join нет.", "source": "py-stdtypes" }
+  ],
+  "rationale": { "id": "r1", "text": "Справочные разделы md сохранены без раздувания: механизмы с сюжетом анимированы (срезы/спеки/for-else), перечни API уехали в predict-колоду — формат шпаргалки по решению гейта (без обязательной modify/explain-лесенки).", "source": "py-stdtypes" },
+
+  "sources": [
+    { "id": "pep-498", "kind": "pep", "url": "https://peps.python.org/pep-0498/", "section": "Abstract · runtime expression", "date": "2026-07-16", "retrieved": "2026-07-16" },
+    { "id": "py-stdtypes", "kind": "python-docs", "url": "https://docs.python.org/3/library/stdtypes.html#text-sequence-type-str", "section": "Common Sequence Operations · str", "date": "2026-07-16", "retrieved": "2026-07-16" },
+    { "id": "py-tut-flow", "kind": "python-docs", "url": "https://docs.python.org/3/tutorial/controlflow.html", "section": "else Clauses on Loops", "date": "2026-07-16", "retrieved": "2026-07-16" },
+    { "id": "py-ref-expr", "kind": "python-docs", "url": "https://docs.python.org/3/reference/expressions.html", "section": "Assignment expressions", "date": "2026-07-16", "retrieved": "2026-07-16" }
+  ],
+  "identifiers": [
+    { "symbol": "str.strip", "kind": "method", "minVersion": "3.0" },
+    { "symbol": "str.join", "kind": "method", "minVersion": "3.0" },
+    { "symbol": "str.count", "kind": "method", "minVersion": "3.0" },
+    { "symbol": "f-string format spec", "kind": "syntax", "minVersion": "3.6" },
+    { "symbol": "f-string {x=}", "kind": "syntax", "minVersion": "3.8" },
+    { "symbol": "assignment expression :=", "kind": "syntax", "minVersion": "3.8" }
+  ],
+
+  "viz": {
+    "model": "cheatsheet-string-and-flow",
+    "renderer": "svg",
+    "interaction": "responding",
+    "entities": [
+      { "id": "str.t1", "zone": "str", "label": "e · 1" },
+      { "id": "outz.o3", "zone": "outz", "label": "'Alice'" },
+      { "id": "elsez.ok", "zone": "elsez", "label": "break не было" }
+    ],
+    "trace": [
+      { "op": "highlight", "target": "str.t1", "caption": "полуинтервал [1:3): старт включён, стоп исключён", "signal": "str.t1" },
+      { "op": "annotate", "target": "outz.o3", "caption": "!r зовёт repr — в строке видны кавычки", "signal": "outz.o3" },
+      { "op": "annotate", "target": "elsez.ok", "caption": "else выполняется, когда break не сработал", "signal": "elsez.ok" }
+    ]
+  },
+
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "s = \"Test\" — что напечатают print(s[::-1]) и print(s[1:3])?",
+      "code": "s = \"Test\"\nprint(s[::-1])\nprint(s[1:3])",
+      "expectedOutput": "tseT\nes",
+      "verify": "execute",
+      "sourceRefs": ["py-stdtypes"],
+      "distractors": ["tseT\nest", "Test\nes"],
+      "fsrsSeed": { "desiredRetention": 0.9 }
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Что напечатают print(f\"{99.5:.2f}\") и print(f\"{7:04d}\")?",
+      "code": "print(f\"{99.5:.2f}\")\nprint(f\"{7:04d}\")",
+      "expectedOutput": "99.50\n0007",
+      "verify": "execute",
+      "sourceRefs": ["pep-498"],
+      "distractors": ["99.5\n7", "99.50\n7000"],
+      "fsrsSeed": { "desiredRetention": 0.9 }
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "name = \"Alice\" — что напечатают print(f\"{name!r}\") и print(f\"{name=}\")?",
+      "code": "name = \"Alice\"\nprint(f\"{name!r}\")\nprint(f\"{name=}\")",
+      "expectedOutput": "'Alice'\nname='Alice'",
+      "verify": "execute",
+      "sourceRefs": ["pep-498"],
+      "distractors": ["Alice\nAlice", "'Alice'\nname=Alice"],
+      "fsrsSeed": { "desiredRetention": 0.9 }
+    },
+    {
+      "id": "c4",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "for x in [1, 2, 3] с if x == 99: print(\"found!\"); break и веткой else: print(\"not found\") — что напечатает программа?",
+      "code": "for x in [1, 2, 3]:\n    if x == 99:\n        print(\"found!\")\n        break\nelse:\n    print(\"not found\")",
+      "expectedOutput": "not found",
+      "verify": "execute",
+      "sourceRefs": ["py-tut-flow"],
+      "distractors": ["found!", ""],
+      "fsrsSeed": { "desiredRetention": 0.9 }
+    },
+    {
+      "id": "c5",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Что напечатают print(\"  Hi  \".strip()), print(\",\".join([\"a\", \"b\", \"c\"])) и print(\"hello\".count(\"l\"))?",
+      "code": "print(\"  Hi  \".strip())\nprint(\",\".join([\"a\", \"b\", \"c\"]))\nprint(\"hello\".count(\"l\"))",
+      "expectedOutput": "Hi\na,b,c\n2",
+      "verify": "execute",
+      "sourceRefs": ["py-stdtypes"],
+      "distractors": ["Hi\nabc\n2", "  Hi  \na,b,c\n3"],
+      "fsrsSeed": { "desiredRetention": 0.9 }
+    },
+    {
+      "id": "c6",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "items = [1, 2, 3]; if (n := len(items)) > 2: print(n) — что напечатает?",
+      "code": "items = [1, 2, 3]\nif (n := len(items)) > 2:\n    print(n)",
+      "expectedOutput": "3",
+      "verify": "execute",
+      "sourceRefs": ["py-ref-expr"],
+      "distractors": ["True", "SyntaxError"],
+      "fsrsSeed": { "desiredRetention": 0.9 }
+    }
+  ]
+}

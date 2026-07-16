@@ -1,0 +1,12 @@
+# python3.12 (Python 3.12.13) — run 1
+es
+t
+tseT
+Ts
+# stderr run 1: 
+# run 2
+es
+t
+tseT
+Ts
+# stderr run 2: 

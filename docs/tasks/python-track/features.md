@@ -335,9 +335,31 @@ ALL GREEN · multicard-session ALL GREEN · shell ALL GREEN · loop ALL GREEN ·
 Зачем: справочные разделы md (§2, §4) без потери — колода + минимум сюжетных анимаций.
 Что: PY.M12: срезы-анимация (s[::-1], шаги), f-string format-spec, for-else (c23),
 walrus кратко; колода 4–6 карточек predict-output.
-Приёмка: [ ] 2–3 сегмента; [ ] колода по чеклисту RS-03; [ ] общая
-Проверка: harness-набор
-Статус: todo
+Приёмка:
+- [x] 3 сегмента с сюжетом: s1 срезы на живой строке (полуинтервал → отриц. индексы →
+      реверс шагом -1 → шаг 2; консоль = спайк f12_slices ×2) · s2 конвейер f-string
+      format-spec с predict-гейтом на !r (:.2f/:04d → !r=repr → {name=}; спайк
+      f12_fstrings ×2) · s3 for-else с predict-гейтом (контракт «no break» + сцена
+      wait_for-поллинга из md §4; спайки f12_for_else + f12_for_else_empty ×2 —
+      «на пустой коллекции else тоже выполнится» в hook); walrus — edgeCase + c6
+      (лесенка modify НЕ обязательна — исключение шпаргалок из шапки)
+- [x] колода 6 exec-карточек по чеклисту RS-03: c1 срезы (`tseT\nes`), c2 спеки
+      (`99.50\n0007`), c3 !r/= (`'Alice'\nname='Alice'`), c4 for-else (`not found`),
+      c5 strip/join/count (`Hi\na,b,c\n2`), c6 walrus (`3`) — python3.12.13 ×2,
+      stdout==expect байт-в-байт, stderr пуст (census-log.txt 49 карт), front==seed==
+      stdout сверено скриптом (.verify/seedsync.py: FAILURES 0 по 49 картам)
+- [x] общая приёмка: только `at`; 7 EN-цитат перепроверены фетчем живых страниц
+      (tutorial/controlflow for-else, reference/expressions walrus, PEP 498 ×2,
+      stdtypes ×3: s[i:j:k]/negative-index/no-mutable-string — дословны, усечения
+      только на границах предложений); трик-вопрос md §4 (for-else) → misconception-
+      hook; takeaway «срезы для ID/логов, f-spec в отчётах, while-else = wait_for»;
+      без C#; seed синхронен; 0 ошибок консоли; estMinutes 6; predictAt не на s1;
+      _fit-margins: худший лейбл M12 = 6.8px («TimeoutError») ≥ 6
+Проверка: build чисто (136.34 KB gz < 200) · viz-fit ALL GREEN (307 сцен, 18 уроков) ·
+new-lessons ALL GREEN (PY.M12: 3 сегм, autoplay s1, reduced-motion) · npm run verify
+ALL GREEN · multicard-session ALL GREEN · shell ALL GREEN · dotnet 65/65; MCQ волны 0%
+(49/49 exec); скрины evidence/F12/ (9 PNG, смотрел глазами)
+Статус: self-pass
 
 ### F13 — Шпаргалка stdlib+pathlib+idioms (P2) [M4]
 Зачем: §13–15 md: то, что дергаешь в тестах ежедневно.
