@@ -35,6 +35,19 @@ MCQ 0% (53/53 exec), /api/due свежего юзера = 59 карт с 6×M13.
 (viz-fit 316 сцен/19 уроков, new-lessons M13 3 сегм, verify, multicard, shell), dotnet
 65/65, бандл 141.53 KB gz < 200. 9 скринов F13 глазами.
 
+**F14 прогресс-по-трекам:** минимальный дифф в app/src/app/progress.ts — per-lesson
+секция рендерится через perLessonGroups(): по одному «sec-label + lesson-list» на
+TRACK_GROUP с непустыми рядами (registry-driven; уроки вне реестра — fallback-секция
+в конце), заголовок = S.perLessonLabel + " · " + label группы (композиция существующих
+строк — паттерн уже в файле). __progress-хук дополнен perLessonGroups (id+count).
+Новый харнесс verify/_f14-progress-tracks.mjs: свежий юзер проходит карточку C# И
+карточку PY → Прогресс → ассерты групп/заголовков/лент + скрины. ALL GREEN;
+shell/viz-fit/build зелёные. Cut не потребовался.
+
+**Грабли F14.** window.history.back() из урока убивает __app-хук — в харнессах
+возвращаться через __app.showHome(). Watchdog-обрыв сессии посреди F14: зависшие
+headless-браузеры убиты, бэк :5080 поднят заново — правки пережили на диске.
+
 **Грабли F13.**
 - .verify/seedsync.py парсит только `expect: "…"` в двойных кавычках — expect с
   внутренними двойными кавычками пиши эскейпом (`"{\"ok\": true…}"`), не одинарными,

@@ -400,11 +400,21 @@ ALL GREEN · multicard-session ALL GREEN · shell ALL GREEN · dotnet 65/65; MCQ
 Что: экран Прогресс при двух треках не смешивает ощущение прогресса; при необходимости —
 группировка per-lesson по трекам БЕЗ новых экранов (LOCKED); иначе cut по протоколу.
 Приёмка:
-- [ ] ИСХОД: на скрине Прогресса PY-уроки визуально отделимы от C# (группировка или
-      ясная подпись урока) И ни одна существующая метрика не сломана (shell.mjs GREEN)
-- [ ] ЛИБО фича cut по протоколу с докладом пользователю (причина + что потребовалось бы)
+- [x] ИСХОД: per-lesson секция Прогресса сгруппирована по TRACK_GROUPS (registry-driven,
+      без per-track хардкода, БЕЗ новых экранов): два заголовка «Темы: прохождение и
+      закрепление · Фундамент C# / · Python для AQA», под каждым своя лента; заголовки —
+      композиция существующих строк strings.ts. Доказано headless-прогоном
+      `node verify/_f14-progress-tracks.mjs` ALL GREEN с ДАННЫМИ ОБОИХ ТРЕКОВ (свежий
+      юзер прошёл T1.M4.gc/c1 и PY.M13.stdlib-idioms/c1, оба /api/review Good;
+      reviewsTotal=2; группы csharp=6 + python=13 = perLesson 19; 2 заголовка в DOM;
+      обе ленты непустые; 0 ошибок консоли). Скрины evidence/F14/
+      390-progress-tracks-full.png + 390-progress-tracks-boundary.png — граница треков
+      читается глазами (C#-лента с «GC и память · Пройдено» → заголовок PY → PY-лента)
+- [x] метрики не сломаны: node verify/shell.mjs ALL GREEN (все progress-ассерты, axe,
+      empty/completed-стейты); npm run build чисто; viz-fit ALL GREEN (правка только
+      app/src/app/progress.ts — рендер per-lesson списка). Cut не потребовался.
 Проверка: node verify/shell.mjs + скрин evidence/F14/
-Статус: todo
+Статус: self-pass
 
 ### F15 — Деплой волны [M5] [золотой путь]
 Зачем: просьба пользователя «затем задеплой» (полномочия ТЗ).

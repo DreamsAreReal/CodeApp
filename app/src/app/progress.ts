@@ -10,7 +10,7 @@
  */
 import { api } from "../api/client.ts";
 import type { Calibration, DayCount, GradeMix, LessonProgress, ProgressResponse } from "../api/types.ts";
-import { getLesson } from "../lessons/index.ts";
+import { getLesson, TRACK_GROUPS } from "../lessons/index.ts";
 import { S } from "../strings.ts";
 import { router } from "./router.ts";
 import { TOPIC_ICON } from "./home.ts";
@@ -153,11 +153,9 @@ export async function renderProgress(root: HTMLElement, navToken: number = route
         <div class="hint">${S.upcomingCaption}</div>
       </section>
 
-      <!-- per-lesson mastery -->
-      <div class="sec-label">${S.perLessonLabel}</div>
-      <div class="path lesson-list" id="lessonList">
-        ${p.perLesson.map((l) => lessonRow(l)).join("")}
-      </div>
+      <!-- per-lesson mastery, grouped by track group (F14): PY lessons render under
+           their own labelled list so two tracks never blur into one flat column. -->
+      ${perLessonGroups(p.perLesson)}
     </div>
     ${navBar("progress")}
   </div>`;
@@ -189,6 +187,14 @@ export async function renderProgress(root: HTMLElement, navToken: number = route
     activeDays,
     upcomingDays: p.upcoming.length,
     perLesson: p.perLesson.length,
+    // F14: per-track-group row counts as rendered (registry-driven grouping)
+    perLessonGroups: TRACK_GROUPS.map((g) => ({
+      id: g.id,
+      count: p.perLesson.filter((l) => {
+        const t = getLesson(l.lessonId)?.track;
+        return !!t && g.tracks.includes(t);
+      }).length,
+    })),
     // honest completion (lesson-viewing) rollup, separate from card mastery
     completionPct: Math.round(completionPct),
     lessonsTotal: p.lessonsTotal,
@@ -305,6 +311,33 @@ const WEEKDAYS_RU = ["вс", "пн", "вт", "ср", "чт", "пт", "сб"];
 function weekday(iso: string): string {
   const d = new Date(iso + "T00:00:00Z");
   return WEEKDAYS_RU[d.getUTCDay()] + " " + String(d.getUTCDate());
+}
+
+/**
+ * Per-lesson list split by TRACK_GROUPS (registry-driven, no per-track hardcode):
+ * one labelled `.sec-label` + `.lesson-list` per group that has rows, so the
+ * C# and Python tracks stay visually separate. Rows whose lesson id is not in
+ * the frontend registry (e.g. a retired lesson still present in history) fall
+ * back to a plain unlabelled-by-track section at the end.
+ */
+function perLessonGroups(rows: LessonProgress[]): string {
+  const grouped = TRACK_GROUPS.map((g) => ({
+    label: S.perLessonLabel + " · " + g.label,
+    rows: rows.filter((l) => {
+      const t = getLesson(l.lessonId)?.track;
+      return !!t && g.tracks.includes(t);
+    }),
+  })).filter((g) => g.rows.length > 0);
+  const known = new Set(grouped.flatMap((g) => g.rows.map((r) => r.lessonId)));
+  const rest = rows.filter((l) => !known.has(l.lessonId));
+  if (rest.length > 0) grouped.push({ label: S.perLessonLabel, rows: rest });
+  return grouped
+    .map(
+      (g) =>
+        `<div class="sec-label">${escapeHtml(g.label)}</div>` +
+        `<div class="path lesson-list">${g.rows.map((l) => lessonRow(l)).join("")}</div>`,
+    )
+    .join("");
 }
 
 function lessonRow(l: LessonProgress): string {
