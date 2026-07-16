@@ -465,3 +465,13 @@ run 1 stderr: <empty>
 run 2 stdout:
 3
 run 2 stderr: <empty>
+
+---- PY.M8_c4.py (re-run 2026-07-16 after M3-evaluator fix: literal "AttributeError" print replaced with type(e).__name__; python3.12 = 3.12.13) ----
+run 1 stdout:
+1
+AttributeError
+run 1 stderr: <empty>
+run 2 stdout:
+1
+AttributeError
+run 2 stderr: <empty>

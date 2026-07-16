@@ -6,5 +6,5 @@ p = P()
 print(p._P__x)
 try:
     print(p.__x)
-except AttributeError:
-    print("AttributeError")
+except AttributeError as e:
+    print(type(e).__name__)

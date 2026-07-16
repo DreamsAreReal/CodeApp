@@ -1,5 +1,29 @@
 # Progress — Python-трек, волна 1 (builder-журнал)
 
+## 2026-07-17 · Такт 6, builder-8 (ротация): фиксы M3 доведены и закоммичены
+
+**Сделано.** Незакоммиченные фиксы M3 предшественника проверены КАЖДЫЙ исполняемо и
+закоммичены: (a) PY.M8_c4 → type(e).__name__ — трёхсторонне front==seed==stdout,
+python3.12.13 ×2 (`1\nAttributeError`), census-log дополнен re-run-блоком; (b) F9 s2 —
+усечение цитаты устранено РАСШИРЕНИЕМ до конца предложения («…, or to a tuple that
+contains such a class»), дословность сверена фетчем живой compound_stmts; (c) features.md
+F8 PNG-счётчик 13→19; (d) мусорные docs/evidence/{PY-CM,PY-EXC,PY-HINTS,PY-OBJ} удалены,
+причина починена: new-lessons.mjs evDirFor шлёт PY.*-эвиденс в workspace
+evidence/harness/ (gitignored, .gitignore-правило добавлено); (e) _fit-margins.mjs
+читает APP_BASE; (f) ghost-узлы: .node.ghost opacity 0→0.4 (де-акцент, не исчезновение;
+ghost используется ТОЛЬКО PY-уроками — grep по lessons: 12 py-файлов, 0 C#), пересъём
+M7 s4 / M12 s3 reduced — кадры читаемы глазами (evidence/M3-fixes/).
+
+**Харнессы (мой прогон):** build чисто (136.37 KB gz < 200) · viz-fit ALL GREEN (307
+сцен, 18 уроков, 0 нарушений) · new-lessons ALL GREEN · npm run verify ALL GREEN ×2
+(первый прогон дал «1 FAILED» с потерянным логом — флейк, два полных зелёных подряд
+после) · multicard ALL GREEN · shell ALL GREEN (axe) · dotnet 65/65.
+
+**Решения / грабли.**
+- Ghost-фикс — единственная правка общего CSS волны; допущена оркестратором явно
+  («ghost-CSS из наследства допущен при зелёных харнессах»), C#-уроки ghost не используют.
+- Не гонять харнессы через `| tail` в фоновом таске: при фейле теряется имя assert-а.
+
 ## 2026-07-16 · Такт 5, builder-7 (ротация после смерти builder-6 посреди F12): F12 финализирован
 
 **Сделано.** Черновик F12 PY.M12.strings-flow предшественника принят КРИТИЧЕСКИ как свой и

@@ -8,6 +8,7 @@
  *       console errors, (d) reduced-motion shows static final frames.
  * Requires: backend on :5080, `vite preview` on :4173. Writes evidence PNGs.
  */
+import { join } from "node:path";
 import { chromium } from "playwright";
 import { evidenceDir, preflight } from "./_util.mjs";
 
@@ -15,6 +16,12 @@ const APP = process.env.APP_BASE || "http://localhost:4173";
 const API = process.env.VITE_API_BASE || "http://localhost:5080";
 // CI-portable evidence root: $EVIDENCE_DIR on CI, else repo-relative docs/evidence (no hardcoded path).
 const EV = evidenceDir();
+// PY-track lesson evidence belongs to the task workspace (docs/tasks/python-track/evidence/),
+// not the product docs/evidence root — except on CI, where $EVIDENCE_DIR keeps everything flat.
+const evDirFor = (e) =>
+  !process.env.EVIDENCE_DIR && e.id.startsWith("PY.")
+    ? evidenceDir(join("..", "tasks", "python-track", "evidence", "harness", e.ev))
+    : evidenceDir(e.ev);
 const RUN_USER = 800000 + Math.floor(Math.random() * 90000);
 
 const EXPECT = [
@@ -54,7 +61,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function main() {
   await preflight();
-  for (const e of EXPECT) evidenceDir(`${e.ev}`);
+  for (const e of EXPECT) evDirFor(e);
   const browser = await chromium.launch();
   const consoleErrors = [];
 
@@ -101,12 +108,12 @@ async function main() {
     await page.waitForFunction(() => { const s = window.__viz.segments["s1"]; return s && s.index > 0; }, { timeout: 8000 }).catch(() => {});
     const s1i = await page.evaluate(() => window.__viz.segments["s1"].index);
     assert(s1i > 0, `${e.id} segment s1 advanced by autoplay (index=${s1i})`);
-    await page.screenshot({ path: `${EV}/${e.ev}/390-autoplay.png`, fullPage: false });
+    await page.screenshot({ path: join(evDirFor(e), "390-autoplay.png"), fullPage: false });
     await page.evaluate(() => window.__viz.forcePlayAll());
     await sleep(400);
     const allFinal = await page.evaluate(() => Object.values(window.__viz.segments).every((s) => s.index === s.total - 1));
     assert(allFinal, `${e.id} all segments reach their final frame`);
-    await page.screenshot({ path: `${EV}/${e.ev}/375-full.png`, fullPage: true });
+    await page.screenshot({ path: join(evDirFor(e), "375-full.png"), fullPage: true });
   }
 
   // ---- the loop: GC card -> TYPE correct answer -> ✓ -> Good pre-selected -> /api/review ----

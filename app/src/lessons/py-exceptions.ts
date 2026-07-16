@@ -168,7 +168,7 @@ export const pyExceptions: LessonData = {
           edges: [{ id: "e1", from: "h1", to: "g1", accent: true }],
         },
       ],
-      explain: 'Норма Reference: «When an exception occurs in the try suite, a search for an exception handler is started. This search inspects the except clauses in turn until one is found that matches the exception», а совпадение — по классу или его базе: «The raised exception matches an except clause whose expression evaluates to the class or a non-virtual base class of the exception object». Отсюда правило порядка: <code>except OSError</code> над <code>except FileNotFoundError</code> съедает всё — спайк 3.12 ×2 печатает <code>A</code>, ветка <code>B</code> мертва. Линтеры ловят это как unreachable except, но на ревью чужого кода дерево классов держи в голове сам.',
+      explain: 'Норма Reference: «When an exception occurs in the try suite, a search for an exception handler is started. This search inspects the except clauses in turn until one is found that matches the exception», а совпадение — по классу или его базе: «The raised exception matches an except clause whose expression evaluates to the class or a non-virtual base class of the exception object, or to a tuple that contains such a class». Отсюда правило порядка: <code>except OSError</code> над <code>except FileNotFoundError</code> съедает всё — спайк 3.12 ×2 печатает <code>A</code>, ветка <code>B</code> мертва. Линтеры ловят это как unreachable except, но на ревью чужого кода дерево классов держи в голове сам.',
       sources: ["py-try-stmt"],
     },
 

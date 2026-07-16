@@ -227,8 +227,8 @@ bound method (невидимое, B-5), property, name mangling (c17), classmeth
       estMinutes 10; headroom: худший лейбл M8 = 6.9px ≥ 6
 Проверка: build чисто (112.4 KB gz < 200) · viz-fit ALL GREEN (245 сцен, 14 уроков) ·
 new-lessons ALL GREEN (PY.M8: 8 сегм, autoplay s1, reduced-motion) · npm run verify ALL GREEN ·
-multicard-session ALL GREEN · shell ALL GREEN · dotnet 65/65; скрины evidence/F8/ (13 PNG,
-смотрел глазами)
+multicard-session ALL GREEN · shell ALL GREEN · dotnet 65/65; скрины evidence/F8/ (19 PNG,
+смотрел глазами; счётчик исправлен по пересчёту M3-evaluator-а)
 Статус: verified (R-M3-evaluator: ПРИНЯТО; 8 сегм; MRO/super-sibling прогнан python3.12 оценщика; примечание: PNG-счётчик 13→факт 19)
 
 ### F9 — Урок py-exceptions [M3]

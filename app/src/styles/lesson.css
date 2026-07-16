@@ -537,7 +537,9 @@
   transition: opacity 0.3s ease;
 }
 .node.ghost {
-  opacity: 0;
+  /* De-emphasized-but-present: authored ghost nodes must stay readable on the
+     final frame too (incl. prefers-reduced-motion statics), not vanish. */
+  opacity: 0.4;
 }
 
 /* ---- console ---- */

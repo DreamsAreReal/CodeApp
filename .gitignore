@@ -9,6 +9,9 @@ deploy/.env
 **/obj/
 **/publish/
 
+# harness re-run noise: PY-lesson evidence PNGs regenerate on every verify run
+docs/tasks/python-track/evidence/harness/
+
 # build outputs (rebuilt by CI / the Docker image — never committed)
 app/dist/
 app/dist-deploy/

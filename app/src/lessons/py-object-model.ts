@@ -461,7 +461,7 @@ export const pyObjectModel: LessonData = {
     },
     {
       id: "c4", type: "predict-output", engagementLevel: "responding",
-      question: '<code>class P</code> в <code>__init__</code> делает <code>self.__x = 1</code>. Снаружи: <code>print(p._P__x)</code>, затем <code>print(p.__x)</code> под <code>try/except AttributeError: print("AttributeError")</code>.<br/>Что напечатает (две строки)?',
+      question: '<code>class P</code> в <code>__init__</code> делает <code>self.__x = 1</code>. Снаружи: <code>print(p._P__x)</code>, затем <code>print(p.__x)</code> под <code>try/except AttributeError as e: print(type(e).__name__)</code>.<br/>Что напечатает (две строки)?',
       options: ["1, затем AttributeError", "AttributeError, затем 1", "1, затем 1", "AttributeError, затем AttributeError"], correctIndex: 0, xp: 10,
       okText: 'Идентификатор <code>__x</code> в теле класса переименован в <code>_P__x</code> — под этим ключом значение читается; ключа <code>__x</code> в словаре нет.',
       noText: 'Mangling — текстовая замена «__spam → _classname__spam» только внутри тела класса: снаружи <code>p._P__x</code> работает, <code>p.__x</code> ищет несуществующий ключ. Реальный вывод python3.12: <code>1</code>, затем <code>AttributeError</code>.',

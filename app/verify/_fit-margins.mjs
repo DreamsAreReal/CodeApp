@@ -4,7 +4,7 @@
 import { chromium } from "playwright";
 import { LESSONS as LESSON_DATA } from "../src/lessons/index.ts";
 
-const APP = "http://localhost:4173";
+const APP = process.env.APP_BASE || "http://localhost:4173";
 const PY = LESSON_DATA.filter((l) => l.track === "PY").map((l) => ({ id: l.id, segs: l.segments.length }));
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const browser = await chromium.launch();
