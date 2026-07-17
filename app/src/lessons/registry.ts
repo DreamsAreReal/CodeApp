@@ -120,7 +120,22 @@ const CS_S1: Section = {
   prereqs: [],
   // Lessons are registered as their body files land (F1: value-types-copy; F6: type-system-map,
   // classes-virtual-dispatch). Kept as its own section so navigation groups them from day one.
+  // Curriculum order S1.1 -> S1.2 -> S1.3.
   lessons: [
+    entry(
+      {
+        id: "CS.S1.type-system-map",
+        track: "CS",
+        section: "CS.S1",
+        title: "Карта типовой системы",
+        kicker: "C# вглубь · S1 · тип во времени",
+        icon: "types",
+        subtitle: "CTS, compile-time vs run-time тип",
+        estMinutes: 8,
+        cards: 2,
+      },
+      () => import("./cs/type-system-map.ts").then((m) => m.typeSystemMap),
+    ),
     entry(
       {
         id: "CS.S1.value-types-copy",
@@ -134,6 +149,20 @@ const CS_S1: Section = {
         cards: 3,
       },
       () => import("./cs/value-types-copy.ts").then((m) => m.valueTypesCopy),
+    ),
+    entry(
+      {
+        id: "CS.S1.classes-virtual-dispatch",
+        track: "CS",
+        section: "CS.S1",
+        title: "Классы и виртуальная диспетчеризация",
+        kicker: "C# вглубь · S1 · method table",
+        icon: "types",
+        subtitle: "vtable, override, невиртуальный вызов",
+        estMinutes: 9,
+        cards: 2,
+      },
+      () => import("./cs/classes-virtual-dispatch.ts").then((m) => m.classesVirtualDispatch),
     ),
   ],
 };

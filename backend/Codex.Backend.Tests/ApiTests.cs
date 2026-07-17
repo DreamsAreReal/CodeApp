@@ -41,6 +41,14 @@ public sealed class ApiTests : IClassFixture<ApiTests.Factory>
                 ["Database:Path"] = _dbPath,
                 ["Auth:DevMode"] = "true",
             }));
+            // Raise the per-minute mutation limit well above the seed catalog size so the
+            // concurrency test (which fires the WHOLE due queue at once to prove no
+            // "database is locked") is not throttled as the catalog grows. Rate-limiting
+            // itself is covered separately by RateLimitFactory (its own tiny limit).
+            // UseSetting writes to HOST configuration, which wins over appsettings.json in the
+            // minimal-hosting model (see RateLimitFactory) — ConfigureAppConfiguration would be
+            // overridden by appsettings.json and not take effect.
+            builder.UseSetting("RateLimit:PermitPerMinute", "1000");
         }
     }
 

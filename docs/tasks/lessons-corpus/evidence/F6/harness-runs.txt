@@ -1,0 +1,25 @@
+F6 verification runs — CS.S1.type-system-map + CS.S1.classes-virtual-dispatch
+Backend :5080 (3 CS seeds loaded), preview :4173 (fresh build).
+
+CS-probe (E2E, all 3 CS lessons) -> ALL GREEN (runUser=913851):
+  - all 3 present in home path (metadata, no body loaded)
+  - type-system-map: 5 segs render+autoplay+final; c1 typed "object overload\nstring overload" -> Good -> due drops
+  - value-types-copy: 6 segs; c1 typed "a=(1,2) b=(99,2)" -> Good -> due drops
+  - classes-virtual-dispatch: 5 segs; c1 typed "Derived.V\nBase.N" -> Good -> due drops
+  - 0 console errors; screenshots 375/768 in evidence/F6/
+node verify/viz-fit.mjs  -> ALL GREEN (runUser=732195): 22/22 lessons on `at`; both new lessons 0 FIT/CLIP/OVERLAP/... violations.
+node verify/run.mjs      -> ALL GREEN (runUser=978345): skeleton not degraded.
+node verify/new-lessons  -> ALL GREEN (runUser=844356).
+node verify/shell.mjs    -> ALL GREEN (runUser=860356): axe 0 serious/critical.
+node verify/loop.mjs     -> ALL GREEN (firstUser=717159).
+dotnet test              -> Passed! 0 failed, 65 passed.
+  NOTE: ConcurrentReviews_ForOneUser_NoDatabaseLocked fired the WHOLE due queue; the 7 new CS
+  cards pushed the fresh-user catalog past the 60/min rate-limit default -> the test's own
+  Factory now raises RateLimit:PermitPerMinute to 1000 via UseSetting (same lever as
+  RateLimitFactory). No assertion weakened; the dedicated rate-limit test keeps its tiny limit.
+
+Card exec-truth (all 7 CS cards, run-csharp stdout == expectedOutput, anti-echo OK):
+  value-types-copy: a=(1,2) b=(99,2) | 0 [A, B]\n7 [A, B] | struct copy: 0 bytes
+  type-system-map:  object overload\nstring overload | Dog\nDog
+  classes-virtual-dispatch: Derived.V\nBase.N | Area=12.57
+Details: evidence/F6/type-system-map-exec.txt, classes-virtual-dispatch-exec.txt.

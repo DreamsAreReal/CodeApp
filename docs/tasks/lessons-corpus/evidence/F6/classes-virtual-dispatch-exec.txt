@@ -1,0 +1,37 @@
+=== CS.S1.classes-virtual-dispatch (S1.3) — real exec evidence ===
+date: 2026-07-18
+tool: backend run-csharp :5080 (Roslyn scripting, real dotnet exec)
+sources:
+  https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/object-oriented/ (fetch 2026-07-18)
+  https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/object-oriented/polymorphism (fetch 2026-07-18)
+
+--- EXEC A (SIGNATURE panel): virtual override (run-time) vs `new` hiding (compile-time), one object, one base ref ---
+code:
+  class Base { public virtual string V() => "Base.V"; public string N() => "Base.N"; }
+  class Derived : Base { public override string V() => "Derived.V"; public new string N() => "Derived.N"; }
+  Base b = new Derived();
+  Console.WriteLine(b.V());   // virtual -> run-time type -> Derived.V
+  Console.WriteLine(b.N());   // hidden via new -> compile-time (declared) type -> Base.N
+  Derived d = new Derived();
+  Console.WriteLine(d.N());   // static type Derived -> Derived.N
+stdout:
+  Derived.V
+  Base.N
+  Derived.N
+interpretation: the SAME object (a Derived) accessed through a Base reference: V() (virtual) routes
+through the object's method table to Derived.V; N() (hidden with `new`) is bound at COMPILE TIME by
+the reference's declared type -> Base.N. Access the same object through a Derived variable -> Derived.N.
+verbatim: «the CLR looks up the run-time type of the object, and invokes that override of the virtual
+method» / «With method hiding, the method that gets called depends on the compile-time type of the
+variable, not the run-time type of the object».
+
+--- EXEC B: a virtual call INSIDE a base method still dispatches to the derived override ---
+code:
+  class Shape { public virtual double Area() => 0; public virtual string Describe() => $"Area={Area()}"; }
+  class Circle : Shape { double r; public Circle(double r){this.r=r;} public override double Area() => Math.Round(3.14159*r*r, 2); }
+  Shape s = new Circle(2);
+  Console.WriteLine(s.Describe());   // base Describe() calls virtual Area() -> Circle.Area
+stdout:
+  Area=12.57
+interpretation: Shape.Describe() (not overridden) calls the virtual Area(); dispatch still uses the
+run-time type (Circle), so the base method sees the derived override — 3.14159*4 rounded = 12.57.

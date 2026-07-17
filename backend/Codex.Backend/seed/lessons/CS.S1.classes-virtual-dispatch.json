@@ -1,0 +1,42 @@
+{
+  "id": "CS.S1.classes-virtual-dispatch",
+  "track": "CS",
+  "section": "CS.S1",
+  "module": "S1.3",
+  "title": "Классы и виртуальная диспетчеризация",
+  "status": "published",
+  "sources": [
+    {
+      "id": "ms-poly",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/object-oriented/polymorphism",
+      "date": "2025-10-13"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Base b = new Derived(); b.V() (override) и b.N() (new) — что печатают?",
+      "code": "using System; class Base { public virtual string V()=>\"Base.V\"; public string N()=>\"Base.N\"; } class Derived: Base { public override string V()=>\"Derived.V\"; public new string N()=>\"Derived.N\"; } Base b = new Derived(); Console.WriteLine(b.V()); Console.WriteLine(b.N());",
+      "expectedOutput": "Derived.V\nBase.N",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-poly"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Shape.Describe() зовёт virtual Area(); Shape s=new Circle(2); s.Describe()?",
+      "code": "using System; class Shape { public virtual double Area()=>0; public virtual string Describe()=>$\"Area={Area()}\"; } class Circle: Shape { double r; public Circle(double r){this.r=r;} public override double Area()=>Math.Round(3.14159*r*r,2); } Shape s = new Circle(2); Console.WriteLine(s.Describe());",
+      "expectedOutput": "Area=12.57",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-poly"
+      ]
+    }
+  ]
+}

@@ -44,3 +44,24 @@
 - `npm run build`: tsc clean; чанк `value-types-copy-*.js` 22.34 KB; entry 110.58 KB (+0.38 KB метаданных, < +1.5 KB/урок).
 - E2E-проба: урок открывается, 6 сегментов + autoplay + финальный кадр, exec-карточка c1 → typed ✓ → Good → `/api/review` двигает расписание, 0 console errors, скриншоты 375/768 + панель + карточка (evidence/F1/*.png).
 - `node verify/viz-fit.mjs` ALL GREEN (20/20 lessons на `at`, урок 0 нарушений FIT/CLIP/OVERLAP/…); `node verify/run.mjs` ALL GREEN (скелет не деградировал).
+
+## F6 — Уроки S1.1 (type-system-map) и S1.3 (classes-virtual-dispatch)
+
+### Под-шаги (d) type-system-map + (e) classes-virtual-dispatch [зелёно]
+Сделано:
+- `cs/type-system-map.ts` (S1.1, вход первой сессии): 5 сегментов (иерархия CTS · два типа переменной compile/run-time · МАШИННАЯ ПАНЕЛЬ overload-vs-dispatch · виртуальный вызов · value/reference), 2 exec-карточки. Дословные цитаты MS Learn fundamentals/types.
+- `cs/classes-virtual-dispatch.ts` (S1.3): 5 сегментов (наследование · override run-time дисп. · МАШИННАЯ ПАНЕЛЬ vtable-слота · new-сокрытие compile-time · base/virtual внутри метода базы), 2 exec-карточки. Цитаты MS Learn polymorphism.
+- Оба зарегистрированы в CS_S1 (порядок S1.1→S1.2→S1.3); сиды `CS.S1.type-system-map.json`, `CS.S1.classes-virtual-dispatch.json` (+section).
+
+Реальные числа (evidence/F6/*-exec.txt, run-csharp, stdout==expect, anti-echo OK):
+- type-system-map: панель — `object overload` / `string overload` / `String` (один объект → разные перегрузки по compile-time типу); c1 `object overload\nstring overload`, c2 `Dog\nDog`.
+- classes-virtual-dispatch: панель — `Derived.V` (vtable→override, run-time) / `Base.N` (new-сокрытие, compile-time); c1 `Derived.V\nBase.N`, c2 `Area=12.57`.
+
+Грабли:
+- `dotnet test` упал 64/65 на `ConcurrentReviews_ForOneUser_NoDatabaseLocked`: тест шлёт ВСЮ due-очередь конкуррентно; +7 новых CS-карт перевели свежего пользователя за лимит 60 запросов/мин → 429. Не DB-lock, а rate-limit-коллизия из-за роста каталога. Починка (минимальный дифф, без ослабления ассертов): дефолтный тест-Factory поднимает `RateLimit:PermitPerMinute=1000` через `UseSetting` (тот же документированный рычаг, что у RateLimitFactory; `ConfigureAppConfiguration` перебивается appsettings.json — не работает). Выделенный rate-limit тест сохранил свой tiny-лимит. Итог 65/65.
+
+Доказательство:
+- E2E-проба всех 3 CS-уроков ALL GREEN (5/6/5 сегментов, exec-карточки grade→review двигает due, 0 console errors), скриншоты 375/768 — evidence/F6/*.png.
+- `node verify/viz-fit.mjs` ALL GREEN (22/22 lessons на `at`, оба урока 0 нарушений); run/new-lessons/shell/loop ALL GREEN; `dotnet test` 65/65 — evidence/F6/harness-runs.txt.
+
+## Итог M1 (F1+F6): скелет + 3 урока S1 (первые 3 урока трека). Все харнессы + dotnet test зелёные. Coverage S1 = 3/10.
