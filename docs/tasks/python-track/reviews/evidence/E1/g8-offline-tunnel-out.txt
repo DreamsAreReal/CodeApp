@@ -1,0 +1,18 @@
+  online: home ready, user 955917
+  clicked feed card: null
+  ✓ PY lesson opened with network DEAD (got PY.M6.generators)
+  ✓ segments rendered offline (got 6)
+  viz t0:    {"s1":0,"s2":0,"s3":0,"s4":0,"s5":0,"s6":0}
+  viz t+3s:  {"s1":1,"s2":0,"s3":0,"s4":0,"s5":0,"s6":0}
+  ✓ animation advanced while offline (segment scene index moved)
+  ✓ every segment reaches its final frame offline
+  blocked requests while offline: 24 [
+  'http://localhost:4173/assets/rubik-cyrillic-ext-800-normal-D8Ih7GUu.woff2',
+  'http://localhost:4173/assets/onest-latin-ext-500-normal-BlXa29q8.woff2',
+  'http://localhost:4173/assets/onest-latin-ext-600-normal-CMbOq94E.woff2',
+  'http://localhost:4173/assets/rubik-cyrillic-ext-800-normal-BLkQng3O.woff',
+  'http://localhost:4173/assets/onest-latin-ext-500-normal-CoujUMv_.woff',
+  'http://localhost:4173/assets/onest-latin-ext-600-normal-mefcv-cx.woff'
+]
+  ✓ no app console/page errors offline (got 0)
+==== G8 OFFLINE(tunnel): ALL GREEN ====

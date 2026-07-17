@@ -329,7 +329,7 @@ new-lessons ALL GREEN (PY.M11: 7 сегм, autoplay s1, reduced-motion) · npm r
 ALL GREEN · multicard-session ALL GREEN · shell ALL GREEN · loop ALL GREEN · dotnet
 65/65; MCQ волны 0% (41/41 exec); скрины evidence/F11/ (17 PNG, смотрел глазами;
 дефект «пустая банда s4 со сцены 3» пойман глазами и починен ghost-чипами)
-Статус: self-pass
+Статус: verified (R-M4-evaluator: ПРИНЯТО; G1-такт оценщика due 59→58 persist; stderr-кадр вне expect; GIL/cr_frame = signature)
 
 ### F12 — Шпаргалка strings+flow (P2) [M4]
 Зачем: справочные разделы md (§2, §4) без потери — колода + минимум сюжетных анимаций.
@@ -359,7 +359,7 @@ walrus кратко; колода 4–6 карточек predict-output.
 new-lessons ALL GREEN (PY.M12: 3 сегм, autoplay s1, reduced-motion) · npm run verify
 ALL GREEN · multicard-session ALL GREEN · shell ALL GREEN · dotnet 65/65; MCQ волны 0%
 (49/49 exec); скрины evidence/F12/ (9 PNG, смотрел глазами)
-Статус: self-pass
+Статус: verified (R-M4-evaluator: ПРИНЯТО; сюжетные гейты играют; карточки front==seed==stdout)
 
 ### F13 — Шпаргалка stdlib+pathlib+idioms (P2) [M4]
 Зачем: §13–15 md: то, что дергаешь в тестах ежедневно.
@@ -393,7 +393,7 @@ truthiness-таблица, enumerate/zip; колода 4–6 карточек.
 new-lessons ALL GREEN (PY.M13: 3 сегм, autoplay s1, reduced-motion) · npm run verify
 ALL GREEN · multicard-session ALL GREEN · shell ALL GREEN · dotnet 65/65; MCQ волны 0%
 (53/53 exec); скрины evidence/F13/ (9 PNG, смотрел глазами)
-Статус: self-pass
+Статус: verified (R-M4-evaluator: ПРИНЯТО; 27/27 цитат M11–M13 verbatim живым фетчем)
 
 ### F14 — Прогресс/стата по трекам — честная проверка [M4]
 Зачем: два трека не должны смешивать ощущение прогресса.
@@ -414,7 +414,7 @@ ALL GREEN · multicard-session ALL GREEN · shell ALL GREEN · dotnet 65/65; MCQ
       empty/completed-стейты); npm run build чисто; viz-fit ALL GREEN (правка только
       app/src/app/progress.ts — рендер per-lesson списка). Cut не потребовался.
 Проверка: node verify/shell.mjs + скрин evidence/F14/
-Статус: self-pass
+Статус: verified (R-M4-evaluator: ПРИНЯТО; прогон харнесса оценщиком: группы 6+13=19, граница треков читается)
 
 ### F15 — Деплой волны [M5] [золотой путь]
 Зачем: просьба пользователя «затем задеплой» (полномочия ТЗ).

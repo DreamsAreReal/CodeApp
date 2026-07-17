@@ -1,0 +1,36 @@
+--- Phase A: interrupt/re-enter x3 ---
+  ✓ round 1: session starts at 1 из 59, server due=59 — counter honest
+  ✓ round 1: visible counter "1 из 59" matches
+  ✓ round 1: after abandoning, server due=57 (expected 57) — graded cards gone, abandoned card kept
+  ✓ round 2: session starts at 1 из 57, server due=57 — counter honest
+  ✓ round 2: visible counter "1 из 57" matches
+  ✓ round 2: after abandoning, server due=55 (expected 55) — graded cards gone, abandoned card kept
+  ✓ round 3: session starts at 1 из 55, server due=55 — counter honest
+  ✓ round 3: visible counter "1 из 55" matches
+  ✓ round 3: after abandoning, server due=53 (expected 53) — graded cards gone, abandoned card kept
+  ✓ Phase A: zero console errors (got 0)
+  ✓ Phase A: zero 429 (got 0)
+--- Phase B: full 59-card session, Again x2 on one card ---
+  ✓ fresh user: 59 due (got 59)
+  ✓ AGAIN on card #1 re-queues it: total 59 -> 60
+    [net] 429 POST http://localhost:5080/api/lesson-progress
+    [net] 429 POST http://localhost:5080/api/review
+    [grade] review POST failed — waiting 62s for the rate window, then retrying once
+    [net] 429 POST http://localhost:5080/api/review
+    [grade] review POST failed — waiting 62s for the rate window, then retrying once
+  ✓ second AGAIN on the same card does NOT grow the queue (total stays 60) — x1 cap holds
+  walked 60 cards in 267s
+  ✓ visible counter matched session state on every card (mismatches: 0)
+  ✓ every /api/review succeeded (failures: 0)
+  server due after full session: 0
+  ✓ queue drained after the full session (due=0; <=1 allows the just-missed card's ~1-min learning step)
+  JS heap: 10MB -> 10MB
+  ✓ heap after 60-card session 10MB < 400MB (no runaway leak)
+Phase B console errors: 3 [
+  'console: Failed to load resource: the server responded with a status of 429 (Too Many Requests)',
+  'console: Failed to load resource: the server responded with a status of 429 (Too Many Requests)',
+  'console: Failed to load resource: the server responded with a status of 429 (Too Many Requests)'
+]
+  ✗ FAIL Phase B: zero console errors across the 60-card session (got 3)
+  ✗ FAIL Phase B: zero 429 under honest pacing (got 3)
+SESSION: 2 FAIL
