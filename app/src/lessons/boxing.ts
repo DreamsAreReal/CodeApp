@@ -27,6 +27,7 @@ const UNBOX_ZONES: Zone[] = [Z_STACK_TOP, Z_HEAP_TOP, Z_UNBOX_GATE];
 export const boxing: LessonData = {
   id: "T1.M3.boxing",
   track: "T1",
+  section: "T1",
   module: "M1.3",
   title: "Boxing и unboxing",
   kicker: "Ядро C# · память · нюанс",

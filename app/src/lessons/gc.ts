@@ -33,6 +33,7 @@ const GC_TRIGGER_ZONES: Zone[] = [...Z_GC_GENS_TOP, Z_GC_TRIGGER];
 export const gc: LessonData = {
   id: "T1.M4.gc",
   track: "T1",
+  section: "T1",
   module: "M1.4",
   title: "GC и память",
   kicker: "Ядро C# · управляемая куча · нюанс",

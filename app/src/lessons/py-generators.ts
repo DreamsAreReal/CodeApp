@@ -44,6 +44,7 @@ const MEM_ZONES: Zone[] = [Z_LIST, Z_LAZY];
 export const pyGenerators: LessonData = {
   id: "PY.M6.generators",
   track: "PY",
+  section: "PY",
   lang: "python",
   module: "M6.1",
   title: "yield: пауза, а не return",

@@ -23,6 +23,7 @@ const MM_ZONES: Zone[] = [Z_STACK, Z_HEAP];
 export const closures: LessonData = {
   id: "T2.M2.closures",
   track: "T2",
+  section: "T2",
   module: "M2.2",
   title: "Замыкания и захват",
   kicker: "Ядро C# · лямбды · нюанс",

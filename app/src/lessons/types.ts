@@ -99,12 +99,21 @@ export interface Takeaway {
 }
 
 /** Language of the lesson's code panels. Drives syntax highlighting and the
- *  bytecode-panel badge («IL» for C#, «dis · байткод» for Python). */
-export type LessonLang = "csharp" | "python";
+ *  bytecode-panel badge («IL» for C#, «dis · байткод» for Python). `none` is for
+ *  language-agnostic tracks (tools, books) that carry no code panel — reserved for
+ *  future waves (ADR-0004); wave-1 C# lessons stay "csharp". */
+export type LessonLang = "csharp" | "python" | "none";
 
 export interface LessonData {
-  id: string; // T<track>.M<module>.<slug> — matches backend lessonId
+  id: string; // CS.S<section>.<slug> (new tracks) or T<track>.M<module>.<slug> (legacy) — matches backend lessonId
+  /** Track id: "CS" (new C# track), "PY" (Python), legacy "T1"/"T2", future "TOOLS"/"BOOKS-*" (ADR-0004). */
   track: string;
+  /**
+   * Section id the lesson belongs to, e.g. "CS.S1" (ADR-0004). Groups lessons into
+   * curriculum sections for the track→section→lesson navigation. REQUIRED for new
+   * lessons; legacy T1/T2/PY lessons carry their track id as a single flat section.
+   */
+  section: string;
   /** Code language of the lesson. Default (absent) = "csharp" — existing lessons untouched. */
   lang?: LessonLang;
   module: string;

@@ -39,6 +39,7 @@ const ORDER_ZONES: Zone[] = [Z_ORDER, Z_READ];
 export const pyCollectionsHash: LessonData = {
   id: "PY.M2.collections-hash",
   track: "PY",
+  section: "PY",
   lang: "python",
   module: "M2.1",
   title: "Хэшируемость и O(1)",

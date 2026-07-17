@@ -10,7 +10,7 @@
  */
 import { api } from "../api/client.ts";
 import type { Calibration, DayCount, GradeMix, LessonProgress, ProgressResponse } from "../api/types.ts";
-import { getLesson, TRACK_GROUPS } from "../lessons/index.ts";
+import { getLessonMeta, TRACK_GROUPS } from "../lessons/index.ts";
 import { S } from "../strings.ts";
 import { router } from "./router.ts";
 import { TOPIC_ICON } from "./home.ts";
@@ -191,7 +191,7 @@ export async function renderProgress(root: HTMLElement, navToken: number = route
     perLessonGroups: TRACK_GROUPS.map((g) => ({
       id: g.id,
       count: p.perLesson.filter((l) => {
-        const t = getLesson(l.lessonId)?.track;
+        const t = getLessonMeta(l.lessonId)?.track;
         return !!t && g.tracks.includes(t);
       }).length,
     })),
@@ -324,7 +324,7 @@ function perLessonGroups(rows: LessonProgress[]): string {
   const grouped = TRACK_GROUPS.map((g) => ({
     label: S.perLessonLabel + " · " + g.label,
     rows: rows.filter((l) => {
-      const t = getLesson(l.lessonId)?.track;
+      const t = getLessonMeta(l.lessonId)?.track;
       return !!t && g.tracks.includes(t);
     }),
   })).filter((g) => g.rows.length > 0);
@@ -341,7 +341,7 @@ function perLessonGroups(rows: LessonProgress[]): string {
 }
 
 function lessonRow(l: LessonProgress): string {
-  const lesson = getLesson(l.lessonId);
+  const lesson = getLessonMeta(l.lessonId);
   const title = lesson?.title ?? l.lessonId;
   // Ring = HONEST viewing progress (segments seen / total), NOT "cards not due".
   const viewPct = l.segmentsTotal > 0 ? (100 * l.segmentsSeen) / l.segmentsTotal : 0;

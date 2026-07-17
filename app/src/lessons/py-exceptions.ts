@@ -51,6 +51,7 @@ const CHAIN_ZONES: Zone[] = [Z_NEW, Z_CAUSE];
 export const pyExceptions: LessonData = {
   id: "PY.M9.exceptions",
   track: "PY",
+  section: "PY",
   lang: "python",
   module: "M9.1",
   title: "Исключения: дерево, порядок, finally",

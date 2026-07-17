@@ -40,6 +40,7 @@ const ELSE_ZONES: Zone[] = [Z_ITER, Z_ELSE];
 export const pyStringsFlow: LessonData = {
   id: "PY.M12.strings-flow",
   track: "PY",
+  section: "PY",
   lang: "python",
   module: "M12.1",
   title: "Шпаргалка: строки и поток управления",

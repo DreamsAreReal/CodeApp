@@ -65,6 +65,7 @@ const BLOCK_ZONES: Zone[] = [Z_BLK, Z_REST];
 export const pyAsyncAwait: LessonData = {
   id: "PY.M11.async-await",
   track: "PY",
+  section: "PY",
   lang: "python",
   module: "M11.1",
   title: "async/await: один поток, который не ждёт",

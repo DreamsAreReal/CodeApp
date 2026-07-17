@@ -1,90 +1,126 @@
 /**
- * Lesson registry — the ONE place you touch to add a lesson.
+ * Lesson registry facade — the ONE place the app reads lessons from.
+ *
+ * Lessons are now LAZY (ADR-0003): the initial chunk holds only lightweight metadata
+ * (`LessonMeta`, built from `registry.ts`), and each lesson BODY is a separate chunk
+ * loaded on demand. Home / Progress render from `LESSONS` (metadata) without pulling a
+ * single body; the runner loads the requested body via `loadLesson()` (or reads a
+ * boot-prefetched one via `getLesson()`).
  *
  * To add a lesson:
- *   1. create src/lessons/<slug>.ts exporting a `LessonData` object;
+ *   1. create src/lessons/<track>/<slug>.ts exporting a `LessonData` object;
  *   2. add a matching backend seed (backend/Codex.Backend/seed/lessons/<id>.json)
  *      with the same `id` and card ids, so its cards enter the FSRS due queue;
- *   3. import it here and append to `LESSONS` (curriculum order).
- * Nothing in the UI is hardcoded per lesson — the LessonRunner renders any
- * LessonData through the shared engine. Lessons are BUNDLED (not fetched) so a
- * session survives offline (RS-15: no service worker in iOS WebView).
- *
+ *   3. register it in `registry.ts` under its track/section (a dynamic-import line).
  * See docs/AUTHORING-AI.md for the full playbook.
  */
-import type { LessonData } from "./types.ts";
-import { valueVsReference } from "./value-vs-reference.ts";
-import { boxing } from "./boxing.ts";
-import { gc } from "./gc.ts";
-import { closures } from "./closures.ts";
-import { asyncAwait } from "./async-await.ts";
-import { hashtable } from "./hashtable.ts";
-import { pyNamesObjects } from "./py-names-objects.ts";
-import { pyCollectionsHash } from "./py-collections-hash.ts";
-import { pyArgsUnpacking } from "./py-args-unpacking.ts";
-import { pyClosuresScope } from "./py-closures-scope.ts";
-import { pyDecorators } from "./py-decorators.ts";
-import { pyGenerators } from "./py-generators.ts";
-import { pyContextManagers } from "./py-context-managers.ts";
-import { pyObjectModel } from "./py-object-model.ts";
-import { pyExceptions } from "./py-exceptions.ts";
-import { pyTypeHints } from "./py-type-hints.ts";
-import { pyAsyncAwait } from "./py-async-await.ts";
-import { pyStringsFlow } from "./py-strings-flow.ts";
-import { pyStdlibIdioms } from "./py-stdlib-idioms.ts";
+import type { LessonData, LessonIcon } from "./types.ts";
+import {
+  MANIFEST,
+  TRACKS,
+  getEntry,
+  hasEntry,
+  loadBody,
+  getLoadedBody,
+  prefetchAll,
+} from "./registry.ts";
+import type { LessonManifestEntry, Section, Track } from "./registry.ts";
 import { S } from "../strings.ts";
 
-/** Ordered by the concept DAG (prereqs first). */
-export const LESSONS: LessonData[] = [
-  valueVsReference,
-  boxing,
-  gc,
-  closures,
-  asyncAwait,
-  hashtable,
-  pyNamesObjects,
-  pyCollectionsHash,
-  pyArgsUnpacking,
-  pyClosuresScope,
-  pyDecorators,
-  pyGenerators,
-  pyContextManagers,
-  pyObjectModel,
-  pyExceptions,
-  pyTypeHints,
-  pyAsyncAwait,
-  pyStringsFlow,
-  pyStdlibIdioms,
-];
+/**
+ * Lightweight lesson metadata (initial chunk). Carries exactly what Home / Progress /
+ * the track switcher need to render a lesson ROW without loading its (heavier) body:
+ * id, track, section, title, the home-row fields, and the card count. Shaped so the
+ * existing home/progress render code reads `lesson.home.icon`, `lesson.cards.length`,
+ * `lesson.title`, `lesson.track` unchanged.
+ */
+export interface LessonMeta {
+  id: string;
+  track: string;
+  section: string;
+  title: string;
+  kicker: string;
+  home: { subtitle: string; icon: LessonIcon; estMinutes: number };
+  /** A fixed-length array so `cards.length` is the real card count (no body needed). */
+  cards: readonly unknown[];
+}
+
+function toMeta(e: LessonManifestEntry): LessonMeta {
+  return {
+    id: e.id,
+    track: e.track,
+    section: e.section,
+    title: e.title,
+    kicker: e.kicker,
+    home: { subtitle: e.subtitle, icon: e.icon, estMinutes: e.estMinutes },
+    cards: new Array(e.cards),
+  };
+}
+
+/** Ordered lesson metadata (curriculum order) — the initial-chunk view for home/progress. */
+export const LESSONS: LessonMeta[] = MANIFEST.map(toMeta);
+
+const META_BY_ID = new Map<string, LessonMeta>(LESSONS.map((l) => [l.id, l]));
+
+/** Metadata for an id (no body load). */
+export function getLessonMeta(id: string): LessonMeta | undefined {
+  return META_BY_ID.get(id);
+}
 
 /**
- * Track groups — the home path renders one SECTION per group (generic: any future
- * track lands here with a registry line, no per-track UI code). `tracks` lists the
- * lesson `track` ids belonging to the group; labels live in strings.ts (UI language).
+ * Synchronously return an ALREADY-LOADED lesson body (via boot prefetch or a prior open),
+ * or undefined if its chunk has not resolved yet. The runner falls back to `loadLesson`.
+ */
+export function getLesson(id: string): LessonData | undefined {
+  return getLoadedBody(id);
+}
+
+/** Load (and cache) a lesson body by id — awaits the lesson's chunk. Rejects for unknown ids. */
+export function loadLesson(id: string): Promise<LessonData> {
+  return loadBody(id);
+}
+
+/** True if the id is a registered lesson. */
+export function hasLesson(id: string): boolean {
+  return hasEntry(id);
+}
+
+/** Kick off background prefetch of every lesson body (called once at boot, non-blocking). */
+export { prefetchAll };
+export { getEntry };
+export type { LessonManifestEntry, Section, Track };
+export { TRACKS };
+
+/**
+ * Home track groups — one home SECTION per group. Derived from the registry `TRACKS`
+ * (generic: any future track lands here from its registry declaration, no per-track UI
+ * code). `tracks` lists the lesson `track` ids belonging to the group; labels come from
+ * the track declaration (UI language, strings.ts).
  */
 export interface TrackGroup {
   id: string;
   label: string;
-  /** Optional one-line section subtitle (rendered under the label). */
   sub?: string;
-  /** Optional badge next to the label (e.g. «новый трек»). */
   badge?: string;
   tracks: string[];
 }
 
-export const TRACK_GROUPS: TrackGroup[] = [
-  { id: "csharp", label: S.trackCsharpLabel, tracks: ["T1", "T2"] },
-  { id: "python", label: S.trackPythonLabel, sub: S.trackPythonSub, badge: S.trackNewBadge, tracks: ["PY"] },
-];
-
-const BY_ID = new Map<string, LessonData>(LESSONS.map((l) => [l.id, l]));
-
-export function getLesson(id: string): LessonData | undefined {
-  return BY_ID.get(id);
+/** Collect the distinct lesson-track ids that appear under a registry track. */
+function trackIdsOf(t: Track): string[] {
+  const ids = new Set<string>();
+  for (const s of t.sections) for (const l of s.lessons) ids.add(l.track);
+  return [...ids];
 }
 
-export function hasLesson(id: string): boolean {
-  return BY_ID.has(id);
-}
+export const TRACK_GROUPS: TrackGroup[] = TRACKS.map((t) => ({
+  id: t.id === "LEGACY_CS" ? "csharp" : t.id === "PY" ? "python" : t.id.toLowerCase(),
+  label: t.title,
+  sub: t.sub,
+  badge: t.badge,
+  tracks: trackIdsOf(t),
+}));
+
+// Keep the strings referenced (they now live in the registry track declarations).
+void S;
 
 export type { LessonData } from "./types.ts";

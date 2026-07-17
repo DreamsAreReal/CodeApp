@@ -5,7 +5,7 @@
  * that lesson's group — so "default on entry = the track of the last opened
  * lesson" emerges from one stored value with no priority conflicts.
  */
-import { TRACK_GROUPS, getLesson } from "../lessons/index.ts";
+import { TRACK_GROUPS, getLessonMeta } from "../lessons/index.ts";
 
 const ACTIVE_GROUP_KEY = "codex.activeTrackGroup";
 
@@ -32,7 +32,7 @@ export function setActiveGroup(id: string): void {
 
 /** A lesson was opened: its track's group becomes the active one (last-opened wins). */
 export function rememberLessonOpened(lessonId: string): void {
-  const lesson = getLesson(lessonId);
+  const lesson = getLessonMeta(lessonId);
   if (!lesson) return;
   const group = TRACK_GROUPS.find((g) => g.tracks.includes(lesson.track));
   if (group) setActiveGroup(group.id);

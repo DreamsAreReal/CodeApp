@@ -39,6 +39,7 @@ const SUGAR_ZONES: Zone[] = [Z_MAN, Z_SUGAR];
 export const pyContextManagers: LessonData = {
   id: "PY.M7.context-managers",
   track: "PY",
+  section: "PY",
   lang: "python",
   module: "M7.1",
   title: "with: протокол enter/exit",

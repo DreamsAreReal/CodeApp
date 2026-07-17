@@ -1,0 +1,17 @@
+F1 verification runs — lazy-load port of 19 lessons (ADR-0003/0004)
+Backend :5080 (dotnet run), preview :4173 (npm run build && npm run preview).
+
+npm run build            -> tsc clean; 20 JS chunks; entry index-*.js 110.20 KB raw / 34.56 KB gzip
+                            (baseline single bundle 571.88 KB raw / 141.75 KB gzip -> -81% raw).
+node verify/run.mjs      -> ALL GREEN (runUser=956577): home lazy due=59, boxing 7 segs, FSRS loop,
+                            wrong-answer requeue, 0 console errors.
+node verify/viz-fit.mjs  -> ALL GREEN (runUser=711915): 19 lessons, 316 settled scenes, 633 mid-samples
+                            over 211 transitions; autolayout 19/19 on `at`; 0 FIT/CLIP/OVERLAP/…;
+                            AUTHORING-PROOF now loads bodies via registry loadBody() (await import chunks).
+node verify/new-lessons  -> ALL GREEN (runUser=830154): gc/closures/async/hashtable + 13 PY lessons render,
+                            FSRS loop, reduced-motion final frames, 0 console errors (paced 63 POSTs).
+node verify/shell.mjs    -> ALL GREEN (runUser=871669): Progress/Profile/nav, axe 0 serious/critical,
+                            completion tracking, calibration 100%, 0 console errors.
+node verify/loop.mjs     -> ALL GREEN (firstUser=691455 doneUser=706741): first-run/session/done/empty,
+                            onboarding-once, streak-no-shaming, error+retry, skeletons, 0 console errors.
+dotnet test              -> Passed! 0 failed, 65 passed (baseline held).

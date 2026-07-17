@@ -35,6 +35,7 @@ const MAP_ZONES: Zone[] = [Z_MECH, Z_TOOLS];
 export const pyNamesObjects: LessonData = {
   id: "PY.M1.names-objects",
   track: "PY",
+  section: "PY",
   lang: "python",
   module: "M1.1",
   title: "Имена и объекты",

@@ -53,6 +53,7 @@ const HT5_ZONES: Zone[] = [Z_HT5_TOP, Z_HT5_GATE];
 export const hashtable: LessonData = {
   id: "T2.M5.hashtable",
   track: "T2",
+  section: "T2",
   module: "M2.5",
   title: "Хеш-таблицы: коллизии и resize",
   kicker: "Ядро .NET · структуры данных · нюанс",

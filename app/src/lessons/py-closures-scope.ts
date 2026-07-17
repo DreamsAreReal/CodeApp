@@ -58,6 +58,7 @@ const LATE_ZONES: Zone[] = [Z_LAMBDAS, Z_CELL];
 export const pyClosuresScope: LessonData = {
   id: "PY.M4.closures-scope",
   track: "PY",
+  section: "PY",
   lang: "python",
   module: "M4.1",
   title: "LEGB и замыкания",

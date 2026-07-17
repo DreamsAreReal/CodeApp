@@ -38,6 +38,7 @@ const STAR_ZONES: Zone[] = [Z_TGT, Z_SRC];
 export const pyArgsUnpacking: LessonData = {
   id: "PY.M3.args-unpacking",
   track: "PY",
+  section: "PY",
   lang: "python",
   module: "M3.1",
   title: "*args, **kwargs и распаковка",

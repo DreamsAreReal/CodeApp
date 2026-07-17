@@ -48,6 +48,7 @@ const PYD_ZONES: Zone[] = [Z_RAW, Z_GATEB];
 export const pyTypeHints: LessonData = {
   id: "PY.M10.type-hints",
   track: "PY",
+  section: "PY",
   lang: "python",
   module: "M10.1",
   title: "Type hints: метаданные, а не проверка",

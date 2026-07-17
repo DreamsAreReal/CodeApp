@@ -67,6 +67,7 @@ const REFUT_ZONES: Zone[] = [Z_LANG, Z_PYTEST];
 export const pyDecorators: LessonData = {
   id: "PY.M5.decorators",
   track: "PY",
+  section: "PY",
   lang: "python",
   module: "M5.1",
   title: "Декораторы: из чего сделан pytest",

@@ -30,8 +30,14 @@ import { evidenceDir, preflight } from "./_util.mjs";
 import { PROBE_SRC } from "./_anim-overlap-probe.mjs";
 // Auto-layout v2 (engine) + the lesson registry, imported directly (node strips the
 // TS types) so the AUTHORING-PROOF runs the REAL layoutScene the app runs.
+// Lessons are now LAZY (ADR-0003): the registry exposes lightweight metadata + a `load()`
+// per lesson. We AWAIT every body once at startup (below) so the pure-engine AUTHORING-PROOF
+// and the segment-count map both work on the real LessonData bodies.
 import { layoutScene } from "../src/engine/layout.ts";
-import { LESSONS as LESSON_DATA } from "../src/lessons/index.ts";
+import { MANIFEST, loadBody } from "../src/lessons/registry.ts";
+
+// Load every lesson BODY via the registry (await the dynamic-import chunks) in manifest order.
+const LESSON_DATA = await Promise.all(MANIFEST.map((e) => loadBody(e.id)));
 
 const APP = process.env.APP_BASE || "http://localhost:4173";
 const API = process.env.VITE_API_BASE || "http://localhost:5080";

@@ -56,6 +56,7 @@ const MANGLE_ZONES: Zone[] = [Z_TRY, Z_OBJ];
 export const pyObjectModel: LessonData = {
   id: "PY.M8.object-model",
   track: "PY",
+  section: "PY",
   lang: "python",
   module: "M8.1",
   title: "Объектная модель: атрибуты, MRO, дескрипторы",

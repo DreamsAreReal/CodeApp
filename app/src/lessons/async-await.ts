@@ -37,6 +37,7 @@ const Z_CTX: Zone[] = [
 export const asyncAwait: LessonData = {
   id: "T2.M1.async-await",
   track: "T2",
+  section: "T2",
   module: "M2.1",
   title: "async/await",
   kicker: "Ядро C# · асинхронность · нюанс",

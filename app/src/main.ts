@@ -14,6 +14,7 @@ import { session } from "./app/session.ts";
 import { router } from "./app/router.ts";
 import { applyReducedMotion } from "./app/settings.ts";
 import { errorCard, errorDetail, skeletonHome } from "./app/ui.ts";
+import { prefetchAll } from "./lessons/index.ts";
 
 async function boot(): Promise<void> {
   const root = document.getElementById("app");
@@ -39,6 +40,12 @@ async function boot(): Promise<void> {
   }
 
   await router.showHome();
+
+  // Warm every lesson body chunk in the background (ADR-0003 lazy chunks): the initial
+  // paint used only lightweight metadata; this non-blocking prefetch means opening a
+  // lesson is instant on a warm cache, while the initial bundle stays small. Failures are
+  // swallowed inside prefetchAll (an un-prefetched lesson simply loads on demand on open).
+  void prefetchAll();
 
   // Headless / debug surface — real objects, no mocks.
   (window as unknown as { __app: unknown }).__app = {

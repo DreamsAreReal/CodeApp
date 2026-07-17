@@ -16,6 +16,7 @@ const MM_ZONES: Zone[] = [Z_STACK, Z_HEAP];
 export const valueVsReference: LessonData = {
   id: "T1.M2.value-vs-reference",
   track: "T1",
+  section: "T1",
   module: "M1.2",
   title: "Значение и ссылка",
   kicker: "Ядро C# · память · механика",

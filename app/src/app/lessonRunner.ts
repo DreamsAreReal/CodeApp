@@ -13,7 +13,7 @@ import { api } from "../api/client.ts";
 import type { Grade, ReviewResponse } from "../api/types.ts";
 import { ICON, VizPlayer, prefersReducedMotion, whenFontsReady, hlCode, esc } from "../engine/index.ts";
 import type { VizElements, VizPlayer as VizPlayerType } from "../engine/index.ts";
-import { getLesson } from "../lessons/index.ts";
+import { getLesson, loadLesson } from "../lessons/index.ts";
 import type { Card, LessonData, Segment, Source } from "../lessons/types.ts";
 import { S } from "../strings.ts";
 import { router } from "./router.ts";
@@ -146,17 +146,47 @@ class LessonReporter {
   }
 }
 
+/**
+ * Open a lesson. Lesson bodies are LAZY (ADR-0003): if the body chunk is already loaded
+ * (boot prefetch or a prior open) it renders synchronously; otherwise a calm loading shell
+ * paints and the body chunk is fetched, then rendered. A navigation that has since moved on
+ * (router.nav changed) or an unknown id are both handled without painting stale content.
+ */
 export function runLesson(root: HTMLElement, lessonId: string, cardId?: string): void {
+  const loaded = getLesson(lessonId);
+  if (loaded) {
+    renderLesson(root, loaded, cardId);
+    return;
+  }
+  // Body not prefetched yet — paint a lightweight loading shell, then load the chunk.
+  const openToken = router.nav;
+  root.innerHTML = `<div class="frame screen-enter"><div class="lesson-body" style="padding-top:24px">${lessonLoading()}</div></div>`;
+  void loadLesson(lessonId)
+    .then((body) => {
+      if (router.nav !== openToken) return; // a newer navigation won — do not paint over it
+      renderLesson(root, body, cardId);
+    })
+    .catch(() => {
+      if (router.nav !== openToken) return;
+      root.innerHTML = `<div class="frame"><div class="lesson-body" style="padding-top:24px"><div class="notice err"><b>${S.errorTitle}</b><br/>Урок «${esc(lessonId)}» не найден.</div><button class="cta" id="back">${S.toHome}</button></div></div>`;
+      root.querySelector("#back")?.addEventListener("click", () => void router.showHome());
+    });
+}
+
+/** A calm, shaped loading placeholder while a lesson body chunk is fetched. */
+function lessonLoading(): string {
+  return (
+    `<div class="lesson-loading" aria-label="${esc(S.lessonLoading)}">` +
+    `<div class="sk-greet"><span class="sk sk-line" style="width:38%"></span><span class="sk sk-line sk-sm" style="width:64%"></span></div>` +
+    `<div class="sk sk-card sk-tall"></div>` +
+    `<div class="sk sk-card"></div></div>`
+  );
+}
+
+function renderLesson(root: HTMLElement, lesson: LessonData, cardId?: string): void {
   // Refresh the reduced-motion decision for THIS render (OS media | ?reduced=1 | persisted toggle),
   // so flipping "Меньше движения" in Profile silences this lesson's animations on reopen.
   REDUCED = prefersReducedMotion();
-
-  const lesson = getLesson(lessonId);
-  if (!lesson) {
-    root.innerHTML = `<div class="frame"><div class="lesson-body" style="padding-top:24px"><div class="notice err"><b>${S.errorTitle}</b><br/>Урок «${esc(lessonId)}» не найден.</div><button class="cta" id="back">${S.toHome}</button></div></div>`;
-    root.querySelector("#back")?.addEventListener("click", () => void router.showHome());
-    return;
-  }
 
   // Render the REQUESTED card (the one the session queue points at), not always cards[0].
   // Fall back to the first card when no id is given (opening a lesson directly for re-view).

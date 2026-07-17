@@ -19,9 +19,9 @@
 import { api } from "../api/client.ts";
 import type { DueResponse, LessonSummary, ProgressResponse, StatsResponse } from "../api/types.ts";
 import { LESSONS, TRACK_GROUPS } from "../lessons/index.ts";
-import type { TrackGroup } from "../lessons/index.ts";
+import type { LessonMeta, TrackGroup } from "../lessons/index.ts";
 import { activeGroupId, setActiveGroup } from "./trackPref.ts";
-import type { LessonData, LessonIcon } from "../lessons/types.ts";
+import type { LessonIcon } from "../lessons/types.ts";
 import { ICON } from "../engine/index.ts";
 import { S, plural } from "../strings.ts";
 import { session } from "./session.ts";
@@ -46,7 +46,7 @@ const STREAK_ICON =
 const STREAK_MILESTONES = [3, 7, 14, 30, 60, 100];
 
 interface LessonRow {
-  lesson: LessonData;
+  lesson: LessonMeta;
   due: number; // cards due for review now (FSRS schedule)
   newCount: number; // of those, brand-new (never reviewed)
   total: number; // cards in the lesson

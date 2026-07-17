@@ -41,6 +41,7 @@ const EAFP_ZONES: Zone[] = [Z_LBYL, Z_EAFP];
 export const pyStdlibIdioms: LessonData = {
   id: "PY.M13.stdlib-idioms",
   track: "PY",
+  section: "PY",
   lang: "python",
   module: "M13.1",
   title: "Шпаргалка: stdlib и идиомы",
