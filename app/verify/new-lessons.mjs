@@ -60,6 +60,36 @@ async function authApi() {
 const apiGet = async (p) => (await fetch(API + p, { headers: apiToken ? { Authorization: `Bearer ${apiToken}` } : {} })).json();
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// Backend rate-limiter guard (root of the CI flake, run 29547012991): POST /api/review and
+// POST /api/lesson-progress share a fixed-window limit of 60 mutating calls/min per user
+// (Program.cs RateLimit:PermitPerMinute). This harness opens 17 lessons in TWO passes and
+// the app fire-and-forgets a lesson-progress POST on every open — on a slow CI runner the
+// bursts land inside one window, the backend answers 429, the browser logs a console error
+// and the zero-console-errors gate goes red. Serialize EVERY mutating request through one
+// shared queue at ~1.05s spacing (<= 57/min, under the limit with margin) — the same pacing
+// rate as _fsrs-dosing.mjs, applied at the network layer so app-initiated posts are covered.
+const MUTATION_SPACING_MS = 1050;
+let mutationSlot = Promise.resolve(0);
+let mutationCount = 0;
+function paceMutation() {
+  mutationSlot = mutationSlot.then(async (lastAt) => {
+    const wait = lastAt + MUTATION_SPACING_MS - Date.now();
+    if (wait > 0) await sleep(wait);
+    mutationCount++;
+    return Date.now();
+  });
+  return mutationSlot;
+}
+const MUTATING_API = /\/api\/(review|lesson-progress)$/;
+async function paceMutatingRoutes(ctx) {
+  await ctx.route(MUTATING_API, async (route) => {
+    await paceMutation();
+    // A paced fire-and-forget report can still be queued while the context is closing —
+    // continue() then throws; swallow it, lesson-progress reporting is best-effort.
+    await route.continue().catch(() => {});
+  });
+}
+
 async function main() {
   await preflight();
   for (const e of EXPECT) evDirFor(e);
@@ -69,6 +99,7 @@ async function main() {
   async function newCtx(opts = {}) {
     const ctx = await browser.newContext({ viewport: VIEWPORTS[390], deviceScaleFactor: 1, ...opts });
     await ctx.addInitScript((uid) => { try { localStorage.setItem("codex.devUserId", String(uid)); } catch (e) { void e; } }, RUN_USER);
+    await paceMutatingRoutes(ctx); // both passes share ONE pacer — the limiter window is per user
     return ctx;
   }
   function watch(page) {
@@ -246,6 +277,13 @@ async function main() {
     await sleep(200);
     await rmPage.screenshot({ path: `${EV}/ASYNC/${vp}-reduced.png`, fullPage: true });
   }
+
+  // Drain the pacer BEFORE the console gate: the last debounced lesson-progress report
+  // (400ms) plus any still-queued paced requests must land while the pages are alive,
+  // otherwise their failures would surface as post-assert console noise or lost reports.
+  await sleep(600);
+  await mutationSlot;
+  log(`\n(paced ${mutationCount} mutating POSTs at ${MUTATION_SPACING_MS}ms spacing — limiter allows 60/min)`);
 
   log("\n== console errors ==");
   assert(consoleErrors.length === 0, "zero console/page errors across the run" + (consoleErrors.length ? " -> " + JSON.stringify(consoleErrors.slice(0, 5)) : ""));

@@ -371,3 +371,25 @@ evidence/F1/ — смотрел глазами.
   продукта P2 (унификация или подпись «XP за урок»).
 - Пре-деплой регрессия ВСЯ зелёная: npm run build · viz-fit · npm run verify ·
   new-lessons · multicard-session · shell · loop — ALL GREEN; dotnet test 65/65 passed.
+
+## Фикс CI-флейка verify (429 под рейт-лимитером), 2026-07-17
+
+- **Корень (подтверждён исполняемо):** CI run 29547012991 упал в new-lessons.mjs на
+  «zero console errors» из-за `429 Too Many Requests`. Лимитер бэка — fixed window
+  60 мутирующих/мин на пользователя (POST /api/review, /api/lesson-progress,
+  DELETE /api/progress). Замер после правки: new-lessons.mjs делает **63 мутирующих
+  POST** за прогон (лог «paced 63 mutating POSTs») при baseline-длительности 40с —
+  плотнее окна даже локально при удачном сдвиге окна → это же корень старого
+  «флейка verify 2/9» из этого файла.
+- **Фикс (только verify-скрипты, продукт не тронут):** new-lessons.mjs — все мутирующие
+  запросы обеих страниц (включая fire-and-forget lesson-progress самого приложения)
+  сериализуются через один пейсер на `context.route` с шагом 1050мс (≤57/мин, паттерн
+  темпа из _fsrs-dosing.mjs); перед console-гейтом очередь дренится. loop.mjs —
+  `clearAllDue` шлёт 59 review подряд (59 due у свежего юзера по замеру F15) при лимите
+  60, запас = 1 карта → в apiPost добавлено «ожидание окна при 429» (61с + один ретрай),
+  сегодня стоит 0с. multicard-session.mjs НЕ тронут: ~15 мутаций на юзера за весь прогон
+  (9 review + ~6 lesson-progress) < 60 суммарно — окно непробиваемо в принципе.
+- **Прогоны:** new-lessons ALL GREEN 67.3с (до пейсинга 40.3с; +27с = цена 63×1.05с);
+  multicard ALL GREEN 10.6с; loop ALL GREEN 11.6с; npm run verify ALL GREEN 100.9с.
+  Грабли: пейсить надо на сетевом уровне (route), а не сном между действиями —
+  lesson-progress постит само приложение с дебаунсом, из харнесса его темп не виден.

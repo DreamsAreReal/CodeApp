@@ -54,13 +54,23 @@ async function tokenFor(devUserId) {
 const apiGet = async (p, user) =>
   (await fetch(API + p, { headers: { Authorization: `Bearer ${await tokenFor(user)}` } })).json();
 async function apiPost(p, body, user) {
-  return (
-    await fetch(API + p, {
+  const send = async () =>
+    fetch(API + p, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${await tokenFor(user)}` },
       body: JSON.stringify(body),
-    })
-  ).json();
+    });
+  let res = await send();
+  // Rate-limiter guard: mutating endpoints allow 60 calls/min per user (fixed window).
+  // clearAllDue() drains a fresh user's WHOLE due queue back-to-back (59 items at the
+  // current seed — one card away from the limit), so any future lesson wave would trip
+  // 429 here. Same pattern as _fsrs-dosing.mjs: wait out the window once and retry.
+  if (res.status === 429) {
+    log(`  429-window wait on POST ${p} — sleeping 61s, retrying once`);
+    await sleep(61000);
+    res = await send();
+  }
+  return res.json();
 }
 
 /** Grade EVERY currently-due item Good for `user` — clears the due queue for today. */
