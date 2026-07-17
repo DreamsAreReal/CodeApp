@@ -1,0 +1,320 @@
+name: build-test-deploy
+
+# Push to main = test -> build image -> push to GHCR -> deploy to the VPS over SSH.
+# Pull requests only run the test gate. After a one-time secret setup, deploys are hands-off.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ---- gate: unit tests + coverage + type-check + bundle + headless acceptance ----
+  test:
+    runs-on: ubuntu-latest
+    # Every headless harness (viz-fit / run / loop / shell / new-lessons / polish-flow) writes PNG
+    # evidence. Their default evidence dir is a repo-relative docs/evidence, but on the Linux runner
+    # we redirect it under the workspace so nothing depends on a developer's absolute path. One
+    # job-level env covers all evidence-writing steps below (no hardcoded /Users/... anywhere).
+    # NOTE: the `runner` context is NOT available in job-level env (only in steps), so use
+    # `github.workspace` here — using runner.* here makes the whole workflow fail to start.
+    env:
+      EVIDENCE_DIR: ${{ github.workspace }}/.evidence
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          dotnet-version: '10.0.x'
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      # Backend xUnit + code coverage (coverlet.collector).
+      - name: Backend unit tests + coverage (xUnit + coverlet)
+        run: >
+          dotnet test backend/Codex.Backend.Tests/Codex.Backend.Tests.csproj
+          -c Release
+          --collect:"XPlat Code Coverage"
+          --results-directory ${{ github.workspace }}/coverage
+      # ENFORCED coverage gate: fail the job if line coverage drops below MIN_LINE. Current is
+      # ~93%; the floor is 90% (~3pp headroom for honest churn without silently rotting the suite).
+      # Parses the cobertura root line-rate (no XML dep) and compares in awk (no float in bash).
+      - name: Enforce line-coverage threshold (>= 90%)
+        env:
+          MIN_LINE: "90"
+        run: |
+          f=$(find "${{ github.workspace }}/coverage" -name coverage.cobertura.xml | head -1)
+          if [ -z "$f" ]; then echo "no cobertura report found — cannot enforce coverage"; exit 1; fi
+          line=$(grep -o 'line-rate="[0-9.]*"' "$f" | head -1 | grep -o '[0-9.]*')
+          branch=$(grep -o 'branch-rate="[0-9.]*"' "$f" | head -1 | grep -o '[0-9.]*')
+          awk -v l="$line" -v b="$branch" -v min="$MIN_LINE" 'BEGIN{
+            printf "line coverage:   %.2f%%\n", l*100;
+            printf "branch coverage: %.2f%%\n", b*100;
+            if (l*100 + 1e-9 < min) {
+              printf "FAIL: line coverage %.2f%% is below the %d%% threshold\n", l*100, min;
+              exit 1 }
+            printf "PASS: line coverage meets the %d%% threshold\n", min }'
+      - name: Upload coverage artifact
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: backend-coverage
+          path: coverage/**/coverage.cobertura.xml
+          if-no-files-found: warn
+
+      - name: Frontend deps
+        working-directory: app
+        run: npm ci
+      - name: Frontend type-check + build
+        working-directory: app
+        run: npm run build
+
+      # ---- headless frontend acceptance (viz-fit) against a live backend+preview ----
+      # viz-fit.mjs asserts label FIT / CLIP / OVERLAP for all 6 lessons in a real
+      # Chromium. It needs the .NET backend on :5080 (Development => DevMode auth
+      # bypass) and `vite preview` on :4173, so we spin both up before running it.
+      - name: Install Playwright Chromium
+        working-directory: app
+        run: npx playwright install --with-deps chromium
+      - name: Start backend (:5080) + preview (:4173) for acceptance
+        working-directory: app
+        run: |
+          # Backend in Development so viz-fit's dev-auth works; throwaway SQLite file.
+          ASPNETCORE_ENVIRONMENT=Development \
+          ASPNETCORE_URLS=http://localhost:5080 \
+          Database__Path=${{ runner.temp }}/codex-ci.db \
+          dotnet run --no-launch-profile \
+            --project ../backend/Codex.Backend/Codex.Backend.csproj -c Release \
+            > "${{ runner.temp }}/backend.log" 2>&1 &
+          npm run preview > "${{ runner.temp }}/preview.log" 2>&1 &
+          # Wait until BOTH endpoints answer (or fail the job after ~60s).
+          for i in $(seq 1 40); do
+            b=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:5080/health/live || true)
+            p=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:4173/ || true)
+            [ "$b" = "200" ] && [ "$p" = "200" ] && { echo "backend+preview up"; exit 0; }
+            sleep 2
+          done
+          echo "backend/preview did not come up"; tail -n 40 "${{ runner.temp }}"/*.log; exit 1
+      - name: Frontend acceptance (viz-fit)
+        working-directory: app
+        run: |
+          # Run the harness UNCHANGED; on failure surface every ✗/FAIL/violation line as a
+          # GitHub ::error:: annotation so the exact geometry failures are visible without log-admin.
+          node verify/viz-fit.mjs 2>&1 | tee /tmp/viz-fit.log
+          c=${PIPESTATUS[0]}
+          [ "$c" -ne 0 ] && grep -aE '✗|FAIL|violation' /tmp/viz-fit.log | sed 's/^/::error::/'
+          exit $c
+      # Full live-loop acceptance against the SAME live backend+preview already up above.
+      # run.mjs proves the walking skeleton (home -> lesson -> grade -> schedule moves);
+      # loop.mjs proves the daily-return loop + product-readiness states (first-run, session,
+      # done, empty, error+retry, skeletons) with real data + a per-screen axe pass. shell.mjs
+      # proves the Progress/Profile shell PLUS document-level a11y (html-lang/title/landmark).
+      # Each harness mints RANDOM user ids, so they are self-isolating on the shared DB.
+      - name: Frontend live-loop acceptance (run + loop + shell)
+        working-directory: app
+        run: |
+          # Each harness runs UNCHANGED; on the first failure its ✗/FAIL/violation lines are
+          # emitted as ::error:: annotations, then the job fails with that harness's exit code.
+          for h in run loop shell; do
+            node "verify/$h.mjs" 2>&1 | tee "/tmp/$h.log"
+            c=${PIPESTATUS[0]}
+            if [ "$c" -ne 0 ]; then
+              grep -aE '✗|FAIL|violation' "/tmp/$h.log" | sed "s/^/::error::[$h] /"
+              exit $c
+            fi
+          done
+      # Multi-lesson authoring/generation acceptance: new-lessons.mjs walks all wave-1 lessons
+      # (segments render + animation reaches its final frame, a graded card moves the schedule,
+      # zero console errors, reduced-motion static frames). It reuses the SAME live backend:5080
+      # + preview:4173 and mints RANDOM user ids, so it is self-isolating on the shared DB.
+      # (EVIDENCE_DIR comes from the job-level env above — writable runner temp, no hardcoded path.)
+      - name: Frontend multi-lesson acceptance (new-lessons)
+        working-directory: app
+        run: |
+          # Harness UNCHANGED; on failure surface ✗/FAIL/violation lines as ::error:: annotations.
+          node verify/new-lessons.mjs 2>&1 | tee /tmp/new-lessons.log
+          c=${PIPESTATUS[0]}
+          [ "$c" -ne 0 ] && grep -aE '✗|FAIL|violation' /tmp/new-lessons.log | sed 's/^/::error::/'
+          exit $c
+
+  # ---- build the single-origin image and push to GHCR (main only) ----
+  build-and-push:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+      - name: Log in to GHCR
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Image tags/labels (lowercased automatically)
+        id: meta
+        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          # Immutable, reproducible tag = the exact git sha (used by deploy), plus a
+          # moving `latest` for humans. The deploy job pins to the sha, never :latest.
+          tags: |
+            type=raw,value=${{ github.sha }}
+            type=raw,value=latest,enable={{is_default_branch}}
+      # Build the amd64 image and LOAD it into the runner's Docker first (no push yet), so we
+      # can smoke-test the exact artifact before it ever reaches GHCR. The gha cache is populated
+      # here and reused by the push below, so the second build is a near-instant cache hit.
+      - name: Build prod image (load locally for smoke)
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          context: .
+          file: deploy/Dockerfile
+          load: true
+          platforms: linux/amd64
+          tags: codex:smoke
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      # Prod-image smoke: run the REAL built image, wait for the container HEALTHCHECK to go
+      # healthy (proves the SQLite DB is reachable), then assert GET / -> 200 (SPA served from
+      # wwwroot), /health/ready -> 200, and POST /api/auth with bad initData -> 401 (the auth
+      # gate is wired, not 500ing). NB: /api/lessons is auth-gated -> 401 in prod, so it is NOT
+      # a valid unauthenticated smoke target; we smoke the public routes instead.
+      - name: Smoke the built prod image
+        run: |
+          set -euo pipefail
+          docker rm -f codex-smoke >/dev/null 2>&1 || true
+          docker run -d --name codex-smoke -e Telegram__BotToken=ci-smoke-token -p 18080:8080 codex:smoke
+          waited=0
+          while :; do
+            st=$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}nohealth{{end}}' codex-smoke 2>/dev/null || echo missing)
+            echo "  container health=$st (${waited}s)"
+            [ "$st" = "healthy" ] && break
+            if [ "$st" = "unhealthy" ] || [ "$waited" -ge 90 ]; then
+              echo "FAIL: container did not become healthy (last=$st)"; docker logs --tail 60 codex-smoke; exit 1
+            fi
+            sleep 3; waited=$((waited+3))
+          done
+          root=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:18080/)
+          ready=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:18080/health/ready)
+          auth=$(curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:18080/api/auth -H 'Content-Type: application/json' -d '{"initData":"garbage"}')
+          echo "GET / -> $root ; /health/ready -> $ready ; POST /api/auth(bad) -> $auth"
+          # Also assert the startup log is free of the HTTP_PORTS override warning.
+          if docker logs codex-smoke 2>&1 | grep -iq "overriding http_ports"; then
+            echo "FAIL: HTTP_PORTS override warning present in startup log"; exit 1
+          fi
+          docker rm -f codex-smoke >/dev/null 2>&1 || true
+          [ "$root" = "200" ] && [ "$ready" = "200" ] && [ "$auth" = "401" ] || { echo "FAIL: prod-image smoke assertions failed"; exit 1; }
+          echo "PASS: prod-image smoke green"
+      # Only now push the vetted image to GHCR (cache hit from the build above).
+      - name: Push vetted image to GHCR
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          context: .
+          file: deploy/Dockerfile
+          push: true
+          # most VPS are x86-64; for an ARM VPS change to linux/arm64 (verified to publish).
+          platforms: linux/amd64
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ---- deploy: pull the fresh image on the VPS and restart (main only) ----
+  deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      # Deploy is OPTIONAL: it runs only when the VPS secrets are configured. Without them the job
+      # SUCCEEDS with a clear "skipped" note (CI stays green) instead of failing on an empty SSH host.
+      # Set VPS_HOST / VPS_USER / VPS_SSH_KEY / VPS_PORT + TELEGRAM_BOT_TOKEN to enable hands-off deploy.
+      - name: Check deploy config
+        id: cfg
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+        run: |
+          if [ -z "$VPS_HOST" ]; then
+            echo "VPS secrets not configured — skipping deploy (CI stays green)."
+            echo "Set VPS_HOST / VPS_USER / VPS_SSH_KEY / VPS_PORT + TELEGRAM_BOT_TOKEN to enable auto-deploy."
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Deploy over SSH (self-provisioning compose)
+        if: steps.cfg.outputs.configured == 'true'
+        uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1
+        env:
+          GHCR_USER: ${{ github.actor }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          # Pin the deploy to the immutable git-sha tag (reproducible + rollback-able),
+          # never the moving :latest.
+          IMAGE: ghcr.io/${{ github.repository }}:${{ github.sha }}
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          envs: GHCR_USER,GHCR_TOKEN,BOT_TOKEN,IMAGE
+          script: |
+            set -euo pipefail
+            # GHCR image paths must be lowercase
+            export CODEX_IMAGE="$(echo "$IMAGE" | tr '[:upper:]' '[:lower:]')"
+            export TELEGRAM_BOT_TOKEN="$BOT_TOKEN"
+            echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
+            mkdir -p "$HOME/codex" && cd "$HOME/codex"
+            # write the prod compose on the box (self-contained; nothing to pre-place)
+            cat > docker-compose.prod.yml <<'YAML'
+            services:
+              codex:
+                image: ${CODEX_IMAGE}
+                restart: unless-stopped
+                environment:
+                  Telegram__BotToken: ${TELEGRAM_BOT_TOKEN:?bot token missing}
+                volumes:
+                  - codexdata:/data
+                ports:
+                  - "127.0.0.1:8080:8080"
+            volumes:
+              codexdata:
+            YAML
+            # Pin to the exact sha-tagged image so the deploy is reproducible/rollback-able.
+            docker compose -f docker-compose.prod.yml pull
+            docker compose -f docker-compose.prod.yml up -d
+            # WAIT FOR HEALTHY before we clean up: poll the container HEALTHCHECK until it reports
+            # `healthy` (proves the new image booted AND its SQLite DB is reachable) with a timeout.
+            # If it never goes healthy, fail the deploy LOUDLY and DO NOT prune — so the previous
+            # image layers survive for a fast manual rollback, and the tunnel keeps the old
+            # container reachable rather than pointing at a broken one.
+            cid=""
+            for i in $(seq 1 20); do
+              cid=$(docker compose -f docker-compose.prod.yml ps -q codex || true)
+              [ -n "$cid" ] && break
+              sleep 1
+            done
+            if [ -z "$cid" ]; then echo "FAIL: no codex container after up -d"; docker compose -f docker-compose.prod.yml logs --tail 60 || true; exit 1; fi
+            waited=0
+            while :; do
+              st=$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}nohealth{{end}}' "$cid" 2>/dev/null || echo missing)
+              echo "deploy health=$st (${waited}s)"
+              [ "$st" = "healthy" ] && { echo "OK: new container healthy"; break; }
+              if [ "$st" = "unhealthy" ] || [ "$waited" -ge 120 ]; then
+                echo "FAIL: new container did not become healthy (last=$st) — leaving old image intact for rollback"
+                docker logs --tail 80 "$cid" || true
+                exit 1
+              fi
+              sleep 5; waited=$((waited+5))
+            done
+            docker logout ghcr.io || true
+            # Only prune AFTER a confirmed-healthy deploy, so a failed rollout keeps its rollback layers.
+            docker image prune -f
