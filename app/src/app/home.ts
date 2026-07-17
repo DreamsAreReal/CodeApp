@@ -25,6 +25,7 @@ import type { LessonData, LessonIcon } from "../lessons/types.ts";
 import { ICON } from "../engine/index.ts";
 import { S, plural } from "../strings.ts";
 import { session } from "./session.ts";
+import { parseItemId } from "./sessionQueue.ts";
 import { router } from "./router.ts";
 import { tg } from "../telegram/webapp.ts";
 import { navBar, wireNav } from "./nav.ts";
@@ -153,9 +154,15 @@ export async function renderHome(root: HTMLElement, navToken: number = router.na
   const overallPct = lessonsTotal > 0 ? (100 * prog.lessonsCompleted) / lessonsTotal : 0;
   const allViewed = rows.every((r) => r.completed);
   // The first lesson the learner has NOT finished viewing (the natural "next new" target);
-  // falls back to the first with due cards, then the first row.
+  // powers the "fresh lesson" secondary CTA and the non-session hero fallbacks.
   const nextUnseen = rows.find((r) => !r.completed);
-  const heroRow = nextUnseen ?? rows.find((r) => r.due > 0) ?? rows[0];
+  // The hero must tell the truth about the session it starts: the CTA runs the LIVE due
+  // queue in backend (FSRS-priority) order, so when anything is due the hero card is the
+  // lesson of the queue's FIRST item — not the registry's first unfinished lesson (the two
+  // diverge once tracks mix, and the hero title would lie about what "Начать сессию" opens).
+  const firstDue = due.items.length > 0 ? parseItemId(due.items[0].itemId) : null;
+  const firstDueRow = firstDue ? rows.find((r) => r.lesson.id === firstDue.lessonId) : undefined;
+  const heroRow = firstDueRow ?? nextUnseen ?? rows.find((r) => r.due > 0) ?? rows[0];
 
   // Was the learner active TODAY? activity[] is 28 days ending today (UTC); the last bucket
   // is today. Used to distinguish "день закрыт" (did work, now clear) from a plain empty day.
@@ -349,8 +356,9 @@ export async function renderHome(root: HTMLElement, navToken: number = router.na
 /** Where the primary CTA leads, per state. */
 function ctaTarget(state: HomeState, rows: LessonRow[], heroRow: LessonRow): string {
   if (state === "session") {
-    // Start with the first lesson that actually has due cards (the real session).
-    return (rows.find((r) => r.due > 0) ?? heroRow).lesson.id;
+    // heroRow already IS the lesson of the due queue's first card (see renderHome) —
+    // the fallback target must match the hero's promise.
+    return heroRow.lesson.id;
   }
   if (state === "empty-new") {
     return (rows.find((r) => !r.completed) ?? heroRow).lesson.id;
