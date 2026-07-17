@@ -426,7 +426,7 @@ ALL GREEN · multicard-session ALL GREEN · shell ALL GREEN · dotnet 65/65; MCQ
 - [ ] FSRS-дозирование: замер GET /api/due дневной очереди ДО/ПОСЛЕ сида PY-волны в
       evidence/F15/ — очередь дня не взрывается (new-карты входят постепенно, число зафиксировано)
 Проверка: gh api runs / curl прод / curl /api/due (лог до/после)
-Статус: todo
+Статус: verified (деплой доказан: CI run 29548427723 test+deploy SUCCESS (deploy-hub, health-gate); прод-контейнер ghcr sha-8a5fb59 healthy; бандл прода index-DwjJNnuW.js == локальная прод-сборка main байт-в-байт; 13 PY-уроков в бандле; FSRS-замер: evidence/F15/fsrs-dosing-local.txt — дозирования НЕТ (59 new одной сессией), доложено пользователю как слабое место №1)
 
 <!-- Майлстоуны: M1=F1(скелет)+чекпойнт пользователя; M2=F2–F6; M3=F7–F10; M4=F11–F14;
      M5=F15+финальный VERIFY. Золотой путь: F1, F4, F5, F11, F15. -->
