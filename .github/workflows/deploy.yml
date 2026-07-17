@@ -145,7 +145,7 @@ jobs:
           exit $c
 
   # ---- build + deploy via deploy-hub (reusable workflow; main only) ----
-  # The hub builds deploy/Dockerfile, pushes ghcr.io/<owner>/codex:sha-<commit>
+  # The hub builds deploy/Dockerfile, pushes ghcr.io/<owner>/codeapp:sha-<commit>
   # and triggers the deploy runner on the VPS (health gate + auto-rollback +
   # journal). The previous inline build-and-push/deploy jobs are archived in
   # deploy.yml.legacy for reference.
@@ -156,5 +156,5 @@ jobs:
     # workflow inherits the caller job's token permissions for the GHCR push.
     permissions: {contents: read, packages: write}
     uses: DreamsAreReal/deploy-hub/.github/workflows/deploy.yml@main
-    with: {app: codex, dockerfile: deploy/Dockerfile}
+    with: {app: codeapp, dockerfile: deploy/Dockerfile}
     secrets: inherit
