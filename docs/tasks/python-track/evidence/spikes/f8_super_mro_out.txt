@@ -1,6 +1,0 @@
-python3.12 f8_super_mro.py — run 1:
-D->B->C->A
-['D', 'B', 'C', 'A', 'object']
-run 2:
-D->B->C->A
-['D', 'B', 'C', 'A', 'object']

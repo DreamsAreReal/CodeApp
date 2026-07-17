@@ -1,6 +1,0 @@
-python3.12 f8_polymorphism_fixed.py — run 1:
-12.56
-12
-run 2:
-12.56
-12

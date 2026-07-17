@@ -1,6 +1,0 @@
-== f13_enumerate_zip run 1 (python3.12 3.12.13)
-1 1 a
-2 2 b
-== f13_enumerate_zip run 2
-1 1 a
-2 2 b

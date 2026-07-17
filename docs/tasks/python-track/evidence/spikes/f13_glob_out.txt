@@ -1,4 +1,0 @@
-== f13_glob run 1 (python3.12 3.12.13)
-['test_cart.py', 'test_login.py']
-== f13_glob run 2
-['test_cart.py', 'test_login.py']

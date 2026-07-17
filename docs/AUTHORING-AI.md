@@ -11,14 +11,15 @@
 понимания (машинный уровень, IL, внутренности), а НЕ написание кода в аппе.
 
 ## 0. Золотой эталон и артефакты-истины
-- **Эталон урока (копируй планку отсюда):** `docs/research/concepts/lesson-boxing/index.html` — 7
-  анимированных разборов, каждый = анимация + «Механизм — как и почему» + дословный первоисточник.
+- **Эталоны урока (копируй планку отсюда):** `app/src/lessons/boxing.ts` (C#, 7 анимированных
+  разборов + IL-панель) и `app/src/lessons/py-names-objects.ts` (Python, 8 разборов + dis-панель) —
+  каждый нюанс = анимация + «Механизм — как и почему» + дословный первоисточник.
 - **Формат данных:** `docs/design/lesson-format.md` (lesson-as-data + `segments[]`).
-- **Дизайн-токены (НЕ отклоняться):** `docs/research/concepts/mid/index.html` + память
+- **Дизайн-токены (НЕ отклоняться):** токены в §5 ниже (истина — `app/src/styles/`) + память
   `design-locked-cream-coral-rubik`.
-- **Методика (наука):** `docs/research/RS-09-instructional-design-depth.md` (7-фазный шаблон,
-  expertise-reversal, refutation мисконцепций).
-- **Точность/пайплайн:** `docs/research/RS-10-content-pipeline-schema.md` (детерминированные гейты).
+- **Методика/пайплайн точности:** суть сжата в §2–§3 этого плейбука (7-фазный шаблон,
+  expertise-reversal, refutation мисконцепций, детерминированные гейты); полные
+  ресерч-отчёты — в git-истории (docs/research/ до коммита 4054379).
 - **Движок анимаций:** `app/src/engine/` (после сборки скелета) — Scene→SVG→data-join→FLIP→StepPlayer.
 - **Бэкенд/API:** `backend/README.md` (auth/due/review; авторский `run-csharp` = проверить ответ реальным `dotnet`).
 

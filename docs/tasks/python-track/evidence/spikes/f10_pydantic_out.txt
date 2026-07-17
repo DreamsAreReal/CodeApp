@@ -1,8 +1,0 @@
-# Python 3.12.13 + pydantic 2.13.4 — run 1
-int 1
-ValidationError
-# stderr run 1: 
-# run 2
-int 1
-ValidationError
-# stderr run 2: 

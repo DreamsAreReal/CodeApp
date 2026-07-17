@@ -1,7 +1,0 @@
-TOTAL wave cards in TS: 53; exec: 53; non-exec(MCQ-fallback): 0 (0.0%)
-census coverage: 53 exec cards; missing_in_census=[]; runs<2=[]; extra_in_census=[]
-census files with non-empty stderr: ['PY.M11_c1.py']
-own python3.12 x2 rerun: 53 cards, FAILURES: 0
-RS-03 grep violations: [('PY.M2_c1.py', 'traceback module'), ('PY.M6_c3.py', 'traceback module')]
-cards using 'is' (eyeball): ['PY.M3_c1.py', 'PY.M11_c1.py', 'PY.M2_c2.py', 'PY.M6_c2.py', 'PY.M6_c4.py', 'PY.M1_c1.py', 'PY.M1_c2.py', 'PY.M1_c3.py', 'PY.M1_c4.py', 'PY.M10_c4.py']
-per-lesson card counts: {'PY.M3.args-unpacking': 3, 'PY.M11.async-await': 4, 'PY.M4.closures-scope': 3, 'PY.M2.collections-hash': 3, 'PY.M7.context-managers': 4, 'PY.M5.decorators': 4, 'PY.M9.exceptions': 4, 'PY.M6.generators': 4, 'PY.M1.names-objects': 4, 'PY.M8.object-model': 4, 'PY.M13.stdlib-idioms': 6, 'PY.M12.strings-flow': 6, 'PY.M10.type-hints': 4}

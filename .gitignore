@@ -27,3 +27,6 @@ _session-transcript/
 
 # personal study notes dropped into the repo root are never tracked
 /[0-9][0-9]-*.md
+
+# harness screenshot evidence is generated on every verify run
+/docs/evidence/

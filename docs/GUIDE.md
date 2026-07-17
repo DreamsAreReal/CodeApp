@@ -111,7 +111,8 @@ backend/Codex.Backend.Tests/       xUnit (Fsrs / Api / TelegramAuth / SessionTok
 docs/
   AUTHORING-AI.md                   машинный плейбук авторинга уроков
   design/viz-design-spec.md         числовые правила движка (grid/размеры/рёбра/auto-layout)
-  design/lesson-format.md · product-readiness-spec.md
+  design/lesson-format.md           формат «урок-как-данные»
+  HISTORY.md                        карта проекта + история волн (полные артефакты — в git-истории)
 deploy/ · .github/workflows/deploy.yml · DEPLOY.md   деплой (§5)
 ```
 
