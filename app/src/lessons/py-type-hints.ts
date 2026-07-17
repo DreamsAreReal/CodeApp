@@ -52,7 +52,7 @@ export const pyTypeHints: LessonData = {
   module: "M10.1",
   title: "Type hints: метаданные, а не проверка",
   kicker: "Python · type hints · механизм",
-  home: { subtitle: "__annotations__, int | None (3.10+), Pydantic-контракт", icon: "types", estMinutes: 5 },
+  home: { subtitle: "__annotations__, int | None, Pydantic", icon: "types", estMinutes: 5 },
   prereqs: ["PY.M9.exceptions"],
   depth: 4,
   version: "1",

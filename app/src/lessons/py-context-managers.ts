@@ -43,7 +43,7 @@ export const pyContextManagers: LessonData = {
   module: "M7.1",
   title: "with: протокол enter/exit",
   kicker: "Python · context managers · механизм",
-  home: { subtitle: "__enter__/__exit__, подавление исключений, @contextmanager", icon: "gc", estMinutes: 7 },
+  home: { subtitle: "__exit__ и @contextmanager", icon: "gc", estMinutes: 7 },
   prereqs: ["PY.M6.generators"],
   depth: 4,
   version: "1",

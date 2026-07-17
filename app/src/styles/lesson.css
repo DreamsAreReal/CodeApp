@@ -546,7 +546,9 @@
 .vz-console {
   margin-top: 11px;
   display: flex;
-  align-items: center;
+  /* Baseline (not center): multiline stdout keeps the prompt/label anchored to
+     its FIRST line, like a real terminal. */
+  align-items: baseline;
   gap: 8px;
   font-family: var(--mono);
   font-size: 13px;
@@ -569,6 +571,9 @@
   font-weight: 700;
   color: var(--coral-d);
   font-size: 15px;
+  /* Scene `out` is real stdout: keep its \n line structure (py lessons print
+     multiline output; collapsing it contradicted the typed-answer cards). */
+  white-space: pre-wrap;
   opacity: 0;
   transition: opacity 0.3s ease;
 }

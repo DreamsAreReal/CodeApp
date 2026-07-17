@@ -48,7 +48,7 @@ export const pyGenerators: LessonData = {
   module: "M6.1",
   title: "yield: пауза, а не return",
   kicker: "Python · генераторы · механизм",
-  home: { subtitle: "Замороженный кадр, исчерпание, yield-фикстуры, ленивость", icon: "async", estMinutes: 8 },
+  home: { subtitle: "Кадр gi_frame, yield-фикстуры", icon: "async", estMinutes: 8 },
   prereqs: ["PY.M4.closures-scope"],
   depth: 4,
   version: "1",

@@ -55,7 +55,7 @@ export const pyExceptions: LessonData = {
   module: "M9.1",
   title: "Исключения: дерево, порядок, finally",
   kicker: "Python · исключения · механизм",
-  home: { subtitle: "OSError-ветка, first-match, else/finally, return-ловушка, raise from", icon: "gc", estMinutes: 7 },
+  home: { subtitle: "OSError, first-match, raise from", icon: "gc", estMinutes: 7 },
   prereqs: ["PY.M8.object-model"],
   depth: 4,
   version: "1",

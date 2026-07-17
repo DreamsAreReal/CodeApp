@@ -951,7 +951,7 @@ function reconstruct(lesson: LessonData): string {
     lesson.edgeCases.map((e) => `<div class="rc-edge">${e.text}</div>`).join("") +
     "</div>";
   const primary = lesson.sources[0];
-  const srcCard = `<a class="src" href="${primary.url}" target="_blank" rel="noopener"><span class="sic">${ICON.book}</span><span class="sm"><span class="sk">${S.sourceKicker}</span><span class="st">${esc(primary.title)}</span></span><span class="go">${ICON.ext}</span></a>`;
+  const srcCard = `<a class="src" href="${primary.url}" target="_blank" rel="noopener"><span class="sic">${ICON.book}</span><span class="sm"><span class="sk">${esc(S.sourceKicker(primary.org))}</span><span class="st">${esc(primary.title)}</span></span><span class="go">${ICON.ext}</span></a>`;
   const moreIds = lesson.sources.slice(1).map((s) => s.id);
   const more = moreIds.length ? `<div class="srcmore"><div class="srcmore-h">${S.moreSources}</div>${srcChips(lesson, moreIds)}</div>` : "";
   return takeaways + spec + edges + srcCard + more;

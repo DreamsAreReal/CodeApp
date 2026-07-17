@@ -42,7 +42,7 @@ export const pyArgsUnpacking: LessonData = {
   module: "M3.1",
   title: "*args, **kwargs и распаковка",
   kicker: "Python · функции · механизм",
-  home: { subtitle: "Упаковка в tuple/dict, распаковка вызова, find_element(*locator)", icon: "types", estMinutes: 5 },
+  home: { subtitle: "Упаковка в tuple/dict, вызов со *", icon: "types", estMinutes: 5 },
   prereqs: ["PY.M1.names-objects"],
   depth: 3,
   version: "1",

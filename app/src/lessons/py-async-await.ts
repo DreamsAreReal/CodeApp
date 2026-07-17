@@ -69,7 +69,7 @@ export const pyAsyncAwait: LessonData = {
   module: "M11.1",
   title: "async/await: один поток, который не ждёт",
   kicker: "Python · асинхронность · механизм",
-  home: { subtitle: "Event loop, корутина-объект, gather, GIL", icon: "async", estMinutes: 10 },
+  home: { subtitle: "Event loop, корутины, gather, GIL", icon: "async", estMinutes: 10 },
   prereqs: ["PY.M6.generators"],
   depth: 4,
   version: "1",
@@ -375,7 +375,10 @@ export const pyAsyncAwait: LessonData = {
     {
       id: "s7", num: "07", kicker: "Антипаттерн · блокирующий вызов", title: "time.sleep в корутине морозит ВЕСЬ луп",
       viewBox: "0 0 340 260", zones: BLOCK_ZONES,
-      code: ["async def blocker():", "    print(\"block start\")", "    time.sleep(0.05)   # sync-вызов!", "    print(\"block end\")"],
+      // Both the broken and the fixed sleep lines are in the panel: the last
+      // scene replays the run AFTER the one-line fix, and the highlighted line
+      // must match what the console shows (scene 3 highlights the await line).
+      code: ["async def blocker():", "    print(\"block start\")", "    time.sleep(0.05)   # было", "    await asyncio.sleep(0.05) # стало", "    print(\"block end\")"],
       console: true,
       predictAt: 1,
       predictQ: "time.sleep — обычный синхронный вызов внутри корутины. Успеет ли задача other напечататься, пока blocker «спит»?",
@@ -391,7 +394,7 @@ export const pyAsyncAwait: LessonData = {
           edges: [],
         },
         {
-          codeLine: 3, out: "block start\nblock end\nother",
+          codeLine: 4, out: "block start\nblock end\nother",
           caption: '<code>other</code> дождалась конца сна: реальный порядок — <code>block start</code>, <code>block end</code>, <code>other</code>. Один блокирующий вызов украл конкурентность у всех задач.',
           nodes: [
             { id: "frz", kind: "gate", at: { zone: "blk", row: 0 }, state: "fail", label: "time.sleep", detail: "луп заморожен" },
@@ -401,7 +404,7 @@ export const pyAsyncAwait: LessonData = {
           edges: [],
         },
         {
-          codeLine: 2, out: "block start\nother\nblock end",
+          codeLine: 3, out: "block start\nother\nblock end",
           caption: 'Починка — одна строка: <code>await asyncio.sleep(0.05)</code>. Пауза стала <span class="hl">точкой передачи</span> — <code>other</code> напечаталась ВО ВРЕМЯ сна: <code>block start</code>, <code>other</code>, <code>block end</code>.',
           nodes: [
             { id: "fix", kind: "gate", at: { zone: "blk", row: 0 }, state: "ok", label: "asyncio.sleep", detail: "пауза отдаёт луп" },

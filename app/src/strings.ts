@@ -28,7 +28,8 @@ export const S = {
   //      groups come from TRACK_GROUPS in lessons/index.ts) ----
   trackCsharpLabel: "Фундамент C#",
   trackPythonLabel: "Python для AQA",
-  trackPythonSub: "6 механизмов, из которых сделаны твои инструменты",
+  // No lesson count here: the track grows and a hardcoded number goes stale.
+  trackPythonSub: "Механизмы языка, из которых сделаны твои инструменты",
   trackNewBadge: "новый",
   // Screen-reader name for a track chip carrying a badge: without an explicit
   // aria-label the visible label and the badge concatenate into one word for
@@ -244,7 +245,9 @@ export const S = {
   calibEmpty: "Пока нет ответов с отметкой уверенности.",
   calibOverconfidentFmt: (n: number) => `${n} ${plural(n, "переоценка", "переоценки", "переоценок")}`,
   mechanismTitle: "Механизм — как и почему",
-  sourceKicker: "Источник · Microsoft Learn",
+  // Parameterized by the primary source's `org`: a python.org source must not
+  // be attributed to Microsoft Learn (and vice versa).
+  sourceKicker: (org: string) => `Источник · ${org}`,
   moreSources: "Все источники · сверено дословно с первоисточником",
   edgeHead: "Крайние случаи",
   specLabel: "спека",

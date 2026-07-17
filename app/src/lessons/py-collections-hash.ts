@@ -43,7 +43,7 @@ export const pyCollectionsHash: LessonData = {
   module: "M2.1",
   title: "Хэшируемость и O(1)",
   kicker: "Python · коллекции · механизм",
-  home: { subtitle: "Почему tuple — ключ dict, а list — TypeError; set для диффов", icon: "collections", estMinutes: 7 },
+  home: { subtitle: "tuple — ключ dict, list — TypeError", icon: "collections", estMinutes: 7 },
   prereqs: ["PY.M1.names-objects"],
   depth: 3,
   version: "1",

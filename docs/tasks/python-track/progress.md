@@ -327,3 +327,21 @@ evidence/F1/ — смотрел глазами.
   для карты s1 использованы две полноширинные зоны-полосы (312) с grid-колонками.
 - /api/lessons требует Bearer-токен (IDOR-фикс) — прямой curl без /api/auth вернёт 401.
 - Скрипты со scratchpad не резолвят playwright — evidence-скрипты класть в app/verify/.
+
+## Фикс-такт финальной верификации (E2 + consumer), 2026-07-17
+
+- **a (E2 существенное)** Многострочный stdout в консоль-стрипе: generic-фикс в CSS —
+  `.vz-cout { white-space: pre-wrap }` + `.vz-console { align-items: baseline }`
+  (промпт якорится к первой строке, как в терминале); vizPlayer не трогал (textContent
+  с pre-wrap сохраняет \n). Скрины до/после: evidence/final-fixes/{before,after}-{str-s1,
+  exc-s3,async-s7}.png; C#-эталон boxing-s2 не изменился. viz-fit/new-lessons/shell — ALL GREEN.
+- **b (consumer баг)** «ИСТОЧНИК · MICROSOFT LEARN» на python.org-источнике: корень —
+  хардкод `S.sourceKicker`; параметризован по `sources[0].org` (strings.ts + lessonRunner).
+  Грепом сверены org всех py-уроков — только python.org/pydantic.dev, неверных нет.
+- **c (E2 мелочь)** async s7: код-панель теперь несёт обе строки сна («# было / # стало»),
+  финальная сцена подсвечивает `await asyncio.sleep` — кадр консистентен с консолью.
+- **d (consumer)** Сабтайтл py-секции home без хрупкого числа: «Механизмы языка, …».
+- **e (E2 мелочь)** home.subtitle всех 13 py-уроков сокращены; исполняемое доказательство —
+  verify/_subtitle-overflow-probe.mjs (scrollWidth≤clientWidth): ALL FIT (13 cards).
+  Грабли: кириллица шире — 33 знака могут не влезть там, где 36 латинских влезают;
+  авторское «…» в конце сабтайтла неотличимо от обрезки — убрано.

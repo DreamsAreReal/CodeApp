@@ -60,7 +60,7 @@ export const pyObjectModel: LessonData = {
   module: "M8.1",
   title: "Объектная модель: атрибуты, MRO, дескрипторы",
   kicker: "Python · object model · механизм",
-  home: { subtitle: "Тени атрибутов, C3-порядок, bound methods, mangling", icon: "types", estMinutes: 10 },
+  home: { subtitle: "Тени атрибутов, MRO, mangling", icon: "types", estMinutes: 10 },
   prereqs: ["PY.M7.context-managers"],
   depth: 4,
   version: "1",

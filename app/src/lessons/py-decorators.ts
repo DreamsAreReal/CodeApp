@@ -71,7 +71,7 @@ export const pyDecorators: LessonData = {
   module: "M5.1",
   title: "Декораторы: из чего сделан pytest",
   kicker: "Python · декораторы · механизм",
-  home: { subtitle: "Перепривязка имени, def-time, wraps, фабрика @fixture(scope=…)", icon: "types", estMinutes: 9 },
+  home: { subtitle: "Def-time, wraps, фабрика @fixture", icon: "types", estMinutes: 9 },
   prereqs: ["PY.M4.closures-scope"],
   depth: 4,
   version: "1",

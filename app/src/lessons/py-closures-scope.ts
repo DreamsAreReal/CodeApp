@@ -62,7 +62,7 @@ export const pyClosuresScope: LessonData = {
   module: "M4.1",
   title: "LEGB и замыкания",
   kicker: "Python · scope и замыкания · механизм",
-  home: { subtitle: "Компилятор красит имена; cells; late binding [2, 2, 2]", icon: "types", estMinutes: 7 },
+  home: { subtitle: "Cells и late binding: [2, 2, 2]", icon: "types", estMinutes: 7 },
   prereqs: ["PY.M1.names-objects"],
   depth: 4,
   version: "1",

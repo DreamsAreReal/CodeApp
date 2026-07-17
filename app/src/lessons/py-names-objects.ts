@@ -39,7 +39,7 @@ export const pyNamesObjects: LessonData = {
   module: "M1.1",
   title: "Имена и объекты",
   kicker: "Python · модель памяти · механизм",
-  home: { subtitle: "Имя ссылается на объект: aliasing, mutable default, refcount", icon: "types", estMinutes: 10 },
+  home: { subtitle: "Имя → объект: aliasing, refcount", icon: "types", estMinutes: 10 },
   prereqs: [],
   depth: 4,
   version: "1",

@@ -44,7 +44,7 @@ export const pyStringsFlow: LessonData = {
   module: "M12.1",
   title: "Шпаргалка: строки и поток управления",
   kicker: "Python · шпаргалка · строки и поток",
-  home: { subtitle: "Срезы, f-string спеки, for-else, walrus", icon: "types", estMinutes: 6 },
+  home: { subtitle: "Срезы, f-string, for-else, walrus", icon: "types", estMinutes: 6 },
   prereqs: ["PY.M1.names-objects"],
   depth: 3,
   version: "1",
