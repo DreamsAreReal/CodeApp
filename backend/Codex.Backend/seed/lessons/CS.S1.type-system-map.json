@@ -1,0 +1,42 @@
+{
+  "id": "CS.S1.type-system-map",
+  "track": "CS",
+  "section": "CS.S1",
+  "module": "S1.1",
+  "title": "Карта типовой системы",
+  "status": "published",
+  "sources": [
+    {
+      "id": "ms-types",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/types/",
+      "date": "2026-03-24"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Две перегрузки Describe(object)/Describe(string); object o=\"hi\"; Describe(o) и Describe(\"hi\") — что печатают?",
+      "code": "using System; static string Describe(object x) => \"object overload\"; static string Describe(string x) => \"string overload\"; object o = \"hi\"; Console.WriteLine(Describe(o)); Console.WriteLine(Describe(\"hi\"));",
+      "expectedOutput": "object overload\nstring overload",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-types"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Animal a = new Dog(); a.ToString() и a.GetType().Name — что печатают?",
+      "code": "using System; class Animal { public override string ToString()=>\"Animal\"; } class Dog: Animal { public override string ToString()=>\"Dog\"; } Animal a = new Dog(); Console.WriteLine(a.ToString()); Console.WriteLine(a.GetType().Name);",
+      "expectedOutput": "Dog\nDog",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-types"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+=== CS.S1.type-system-map (S1.1) — real exec evidence ===
+date: 2026-07-18
+tool: backend run-csharp :5080 (Roslyn scripting, real dotnet exec)
+source: https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/types/ (fetch 2026-07-18)
+
+--- EXEC A: run-time type via GetType() while compile-time type is object ---
+code:
+  object o = "hello";
+  Console.WriteLine(o.GetType().FullName);   // run-time type
+  int n = 42; object boxed = n;
+  Console.WriteLine(boxed.GetType().Name);
+  Console.WriteLine((o is string) + " " + (o is object));
+stdout:
+  System.String
+  Int32
+  True True
+
+--- EXEC B (SIGNATURE panel): overload resolution uses COMPILE-TIME type, GetType() the RUN-TIME type ---
+code:
+  static string Describe(object x) => "object overload";
+  static string Describe(string x) => "string overload";
+  object o = "hi"; string s = "hi";
+  Console.WriteLine(Describe(o));       // compile-time type object -> object overload
+  Console.WriteLine(Describe(s));       // compile-time type string -> string overload
+  Console.WriteLine(o.GetType().Name);  // run-time type -> String
+stdout:
+  object overload
+  string overload
+  String
+interpretation: the SAME run-time object (a String) routes to DIFFERENT overloads purely by
+the variable's COMPILE-TIME type — a decision the compiler bakes in, not the runtime.
+
+--- EXEC C: virtual dispatch uses the RUN-TIME type ---
+code:
+  class Animal { public override string ToString() => "Animal"; }
+  class Dog : Animal { public override string ToString() => "Dog"; }
+  Animal a = new Dog();               // compile-time Animal, run-time Dog
+  Console.WriteLine(a.ToString());    // virtual dispatch -> run-time type -> Dog
+  Console.WriteLine(a.GetType().Name);
+stdout:
+  Dog
+  Dog
+interpretation: the compile-time type is Animal, but the virtual call resolves on the RUN-TIME
+type (Dog). Compile-time type -> overload resolution & conversions; run-time type -> virtual
+dispatch, `is`, `switch` (source, «Compile-time type and run-time type» section, verbatim).
