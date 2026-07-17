@@ -1,0 +1,68 @@
+=== CS.S1.value-types-copy — real exec + IL evidence ===
+date: 2026-07-18
+tools: backend run-csharp :5080 (Roslyn scripting, real dotnet exec) + ilspycmd 10.1.1.8388 (Release IL)
+
+--- EXEC 1: struct value copy (POST /api/authoring/run-csharp) ---
+code:
+  struct Point { public int X; public int Y; }
+  var a = new Point { X = 1, Y = 2 };
+  var b = a;          // value copy
+  b.X = 99;           // mutate the copy only
+  Console.WriteLine($"a=({a.X},{a.Y}) b=({b.X},{b.Y})");
+stdout: a=(1,2) b=(99,2)
+
+--- EXEC 2: allocation delta (GC.GetAllocatedBytesForCurrentThread) ---
+code:
+  struct PointS { public int X, Y; }  class PointC { public int X, Y; }
+  b0 = GC.GetAllocatedBytesForCurrentThread();
+  var s1 = new PointS { X=1, Y=2 }; var s2 = s1;                 // value copy
+  b1 = GC.GetAllocatedBytesForCurrentThread();
+  var c1 = new PointC { X=1, Y=2 };                              // heap alloc
+  b2 = GC.GetAllocatedBytesForCurrentThread();
+  WriteLine($"struct copy: {b1-b0} bytes; class new: {b2-b1} bytes");
+stdout: struct copy: 0 bytes; class new: 24 bytes
+
+--- EXEC 3: reference member shared across a value copy (TaggedInteger, from MS Learn value-types) ---
+code:
+  struct TaggedInteger { public int Number; public List<string> Tags;
+    public TaggedInteger(int n){ Number=n; Tags=new List<string>(); }
+    public override string ToString() => $"{Number} [{string.Join(", ", Tags)}]"; }
+  var n1 = new TaggedInteger(0); n1.Tags.Add("A");
+  var n2 = n1;               // value copy: Number copied, Tags REFERENCE shared
+  n2.Number = 7; n2.Tags.Add("B");
+  Console.WriteLine(n1);     // 0 [A, B]  <- shares the same List
+  Console.WriteLine(n2);     // 7 [A, B]
+stdout:
+  0 [A, B]
+  7 [A, B]
+
+--- IL: real Release-optimised compilation (ilspycmd -il, net10.0, Optimize=true) ---
+source: public static int Copy(Point a) { Point b = a; b.X = 99; return a.X + b.X; }
+
+	.method public hidebysig static
+		int32 Copy (
+			valuetype Point a
+		) cil managed
+	{
+		// Code size: 25 (0x19)
+		.maxstack 2
+		.locals init (
+			[0] valuetype Point
+		)
+
+		IL_0000: ldarg.0              // push argument a (the whole struct)
+		IL_0001: stloc.0              // Point b = a;  -> COPY the value into local 0 (no newobj, no heap)
+		IL_0002: ldloca.s 0           // &b
+		IL_0004: ldc.i4.s 99
+		IL_0006: stfld int32 Point::X // b.X = 99      -> mutates ONLY the local copy
+		IL_000b: ldarg.0
+		IL_000c: ldfld int32 Point::X // a.X           -> reads the untouched original
+		IL_0011: ldloc.0
+		IL_0012: ldfld int32 Point::X // b.X
+		IL_0017: add
+		IL_0018: ret
+	}
+
+Interpretation: `Point b = a;` is `ldarg.0 / stloc.0` — a bitwise value copy into a fresh
+local. No newobj/box/heap. `b.X = 99` (stfld on &b) touches only the copy; `a.X` (ldfld on a)
+is untouched. This is the machine-level proof that struct assignment copies, never aliases.

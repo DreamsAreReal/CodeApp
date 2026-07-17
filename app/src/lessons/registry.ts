@@ -120,7 +120,22 @@ const CS_S1: Section = {
   prereqs: [],
   // Lessons are registered as their body files land (F1: value-types-copy; F6: type-system-map,
   // classes-virtual-dispatch). Kept as its own section so navigation groups them from day one.
-  lessons: [],
+  lessons: [
+    entry(
+      {
+        id: "CS.S1.value-types-copy",
+        track: "CS",
+        section: "CS.S1",
+        title: "Семантика копирования value types",
+        kicker: "C# вглубь · S1 · стек/куча",
+        icon: "types",
+        subtitle: "Копия при присваивании, layout, машинная панель",
+        estMinutes: 9,
+        cards: 3,
+      },
+      () => import("./cs/value-types-copy.ts").then((m) => m.valueTypesCopy),
+    ),
+  ],
 };
 
 const CS_TRACK: Track = {

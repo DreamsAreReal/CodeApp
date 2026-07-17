@@ -1,0 +1,60 @@
+{
+  "id": "CS.S1.value-types-copy",
+  "track": "CS",
+  "section": "CS.S1",
+  "module": "S1.2",
+  "title": "Семантика копирования value types",
+  "status": "published",
+  "sources": [
+    {
+      "id": "ms-value-types",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/value-types",
+      "date": "2026-03-20"
+    },
+    {
+      "id": "ms-alloc-bytes",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/api/system.gc.getallocatedbytesforcurrentthread",
+      "date": "2025-07-01"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "struct Point{int X,Y;} var a=new Point{X=1,Y=2}; var b=a; b.X=99; печатает a и b?",
+      "code": "struct Point { public int X; public int Y; } var a = new Point { X = 1, Y = 2 }; var b = a; b.X = 99; Console.WriteLine($\"a=({a.X},{a.Y}) b=({b.X},{b.Y})\");",
+      "expectedOutput": "a=(1,2) b=(99,2)",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-value-types"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "struct с List-членом: n2 = n1; n2.Number = 7; n2.Tags.Add(B); печать n1 и n2?",
+      "code": "using System.Collections.Generic; struct Tagged { public int Number; public List<string> Tags; public Tagged(int n){Number=n;Tags=new List<string>();} public override string ToString()=>$\"{Number} [{string.Join(\", \", Tags)}]\"; } var n1=new Tagged(0); n1.Tags.Add(\"A\"); var n2=n1; n2.Number=7; n2.Tags.Add(\"B\"); System.Console.WriteLine(n1); System.Console.WriteLine(n2);",
+      "expectedOutput": "0 [A, B]\n7 [A, B]",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-value-types"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "GC.GetAllocatedBytesForCurrentThread вокруг struct-копии — сколько байт?",
+      "code": "struct PointS { public int X, Y; } long b0 = GC.GetAllocatedBytesForCurrentThread(); var s1 = new PointS { X=1, Y=2 }; var s2 = s1; long b1 = GC.GetAllocatedBytesForCurrentThread(); Console.WriteLine($\"struct copy: {b1 - b0} bytes\");",
+      "expectedOutput": "struct copy: 0 bytes",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-alloc-bytes"
+      ]
+    }
+  ]
+}
