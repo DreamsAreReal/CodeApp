@@ -152,6 +152,9 @@ jobs:
   deploy:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: test
+    # Required by deploy-hub's contract (hub workflow header): the reusable
+    # workflow inherits the caller job's token permissions for the GHCR push.
+    permissions: {contents: read, packages: write}
     uses: DreamsAreReal/deploy-hub/.github/workflows/deploy.yml@main
     with: {app: codex, dockerfile: deploy/Dockerfile}
     secrets: inherit
