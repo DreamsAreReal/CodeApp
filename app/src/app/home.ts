@@ -367,8 +367,10 @@ function ctaTarget(state: HomeState, rows: LessonRow[], heroRow: LessonRow): str
     // Something to revisit: prefer a lesson with due cards, else the first row (re-view).
     return (rows.find((r) => r.due > 0) ?? rows[0]).lesson.id;
   }
-  // first-run -> the value-types starter if present, else the first lesson.
-  return (rows.find((r) => r.lesson.id.includes("value-vs-reference")) ?? rows[0]).lesson.id;
+  // first-run -> the first UNCOMPLETED lesson in curriculum order (rows follow the registry's
+  // prereq/curriculum order), i.e. the recommended starting point; else the first lesson. No
+  // hardcoded lesson id (the retired T1/T2 anchors are gone — F2 migration).
+  return (rows.find((r) => !r.completed) ?? rows[0]).lesson.id;
 }
 
 /** Greet copy above the hero — tuned to the state so the first screen reads as intentional. */
