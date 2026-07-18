@@ -32,8 +32,15 @@ const TWO_TYPE_ZONES: Zone[] = [Z_COMPILE, Z_RUNTIME];
 
 // s3 (SIGNATURE): two mechanisms fed by two types — overload resolution (compile-time) above,
 // virtual dispatch (run-time) below.
-const Z_OVERLOAD: Zone = { id: "overload", x: 14, y: 34, w: 312, h: 92, cls: "vz-zone", label: "OVERLOAD RESOLUTION · COMPILE-TIME", labelCls: "vz-zlabel sm", lx: 170, ly: 24 };
-const Z_DISPATCH: Zone = { id: "dispatch", x: 14, y: 158, w: 312, h: 92, cls: "vz-zone heap", label: "VIRTUAL DISPATCH · RUN-TIME", labelCls: "vz-zlabel heap sm", lx: 170, ly: 148 };
+// Two stacked lanes: the variables (compile-time type) above, the resolved overload below.
+// A generous vertical gap (126 -> 176) keeps the connecting edge clear of the lower zone's
+// label so the arrow never crosses the label text on a narrow (375) screen (fix C).
+// Two stacked lanes: the variables (compile-time type) above, the resolved overload below.
+// The lower zone starts at y=196 (a wide gap below the upper zone at 126) and its label is
+// LEFT-aligned (lx=90), so the centered connecting edge/arrow drops through the empty middle and
+// never crosses the label text on a narrow (375) screen (fix C).
+const Z_OVERLOAD: Zone = { id: "overload", x: 14, y: 34, w: 312, h: 92, cls: "vz-zone", label: "COMPILE-TIME ТИП ПЕРЕМЕННОЙ", labelCls: "vz-zlabel sm", lx: 170, ly: 24 };
+const Z_DISPATCH: Zone = { id: "dispatch", x: 14, y: 196, w: 312, h: 92, cls: "vz-zone heap", label: "ВЫБРАННАЯ ПЕРЕГРУЗКА", labelCls: "vz-zlabel heap sm", lx: 90, ly: 186 };
 const MECH_ZONES: Zone[] = [Z_OVERLOAD, Z_DISPATCH];
 
 export const typeSystemMap: LessonData = {
@@ -105,7 +112,7 @@ export const typeSystemMap: LessonData = {
     },
     {
       id: "s3", num: "03", kicker: "Машинная панель · кто решает", title: "Один объект, две перегрузки — по compile-time типу",
-      viewBox: "0 0 340 250", zones: MECH_ZONES,
+      viewBox: "0 0 340 298", zones: MECH_ZONES,
       code: ["string Describe(object x) => \"object overload\";", "string Describe(string x) => \"string overload\";", "object o = \"hi\"; string s = \"hi\";", "Describe(o);  Describe(s);"],
       console: true,
       scenes: [
