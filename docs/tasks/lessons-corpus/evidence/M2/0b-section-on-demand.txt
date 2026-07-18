@@ -1,0 +1,20 @@
+# M2 · 0b — section-on-demand prefetch (ADR-0005): command + output
+date: 2026-07-18
+
+## Problem (BASELINE, before change): home eagerly fetches ALL lesson bodies
+$ node verify/_tmp_net.mjs   # captures /assets/*.js lesson-body chunk requests on home
+HOME lesson-body chunks fetched: 22 / 22
+  chunks: async-await, boxing, classes-virtual-dispatch, closures, gc, hashtable,
+          py-args-unpacking, py-async-await, py-closures-scope, py-collections-hash,
+          py-context-managers, py-decorators, py-exceptions, py-generators,
+          py-names-objects, py-object-model, py-stdlib-idioms, py-strings-flow,
+          py-type-hints, type-system-map, value-types-copy, value-vs-reference
+
+## After ADR-0005 (main.ts: prefetchSection(firstSectionId()) instead of prefetchAll())
+$ node verify/_tmp_net.mjs
+HOME lesson-body chunks fetched: 3 / 22
+  chunks: classes-virtual-dispatch, type-system-map, value-types-copy   # = CS.S1 only
+COLD open PY.M6.generators: id=PY.M6.generators segments=6              # cold lesson still loads on demand
+
+## Build: entry index-*.js 111.60 KB raw / 34.96 KB gzip (+0.30 KB for registry helpers; << G1 budget)
+## Verdict: home traffic bounded by ONE section (3 bodies), not the whole catalog (22). G1 restored in substance.

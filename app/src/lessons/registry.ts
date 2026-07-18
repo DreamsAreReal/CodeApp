@@ -11,9 +11,10 @@
  * Loading model:
  *   - `entry.load()` dynamic-imports the body chunk once and MEMOISES it (BODY_CACHE),
  *     so a lesson is fetched from the network at most once per session.
- *   - `prefetchAll()` (called at boot, non-blocking) warms the cache in the background;
- *     `getLoadedBody(id)` then returns the body SYNCHRONOUSLY for the runner. If a
- *     lesson is opened before its prefetch settled, `loadBody(id)` awaits the chunk.
+ *   - `prefetchSection(id)` (called at boot for the first-session section, non-blocking;
+ *     ADR-0005) warms only THAT section's bodies in the background — not the whole catalog —
+ *     so `getLoadedBody(id)` returns them SYNCHRONOUSLY for the runner. A lesson opened before
+ *     its prefetch settled (or outside the warmed section) is loaded on demand via `loadBody(id)`.
  *
  * See docs/AUTHORING-AI.md for the authoring playbook and app/src/lessons/types.ts
  * for the LessonData shape a body chunk must export.
@@ -290,12 +291,38 @@ export function getLoadedBody(id: string): LessonData | undefined {
   return BODY_CACHE.get(id);
 }
 
+/** Every section across all tracks (flattened once, for section-scoped lookups). */
+const ALL_SECTIONS: Section[] = TRACKS.flatMap((t) => t.sections);
+const SECTION_BY_ID = new Map<string, Section>(ALL_SECTIONS.map((s) => [s.id, s]));
+
 /**
- * Warm the body cache for every lesson in the background (called at boot, non-blocking).
- * Each `load()` is an independent chunk fetch; failures are swallowed (a lesson that fails
- * to prefetch is simply loaded on demand when opened). Returns a promise that settles when
- * all prefetches have settled — harnesses/tests may await it for determinism.
+ * Warm the body cache for one SECTION's lessons in the background (ADR-0005: section-scoped,
+ * not eager-all). Called at boot for the first-session section so its entry is instant, while
+ * the rest of the corpus loads on demand when opened — the trigger stays constant with corpus
+ * size instead of scaling linearly (the whole point of the lazy-chunk split, ADR-0003).
+ * Unknown / empty section id → no-op. Failures are swallowed (a lesson that fails to prefetch
+ * is simply loaded on demand). Returns a promise that settles when the section has settled.
  */
-export function prefetchAll(): Promise<void> {
-  return Promise.allSettled(MANIFEST.map((e) => e.load())).then(() => undefined);
+export function prefetchSection(sectionId: string): Promise<void> {
+  const s = SECTION_BY_ID.get(sectionId);
+  if (!s) return Promise.resolve();
+  return Promise.allSettled(s.lessons.map((e) => e.load())).then(() => undefined);
+}
+
+/**
+ * The section that opens the first session: the lowest-`order` section of the first NON-legacy
+ * track (design «Опыт»: the CS track's S1 is entered first). Legacy T1/T2 sections carry a high
+ * order so they never win here. Returns undefined only if there are no sections at all.
+ */
+export function firstSectionId(): string | undefined {
+  const nonLegacy = TRACKS.filter((t) => t.id !== "LEGACY_CS").flatMap((t) => t.sections);
+  const pool = nonLegacy.length > 0 ? nonLegacy : ALL_SECTIONS;
+  let best: Section | undefined;
+  for (const s of pool) if (!best || s.order < best.order) best = s;
+  return best?.id;
+}
+
+/** Ids of the lessons that belong to a section (empty for an unknown id). */
+export function sectionLessonIds(sectionId: string): string[] {
+  return SECTION_BY_ID.get(sectionId)?.lessons.map((e) => e.id) ?? [];
 }

@@ -80,3 +80,12 @@
 - Термин «vtable» отсутствует на Learn C# fundamentals → механика слота метод-таблицы сорсится к ECMA-335 (стандарт CLI) + BOTR рантайма (первоисточник реализации). URL обоих резолвятся 200.
 Доказательство (evidence/M2/0a-vtable-provenance.txt):
 - HTTP 200 обоих URL; дословная цитата запинена из raw BOTR (строки 88/94). `npm run build` tsc clean, entry 111.30 KB неизменен. E2E: оба урока 5 сегментов, финальный кадр, 0 console errors.
+
+## Долг 0b — section-on-demand prefetch → ADR-0005 [зелёно]
+Сделано:
+- ADR-0005 (грузить тела по разделу/по требованию). `registry.ts`: `prefetchSection(id)` (греет тела ОДНОГО раздела), `firstSectionId()` (первый раздел не-legacy трека по order = CS.S1), `sectionLessonIds(id)`. `index.ts` реэкспорт (вместо `prefetchAll`). `main.ts`: после home — `void prefetchSection(firstSectionId())` вместо жадного `prefetchAll()`.
+Проблема (замер до): на home скачивались ВСЕ 22/22 тела уроков (жадный prefetchAll) — при 100+ уроках обнуляет G1 (мелкий entry, но сеть тянет весь каталог).
+Решения:
+- Section-scoped (вариант C ADR-0005): греем только вход первой сессии (S1, 3 тела). Остальное — lazy по клику (контракт `runLesson` уже рисует loading-скелет + `await loadLesson` на промах кэша — ADR-0003 fallback).
+Доказательство (evidence/M2/0b-section-on-demand.txt):
+- home: было 22/22 тел → стало **3/22** (ровно уроки CS.S1). Холодный урок вне S1 (PY.M6.generators) открывается по требованию — 6 сегментов. `run.mjs` ALL GREEN (lesson-open путь цел). build entry 111.60 KB (+0.30 KB хелперы, << G1).

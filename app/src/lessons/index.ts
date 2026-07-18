@@ -22,7 +22,9 @@ import {
   hasEntry,
   loadBody,
   getLoadedBody,
-  prefetchAll,
+  prefetchSection,
+  firstSectionId,
+  sectionLessonIds,
 } from "./registry.ts";
 import type { LessonManifestEntry, Section, Track } from "./registry.ts";
 import { S } from "../strings.ts";
@@ -85,8 +87,12 @@ export function hasLesson(id: string): boolean {
   return hasEntry(id);
 }
 
-/** Kick off background prefetch of every lesson body (called once at boot, non-blocking). */
-export { prefetchAll };
+/**
+ * Section-scoped prefetch (ADR-0005): warm only ONE section's bodies at boot instead of the
+ * whole catalog. `firstSectionId()` is the first-session section to warm; `prefetchSection`
+ * warms a given section; `sectionLessonIds` lists a section's lesson ids.
+ */
+export { prefetchSection, firstSectionId, sectionLessonIds };
 export { getEntry };
 export type { LessonManifestEntry, Section, Track };
 export { TRACKS };
