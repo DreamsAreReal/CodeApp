@@ -222,6 +222,8 @@ export const S = {
   stepFmt: (n: number, t: number) => `${n}/${t}`,
   predictTitle: "Сначала предскажи",
   predictShow: "Показать шаг",
+  // Accessible name for the horizontally scrollable source-code panel (keyboard reach).
+  codePanelLabel: "Панель кода, прокручивается по горизонтали",
   // bytecode-panel badge + caption, per lesson language (IL for C#, dis for Python)
   ilBadge: "IL",
   ilCap: "эмитит компилятор",

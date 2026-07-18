@@ -238,6 +238,12 @@
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
 }
+/* The panel is a keyboard-focusable scroll region (tabindex=0, role=region): give focus a
+   visible ring so keyboard users can see they can scroll it (WCAG focus-visible). */
+.code-panel:focus-visible {
+  outline: 2px solid var(--coral);
+  outline-offset: 2px;
+}
 .cl-line {
   display: flex;
   align-items: center;

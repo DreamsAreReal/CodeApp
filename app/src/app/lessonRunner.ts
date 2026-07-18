@@ -371,7 +371,7 @@ function buildSegment(lesson: LessonData, seg: Segment, onComplete: () => void):
   // bytecode panel «dis · байткод» (CPython) instead of «IL» (C# compiler output).
   const lang = lesson.lang ?? "csharp";
   const codeHTML = seg.code
-    ? '<div class="code-panel">' +
+    ? `<div class="code-panel" tabindex="0" role="region" aria-label="${S.codePanelLabel}">` +
       seg.code
         .map((line, i) => `<div class="cl-line" data-line="${i}"><span class="ln">${i + 1}</span><span>${hlCode(line, lang)}</span></div>`)
         .join("") +
