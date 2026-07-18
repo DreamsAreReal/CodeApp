@@ -288,6 +288,20 @@ const CS_S2: Section = {
       },
       () => import("./cs/tap-model.ts").then((m) => m.tapModel),
     ),
+    entry(
+      {
+        id: "CS.S2.composition",
+        track: "CS",
+        section: "CS.S2",
+        title: "Композиция: старт, WhenAll, WhenAny",
+        kicker: "C# вглубь · S2 · конкурентность",
+        icon: "async",
+        subtitle: "старт задач, WhenAll/WhenAny, faulted",
+        estMinutes: 10,
+        cards: 3,
+      },
+      () => import("./cs/composition.ts").then((m) => m.composition),
+    ),
   ],
 };
 

@@ -1,0 +1,28 @@
+# F9 · S2.2 CS.S2.composition — real run-csharp measurements (POST /api/authoring/run-csharp)
+date: 2026-07-18
+
+## SIGNATURE PANEL (s1) — concurrency: sequential ~2x vs start-then-WhenAll ~1x (timed)
+$ POST run-csharp {two Slow(100): sequential await;await -> "2x"; start both then WhenAll -> "1x"}
+  sequential await;await -> "2x"   ; start both + WhenAll -> "1x" (concurrent, one thread, not parallel)
+
+## c1 — WhenAll returns all results in ARGUMENT order (not completion order)
+$ POST run-csharp {WhenAll(V(50,1), V(30,2), V(10,3)) -> join}
+stdout: "1,2,3\n"   -> expect "1,2,3"
+
+## c2 — sequential await after each start = 2x
+$ POST run-csharp {int a=await V(100); int b=await V(100); elapsed>=190?2x:1x}
+stdout: "2x"   -> expect "2x"
+
+## c3 — process as they complete: WhenAny loop returns in COMPLETION order
+$ POST run-csharp {tasks V(30,1),V(10,2),V(20,3); while WhenAny+Remove+await done; join order}
+stdout: "2,3,1\n"   -> expect "2,3,1"   (by time: 10ms->2, 20ms->3, 30ms->1)
+
+## supporting: WhenAny returns Task<Task> (fast wins); await WhenAll rethrows FIRST exception
+$ POST run-csharp {WhenAny(slow100, fast10); await finished} -> "fast\n"
+$ POST run-csharp {WhenAll(Boom("one"),Boom("two")); catch ex} -> "caught: InvalidOperationException | agg count: 2\n"
+
+## G4 anti-echo: every card verify.run == "dotnet run"; expect NOT a substring of run. PASS.
+## Source URL resolves 200 (asynchronous-programming overview). GT-M4 myths: 0 (async is not
+##   parallelism/concurrency-if-awaited-immediately M-async-1; await faulted rethrows FIRST not
+##   AggregateException M-exc-1; WhenAny gives Task<Task> needing extra await).
+## PERF-guard (GT §Противоречия): NOT claiming "async/await faster than ContinueWith" — only readability.
