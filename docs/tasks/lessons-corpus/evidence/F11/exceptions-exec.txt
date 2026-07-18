@@ -1,0 +1,11 @@
+# CS.S2.exceptions (S2.7) — exec evidence (run-csharp, Roslyn top-level)
+# Captured 2026-07-18T22:39:15Z against backend health 200
+
+## c1 — await UNWRAPS to the first inner exception; .Wait() WRAPS even one in AggregateException (expect: await=InvalidOperationException wait=AggregateException)
+{"success":true,"stdout":"await=InvalidOperationException wait=AggregateException\n","error":null,"elapsedMs":17}
+
+## c2 — await Task.WhenAll throws ONE (first) inner; whenAll.Exception.InnerExceptions holds ALL three (deterministic: verified 3x) (expect: awaitThrew=InvalidOperationException innerCount=3)
+{"success":true,"stdout":"awaitThrew=InvalidOperationException innerCount=3\n","error":null,"elapsedMs":16}
+
+## c3 — AggregateException.Flatten() collapses a nested aggregate (2 -> 3 flat) (expect: before=2 after=3)
+{"success":true,"stdout":"before=2 after=3\n","error":null,"elapsedMs":14}

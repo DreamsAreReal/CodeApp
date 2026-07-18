@@ -358,6 +358,20 @@ const CS_S2: Section = {
       },
       () => import("./cs/tap-contract.ts").then((m) => m.tapContract),
     ),
+    entry(
+      {
+        id: "CS.S2.exceptions",
+        track: "CS",
+        section: "CS.S2",
+        title: "Исключения в async: await vs .Wait, WhenAll",
+        kicker: "C# вглубь · S2 · ошибки в задаче",
+        icon: "async",
+        subtitle: "await разворачивает, .Wait оборачивает, WhenAll, Flatten",
+        estMinutes: 10,
+        cards: 3,
+      },
+      () => import("./cs/exceptions.ts").then((m) => m.exceptions),
+    ),
   ],
 };
 

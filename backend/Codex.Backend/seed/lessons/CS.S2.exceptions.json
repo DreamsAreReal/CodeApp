@@ -1,0 +1,61 @@
+{
+  "id": "CS.S2.exceptions",
+  "track": "CS",
+  "section": "CS.S2",
+  "module": "S2.7",
+  "title": "Исключения в async: await vs .Wait, WhenAll",
+  "status": "published",
+  "order": 17,
+  "sources": [
+    {
+      "id": "ms-tpl-exc",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/standard/parallel-programming/exception-handling-task-parallel-library",
+      "date": "2023-05-24"
+    },
+    {
+      "id": "ms-tap",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/task-asynchronous-programming-model",
+      "date": "2025-10-13"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "await unwraps and throws the inner exception (InvalidOperationException); .Wait() wraps even a single exception in AggregateException",
+      "code": "using System; using System.Threading.Tasks; async Task Boom(){ await Task.Delay(1); throw new InvalidOperationException(\"x\"); } var t = Boom(); string viaAwait, viaWait; try { await t; viaAwait=\"none\"; } catch (Exception e){ viaAwait = e.GetType().Name; } var t2 = Task.Run(() => throw new InvalidOperationException(\"y\")); try { t2.Wait(); viaWait=\"none\"; } catch (Exception e){ viaWait = e.GetType().Name; } Console.WriteLine($\"await={viaAwait} wait={viaWait}\");",
+      "expectedOutput": "await=InvalidOperationException wait=AggregateException",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-tap"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "await Task.WhenAll throws only one (first) inner exception; whenAll.Exception.InnerExceptions holds all three",
+      "code": "using System; using System.Threading.Tasks; async Task Fail(string m){ await Task.Delay(1); throw new InvalidOperationException(m); } var all = Task.WhenAll(Fail(\"a\"), Fail(\"b\"), Fail(\"c\")); string type; try { await all; type=\"none\"; } catch (Exception e){ type = e.GetType().Name; } int count = all.Exception!.InnerExceptions.Count; Console.WriteLine($\"awaitThrew={type} innerCount={count}\");",
+      "expectedOutput": "awaitThrew=InvalidOperationException innerCount=3",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-tpl-exc"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "AggregateException.Flatten() collapses a nested aggregate: 2 direct inners become 3 flat real exceptions",
+      "code": "using System; var inner = new AggregateException(new Exception(\"a\"), new Exception(\"b\")); var outer = new AggregateException(inner, new Exception(\"c\")); int before = outer.InnerExceptions.Count; int after = outer.Flatten().InnerExceptions.Count; Console.WriteLine($\"before={before} after={after}\");",
+      "expectedOutput": "before=2 after=3",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-tpl-exc"
+      ]
+    }
+  ]
+}
