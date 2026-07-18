@@ -132,6 +132,73 @@ public sealed class ApiTests : IClassFixture<ApiTests.Factory>
                     > again.GetProperty("intervalDays").GetDouble());
     }
 
+    /// <summary>
+    /// F3 / ADR-0002 daily new-card limit: a fresh user's /api/due surfaces at most
+    /// NEW_CARDS_PER_DAY (default 10) never-reviewed cards, in curriculum order (items.ord), even
+    /// though the seeded catalog has far more. The very first new card is the first-session lesson
+    /// CS.S1.type-system-map/c1 (Section.order 1, card 0). Repeating the call the SAME day does not
+    /// release more (grants are permanent), so a refresh cannot bypass the cap.
+    /// </summary>
+    [Fact]
+    public async Task Due_CapsNewCardsPerDay_InCurriculumOrder()
+    {
+        long user = FreshUser();
+        string token = await AuthToken(user);
+
+        var due = await Json(await Get("/api/due", token));
+        var items = due.GetProperty("items").EnumerateArray().ToArray();
+        int newCount = items.Count(i => i.GetProperty("isNew").GetBoolean());
+        Assert.True(newCount <= 10, $"fresh user gets <= 10 new cards, got {newCount}");
+        Assert.Equal(10, newCount); // the seeded catalog has >10 cards, so the cap is exactly hit
+        Assert.Equal("CS.S1.type-system-map/c1", items[0].GetProperty("itemId").GetString());
+
+        // A same-day refresh must NOT release more new cards (permanent grants -> no cap bypass).
+        var due2 = await Json(await Get("/api/due", token));
+        int newCount2 = due2.GetProperty("items").EnumerateArray().Count(i => i.GetProperty("isNew").GetBoolean());
+        Assert.Equal(newCount, newCount2);
+    }
+
+    /// <summary>
+    /// ADR-0002: the limit is on new cards FIRST INTRODUCED per calendar day. Reviewing a day's new
+    /// cards releases the NEXT batch the following day, still capped, advancing in curriculum order —
+    /// and a fresh day never introduces more than NEW_CARDS_PER_DAY brand-new (never-granted) cards.
+    /// Driven on the dev-only X-Sim-Now simulation clock so the calendar day is deterministic.
+    /// </summary>
+    [Fact]
+    public async Task Due_ReleasesNextBatch_OncePriorBatchReviewed()
+    {
+        long user = FreshUser();
+        string token = await AuthToken(user);
+
+        var day1 = await SimDue(token, "2026-11-01T09:00:00Z");
+        var day1Ids = day1.Select(i => i.GetProperty("itemId").GetString()!).ToHashSet();
+        Assert.Equal(10, day1Ids.Count); // day 1 introduces exactly the cap
+
+        // Review all of day 1's cards (on the day-1 clock) so they leave the never-reviewed pool.
+        foreach (var id in day1Ids)
+        {
+            var req = Req(HttpMethod.Post, "/api/review", token, new { itemId = id, grade = 3 });
+            req.Headers.Add("X-Sim-Now", "2026-11-01T09:00:00Z");
+            (await _client.SendAsync(req)).EnsureSuccessStatusCode();
+        }
+
+        // Day 2 introduces a FRESH batch of never-seen cards, still capped at the daily budget.
+        var day2 = await SimDue(token, "2026-11-02T09:00:00Z");
+        var day2New = day2.Where(i => i.GetProperty("isNew").GetBoolean())
+            .Select(i => i.GetProperty("itemId").GetString()!).ToArray();
+        Assert.True(day2New.Length <= 10, $"day 2 introduces <= 10 new, got {day2New.Length}");
+        Assert.True(day2New.Length > 0, "day 2 releases the next batch");
+        Assert.All(day2New, id => Assert.DoesNotContain(id, day1Ids)); // strictly new cards, advancing
+    }
+
+    private async Task<JsonElement[]> SimDue(string token, string simNow)
+    {
+        var req = Req(HttpMethod.Get, "/api/due", token);
+        req.Headers.Add("X-Sim-Now", simNow);
+        var due = await Json(await _client.SendAsync(req));
+        return due.GetProperty("items").EnumerateArray().ToArray();
+    }
+
     [Fact]
     public async Task GenuineInitData_Validates_TamperedIsRejected()
     {

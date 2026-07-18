@@ -3,63 +3,174 @@
   "track": "PY",
   "module": "M2.1",
   "title": "Хэшируемость и O(1)",
-  "prereqs": ["PY.M1.names-objects"],
+  "prereqs": [
+    "PY.M1.names-objects"
+  ],
   "version": "1.0.0",
   "volatility": "stable",
-  "sourceSnapshot": { "python": "3.12.13" },
+  "sourceSnapshot": {
+    "python": "3.12.13"
+  },
   "reviewBy": "2026-10-01",
   "status": "published",
-
+  "order": 11,
   "depth": {
     "intuition": [
-      { "id": "i1", "text": "Список ищет сканом (O(n)); set/dict считают hash(x) и прыгают в бакет — в среднем O(1), worst-case O(n) при коллизиях.", "source": "py-wiki-tc", "status": "fact" }
+      {
+        "id": "i1",
+        "text": "Список ищет сканом (O(n)); set/dict считают hash(x) и прыгают в бакет — в среднем O(1), worst-case O(n) при коллизиях.",
+        "source": "py-wiki-tc",
+        "status": "fact"
+      }
     ],
     "mechanics": [
-      { "id": "m1", "text": "Ключ dict / элемент set обязан быть хэшируемым: хэш не меняется за время жизни объекта; равные объекты обязаны иметь равный хэш.", "source": "py-glossary-hashable", "status": "fact" },
-      { "id": "m2", "text": "tuple хэшируем, только если внутри лишь хэшируемое: (1, [2]) в роли ключа падает TypeError.", "source": "py-glossary-hashable", "status": "fact" },
-      { "id": "m3", "text": "Set-операции — язык диффов: expected - actual (пропало), actual - expected (лишнее), & (пересечение), ^ (расхождение).", "source": "py-tut-ds", "status": "fact" }
+      {
+        "id": "m1",
+        "text": "Ключ dict / элемент set обязан быть хэшируемым: хэш не меняется за время жизни объекта; равные объекты обязаны иметь равный хэш.",
+        "source": "py-glossary-hashable",
+        "status": "fact"
+      },
+      {
+        "id": "m2",
+        "text": "tuple хэшируем, только если внутри лишь хэшируемое: (1, [2]) в роли ключа падает TypeError.",
+        "source": "py-glossary-hashable",
+        "status": "fact"
+      },
+      {
+        "id": "m3",
+        "text": "Set-операции — язык диффов: expected - actual (пропало), actual - expected (лишнее), & (пересечение), ^ (расхождение).",
+        "source": "py-tut-ds",
+        "status": "fact"
+      }
     ],
     "spec": [
-      { "id": "s1", "text": "«the insertion-order preservation nature of dict objects has been declared to be an official part of the Python language spec» (What's New 3.7, дословно)", "source": "py-whatsnew37", "status": "fact" }
+      {
+        "id": "s1",
+        "text": "«the insertion-order preservation nature of dict objects has been declared to be an official part of the Python language spec» (What's New 3.7, дословно)",
+        "source": "py-whatsnew37",
+        "status": "fact"
+      }
     ]
   },
   "edgeCases": [
-    { "id": "e1", "text": "Порядок set спекой не гарантирован — assert по распечатке set = флак; порядок dict гарантирован с 3.7.", "source": "py-whatsnew37" },
-    { "id": "e2", "text": "x in list внутри цикла по n элементам — O(n²); один set(...) на входе убирает полку сложности.", "source": "py-wiki-tc" }
+    {
+      "id": "e1",
+      "text": "Порядок set спекой не гарантирован — assert по распечатке set = флак; порядок dict гарантирован с 3.7.",
+      "source": "py-whatsnew37"
+    },
+    {
+      "id": "e2",
+      "text": "x in list внутри цикла по n элементам — O(n²); один set(...) на входе убирает полку сложности.",
+      "source": "py-wiki-tc"
+    }
   ],
   "misconceptions": [
-    { "wrong": "Разница list/set/tuple — «изменяемый / неизменяемый / неупорядоченный».", "correction": "Senior-ответ идёт через хэш-таблицу: set ради уникальности и O(1)-поиска; tuple хэшируем, поэтому может быть ключом dict; list — нет.", "source": "py-glossary-hashable" },
-    { "wrong": "set поиск — «просто O(1)».", "correction": "В среднем O(1); worst-case O(n) при коллизиях — стандартный follow-up собеса.", "source": "py-wiki-tc" }
+    {
+      "wrong": "Разница list/set/tuple — «изменяемый / неизменяемый / неупорядоченный».",
+      "correction": "Senior-ответ идёт через хэш-таблицу: set ради уникальности и O(1)-поиска; tuple хэшируем, поэтому может быть ключом dict; list — нет.",
+      "source": "py-glossary-hashable"
+    },
+    {
+      "wrong": "set поиск — «просто O(1)».",
+      "correction": "В среднем O(1); worst-case O(n) при коллизиях — стандартный follow-up собеса.",
+      "source": "py-wiki-tc"
+    }
   ],
-  "rationale": { "id": "r1", "text": "Одна модель «hash → бакет» объясняет выбор структуры, запрет mutable-ключей, tuple-ловушку и set-диффы для тестов — не как отдельные факты, а как следствия контракта хэшируемости.", "source": "py-glossary-hashable" },
-
+  "rationale": {
+    "id": "r1",
+    "text": "Одна модель «hash → бакет» объясняет выбор структуры, запрет mutable-ключей, tuple-ловушку и set-диффы для тестов — не как отдельные факты, а как следствия контракта хэшируемости.",
+    "source": "py-glossary-hashable"
+  },
   "sources": [
-    { "id": "py-tut-ds", "kind": "python-docs", "url": "https://docs.python.org/3/tutorial/datastructures.html", "section": "Data Structures", "date": "2026-07-15", "retrieved": "2026-07-15" },
-    { "id": "py-glossary-hashable", "kind": "python-docs", "url": "https://docs.python.org/3/glossary.html#term-hashable", "section": "Glossary · hashable", "date": "2026-07-15", "retrieved": "2026-07-15" },
-    { "id": "py-wiki-tc", "kind": "wiki", "url": "https://wiki.python.org/moin/TimeComplexity", "section": "TimeComplexity", "date": "2026-07-15", "retrieved": "2026-07-15" },
-    { "id": "py-whatsnew37", "kind": "python-docs", "url": "https://docs.python.org/3/whatsnew/3.7.html", "section": "What's New In Python 3.7", "date": "2026-07-15", "retrieved": "2026-07-15" },
-    { "id": "py-stdtypes-dict", "kind": "python-docs", "url": "https://docs.python.org/3/library/stdtypes.html#mapping-types-dict", "section": "Mapping Types — dict", "date": "2026-07-15", "retrieved": "2026-07-15" }
+    {
+      "id": "py-tut-ds",
+      "kind": "python-docs",
+      "url": "https://docs.python.org/3/tutorial/datastructures.html",
+      "section": "Data Structures",
+      "date": "2026-07-15",
+      "retrieved": "2026-07-15"
+    },
+    {
+      "id": "py-glossary-hashable",
+      "kind": "python-docs",
+      "url": "https://docs.python.org/3/glossary.html#term-hashable",
+      "section": "Glossary · hashable",
+      "date": "2026-07-15",
+      "retrieved": "2026-07-15"
+    },
+    {
+      "id": "py-wiki-tc",
+      "kind": "wiki",
+      "url": "https://wiki.python.org/moin/TimeComplexity",
+      "section": "TimeComplexity",
+      "date": "2026-07-15",
+      "retrieved": "2026-07-15"
+    },
+    {
+      "id": "py-whatsnew37",
+      "kind": "python-docs",
+      "url": "https://docs.python.org/3/whatsnew/3.7.html",
+      "section": "What's New In Python 3.7",
+      "date": "2026-07-15",
+      "retrieved": "2026-07-15"
+    },
+    {
+      "id": "py-stdtypes-dict",
+      "kind": "python-docs",
+      "url": "https://docs.python.org/3/library/stdtypes.html#mapping-types-dict",
+      "section": "Mapping Types — dict",
+      "date": "2026-07-15",
+      "retrieved": "2026-07-15"
+    }
   ],
   "identifiers": [
-    { "symbol": "hash", "kind": "builtin", "minVersion": "3.0" },
-    { "symbol": "set", "kind": "builtin", "minVersion": "3.0" },
-    { "symbol": "dict", "kind": "builtin", "minVersion": "3.0" }
+    {
+      "symbol": "hash",
+      "kind": "builtin",
+      "minVersion": "3.0"
+    },
+    {
+      "symbol": "set",
+      "kind": "builtin",
+      "minVersion": "3.0"
+    },
+    {
+      "symbol": "dict",
+      "kind": "builtin",
+      "minVersion": "3.0"
+    }
   ],
-
   "viz": {
     "model": "buckets-and-scan",
     "renderer": "svg",
     "interaction": "responding",
     "entities": [
-      { "id": "scan.l99", "zone": "scan", "label": "99" },
-      { "id": "hash.gate", "zone": "hash", "label": "hash(99)" }
+      {
+        "id": "scan.l99",
+        "zone": "scan",
+        "label": "99"
+      },
+      {
+        "id": "hash.gate",
+        "zone": "hash",
+        "label": "hash(99)"
+      }
     ],
     "trace": [
-      { "op": "highlight", "target": "scan.l99", "caption": "x in list: сравнения подряд, O(n)", "signal": "scan.l99" },
-      { "op": "annotate", "target": "hash.gate", "caption": "x in set: hash → бакет, в среднем O(1)", "signal": "hash.gate" }
+      {
+        "op": "highlight",
+        "target": "scan.l99",
+        "caption": "x in list: сравнения подряд, O(n)",
+        "signal": "scan.l99"
+      },
+      {
+        "op": "annotate",
+        "target": "hash.gate",
+        "caption": "x in set: hash → бакет, в среднем O(1)",
+        "signal": "hash.gate"
+      }
     ]
   },
-
   "cards": [
     {
       "id": "c1",
@@ -69,9 +180,17 @@
       "code": "d = {}\nd[(1, 2)] = \"ok\"\ntry:\n    d[[1, 2]] = \"no\"\nexcept TypeError:\n    print(\"TypeError\")\nprint(d[(1, 2)])",
       "expectedOutput": "TypeError\nok",
       "verify": "execute",
-      "sourceRefs": ["py-tut-ds", "py-glossary-hashable"],
-      "distractors": ["ok\nok", "TypeError\nKeyError"],
-      "fsrsSeed": { "desiredRetention": 0.9 }
+      "sourceRefs": [
+        "py-tut-ds",
+        "py-glossary-hashable"
+      ],
+      "distractors": [
+        "ok\nok",
+        "TypeError\nKeyError"
+      ],
+      "fsrsSeed": {
+        "desiredRetention": 0.9
+      }
     },
     {
       "id": "c2",
@@ -81,9 +200,16 @@
       "code": "lst = [1, 2]\nd = {}\nd[tuple(lst)] = \"ok\"\nprint(d[(1, 2)])\nprint((1, 2) in d)",
       "expectedOutput": "ok\nTrue",
       "verify": "execute",
-      "sourceRefs": ["py-glossary-hashable"],
-      "distractors": ["KeyError", "ok\nFalse"],
-      "fsrsSeed": { "desiredRetention": 0.9 }
+      "sourceRefs": [
+        "py-glossary-hashable"
+      ],
+      "distractors": [
+        "KeyError",
+        "ok\nFalse"
+      ],
+      "fsrsSeed": {
+        "desiredRetention": 0.9
+      }
     },
     {
       "id": "c3",
@@ -93,14 +219,25 @@
       "code": "d = {}\nd[\"b\"] = 1\nd[\"a\"] = 2\nd[\"c\"] = 3\nprint(list(d))",
       "expectedOutput": "['b', 'a', 'c']",
       "verify": "execute",
-      "sourceRefs": ["py-whatsnew37"],
-      "distractors": ["['a', 'b', 'c']", "порядок не определён"],
-      "fsrsSeed": { "desiredRetention": 0.9 }
+      "sourceRefs": [
+        "py-whatsnew37"
+      ],
+      "distractors": [
+        "['a', 'b', 'c']",
+        "порядок не определён"
+      ],
+      "fsrsSeed": {
+        "desiredRetention": 0.9
+      }
     }
   ],
-
   "verification": {
-    "gates": { "G-SCHEMA": "pass", "G-CITE": "pass", "G-EXEC-PY": "pass", "G-VIZ": "pass" },
+    "gates": {
+      "G-SCHEMA": "pass",
+      "G-CITE": "pass",
+      "G-EXEC-PY": "pass",
+      "G-VIZ": "pass"
+    },
     "citationCoverage": 1.0,
     "execLog": "docs/tasks/python-track/evidence/py-cards/census-log.txt",
     "reviewDate": "2026-07-15"

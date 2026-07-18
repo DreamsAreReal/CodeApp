@@ -43,9 +43,13 @@ public sealed class ReviewService
     /// to the history event; both default to null so the existing contract is byte-for-byte intact.
     /// </summary>
     public ReviewResult Review(
-        long userId, string itemId, Rating rating, bool? correct = null, bool? confidence = null)
+        long userId, string itemId, Rating rating, bool? correct = null, bool? confidence = null,
+        DateTimeOffset? nowOverride = null)
     {
-        var now = _clock.GetUtcNow();
+        // nowOverride is a DEV-ONLY simulation clock (X-Sim-Now header, gated in Program.cs). It is
+        // null in production and under the normal contract, so the real TimeProvider drives the
+        // schedule; a supplied value lets verify/sim-14d drive a deterministic multi-day timeline.
+        var now = nowOverride ?? _clock.GetUtcNow();
         var prev = _db.GetReviewState(userId, itemId);
 
         FsrsState prevState;

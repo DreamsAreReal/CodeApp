@@ -1,0 +1,31 @@
+# F3 — daily new-card limit (NEW_CARDS_PER_DAY=10, ADR-0002): command + output
+date: 2026-07-18
+
+## Implementation
+- Migration 4: items.ord (curriculum-order key) + new_card_grants(user_id, item_id, granted_date).
+- Seed JSONs: top-level "order" field (CS.S1: 1,2,3; PY M1..M13: 10..22); LessonStore packs Ord = order*100 + cardIndex.
+- Db.GetDue(userId, now, newCardsPerDay): review cards unlimited; never-reviewed capped at
+  newCardsPerDay FIRST-granted per UTC day (grants permanent -> refresh can't bypass; reviewing
+  does not free a same-day slot), released in items.ord order; pending (granted, unanswered) cards persist.
+- Config Fsrs:NewCardsPerDay (default 10). Dev-only X-Sim-Now header threads a simulation clock
+  through /api/due AND /api/review (ReviewService.Review nowOverride) — ignored in production.
+
+## ACCEPTANCE 1 — fresh user day-1 due <= 10 new (curl, live backend)
+$ curl -s /api/due (fresh devUserId)
+total due: 10 | new cards: 10 | PASS
+new card ids (curriculum order): CS.S1.type-system-map/c1,c2 · CS.S1.value-types-copy/c1,c2,c3
+                                 · CS.S1.classes-virtual-dispatch/c1,c2 · PY.M1.names-objects/c1,c2,c3
+(before F3: fresh due was 66/60 — no limit. ADR-0002 problem confirmed and now fixed.)
+
+## ACCEPTANCE 2 — node verify/sim-14d.mjs : 14 days, new<=10 AND due<=25 every day, exit 0
+(full output in sim-14d-output.txt)
+  day 01: new 10 <=10, due 10 <=25 ... day 06: new 10, due 20 ... day 07-14: new 0, due <=10
+  ==== ALL GREEN · sim-14d ====   exit 0
+
+## ACCEPTANCE 3 — dotnet test 67/67 (65 baseline + 2 limiter unit tests)
+Due_CapsNewCardsPerDay_InCurriculumOrder  — fresh due caps 10 new, type-system-map/c1 first, refresh no-bypass
+Due_ReleasesNextBatch_OncePriorBatchReviewed — reviewing day-1 batch releases fresh <=10 day-2 batch, strictly new
+Passed! Failed: 0, Passed: 67
+
+## ACCEPTANCE 4 — no harness regression under the limiter
+run.mjs / new-lessons.mjs / shell.mjs / loop.mjs ALL GREEN (PY.M1.names-objects/c1 is card #8, within the 10-card budget).

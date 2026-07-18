@@ -3,65 +3,183 @@
   "track": "PY",
   "module": "M10.1",
   "title": "Type hints: метаданные, а не проверка",
-  "prereqs": ["PY.M9.exceptions"],
+  "prereqs": [
+    "PY.M9.exceptions"
+  ],
   "version": "1.0.0",
   "volatility": "stable",
-  "sourceSnapshot": { "python": "3.12.13", "pydantic": "2.13.4" },
+  "sourceSnapshot": {
+    "python": "3.12.13",
+    "pydantic": "2.13.4"
+  },
   "reviewBy": "2026-10-01",
   "status": "published",
-
+  "order": 19,
   "depth": {
     "intuition": [
-      { "id": "i1", "text": "Хинты не проверяются интерпретатором: add(\"a\", \"b\") с int-хинтами печатает ab, не TypeError. Проверка типов — работа внешних инструментов (mypy/IDE) или библиотек поверх аннотаций.", "source": "pep-484", "status": "fact" }
+      {
+        "id": "i1",
+        "text": "Хинты не проверяются интерпретатором: add(\"a\", \"b\") с int-хинтами печатает ab, не TypeError. Проверка типов — работа внешних инструментов (mypy/IDE) или библиотек поверх аннотаций.",
+        "source": "pep-484",
+        "status": "fact"
+      }
     ],
     "mechanics": [
-      { "id": "m1", "text": "Хинты — данные: лежат в dict __annotations__ на объекте функции, значения — настоящие объекты-классы; их можно читать в рантайме.", "source": "pep-484", "status": "fact" },
-      { "id": "m2", "text": "int | None — запись Optional по PEP 604 (Final, 3.10): оператор | на типах создаёт рантайм-объект types.UnionType (спайк 3.12: type(int | None).__name__ → UnionType).", "source": "pep-604", "status": "fact" },
-      { "id": "m3", "text": "Отсутствие значения проверяется через x is None: ноль/пустая строка/пустой список — falsy-значения, if x: путает их с «нет значения».", "source": "py-typing", "status": "fact" },
-      { "id": "m4", "text": "Pydantic строит из тех же хинтов рантайм-гейт: поля модели валидируются и приводятся (\"1\" → 1), мусор поднимает ValidationError — контракт ответа API.", "source": "pydantic-models", "status": "fact" }
+      {
+        "id": "m1",
+        "text": "Хинты — данные: лежат в dict __annotations__ на объекте функции, значения — настоящие объекты-классы; их можно читать в рантайме.",
+        "source": "pep-484",
+        "status": "fact"
+      },
+      {
+        "id": "m2",
+        "text": "int | None — запись Optional по PEP 604 (Final, 3.10): оператор | на типах создаёт рантайм-объект types.UnionType (спайк 3.12: type(int | None).__name__ → UnionType).",
+        "source": "pep-604",
+        "status": "fact"
+      },
+      {
+        "id": "m3",
+        "text": "Отсутствие значения проверяется через x is None: ноль/пустая строка/пустой список — falsy-значения, if x: путает их с «нет значения».",
+        "source": "py-typing",
+        "status": "fact"
+      },
+      {
+        "id": "m4",
+        "text": "Pydantic строит из тех же хинтов рантайм-гейт: поля модели валидируются и приводятся (\"1\" → 1), мусор поднимает ValidationError — контракт ответа API.",
+        "source": "pydantic-models",
+        "status": "fact"
+      }
     ],
     "spec": [
-      { "id": "s1", "text": "«While these annotations are available at runtime through the usual __annotations__ attribute, no type checking happens at runtime.» (PEP 484, дословно)", "source": "pep-484", "status": "fact" }
+      {
+        "id": "s1",
+        "text": "«While these annotations are available at runtime through the usual __annotations__ attribute, no type checking happens at runtime.» (PEP 484, дословно)",
+        "source": "pep-484",
+        "status": "fact"
+      }
     ]
   },
   "edgeCases": [
-    { "id": "e1", "text": "Optional[X] эквивалентен X | None и НЕ означает «необязательный аргумент» («Note that this is not the same concept as an optional argument, which is one that has a default»).", "source": "py-typing" },
-    { "id": "e2", "text": "На 3.9 def с int | None падал TypeError прямо на определении (аннотации вычисляются) — пайп-форма требует 3.10+; раннер волны — 3.12 (историческая справка, без exec-карточки — RS-03).", "source": "pep-604" }
+    {
+      "id": "e1",
+      "text": "Optional[X] эквивалентен X | None и НЕ означает «необязательный аргумент» («Note that this is not the same concept as an optional argument, which is one that has a default»).",
+      "source": "py-typing"
+    },
+    {
+      "id": "e2",
+      "text": "На 3.9 def с int | None падал TypeError прямо на определении (аннотации вычисляются) — пайп-форма требует 3.10+; раннер волны — 3.12 (историческая справка, без exec-карточки — RS-03).",
+      "source": "pep-604"
+    }
   ],
   "misconceptions": [
-    { "wrong": "Хинты — это проверка типов.", "correction": "PEP 484: «no type checking happens at runtime» — хинты лежат метаданными в __annotations__; спайк 3.12 ×2: add(\"a\", \"b\") → ab. Рантайм-гейт строят инструменты: mypy статически, Pydantic в рантайме.", "source": "pep-484" },
-    { "wrong": "Optional — значит аргумент необязательный.", "correction": "Optional[X] — это тип X | None; необязательность аргумента задаёт default, а не Optional. Проверка отсутствия — только x is None (0 — значение, не отсутствие).", "source": "py-typing" }
+    {
+      "wrong": "Хинты — это проверка типов.",
+      "correction": "PEP 484: «no type checking happens at runtime» — хинты лежат метаданными в __annotations__; спайк 3.12 ×2: add(\"a\", \"b\") → ab. Рантайм-гейт строят инструменты: mypy статически, Pydantic в рантайме.",
+      "source": "pep-484"
+    },
+    {
+      "wrong": "Optional — значит аргумент необязательный.",
+      "correction": "Optional[X] — это тип X | None; необязательность аргумента задаёт default, а не Optional. Проверка отсутствия — только x is None (0 — значение, не отсутствие).",
+      "source": "py-typing"
+    }
   ],
-  "rationale": { "id": "r1", "text": "Одна модель «хинты = данные в __annotations__, гейт строится инструментом» объясняет и молчание рантайма, и mypy, и Pydantic-контракты API-тестов — мост из Python-фундамента в блок API.", "source": "pep-484" },
-
+  "rationale": {
+    "id": "r1",
+    "text": "Одна модель «хинты = данные в __annotations__, гейт строится инструментом» объясняет и молчание рантайма, и mypy, и Pydantic-контракты API-тестов — мост из Python-фундамента в блок API.",
+    "source": "pep-484"
+  },
   "sources": [
-    { "id": "pep-484", "kind": "pep", "url": "https://peps.python.org/pep-0484/", "section": "Abstract · Non-goals", "date": "2026-07-16", "retrieved": "2026-07-16" },
-    { "id": "py-typing", "kind": "python-docs", "url": "https://docs.python.org/3/library/typing.html", "section": "Intro · Optional", "date": "2026-07-16", "retrieved": "2026-07-16" },
-    { "id": "pep-604", "kind": "pep", "url": "https://peps.python.org/pep-0604/", "section": "Abstract (Final, 3.10)", "date": "2026-07-16", "retrieved": "2026-07-16" },
-    { "id": "pydantic-models", "kind": "vendor-docs", "url": "https://pydantic.dev/docs/validation/latest/concepts/models/", "section": "Models · validation and coercion", "date": "2026-07-16", "retrieved": "2026-07-16" }
+    {
+      "id": "pep-484",
+      "kind": "pep",
+      "url": "https://peps.python.org/pep-0484/",
+      "section": "Abstract · Non-goals",
+      "date": "2026-07-16",
+      "retrieved": "2026-07-16"
+    },
+    {
+      "id": "py-typing",
+      "kind": "python-docs",
+      "url": "https://docs.python.org/3/library/typing.html",
+      "section": "Intro · Optional",
+      "date": "2026-07-16",
+      "retrieved": "2026-07-16"
+    },
+    {
+      "id": "pep-604",
+      "kind": "pep",
+      "url": "https://peps.python.org/pep-0604/",
+      "section": "Abstract (Final, 3.10)",
+      "date": "2026-07-16",
+      "retrieved": "2026-07-16"
+    },
+    {
+      "id": "pydantic-models",
+      "kind": "vendor-docs",
+      "url": "https://pydantic.dev/docs/validation/latest/concepts/models/",
+      "section": "Models · validation and coercion",
+      "date": "2026-07-16",
+      "retrieved": "2026-07-16"
+    }
   ],
   "identifiers": [
-    { "symbol": "function.__annotations__", "kind": "attribute", "minVersion": "3.0" },
-    { "symbol": "types.UnionType", "kind": "class", "minVersion": "3.10" },
-    { "symbol": "typing.Optional", "kind": "typing", "minVersion": "3.5" },
-    { "symbol": "pydantic.BaseModel", "kind": "third-party", "minVersion": "pydantic 1.0" },
-    { "symbol": "pydantic.ValidationError", "kind": "third-party", "minVersion": "pydantic 1.0" }
+    {
+      "symbol": "function.__annotations__",
+      "kind": "attribute",
+      "minVersion": "3.0"
+    },
+    {
+      "symbol": "types.UnionType",
+      "kind": "class",
+      "minVersion": "3.10"
+    },
+    {
+      "symbol": "typing.Optional",
+      "kind": "typing",
+      "minVersion": "3.5"
+    },
+    {
+      "symbol": "pydantic.BaseModel",
+      "kind": "third-party",
+      "minVersion": "pydantic 1.0"
+    },
+    {
+      "symbol": "pydantic.ValidationError",
+      "kind": "third-party",
+      "minVersion": "pydantic 1.0"
+    }
   ],
-
   "viz": {
     "model": "hints-as-data-then-gate",
     "renderer": "svg",
     "interaction": "responding",
     "entities": [
-      { "id": "rtb.gate", "zone": "rtb", "label": "проверки типов нет" },
-      { "id": "gateb.gate", "zone": "gateb", "label": "id: int" }
+      {
+        "id": "rtb.gate",
+        "zone": "rtb",
+        "label": "проверки типов нет"
+      },
+      {
+        "id": "gateb.gate",
+        "zone": "gateb",
+        "label": "id: int"
+      }
     ],
     "trace": [
-      { "op": "annotate", "target": "rtb.gate", "caption": "рантайм не сверяет аргументы с хинтами — строки склеились в ab", "signal": "rtb.gate" },
-      { "op": "highlight", "target": "gateb.gate", "caption": "Pydantic строит из хинтов настоящий гейт: коэрция \"1\" → 1, мусор → ValidationError", "signal": "gateb.gate" }
+      {
+        "op": "annotate",
+        "target": "rtb.gate",
+        "caption": "рантайм не сверяет аргументы с хинтами — строки склеились в ab",
+        "signal": "rtb.gate"
+      },
+      {
+        "op": "highlight",
+        "target": "gateb.gate",
+        "caption": "Pydantic строит из хинтов настоящий гейт: коэрция \"1\" → 1, мусор → ValidationError",
+        "signal": "gateb.gate"
+      }
     ]
   },
-
   "cards": [
     {
       "id": "c1",
@@ -71,9 +189,16 @@
       "code": "def add(a: int, b: int) -> int:\n    return a + b\n\nprint(add(\"a\", \"b\"))",
       "expectedOutput": "ab",
       "verify": "execute",
-      "sourceRefs": ["pep-484"],
-      "distractors": ["TypeError", "None"],
-      "fsrsSeed": { "desiredRetention": 0.9 }
+      "sourceRefs": [
+        "pep-484"
+      ],
+      "distractors": [
+        "TypeError",
+        "None"
+      ],
+      "fsrsSeed": {
+        "desiredRetention": 0.9
+      }
     },
     {
       "id": "c2",
@@ -83,9 +208,16 @@
       "code": "def f(x: int) -> str: return str(x)\n\na = f.__annotations__\nprint(a['x'].__name__)\nprint(a['return'].__name__)",
       "expectedOutput": "int\nstr",
       "verify": "execute",
-      "sourceRefs": ["pep-484"],
-      "distractors": ["x\nreturn", "str\nint"],
-      "fsrsSeed": { "desiredRetention": 0.9 }
+      "sourceRefs": [
+        "pep-484"
+      ],
+      "distractors": [
+        "x\nreturn",
+        "str\nint"
+      ],
+      "fsrsSeed": {
+        "desiredRetention": 0.9
+      }
     },
     {
       "id": "c3",
@@ -95,9 +227,16 @@
       "code": "def add(a: int, b: int) -> int:\n    if not isinstance(a, int) or not isinstance(b, int):\n        raise TypeError(\"int required\")\n    return a + b\n\nprint(add(2, 3))\ntry:\n    print(add(\"a\", \"b\"))\nexcept TypeError as e:\n    print(type(e).__name__)",
       "expectedOutput": "5\nTypeError",
       "verify": "execute",
-      "sourceRefs": ["pep-484"],
-      "distractors": ["5\nab", "TypeError\nTypeError"],
-      "fsrsSeed": { "desiredRetention": 0.9 }
+      "sourceRefs": [
+        "pep-484"
+      ],
+      "distractors": [
+        "5\nab",
+        "TypeError\nTypeError"
+      ],
+      "fsrsSeed": {
+        "desiredRetention": 0.9
+      }
     },
     {
       "id": "c4",
@@ -107,14 +246,26 @@
       "code": "def label(x: int | None = None):\n    if x is None: return \"default\"\n    return \"found\"\n\nprint(label())\nprint(label(0))",
       "expectedOutput": "default\nfound",
       "verify": "execute",
-      "sourceRefs": ["py-typing", "pep-604"],
-      "distractors": ["default\ndefault", "found\nfound"],
-      "fsrsSeed": { "desiredRetention": 0.9 }
+      "sourceRefs": [
+        "py-typing",
+        "pep-604"
+      ],
+      "distractors": [
+        "default\ndefault",
+        "found\nfound"
+      ],
+      "fsrsSeed": {
+        "desiredRetention": 0.9
+      }
     }
   ],
-
   "verification": {
-    "gates": { "G-SCHEMA": "pass", "G-CITE": "pass", "G-EXEC-PY": "pass", "G-VIZ": "pass" },
+    "gates": {
+      "G-SCHEMA": "pass",
+      "G-CITE": "pass",
+      "G-EXEC-PY": "pass",
+      "G-VIZ": "pass"
+    },
     "citationCoverage": 1.0,
     "execLog": "docs/tasks/python-track/evidence/py-cards/census-log.txt",
     "reviewDate": "2026-07-16"

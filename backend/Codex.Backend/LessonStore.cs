@@ -42,8 +42,17 @@ public sealed class LessonStore
                 root.TryGetProperty("status", out var s) ? s.GetString() ?? "" : "",
                 cardCount));
 
+            // Curriculum order for the daily new-card release (ADR-0002). A seed carries a top-level
+            // integer `order` (Section.order → lesson order); absent → a large sentinel so an
+            // un-ordered lesson releases LAST rather than jumping the queue. The per-card Ord packs
+            // the lesson order and the card's index so cards release lesson-by-lesson, in card order.
+            int lessonOrder = root.TryGetProperty("order", out var o) && o.ValueKind == JsonValueKind.Number
+                ? o.GetInt32()
+                : 100_000;
+
             if (root.TryGetProperty("cards", out var cards) && cards.ValueKind == JsonValueKind.Array)
             {
+                int cardIndex = 0;
                 foreach (var card in cards.EnumerateArray())
                 {
                     string cardId = card.GetProperty("id").GetString()!;
@@ -51,7 +60,9 @@ public sealed class LessonStore
                         ItemId: $"{id}/{cardId}",
                         LessonId: id,
                         Prompt: card.TryGetProperty("prompt", out var p) ? p.GetString() : null,
-                        ExpectedOutput: card.TryGetProperty("expectedOutput", out var e) ? e.GetString() : null));
+                        ExpectedOutput: card.TryGetProperty("expectedOutput", out var e) ? e.GetString() : null,
+                        Ord: lessonOrder * 100 + cardIndex));
+                    cardIndex++;
                 }
             }
         }

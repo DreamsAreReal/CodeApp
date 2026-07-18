@@ -19,6 +19,9 @@ string botToken = cfg["Telegram:BotToken"] ?? "";
 bool devMode = cfg.GetValue("Auth:DevMode", true);
 int maxAgeSeconds = cfg.GetValue("Auth:MaxAgeSeconds", 86400);
 int runnerTimeout = cfg.GetValue("CSharpRunner:TimeoutSeconds", 10);
+// Daily new-card limit (ADR-0002): never-reviewed cards released per UTC day. Review cards
+// are never limited. Configurable (Fsrs:NewCardsPerDay) so tests can drive a different budget.
+int newCardsPerDay = cfg.GetValue("Fsrs:NewCardsPerDay", 10);
 string? sessionSecret = cfg["Auth:SessionSecret"];
 string dbPath = Path.Combine(builder.Environment.ContentRootPath, cfg["Database:Path"] ?? "codex.db");
 string lessonsDir = Path.Combine(builder.Environment.ContentRootPath, "seed", "lessons");
@@ -200,12 +203,25 @@ app.MapPost("/api/auth", (AuthRequest req) =>
     return Results.Ok(new { userId = user.TgId, created = user.Created, mode = "telegram", token, expiresAt });
 });
 
+// DEV-ONLY simulation clock: in dev mode, an `X-Sim-Now` header (ISO-8601) overrides the request's
+// "now" so verify/sim-14d can drive a deterministic multi-day timeline through the SAME clock used by
+// both the new-card limiter (/api/due) and the FSRS schedule (/api/review). Ignored entirely when
+// devMode is off (production), so it can never affect a real deployment.
+DateTimeOffset SimNow(HttpContext http, TimeProvider clock)
+{
+    if (devMode
+        && http.Request.Headers.TryGetValue("X-Sim-Now", out var v)
+        && DateTimeOffset.TryParse(v.ToString(), out var simNow))
+        return simNow.ToUniversalTime();
+    return clock.GetUtcNow();
+}
+
 // ---- GET /api/due : items due now for the authenticated user ----
 app.MapGet("/api/due", (HttpContext http, TimeProvider clock) =>
 {
     long userId = http.TgId();
-    var now = clock.GetUtcNow();
-    var due = db.GetDue(userId, now);
+    var now = SimNow(http, clock);
+    var due = db.GetDue(userId, now, newCardsPerDay);
     return Results.Ok(new { userId, now, count = due.Count, items = due });
 });
 
@@ -322,7 +338,7 @@ app.MapDelete("/api/progress", (HttpContext http) =>
 }).RequireRateLimiting(MutatingLimiter);
 
 // ---- POST /api/review : update FSRS state, return next due, append history ----
-app.MapPost("/api/review", (HttpContext http, ReviewRequest req, ReviewService reviews) =>
+app.MapPost("/api/review", (HttpContext http, ReviewRequest req, ReviewService reviews, TimeProvider clock) =>
 {
     if (req.Grade is < 1 or > 4)
         return Results.Json(new { error = Strings.InvalidGrade }, statusCode: 400);
@@ -330,7 +346,9 @@ app.MapPost("/api/review", (HttpContext http, ReviewRequest req, ReviewService r
     long userId = http.TgId();
     // Correct/Confidence are optional calibration signals (null when the client omits them) —
     // persisted alongside the grade; they never affect the FSRS schedule (grade alone drives that).
-    var result = reviews.Review(userId, req.ItemId, (Rating)req.Grade, req.Correct, req.Confidence);
+    // In dev, an X-Sim-Now header threads the SAME simulation clock as /api/due into the schedule.
+    var simNow = devMode && http.Request.Headers.ContainsKey("X-Sim-Now") ? (DateTimeOffset?)SimNow(http, clock) : null;
+    var result = reviews.Review(userId, req.ItemId, (Rating)req.Grade, req.Correct, req.Confidence, simNow);
 
     return Results.Ok(new
     {

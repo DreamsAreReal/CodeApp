@@ -5,6 +5,7 @@
   "module": "S1.1",
   "title": "Карта типовой системы",
   "status": "published",
+  "order": 1,
   "sources": [
     {
       "id": "ms-types",

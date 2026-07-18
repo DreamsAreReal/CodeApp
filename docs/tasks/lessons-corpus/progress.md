@@ -102,3 +102,18 @@
 - 2 упавших dotnet-теста после удаления сидов — не логика, а ссылки на несуществующие теперь id. Правка = ремап id, ассерты целы. 65/65 восстановлено.
 Доказательство (evidence/F2/migration.txt):
 - grep старых id (app/backend/verify, без bin/obj/dist/node_modules) = **0** (exit 1). Сироты: review_state/progress_events/items по T1./T2. = **0/0/0**. `/api/due ⊆ registry`: каталог 16 (3 CS+13 PY), fresh due=60, legacy в due=[]. PY нетронут: 13 сидов/53 карты/13 registry, DB PY items=53/review_state=3415. 5 харнессов ALL GREEN + `dotnet test` 65/65.
+
+## F3 — Лимит новых карт/день (NEW_CARDS_PER_DAY=10) + sim-14d [self-pass]
+Сделано:
+- Migration 4: `items.ord` (ключ порядка) + таблица `new_card_grants(user_id, item_id, granted_date)`. Сиды: top-level `"order"` (CS.S1: 1,2,3; PY M1..M13: 10..22); LessonStore пакует `Ord = order*100 + cardIndex`.
+- `Db.GetDue(userId, now, newCardsPerDay)`: review-карты без лимита; never-reviewed капятся `newCardsPerDay` ПЕРВЫХ грантов за UTC-день (гранты вечны → refresh не обходит, review не освобождает слот того же дня), порядок `items.ord`; pending (гранты не отвеченные) персистят. Config `Fsrs:NewCardsPerDay=10`.
+- `verify/sim-14d.mjs`: 14 виртуальных дней через dev-хедер `X-Sim-Now`, каждый день due→grade Good→next; ассерты new≤10 И due≤25; пейсинг под rate-limit (1.05s) + ретрай на 429.
+- Юнит-тесты: `Due_CapsNewCardsPerDay_InCurriculumOrder`, `Due_ReleasesNextBatch_OncePriorBatchReviewed`.
+Решения (отступление от design.md — фиксирую):
+- **Семантика лимита = «≤10 ПЕРВЫХ грантов/день»** (не «≤10 видимых new»): review одной карты не рефилит слот того же дня (иначе ломается инвариант «review → due−1»), пропущенная new-карта не теряется (персистит как pending). Контр-флуд обеспечивает G9-метрика due≤25 (sim-14d).
+- **Dev-only `X-Sim-Now` хедер** (НЕ было в design): единый sim-clock для `/api/due` + `/api/review` — иначе 14-дневную симуляцию против HTTP-бэка не прогнать (прод-clock реального времени, FakeClock только в юнит-тестах). Гейтед `devMode`; в Production игнорится (не влияет на прод). `ReviewService.Review(..., nowOverride=null)` — контракт байт-в-байт цел при null.
+Грабли:
+- Первая семантика («≤10 видимых new total») ломала инвариант review→due−1 (рефил слота) И тест day-2. Вторая («персист pending без капа total») → флуд на пропущенных днях (day2=20 new). Правило трёх правок не превышено: третья, финальная — «≤10 первых грантов/день», прошла все тесты + sim.
+- sim без пейсинга: rate-limit 60/мин рубил grade→карты оставались never-reviewed→накопление isNew. Починка: пейсинг 1.05s + ретрай 429 + ассерт `itemId==` (grade не мог тихо провалиться).
+Доказательство (evidence/F3/limiter.txt, sim-14d-output.txt):
+- fresh due день1 = **10** new (было 66/60), curl PASS. `node verify/sim-14d.mjs` exit 0 (14 дней, new≤10 & due≤25). `dotnet test` **67/67** (+2 лимитер-теста). Регресс харнессов: run/new-lessons/shell/loop ALL GREEN (PY.M1.names-objects/c1 — карта #8, в бюджете 10).

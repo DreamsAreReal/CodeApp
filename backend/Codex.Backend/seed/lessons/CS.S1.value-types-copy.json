@@ -5,6 +5,7 @@
   "module": "S1.2",
   "title": "Семантика копирования value types",
   "status": "published",
+  "order": 2,
   "sources": [
     {
       "id": "ms-value-types",

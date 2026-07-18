@@ -3,8 +3,10 @@ namespace Codex.Backend;
 /// <summary>A Telegram user, keyed by their Telegram id (from validated initData).</summary>
 public sealed record User(long TgId, DateTimeOffset Created);
 
-/// <summary>A reviewable item in the catalog, derived from a lesson card.</summary>
-public sealed record Item(string ItemId, string LessonId, string? Prompt, string? ExpectedOutput);
+/// <summary>A reviewable item in the catalog, derived from a lesson card. <see cref="Ord"/> is the
+/// curriculum-order key (Section.order → lesson order → card index) used to release never-reviewed
+/// cards deterministically under the daily new-card limit (ADR-0002).</summary>
+public sealed record Item(string ItemId, string LessonId, string? Prompt, string? ExpectedOutput, int Ord = 0);
 
 /// <summary>
 /// Durable FSRS memory state per (user, item). <see cref="State"/> and <see cref="Step"/> carry the

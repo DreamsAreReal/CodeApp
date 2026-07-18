@@ -3,73 +3,228 @@
   "track": "PY",
   "module": "M11.1",
   "title": "async/await: один поток, который не ждёт",
-  "prereqs": ["PY.M6.generators"],
+  "prereqs": [
+    "PY.M6.generators"
+  ],
   "version": "1.0.0",
   "volatility": "stable",
-  "sourceSnapshot": { "python": "3.12.13" },
+  "sourceSnapshot": {
+    "python": "3.12.13"
+  },
   "reviewBy": "2026-10-01",
   "status": "published",
-
+  "order": 20,
   "depth": {
     "intuition": [
-      { "id": "i1", "text": "Event loop — диспетчер на одном потоке: исполняется ровно одна задача, переключение происходит только в точках await (ожидание сети/диска). Это конкурентность, не параллельность — CPU-счёт async не ускоряет.", "source": "py-asyncio-task", "status": "fact" }
+      {
+        "id": "i1",
+        "text": "Event loop — диспетчер на одном потоке: исполняется ровно одна задача, переключение происходит только в точках await (ожидание сети/диска). Это конкурентность, не параллельность — CPU-счёт async не ускоряет.",
+        "source": "py-asyncio-task",
+        "status": "fact"
+      }
     ],
     "mechanics": [
-      { "id": "m1", "text": "Вызов async def строит coroutine-объект, тело не бежит: «Note that simply calling a coroutine will not schedule it to be executed». Запускает луп (await / asyncio.run / Task); забытая корутина пишет RuntimeWarning в stderr.", "source": "py-asyncio-task", "status": "fact" },
-      { "id": "m2", "text": "await — точка передачи управления, не блокировка и не новый поток: корутина приостановлена, поток занят другими задачами, возобновление ровно с места паузы.", "source": "pep-492", "status": "fact" },
-      { "id": "m3", "text": "gather стартует awaitables конкурентно и кладёт результаты в порядке АРГУМЕНТОВ («The order of result values corresponds to the order of awaitables in aws») — порядок завершения не влияет; спайк 3.12 ×2: done: fast раньше done: slow, res = ['slow', 'fast'].", "source": "py-asyncio-task", "status": "fact" },
-      { "id": "m4", "text": "Корутина — родственник генератора по реализации: send(None) ведёт её без лупа, cr_frame.f_locals показывает замороженный кадр, результат приезжает как StopIteration.value (спайк 3.12 ×2).", "source": "pep-492", "status": "fact" },
-      { "id": "m5", "text": "GIL: байткод исполняет один поток за раз — CPU-bound threading чередуется, не считает параллельно; на I/O замок отпускается. С 3.13 существует free-threaded сборка без GIL.", "source": "py-gloss-gil", "status": "fact" }
+      {
+        "id": "m1",
+        "text": "Вызов async def строит coroutine-объект, тело не бежит: «Note that simply calling a coroutine will not schedule it to be executed». Запускает луп (await / asyncio.run / Task); забытая корутина пишет RuntimeWarning в stderr.",
+        "source": "py-asyncio-task",
+        "status": "fact"
+      },
+      {
+        "id": "m2",
+        "text": "await — точка передачи управления, не блокировка и не новый поток: корутина приостановлена, поток занят другими задачами, возобновление ровно с места паузы.",
+        "source": "pep-492",
+        "status": "fact"
+      },
+      {
+        "id": "m3",
+        "text": "gather стартует awaitables конкурентно и кладёт результаты в порядке АРГУМЕНТОВ («The order of result values corresponds to the order of awaitables in aws») — порядок завершения не влияет; спайк 3.12 ×2: done: fast раньше done: slow, res = ['slow', 'fast'].",
+        "source": "py-asyncio-task",
+        "status": "fact"
+      },
+      {
+        "id": "m4",
+        "text": "Корутина — родственник генератора по реализации: send(None) ведёт её без лупа, cr_frame.f_locals показывает замороженный кадр, результат приезжает как StopIteration.value (спайк 3.12 ×2).",
+        "source": "pep-492",
+        "status": "fact"
+      },
+      {
+        "id": "m5",
+        "text": "GIL: байткод исполняет один поток за раз — CPU-bound threading чередуется, не считает параллельно; на I/O замок отпускается. С 3.13 существует free-threaded сборка без GIL.",
+        "source": "py-gloss-gil",
+        "status": "fact"
+      }
     ],
     "spec": [
-      { "id": "s1", "text": "«await, similarly to yield from, suspends execution of read_data coroutine until db.fetch awaitable completes and returns the result data.» (PEP 492, дословно; пример read_data/db.fetch)", "source": "pep-492", "status": "fact" }
+      {
+        "id": "s1",
+        "text": "«await, similarly to yield from, suspends execution of read_data coroutine until db.fetch awaitable completes and returns the result data.» (PEP 492, дословно; пример read_data/db.fetch)",
+        "source": "pep-492",
+        "status": "fact"
+      }
     ]
   },
   "edgeCases": [
-    { "id": "e1", "text": "Никогда-не-awaited корутина при смерти пишет в stderr «RuntimeWarning: coroutine 'fetch' was never awaited» (реальный лог спайка) — симптом забытого await в CI; в expect карточек не входит (stderr).", "source": "py-asyncio-task" },
-    { "id": "e2", "text": "Блокирующий вызов внутри корутины (time.sleep, requests.get) морозит ВЕСЬ луп: порядок печати спайка ×2 — block start / block end / other; с await asyncio.sleep — block start / other / block end.", "source": "py-asyncio-task" },
-    { "id": "e3", "text": "await вне async def — SyntaxError: «It is a SyntaxError to use await outside of an async def function» (PEP 492).", "source": "pep-492" }
+    {
+      "id": "e1",
+      "text": "Никогда-не-awaited корутина при смерти пишет в stderr «RuntimeWarning: coroutine 'fetch' was never awaited» (реальный лог спайка) — симптом забытого await в CI; в expect карточек не входит (stderr).",
+      "source": "py-asyncio-task"
+    },
+    {
+      "id": "e2",
+      "text": "Блокирующий вызов внутри корутины (time.sleep, requests.get) морозит ВЕСЬ луп: порядок печати спайка ×2 — block start / block end / other; с await asyncio.sleep — block start / other / block end.",
+      "source": "py-asyncio-task"
+    },
+    {
+      "id": "e3",
+      "text": "await вне async def — SyntaxError: «It is a SyntaxError to use await outside of an async def function» (PEP 492).",
+      "source": "pep-492"
+    }
   ],
   "misconceptions": [
-    { "wrong": "await можно писать в любой функции — это просто «подожди здесь».", "correction": "await легален только внутри async def (иначе SyntaxError, PEP 492); и даже в async def вызов корутины без await даёт coroutine-объект, а не результат — исполняет event loop (asyncio.run/await).", "source": "pep-492" },
-    { "wrong": "async/await ускоряет код сам по себе.", "correction": "await подряд не перекрывает ожидания (спайк: done: slow раньше done: fast — обгона нет); перекрытие даёт только конкурентный старт (gather/TaskGroup), и только на I/O-ожидании, не на CPU-счёте.", "source": "py-asyncio-task" }
+    {
+      "wrong": "await можно писать в любой функции — это просто «подожди здесь».",
+      "correction": "await легален только внутри async def (иначе SyntaxError, PEP 492); и даже в async def вызов корутины без await даёт coroutine-объект, а не результат — исполняет event loop (asyncio.run/await).",
+      "source": "pep-492"
+    },
+    {
+      "wrong": "async/await ускоряет код сам по себе.",
+      "correction": "await подряд не перекрывает ожидания (спайк: done: slow раньше done: fast — обгона нет); перекрытие даёт только конкурентный старт (gather/TaskGroup), и только на I/O-ожидании, не на CPU-счёте.",
+      "source": "py-asyncio-task"
+    }
   ],
-  "rationale": { "id": "r1", "text": "Одна модель «пауза кадра + диспетчер» объясняет весь стек: корутина = генератор по реализации (send/StopIteration), await = передача управления лупу, gather = конкурентный старт, GIL = почему это всё живёт в одном потоке. Мост из механизма в httpx.AsyncClient/Locust.", "source": "pep-492" },
-
+  "rationale": {
+    "id": "r1",
+    "text": "Одна модель «пауза кадра + диспетчер» объясняет весь стек: корутина = генератор по реализации (send/StopIteration), await = передача управления лупу, gather = конкурентный старт, GIL = почему это всё живёт в одном потоке. Мост из механизма в httpx.AsyncClient/Locust.",
+    "source": "pep-492"
+  },
   "sources": [
-    { "id": "pep-492", "kind": "pep", "url": "https://peps.python.org/pep-0492/", "section": "Await Expression · Coroutine objects", "date": "2026-07-16", "retrieved": "2026-07-16" },
-    { "id": "py-asyncio-task", "kind": "python-docs", "url": "https://docs.python.org/3/library/asyncio-task.html", "section": "Coroutines · Awaitables · gather", "date": "2026-07-16", "retrieved": "2026-07-16" },
-    { "id": "py-gloss-gil", "kind": "python-docs", "url": "https://docs.python.org/3/glossary.html#term-global-interpreter-lock", "section": "global interpreter lock", "date": "2026-07-16", "retrieved": "2026-07-16" },
-    { "id": "py-gloss-coro", "kind": "python-docs", "url": "https://docs.python.org/3/glossary.html#term-coroutine", "section": "coroutine", "date": "2026-07-16", "retrieved": "2026-07-16" },
-    { "id": "py-free-threading", "kind": "python-docs", "url": "https://docs.python.org/3/howto/free-threading-python.html", "section": "Overview", "date": "2026-07-16", "retrieved": "2026-07-16" }
+    {
+      "id": "pep-492",
+      "kind": "pep",
+      "url": "https://peps.python.org/pep-0492/",
+      "section": "Await Expression · Coroutine objects",
+      "date": "2026-07-16",
+      "retrieved": "2026-07-16"
+    },
+    {
+      "id": "py-asyncio-task",
+      "kind": "python-docs",
+      "url": "https://docs.python.org/3/library/asyncio-task.html",
+      "section": "Coroutines · Awaitables · gather",
+      "date": "2026-07-16",
+      "retrieved": "2026-07-16"
+    },
+    {
+      "id": "py-gloss-gil",
+      "kind": "python-docs",
+      "url": "https://docs.python.org/3/glossary.html#term-global-interpreter-lock",
+      "section": "global interpreter lock",
+      "date": "2026-07-16",
+      "retrieved": "2026-07-16"
+    },
+    {
+      "id": "py-gloss-coro",
+      "kind": "python-docs",
+      "url": "https://docs.python.org/3/glossary.html#term-coroutine",
+      "section": "coroutine",
+      "date": "2026-07-16",
+      "retrieved": "2026-07-16"
+    },
+    {
+      "id": "py-free-threading",
+      "kind": "python-docs",
+      "url": "https://docs.python.org/3/howto/free-threading-python.html",
+      "section": "Overview",
+      "date": "2026-07-16",
+      "retrieved": "2026-07-16"
+    }
   ],
   "identifiers": [
-    { "symbol": "asyncio.run", "kind": "function", "minVersion": "3.7" },
-    { "symbol": "asyncio.gather", "kind": "function", "minVersion": "3.2" },
-    { "symbol": "asyncio.sleep", "kind": "function", "minVersion": "3.2" },
-    { "symbol": "asyncio.TaskGroup", "kind": "class", "minVersion": "3.11" },
-    { "symbol": "coroutine.send", "kind": "method", "minVersion": "3.5" },
-    { "symbol": "coroutine.cr_frame", "kind": "attribute", "minVersion": "3.5" }
+    {
+      "symbol": "asyncio.run",
+      "kind": "function",
+      "minVersion": "3.7"
+    },
+    {
+      "symbol": "asyncio.gather",
+      "kind": "function",
+      "minVersion": "3.2"
+    },
+    {
+      "symbol": "asyncio.sleep",
+      "kind": "function",
+      "minVersion": "3.2"
+    },
+    {
+      "symbol": "asyncio.TaskGroup",
+      "kind": "class",
+      "minVersion": "3.11"
+    },
+    {
+      "symbol": "coroutine.send",
+      "kind": "method",
+      "minVersion": "3.5"
+    },
+    {
+      "symbol": "coroutine.cr_frame",
+      "kind": "attribute",
+      "minVersion": "3.5"
+    }
   ],
-
   "viz": {
     "model": "event-loop-timeline",
     "renderer": "svg",
     "interaction": "responding",
     "entities": [
-      { "id": "loop.f1", "zone": "loop", "label": "fetch(1)" },
-      { "id": "gat.ord", "zone": "gat", "label": "порядок аргументов" },
-      { "id": "th1.gil", "zone": "th1", "label": "GIL · замок" },
-      { "id": "blk.frz", "zone": "blk", "label": "time.sleep" }
+      {
+        "id": "loop.f1",
+        "zone": "loop",
+        "label": "fetch(1)"
+      },
+      {
+        "id": "gat.ord",
+        "zone": "gat",
+        "label": "порядок аргументов"
+      },
+      {
+        "id": "th1.gil",
+        "zone": "th1",
+        "label": "GIL · замок"
+      },
+      {
+        "id": "blk.frz",
+        "zone": "blk",
+        "label": "time.sleep"
+      }
     ],
     "trace": [
-      { "op": "move", "target": "loop.f1", "caption": "задача на await отдаёт управление — луп занимает поток следующей", "signal": "loop.f1" },
-      { "op": "annotate", "target": "gat.ord", "caption": "результаты gather — в порядке аргументов, не завершения: ['slow', 'fast']", "signal": "gat.ord" },
-      { "op": "move", "target": "th1.gil", "caption": "GIL-жетон переезжает между потоками: байткод исполняет один поток за раз", "signal": "th1.gil" },
-      { "op": "annotate", "target": "blk.frz", "caption": "блокирующий вызов морозит весь луп: other печатается только после сна", "signal": "blk.frz" }
+      {
+        "op": "move",
+        "target": "loop.f1",
+        "caption": "задача на await отдаёт управление — луп занимает поток следующей",
+        "signal": "loop.f1"
+      },
+      {
+        "op": "annotate",
+        "target": "gat.ord",
+        "caption": "результаты gather — в порядке аргументов, не завершения: ['slow', 'fast']",
+        "signal": "gat.ord"
+      },
+      {
+        "op": "move",
+        "target": "th1.gil",
+        "caption": "GIL-жетон переезжает между потоками: байткод исполняет один поток за раз",
+        "signal": "th1.gil"
+      },
+      {
+        "op": "annotate",
+        "target": "blk.frz",
+        "caption": "блокирующий вызов морозит весь луп: other печатается только после сна",
+        "signal": "blk.frz"
+      }
     ]
   },
-
   "cards": [
     {
       "id": "c1",
@@ -79,9 +234,16 @@
       "code": "import asyncio\n\nasync def fetch():\n    return 42\n\nprint(type(fetch()).__name__)\nprint(asyncio.run(fetch()))",
       "expectedOutput": "coroutine\n42",
       "verify": "execute",
-      "sourceRefs": ["py-asyncio-task"],
-      "distractors": ["42\n42", "int\n42"],
-      "fsrsSeed": { "desiredRetention": 0.9 }
+      "sourceRefs": [
+        "py-asyncio-task"
+      ],
+      "distractors": [
+        "42\n42",
+        "int\n42"
+      ],
+      "fsrsSeed": {
+        "desiredRetention": 0.9
+      }
     },
     {
       "id": "c2",
@@ -91,9 +253,16 @@
       "code": "import asyncio\n\nasync def task(name, delay):\n    await asyncio.sleep(delay)\n    return name\n\nasync def main():\n    res = await asyncio.gather(task(\"slow\", 0.05), task(\"fast\", 0.01))\n    print(res)\n\nasyncio.run(main())",
       "expectedOutput": "['slow', 'fast']",
       "verify": "execute",
-      "sourceRefs": ["py-asyncio-task"],
-      "distractors": ["['fast', 'slow']", "('slow', 'fast')"],
-      "fsrsSeed": { "desiredRetention": 0.9 }
+      "sourceRefs": [
+        "py-asyncio-task"
+      ],
+      "distractors": [
+        "['fast', 'slow']",
+        "('slow', 'fast')"
+      ],
+      "fsrsSeed": {
+        "desiredRetention": 0.9
+      }
     },
     {
       "id": "c3",
@@ -103,9 +272,16 @@
       "code": "import asyncio\n\nasync def task(name, delay):\n    await asyncio.sleep(delay)\n    print(\"done:\", name)\n    return name\n\nasync def main():\n    res = await asyncio.gather(task(\"slow\", 0.05), task(\"fast\", 0.01))\n    print(res)\n\nasyncio.run(main())",
       "expectedOutput": "done: fast\ndone: slow\n['slow', 'fast']",
       "verify": "execute",
-      "sourceRefs": ["py-asyncio-task"],
-      "distractors": ["done: slow\ndone: fast\n['slow', 'fast']", "done: fast\ndone: slow\n['fast', 'slow']"],
-      "fsrsSeed": { "desiredRetention": 0.9 }
+      "sourceRefs": [
+        "py-asyncio-task"
+      ],
+      "distractors": [
+        "done: slow\ndone: fast\n['slow', 'fast']",
+        "done: fast\ndone: slow\n['fast', 'slow']"
+      ],
+      "fsrsSeed": {
+        "desiredRetention": 0.9
+      }
     },
     {
       "id": "c4",
@@ -115,9 +291,16 @@
       "code": "import asyncio\nimport time\n\nasync def blocker():\n    print(\"block start\")\n    time.sleep(0.05)\n    print(\"block end\")\n\nasync def other():\n    print(\"other\")\n\nasync def main():\n    await asyncio.gather(blocker(), other())\n\nasyncio.run(main())",
       "expectedOutput": "block start\nblock end\nother",
       "verify": "execute",
-      "sourceRefs": ["py-asyncio-task"],
-      "distractors": ["block start\nother\nblock end", "other\nblock start\nblock end"],
-      "fsrsSeed": { "desiredRetention": 0.9 }
+      "sourceRefs": [
+        "py-asyncio-task"
+      ],
+      "distractors": [
+        "block start\nother\nblock end",
+        "other\nblock start\nblock end"
+      ],
+      "fsrsSeed": {
+        "desiredRetention": 0.9
+      }
     }
   ]
 }

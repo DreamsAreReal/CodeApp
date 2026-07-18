@@ -6,64 +6,195 @@
   "prereqs": [],
   "version": "1.0.0",
   "volatility": "stable",
-  "sourceSnapshot": { "python": "3.12.13" },
+  "sourceSnapshot": {
+    "python": "3.12.13"
+  },
   "reviewBy": "2026-10-01",
   "status": "published",
-
+  "order": 10,
   "depth": {
     "intuition": [
-      { "id": "i1", "text": "Имя ссылается на объект; присваивание привязывает имя, а не копирует значение. Тип живёт у объекта, не у имени.", "source": "py-datamodel", "status": "fact" }
+      {
+        "id": "i1",
+        "text": "Имя ссылается на объект; присваивание привязывает имя, а не копирует значение. Тип живёт у объекта, не у имени.",
+        "source": "py-datamodel",
+        "status": "fact"
+      }
     ],
     "mechanics": [
-      { "id": "m1", "text": "b = a создаёт второе имя того же объекта (aliasing): мутация через любое имя видна через все остальные; a is b == True.", "source": "py-datamodel", "status": "fact" },
-      { "id": "m2", "text": "Дефолт аргумента вычисляется один раз — при def — и живёт в __defaults__ объекта-функции; mutable-дефолт копит состояние между вызовами.", "source": "py-defaults", "status": "fact" },
-      { "id": "m3", "text": "Объект живёт по счётчику ссылок (ноль — освобождается немедленно); кольца ссылок находит циклический сборщик, дополняющий refcounting.", "source": "py-gc", "status": "fact" }
+      {
+        "id": "m1",
+        "text": "b = a создаёт второе имя того же объекта (aliasing): мутация через любое имя видна через все остальные; a is b == True.",
+        "source": "py-datamodel",
+        "status": "fact"
+      },
+      {
+        "id": "m2",
+        "text": "Дефолт аргумента вычисляется один раз — при def — и живёт в __defaults__ объекта-функции; mutable-дефолт копит состояние между вызовами.",
+        "source": "py-defaults",
+        "status": "fact"
+      },
+      {
+        "id": "m3",
+        "text": "Объект живёт по счётчику ссылок (ноль — освобождается немедленно); кольца ссылок находит циклический сборщик, дополняющий refcounting.",
+        "source": "py-gc",
+        "status": "fact"
+      }
     ],
     "spec": [
-      { "id": "s1", "text": "«Every object has an identity, a type and a value.» (дословно, reference/datamodel)", "source": "py-datamodel", "status": "fact" }
+      {
+        "id": "s1",
+        "text": "«Every object has an identity, a type and a value.» (дословно, reference/datamodel)",
+        "source": "py-datamodel",
+        "status": "fact"
+      }
     ]
   },
   "edgeCases": [
-    { "id": "e1", "text": "Неизменяемость tuple — мелкая: t = (1, [2, 3]); t[1].append(4) работает → (1, [2, 3, 4]); TypeError только на перепривязке слота t[0] = 9.", "source": "py-datamodel" },
-    { "id": "e2", "text": "CPython кэширует int от -5 до 256: identity малых int — деталь реализации, is на числах — баг; is оставь для None (PEP 8).", "source": "py-int-cache" }
+    {
+      "id": "e1",
+      "text": "Неизменяемость tuple — мелкая: t = (1, [2, 3]); t[1].append(4) работает → (1, [2, 3, 4]); TypeError только на перепривязке слота t[0] = 9.",
+      "source": "py-datamodel"
+    },
+    {
+      "id": "e2",
+      "text": "CPython кэширует int от -5 до 256: identity малых int — деталь реализации, is на числах — баг; is оставь для None (PEP 8).",
+      "source": "py-int-cache"
+    }
   ],
   "misconceptions": [
-    { "wrong": "Переменная в Python хранит значение.", "correction": "Имя ссылается на объект: все значения — объекты в куче CPython, присваивание лишь привязывает имя. Отсюда aliasing, mutable default и правила is/==.", "source": "py-datamodel" },
-    { "wrong": "items=[] в сигнатуре даёт свежий список на каждый вызов.", "correction": "Дефолт вычисляется один раз — при def («Default values are created exactly once, when the function is defined»); все вызовы делят один список.", "source": "py-faq-defaults" }
+    {
+      "wrong": "Переменная в Python хранит значение.",
+      "correction": "Имя ссылается на объект: все значения — объекты в куче CPython, присваивание лишь привязывает имя. Отсюда aliasing, mutable default и правила is/==.",
+      "source": "py-datamodel"
+    },
+    {
+      "wrong": "items=[] в сигнатуре даёт свежий список на каждый вызов.",
+      "correction": "Дефолт вычисляется один раз — при def («Default values are created exactly once, when the function is defined»); все вызовы делят один список.",
+      "source": "py-faq-defaults"
+    }
   ],
-  "rationale": { "id": "r1", "text": "Единая модель «имена → объекты» объясняет весь фундамент трека: aliasing, mutable default, refcount и поведение is — не как отдельные факты, а как следствия привязки имён.", "source": "py-datamodel" },
-
+  "rationale": {
+    "id": "r1",
+    "text": "Единая модель «имена → объекты» объясняет весь фундамент трека: aliasing, mutable default, refcount и поведение is — не как отдельные факты, а как следствия привязки имён.",
+    "source": "py-datamodel"
+  },
   "sources": [
-    { "id": "py-datamodel", "kind": "python-docs", "url": "https://docs.python.org/3/reference/datamodel.html#objects-values-and-types", "section": "Objects, values and types", "date": "2026-07-15", "retrieved": "2026-07-15" },
-    { "id": "py-defaults", "kind": "python-docs", "url": "https://docs.python.org/3/tutorial/controlflow.html#default-argument-values", "section": "Default argument values", "date": "2026-07-15", "retrieved": "2026-07-15" },
-    { "id": "py-faq-defaults", "kind": "python-docs", "url": "https://docs.python.org/3/faq/programming.html#why-are-default-values-shared-between-objects", "section": "Why are default values shared between objects?", "date": "2026-07-15", "retrieved": "2026-07-15" },
-    { "id": "py-gc", "kind": "python-docs", "url": "https://docs.python.org/3/library/gc.html", "section": "gc — Garbage Collector interface", "date": "2026-07-15", "retrieved": "2026-07-15" },
-    { "id": "py-int-cache", "kind": "python-docs", "url": "https://docs.python.org/3/c-api/long.html#c.PyLong_FromLong", "section": "Integer Objects", "date": "2026-07-15", "retrieved": "2026-07-15" },
-    { "id": "pep8", "kind": "pep", "url": "https://peps.python.org/pep-0008/#programming-recommendations", "section": "Programming Recommendations", "date": "2026-07-15", "retrieved": "2026-07-15" },
-    { "id": "py-dis", "kind": "python-docs", "url": "https://docs.python.org/3/library/dis.html", "section": "dis — Disassembler for Python bytecode", "date": "2026-07-15", "retrieved": "2026-07-15" }
+    {
+      "id": "py-datamodel",
+      "kind": "python-docs",
+      "url": "https://docs.python.org/3/reference/datamodel.html#objects-values-and-types",
+      "section": "Objects, values and types",
+      "date": "2026-07-15",
+      "retrieved": "2026-07-15"
+    },
+    {
+      "id": "py-defaults",
+      "kind": "python-docs",
+      "url": "https://docs.python.org/3/tutorial/controlflow.html#default-argument-values",
+      "section": "Default argument values",
+      "date": "2026-07-15",
+      "retrieved": "2026-07-15"
+    },
+    {
+      "id": "py-faq-defaults",
+      "kind": "python-docs",
+      "url": "https://docs.python.org/3/faq/programming.html#why-are-default-values-shared-between-objects",
+      "section": "Why are default values shared between objects?",
+      "date": "2026-07-15",
+      "retrieved": "2026-07-15"
+    },
+    {
+      "id": "py-gc",
+      "kind": "python-docs",
+      "url": "https://docs.python.org/3/library/gc.html",
+      "section": "gc — Garbage Collector interface",
+      "date": "2026-07-15",
+      "retrieved": "2026-07-15"
+    },
+    {
+      "id": "py-int-cache",
+      "kind": "python-docs",
+      "url": "https://docs.python.org/3/c-api/long.html#c.PyLong_FromLong",
+      "section": "Integer Objects",
+      "date": "2026-07-15",
+      "retrieved": "2026-07-15"
+    },
+    {
+      "id": "pep8",
+      "kind": "pep",
+      "url": "https://peps.python.org/pep-0008/#programming-recommendations",
+      "section": "Programming Recommendations",
+      "date": "2026-07-15",
+      "retrieved": "2026-07-15"
+    },
+    {
+      "id": "py-dis",
+      "kind": "python-docs",
+      "url": "https://docs.python.org/3/library/dis.html",
+      "section": "dis — Disassembler for Python bytecode",
+      "date": "2026-07-15",
+      "retrieved": "2026-07-15"
+    }
   ],
   "identifiers": [
-    { "symbol": "list.append", "kind": "method", "minVersion": "3.0" },
-    { "symbol": "function.__defaults__", "kind": "attribute", "minVersion": "3.0" },
-    { "symbol": "gc", "kind": "module", "minVersion": "3.0" }
+    {
+      "symbol": "list.append",
+      "kind": "method",
+      "minVersion": "3.0"
+    },
+    {
+      "symbol": "function.__defaults__",
+      "kind": "attribute",
+      "minVersion": "3.0"
+    },
+    {
+      "symbol": "gc",
+      "kind": "module",
+      "minVersion": "3.0"
+    }
   ],
-
   "viz": {
     "model": "names-to-objects",
     "renderer": "svg",
     "interaction": "responding",
     "entities": [
-      { "id": "names.x", "zone": "names", "label": "x", "value": null },
-      { "id": "objs.int257", "zone": "objs", "label": "int 257" }
+      {
+        "id": "names.x",
+        "zone": "names",
+        "label": "x",
+        "value": null
+      },
+      {
+        "id": "objs.int257",
+        "zone": "objs",
+        "label": "int 257"
+      }
     ],
     "trace": [
-      { "op": "annotate", "target": "names.x", "caption": "x = 257: имя привязано к объекту", "signal": "names.x" },
-      { "op": "alloc", "target": "objs.int257", "caption": "все значения — объекты в куче CPython", "signal": "objs.int257" },
-      { "op": "highlight", "target": "objs.int257", "caption": "y = x: второе имя, refs: 2 — копий значения нет", "signal": "objs.int257" }
+      {
+        "op": "annotate",
+        "target": "names.x",
+        "caption": "x = 257: имя привязано к объекту",
+        "signal": "names.x"
+      },
+      {
+        "op": "alloc",
+        "target": "objs.int257",
+        "caption": "все значения — объекты в куче CPython",
+        "signal": "objs.int257"
+      },
+      {
+        "op": "highlight",
+        "target": "objs.int257",
+        "caption": "y = x: второе имя, refs: 2 — копий значения нет",
+        "signal": "objs.int257"
+      }
     ],
-    "predictAt": [2]
+    "predictAt": [
+      2
+    ]
   },
-
   "codePreamble": "",
   "cards": [
     {
@@ -74,9 +205,17 @@
       "code": "def add_item(item, items=[]):\n    items.append(item)\n    return items\n\nprint(add_item(\"a\"))\nprint(add_item(\"b\"))",
       "expectedOutput": "['a']\n['a', 'b']",
       "verify": "execute",
-      "sourceRefs": ["py-defaults", "py-faq-defaults"],
-      "distractors": ["['a']\n['b']", "['a', 'b']\n['a', 'b']"],
-      "fsrsSeed": { "desiredRetention": 0.9 }
+      "sourceRefs": [
+        "py-defaults",
+        "py-faq-defaults"
+      ],
+      "distractors": [
+        "['a']\n['b']",
+        "['a', 'b']\n['a', 'b']"
+      ],
+      "fsrsSeed": {
+        "desiredRetention": 0.9
+      }
     },
     {
       "id": "c2",
@@ -86,9 +225,16 @@
       "code": "a = [1, 2, 3]\nb = a\nb.append(4)\nprint(a)\nprint(a is b)",
       "expectedOutput": "[1, 2, 3, 4]\nTrue",
       "verify": "execute",
-      "sourceRefs": ["py-datamodel"],
-      "distractors": ["[1, 2, 3]\nTrue", "[1, 2, 3, 4]\nFalse"],
-      "fsrsSeed": { "desiredRetention": 0.9 }
+      "sourceRefs": [
+        "py-datamodel"
+      ],
+      "distractors": [
+        "[1, 2, 3]\nTrue",
+        "[1, 2, 3, 4]\nFalse"
+      ],
+      "fsrsSeed": {
+        "desiredRetention": 0.9
+      }
     },
     {
       "id": "c3",
@@ -98,9 +244,16 @@
       "code": "t = (1, [2, 3])\nt[1].append(4)\nprint(t)",
       "expectedOutput": "(1, [2, 3, 4])",
       "verify": "execute",
-      "sourceRefs": ["py-datamodel"],
-      "distractors": ["TypeError", "(1, [2, 3])"],
-      "fsrsSeed": { "desiredRetention": 0.9 }
+      "sourceRefs": [
+        "py-datamodel"
+      ],
+      "distractors": [
+        "TypeError",
+        "(1, [2, 3])"
+      ],
+      "fsrsSeed": {
+        "desiredRetention": 0.9
+      }
     },
     {
       "id": "c4",
@@ -110,14 +263,26 @@
       "code": "def add_item(item, items=None):\n    if items is None:\n        items = []\n    items.append(item)\n    return items\n\nprint(add_item(\"a\"))\nprint(add_item(\"b\"))",
       "expectedOutput": "['a']\n['b']",
       "verify": "execute",
-      "sourceRefs": ["py-defaults", "py-faq-defaults"],
-      "distractors": ["['a']\n['a', 'b']", "['b']\n['b']"],
-      "fsrsSeed": { "desiredRetention": 0.9 }
+      "sourceRefs": [
+        "py-defaults",
+        "py-faq-defaults"
+      ],
+      "distractors": [
+        "['a']\n['a', 'b']",
+        "['b']\n['b']"
+      ],
+      "fsrsSeed": {
+        "desiredRetention": 0.9
+      }
     }
   ],
-
   "verification": {
-    "gates": { "G-SCHEMA": "pass", "G-CITE": "pass", "G-EXEC-PY": "pass", "G-VIZ": "pass" },
+    "gates": {
+      "G-SCHEMA": "pass",
+      "G-CITE": "pass",
+      "G-EXEC-PY": "pass",
+      "G-VIZ": "pass"
+    },
     "citationCoverage": 1.0,
     "execLog": "docs/tasks/python-track/evidence/py-cards/census-log.txt",
     "reviewDate": "2026-07-15"

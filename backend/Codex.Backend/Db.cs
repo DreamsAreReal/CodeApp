@@ -132,6 +132,29 @@ public sealed class Database
         """;
 
     /// <summary>
+    /// Migration 4 — the daily new-card limiter (ADR-0002). Two additions, both safe on the live
+    /// prod DB:
+    ///   • items.ord — a curriculum-order integer (Section.order → lesson order) used to release
+    ///     never-reviewed cards deterministically. NULLABLE, default 0 for existing rows; SeedItem
+    ///     back-fills the real value from the seed on every startup, so prod rows get their order
+    ///     as soon as the app restarts.
+    ///   • new_card_grants — records which never-reviewed card was FIRST surfaced to a user on which
+    ///     UTC day. /api/due counts a user's grants for today and only surfaces up to NEW_CARDS_PER_DAY
+    ///     new cards per day; review cards are never limited. A grant is permanent (the card counts
+    ///     against that day's budget even if not answered), so refreshing /api/due cannot bypass the cap.
+    /// </summary>
+    private const string Migration4NewCardLimiter = """
+        ALTER TABLE items ADD COLUMN ord INTEGER NOT NULL DEFAULT 0;
+        CREATE TABLE IF NOT EXISTS new_card_grants (
+            user_id      INTEGER NOT NULL,
+            item_id      TEXT NOT NULL,
+            granted_date TEXT NOT NULL,
+            PRIMARY KEY (user_id, item_id)
+        );
+        CREATE INDEX IF NOT EXISTS ix_grants_user_date ON new_card_grants (user_id, granted_date);
+        """;
+
+    /// <summary>
     /// Ordered, FORWARD-ONLY migration scripts. Index i is the script that bumps user_version
     /// from i to i+1 (so Migrations[0] == migration 1). Append here for future schema changes;
     /// each new script runs exactly once, in order, inside a transaction. Never edit/reorder a
@@ -142,6 +165,7 @@ public sealed class Database
         Migration1Schema,
         Migration2StateColumns,
         Migration3CalibrationColumns,
+        Migration4NewCardLimiter,
     };
 
     /// <summary>
@@ -206,17 +230,19 @@ public sealed class Database
         using var conn = Open();
         using var cmd = conn.CreateCommand();
         cmd.CommandText = """
-            INSERT INTO items (item_id, lesson_id, prompt, expected_output)
-            VALUES ($id, $lesson, $prompt, $expected)
+            INSERT INTO items (item_id, lesson_id, prompt, expected_output, ord)
+            VALUES ($id, $lesson, $prompt, $expected, $ord)
             ON CONFLICT(item_id) DO UPDATE SET
                 lesson_id = excluded.lesson_id,
                 prompt = excluded.prompt,
-                expected_output = excluded.expected_output;
+                expected_output = excluded.expected_output,
+                ord = excluded.ord;
             """;
         cmd.Parameters.AddWithValue("$id", item.ItemId);
         cmd.Parameters.AddWithValue("$lesson", item.LessonId);
         cmd.Parameters.AddWithValue("$prompt", (object?)item.Prompt ?? DBNull.Value);
         cmd.Parameters.AddWithValue("$expected", (object?)item.ExpectedOutput ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("$ord", item.Ord);
         cmd.ExecuteNonQuery();
     }
 
@@ -329,37 +355,119 @@ public sealed class Database
     }
 
     /// <summary>
-    /// Items due for review now: every catalog item whose state is due (due &lt;= now) or
-    /// that the user has never seen (new items are due immediately).
+    /// Items due for review now, with the daily new-card limit applied (ADR-0002). Returns:
+    ///   • every REVIEW card (the user has a review_state row) whose due &lt;= now — UNLIMITED;
+    ///   • up to <paramref name="newCardsPerDay"/> NEVER-REVIEWED cards per UTC day, released in
+    ///     curriculum order (items.ord). A released new card is recorded in new_card_grants for
+    ///     TODAY, so it keeps counting against today's budget even across repeated /api/due calls
+    ///     (a refresh cannot bypass the cap), and tomorrow a fresh budget releases the next batch.
+    /// Review cards come first (schedule priority), then today's new cards in curriculum order.
     /// </summary>
-    public List<DueItem> GetDue(long userId, DateTimeOffset now)
+    public List<DueItem> GetDue(long userId, DateTimeOffset now, int newCardsPerDay)
     {
+        string today = DateOnly.FromDateTime(now.UtcDateTime).ToString("yyyy-MM-dd");
         using var conn = Open();
-        using var cmd = conn.CreateCommand();
-        cmd.CommandText = """
-            SELECT i.item_id, i.prompt, rs.stability, rs.difficulty, rs.due, rs.reps, rs.last_review
-            FROM items i
-            LEFT JOIN review_state rs ON rs.item_id = i.item_id AND rs.user_id = $u
-            WHERE rs.item_id IS NULL OR rs.due <= $now
-            ORDER BY (rs.due IS NULL) DESC, rs.due ASC, i.item_id ASC;
-            """;
-        cmd.Parameters.AddWithValue("$u", userId);
-        cmd.Parameters.AddWithValue("$now", Iso(now));
-        using var r = cmd.ExecuteReader();
-        var list = new List<DueItem>();
-        while (r.Read())
+        using var tx = conn.BeginTransaction();
+
+        // 1) Review cards (has a review_state row, due now) — never limited.
+        var review = new List<DueItem>();
+        using (var cmd = conn.CreateCommand())
         {
-            bool isNew = r.IsDBNull(2);
-            list.Add(new DueItem(
-                ItemId: r.GetString(0),
-                Prompt: r.IsDBNull(1) ? null : r.GetString(1),
-                IsNew: isNew,
-                Stability: isNew ? null : r.GetDouble(2),
-                Difficulty: isNew ? null : r.GetDouble(3),
-                Due: isNew ? null : ParseIso(r.GetString(4)),
-                Reps: isNew ? 0 : r.GetInt32(5),
-                LastReview: r.IsDBNull(6) ? null : ParseIso(r.GetString(6))));
+            cmd.Transaction = tx;
+            cmd.CommandText = """
+                SELECT i.item_id, i.prompt, rs.stability, rs.difficulty, rs.due, rs.reps, rs.last_review
+                FROM items i
+                JOIN review_state rs ON rs.item_id = i.item_id AND rs.user_id = $u
+                WHERE rs.due <= $now
+                ORDER BY rs.due ASC, i.ord ASC, i.item_id ASC;
+                """;
+            cmd.Parameters.AddWithValue("$u", userId);
+            cmd.Parameters.AddWithValue("$now", Iso(now));
+            using var r = cmd.ExecuteReader();
+            while (r.Read())
+                review.Add(new DueItem(
+                    ItemId: r.GetString(0),
+                    Prompt: r.IsDBNull(1) ? null : r.GetString(1),
+                    IsNew: false,
+                    Stability: r.GetDouble(2),
+                    Difficulty: r.GetDouble(3),
+                    Due: ParseIso(r.GetString(4)),
+                    Reps: r.GetInt32(5),
+                    LastReview: r.IsDBNull(6) ? null : ParseIso(r.GetString(6))));
         }
+
+        // 2) Today's new-card budget = newCardsPerDay minus the cards FIRST granted today (ADR-0002:
+        //    the limit is on new cards *introduced* per calendar day). Grants are permanent, so a
+        //    refresh never re-opens budget and reviewing a card does not free a same-day slot.
+        int grantedToday;
+        using (var cnt = conn.CreateCommand())
+        {
+            cnt.Transaction = tx;
+            cnt.CommandText = "SELECT COUNT(*) FROM new_card_grants WHERE user_id = $u AND granted_date = $d;";
+            cnt.Parameters.AddWithValue("$u", userId);
+            cnt.Parameters.AddWithValue("$d", today);
+            grantedToday = Convert.ToInt32(cnt.ExecuteScalar());
+        }
+        int budget = Math.Max(0, newCardsPerDay - grantedToday);
+
+        // 3) Surface every never-reviewed card ALREADY granted (any day — a skipped new card is never
+        //    lost, it stays pending until answered), then release up to `budget` fresh cards, granting
+        //    each for today. Only a FIRST grant spends budget; a pending card does not re-spend it. So
+        //    at most newCardsPerDay new cards are *introduced* per day. All in curriculum order (ord).
+        var newItems = new List<(string ItemId, string? Prompt, int Ord)>();
+        using (var cmd = conn.CreateCommand())
+        {
+            cmd.Transaction = tx;
+            cmd.CommandText = """
+                SELECT i.item_id, i.prompt, i.ord, g.granted_date
+                FROM items i
+                LEFT JOIN review_state rs ON rs.item_id = i.item_id AND rs.user_id = $u
+                LEFT JOIN new_card_grants g ON g.item_id = i.item_id AND g.user_id = $u
+                WHERE rs.item_id IS NULL
+                ORDER BY i.ord ASC, i.item_id ASC;
+                """;
+            cmd.Parameters.AddWithValue("$u", userId);
+            using var r = cmd.ExecuteReader();
+            int released = 0;
+            var toGrant = new List<string>();
+            while (r.Read())
+            {
+                string itemId = r.GetString(0);
+                string? prompt = r.IsDBNull(1) ? null : r.GetString(1);
+                int ord = r.GetInt32(2);
+                bool alreadyGranted = !r.IsDBNull(3);
+                if (alreadyGranted)
+                {
+                    newItems.Add((itemId, prompt, ord)); // pending grant — always keep it visible.
+                }
+                else if (released < budget)
+                {
+                    newItems.Add((itemId, prompt, ord)); // release a fresh card and grant it for today.
+                    toGrant.Add(itemId);
+                    released++;
+                }
+                // never-granted and budget spent -> released on a later day.
+            }
+            r.Close();
+            foreach (var itemId in toGrant)
+            {
+                using var ins = conn.CreateCommand();
+                ins.Transaction = tx;
+                ins.CommandText = "INSERT OR IGNORE INTO new_card_grants (user_id, item_id, granted_date) VALUES ($u, $i, $d);";
+                ins.Parameters.AddWithValue("$u", userId);
+                ins.Parameters.AddWithValue("$i", itemId);
+                ins.Parameters.AddWithValue("$d", today);
+                ins.ExecuteNonQuery();
+            }
+        }
+
+        tx.Commit();
+
+        // Review first (schedule priority), then today's new cards in curriculum order.
+        var list = new List<DueItem>(review);
+        foreach (var (itemId, prompt, _) in newItems.OrderBy(x => x.Ord).ThenBy(x => x.ItemId))
+            list.Add(new DueItem(ItemId: itemId, Prompt: prompt, IsNew: true,
+                Stability: null, Difficulty: null, Due: null, Reps: 0, LastReview: null));
         return list;
     }
 

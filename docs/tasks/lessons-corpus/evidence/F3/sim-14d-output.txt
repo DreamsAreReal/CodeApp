@@ -1,0 +1,31 @@
+== sim-14d: fresh user 676351, 14 days from 2026-09-01, caps new<=10 due<=25 ==
+  ✓ day 01 (2026-09-01): new cards 10 <= 10
+  ✓ day 01 (2026-09-01): total due 10 <= 25
+  ✓ day 02 (2026-09-02): new cards 10 <= 10
+  ✓ day 02 (2026-09-02): total due 20 <= 25
+  ✓ day 03 (2026-09-03): new cards 10 <= 10
+  ✓ day 03 (2026-09-03): total due 20 <= 25
+  ✓ day 04 (2026-09-04): new cards 10 <= 10
+  ✓ day 04 (2026-09-04): total due 20 <= 25
+  ✓ day 05 (2026-09-05): new cards 10 <= 10
+  ✓ day 05 (2026-09-05): total due 20 <= 25
+  ✓ day 06 (2026-09-06): new cards 10 <= 10
+  ✓ day 06 (2026-09-06): total due 20 <= 25
+  ✓ day 07 (2026-09-07): new cards 0 <= 10
+  ✓ day 07 (2026-09-07): total due 10 <= 25
+  ✓ day 08 (2026-09-08): new cards 0 <= 10
+  ✓ day 08 (2026-09-08): total due 0 <= 25
+  ✓ day 09 (2026-09-09): new cards 0 <= 10
+  ✓ day 09 (2026-09-09): total due 10 <= 25
+  ✓ day 10 (2026-09-10): new cards 0 <= 10
+  ✓ day 10 (2026-09-10): total due 10 <= 25
+  ✓ day 11 (2026-09-11): new cards 0 <= 10
+  ✓ day 11 (2026-09-11): total due 10 <= 25
+  ✓ day 12 (2026-09-12): new cards 0 <= 10
+  ✓ day 12 (2026-09-12): total due 10 <= 25
+  ✓ day 13 (2026-09-13): new cards 0 <= 10
+  ✓ day 13 (2026-09-13): total due 10 <= 25
+  ✓ day 14 (2026-09-14): new cards 0 <= 10
+  ✓ day 14 (2026-09-14): total due 10 <= 25
+
+==== ALL GREEN · sim-14d · user=676351 ====

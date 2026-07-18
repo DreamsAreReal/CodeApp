@@ -5,6 +5,7 @@
   "module": "S1.3",
   "title": "Классы и виртуальная диспетчеризация",
   "status": "published",
+  "order": 3,
   "sources": [
     {
       "id": "ms-poly",
