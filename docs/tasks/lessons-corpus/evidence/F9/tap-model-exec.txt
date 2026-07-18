@@ -1,0 +1,23 @@
+# F9 · S2.1 CS.S2.tap-model — real run-csharp measurements (POST /api/authoring/run-csharp)
+date: 2026-07-18
+
+## SIGNATURE PANEL (s1) — async runs synchronously up to first await; thread continuity (thread-id)
+$ POST run-csharp {caller thread id; async Work() prints before/after await thread id; await/return}
+stdout: "caller: T27\nbefore await: T27\ngot task, result later\nafter await: T27\n42\n"
+  (caller and before-await = SAME thread T27 -> async ran synchronously on caller's thread, no new thread)
+
+## c1 — same-thread before await (runnable card)
+$ POST run-csharp {caller id; async Work prints same/diff; await Task.Delay(10)}
+stdout: "same"   -> expect "same"
+
+## c2 — concurrency: start both then WhenAll ~1x (not 2x sequential)
+$ POST run-csharp {Slow(100) x2 started then WhenAll; elapsed < 160 ? 1x : 2x}
+stdout: "1x"   -> expect "1x"   (concurrent, NOT parallel/threads)
+
+## c3 — async completes synchronously when no incomplete awaitable
+$ POST run-csharp {async Fast(){ await Task.CompletedTask; return 7; }; t.IsCompleted, t.Result}
+stdout: "True 7\n"   -> expect "True 7"
+
+## G4 anti-echo: every card verify.run == "dotnet run"; expect NOT a substring of run. PASS.
+## Source URL resolves 200 (TAP model). GT-M4 myths: 0 (async is not threads/parallelism M-async-1/2;
+##   async without await is synchronous M-async-5; await is not an exit / finally not run at suspension M-sm-6).

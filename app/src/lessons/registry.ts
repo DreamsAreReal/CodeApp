@@ -266,12 +266,37 @@ const CS_S1: Section = {
   ],
 };
 
+// Section S2 «Async/Await и Task» (RS-03 §2 раздел 2 · 9 уроков). Prereq S1 → S2 is a soft
+// recommendation (design «Опыт»: S1 → S7 → S17 → S18 → S2); ordered after S1 in the curriculum.
+const CS_S2: Section = {
+  id: "CS.S2",
+  title: "Async/Await и Task",
+  order: 2,
+  prereqs: ["CS.S1"],
+  lessons: [
+    entry(
+      {
+        id: "CS.S2.tap-model",
+        track: "CS",
+        section: "CS.S2",
+        title: "TAP-модель: async/await как абстракция",
+        kicker: "C# вглубь · S2 · async ≠ поток",
+        icon: "async",
+        subtitle: "async/await, приостановка, Task, без потоков",
+        estMinutes: 10,
+        cards: 3,
+      },
+      () => import("./cs/tap-model.ts").then((m) => m.tapModel),
+    ),
+  ],
+};
+
 const CS_TRACK: Track = {
   id: "CS",
   title: S.trackCsDeepLabel,
   sub: S.trackCsDeepSub,
   badge: S.trackNewBadge,
-  sections: [CS_S1],
+  sections: [CS_S1, CS_S2],
 };
 
 // The legacy flat C# track and its 6 old lessons were removed in the F2 migration (their

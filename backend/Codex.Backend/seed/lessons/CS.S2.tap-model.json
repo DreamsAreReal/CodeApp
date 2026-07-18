@@ -1,0 +1,55 @@
+{
+  "id": "CS.S2.tap-model",
+  "track": "CS",
+  "section": "CS.S2",
+  "module": "S2.1",
+  "title": "TAP-модель: async/await как абстракция",
+  "status": "published",
+  "order": 11,
+  "sources": [
+    {
+      "id": "ms-tap",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/task-asynchronous-programming-model",
+      "date": "2025-10-13"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "async method runs synchronously up to first await: same thread as caller?",
+      "code": "using System; using System.Threading; using System.Threading.Tasks; int caller = Thread.CurrentThread.ManagedThreadId; async Task<int> Work(){ Console.Write(Thread.CurrentThread.ManagedThreadId==caller?\"same\":\"diff\"); await Task.Delay(10); return 42; } await Work();",
+      "expectedOutput": "same",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-tap"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "start both tasks then WhenAll -> concurrent ~1x (not 2x)",
+      "code": "using System; using System.Diagnostics; using System.Threading.Tasks; async Task<int> Slow(int ms,int v){ await Task.Delay(ms); return v; } var sw=Stopwatch.StartNew(); var a=Slow(100,1); var b=Slow(100,2); await Task.WhenAll(a,b); Console.Write(sw.ElapsedMilliseconds < 160 ? \"1x\" : \"2x\");",
+      "expectedOutput": "1x",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-tap"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "async completes synchronously when no incomplete awaitable: IsCompleted True, Result 7",
+      "code": "using System; using System.Threading.Tasks; async Task<int> Fast(){ await Task.CompletedTask; return 7; } var t = Fast(); Console.WriteLine($\"{t.IsCompleted} {t.Result}\");",
+      "expectedOutput": "True 7",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-tap"
+      ]
+    }
+  ]
+}
