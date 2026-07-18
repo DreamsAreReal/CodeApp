@@ -1,0 +1,61 @@
+{
+  "id": "CS.S1.casts",
+  "track": "CS",
+  "section": "CS.S1",
+  "module": "S1.10",
+  "title": "Приведения: is / as / cast / typeof",
+  "status": "published",
+  "order": 10,
+  "sources": [
+    {
+      "id": "ms-cast",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/type-testing-and-cast",
+      "date": "2026-01-20"
+    },
+    {
+      "id": "ms-boxing",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/types/boxing-and-unboxing",
+      "date": "2025-10-13"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "object o=\"hello\": o is int, o as string, (int)o (try/catch) — три поведения?",
+      "code": "using System; object o = \"hello\"; bool isInt = o is int; string asStr = o as string; string castResult; try { int n = (int)o; castResult = n.ToString(); } catch (InvalidCastException) { castResult = \"InvalidCastException\"; } Console.WriteLine($\"{isInt} {asStr} {castResult}\");",
+      "expectedOutput": "False hello InvalidCastException",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-cast"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "object iBoxed=42: iBoxed is int, iBoxed is long (is не делает numeric)?",
+      "code": "using System; object iBoxed = 42; Console.WriteLine($\"{iBoxed is int} {iBoxed is long}\");",
+      "expectedOutput": "True False",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-cast"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "typeof exact vs is inheritance: d=new Dog(): ==typeof(Dog), ==typeof(Animal), is Animal?",
+      "code": "using System; class Animal {} class Dog : Animal {} object d = new Dog(); Console.WriteLine($\"{d.GetType() == typeof(Dog)} {d.GetType() == typeof(Animal)} {d is Animal}\");",
+      "expectedOutput": "True False True",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-cast"
+      ]
+    }
+  ]
+}

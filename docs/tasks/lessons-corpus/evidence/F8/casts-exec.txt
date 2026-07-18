@@ -1,0 +1,24 @@
+# F8 · S1.10 CS.S1.casts — real run-csharp measurements (POST /api/authoring/run-csharp)
+date: 2026-07-18
+
+## c1 / SIGNATURE PANEL — is (bool) vs as (null) vs (T)cast (throws): three behaviors, one object
+$ POST run-csharp {object o="hello"; o is int; o as string; (int)o via try/catch}
+stdout: "False hello InvalidCastException\n"   -> expect "False hello InvalidCastException"
+  (is -> bool False, no throw; as -> "hello"; cast -> InvalidCastException)
+
+## c2 — is takes boxing/unboxing but NOT numeric conversions
+$ POST run-csharp {object iBoxed=42; iBoxed is int, iBoxed is long}
+stdout: "True False\n"   -> expect "True False"   (unbox to exact int True; int->long numeric NOT considered)
+
+## c3 — typeof (exact match, no inheritance) vs is (inheritance)
+$ POST run-csharp {Dog:Animal; object d=new Dog(); d.GetType()==typeof(Dog), ==typeof(Animal), d is Animal}
+stdout: "True False True\n"   -> expect "True False True"
+
+## supporting: as returns null on failure (NEVER throws); is pattern matching
+$ POST run-csharp {object o=42; o as string == null; (o as string) is null} -> "True True\n"
+$ POST run-csharp {object o="hi"; if (o is string str) matched: str.Length} -> "matched: 2\n"
+
+## G4 anti-echo: every card verify.run == "dotnet run"; expect NOT a substring of run. PASS.
+## Source URLs resolve 200 (type-testing-and-cast, boxing-and-unboxing). GT-M3 red flags: 0
+##   (as returns null NEVER throws; cast throws; is returns bool not the object; typeof takes a
+##   type NAME not an expression; no unsourced IL-level boxing claim about is).

@@ -249,6 +249,20 @@ const CS_S1: Section = {
       },
       () => import("./cs/nullable.ts").then((m) => m.nullable),
     ),
+    entry(
+      {
+        id: "CS.S1.casts",
+        track: "CS",
+        section: "CS.S1",
+        title: "Приведения: is / as / cast / typeof",
+        kicker: "C# вглубь · S1 · три поведения",
+        icon: "types",
+        subtitle: "is (bool), as (null), cast (бросает), typeof",
+        estMinutes: 9,
+        cards: 3,
+      },
+      () => import("./cs/casts.ts").then((m) => m.casts),
+    ),
   ],
 };
 
