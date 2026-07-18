@@ -344,6 +344,20 @@ const CS_S2: Section = {
       },
       () => import("./cs/valuetask.ts").then((m) => m.valueTask),
     ),
+    entry(
+      {
+        id: "CS.S2.tap-contract",
+        track: "CS",
+        section: "CS.S2",
+        title: "TAP-контракт изнутри: hot, статусы, автомат",
+        kicker: "C# вглубь · S2 · уровень ниже",
+        icon: "async",
+        subtitle: "hot task, sync до await, статусы, стейт-машина",
+        estMinutes: 10,
+        cards: 3,
+      },
+      () => import("./cs/tap-contract.ts").then((m) => m.tapContract),
+    ),
   ],
 };
 

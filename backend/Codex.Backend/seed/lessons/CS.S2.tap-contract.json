@@ -1,0 +1,61 @@
+{
+  "id": "CS.S2.tap-contract",
+  "track": "CS",
+  "section": "CS.S2",
+  "module": "S2.6",
+  "title": "TAP-контракт изнутри: hot, статусы, автомат",
+  "status": "published",
+  "order": 16,
+  "sources": [
+    {
+      "id": "ms-tap-ov",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/standard/asynchronous-programming-patterns/task-based-asynchronous-pattern-tap",
+      "date": "2023-03-13"
+    },
+    {
+      "id": "ms-async",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/async",
+      "date": "2024-09-01"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "A task from a TAP/async method is hot (Status != Created); calling Start() on it throws InvalidOperationException",
+      "code": "using System; using System.Threading.Tasks; async Task<int> Tap(){ await Task.Delay(1); return 1; } var hot = Tap(); bool started = hot.Status != TaskStatus.Created; string err=\"none\"; try { hot.Start(); } catch (InvalidOperationException){ err=\"InvalidOperationException\"; } await hot; Console.WriteLine($\"hot={started} start={err}\");",
+      "expectedOutput": "hot=True start=InvalidOperationException",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-tap-ov"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "An async method runs synchronously until its first await: A (pre-await) then B (caller) then C (resume) => ABC",
+      "code": "using System; using System.Threading.Tasks; async Task Work(){ Console.Write(\"A\"); await Task.Delay(10); Console.Write(\"C\"); } var t = Work(); Console.Write(\"B\"); await t; Console.WriteLine();",
+      "expectedOutput": "ABC",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-async"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "The three completed task statuses RanToCompletion / Faulted / Canceled all have IsCompleted == true",
+      "code": "using System; using System.Threading; using System.Threading.Tasks; var ok = Task.FromResult(1); var fault = Task.FromException(new Exception(\"x\")); var canc = Task.FromCanceled(new CancellationToken(true)); Console.WriteLine($\"{ok.Status} {fault.Status} {canc.Status} | completed={ok.IsCompleted && fault.IsCompleted && canc.IsCompleted}\");",
+      "expectedOutput": "RanToCompletion Faulted Canceled | completed=True",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-tap-ov"
+      ]
+    }
+  ]
+}

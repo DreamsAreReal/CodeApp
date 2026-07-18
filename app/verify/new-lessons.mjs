@@ -31,6 +31,7 @@ const EXPECT = [
   { id: "CS.S1.classes-virtual-dispatch", segs: 5, ev: "CS-VDISPATCH" },
   { id: "CS.S2.return-types", segs: 5, ev: "CS-RETTYPES" },
   { id: "CS.S2.valuetask", segs: 5, ev: "CS-VALUETASK" },
+  { id: "CS.S2.tap-contract", segs: 5, ev: "CS-TAPCONTRACT" },
   { id: "PY.M1.names-objects", segs: 8, ev: "PY-NAMES" },
   { id: "PY.M2.collections-hash", segs: 5, ev: "PY-COLL" },
   { id: "PY.M3.args-unpacking", segs: 4, ev: "PY-ARGS" },

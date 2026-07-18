@@ -1,0 +1,16 @@
+# CS.S2.tap-contract (S2.6) — exec evidence (run-csharp, Roslyn top-level)
+# Captured 2026-07-18T22:13:59Z against backend health 200
+# Signature machine panel = the compiler async state machine (ilspycmd artifact:
+#   evidence/F10/state-machine-decompile.txt), corroborated live by reflection below.
+
+## c1 — a TAP-method task is HOT (already running, not Created); Start() on it throws (expect: hot=True start=InvalidOperationException)
+{"success":true,"stdout":"hot=True start=InvalidOperationException\n","error":null,"elapsedMs":16}
+
+## c2 — async runs SYNCHRONOUSLY until the first await: A (pre-await) then B (caller) then C (resume) => ABC (expect: ABC)
+{"success":true,"stdout":"ABC\n","error":null,"elapsedMs":25}
+
+## c3 — the three COMPLETED statuses, all IsCompleted==true; cancel => Canceled (no throw from the task) (expect: RanToCompletion Faulted Canceled | completed=True)
+{"success":true,"stdout":"RanToCompletion Faulted Canceled | completed=True\n","error":null,"elapsedMs":13}
+
+## (machine panel) live reflection of the REAL compiler-generated state machine: implements IAsyncStateMachine + has state field + AsyncTaskMethodBuilder + hoisted local (expect: True True True True)
+{"success":true,"stdout":"True True True True\n","error":null,"elapsedMs":17}
