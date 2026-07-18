@@ -130,3 +130,16 @@
 - `\bиз\b` в ассерте run.mjs не матчит кириллицу (нет `\w`) → заменил на `\d+ из \d+`.
 Доказательство (evidence/F4/tournament-section-nav.md + 8 png):
 - E2E: раздел-заголовок «Типовая система / 0 из 3 пройдено» рендерится; ровно 1 маркер «дальше» = `CS.S1.type-system-map` (первый по prereq); урок открывается из раздела; 0 console errors (ассерты в run.mjs). build entry 112.57 KB (<G1+10%). 5 харнессов ALL GREEN (axe 0 serious/critical на home).
+
+## F5 — Авторская обвязка: verify:all + density(G7) + анти-echo lint [self-pass]
+Сделано:
+- `verify/density.mjs` (G7): на урок ≥4 сегмента & ≥2 карты (авторский трек; PY grandfathered на count-gate — G5), ≥90% сегментов ДИНАМИЧНЫ (диф node/edge/code-pointer между кадрами), анти-echo lint. Экспорт чистых чекеров (`lessonViolations/isDynamic/runEchoesAnswer`), CLI-гейт по `import.meta.url`. Флаг `--lessons`, unknown id → error.
+- `verify/density-fixtures.mjs`: self-test — echo-карта ловится, статичный сегмент ловится, count-gate ловится, легальный урок чист, filename-run НЕ ложно-срабатывает.
+- `verify/all.mjs` + npm `verify:all`: FULL = 5 браузер-харнессов + density + fixtures; `-- --lessons <ids>` = INCREMENTAL (density scoped + fixtures, без браузера).
+Решения (отступления — фиксирую):
+- **Анти-echo lint = «run эмитит ответ»**, не наивная подстрока: `run` реальных карт — команда-файл (`python3.12 X_c3.py`, `dotnet run`), где expect="3" ложно матчит "python3.**3**.12"/"c3". Ловим leak только когда expect внутри emit-вызова (`echo`/`print`/`Console.Write`/...). Иначе frozen-PY (валидный G4, реальный stdout) падал бы 6 ложными.
+- **PY count-gate grandfathered** (≥4 сег/≥2 карты — только авторский трек): PY.M12/M13 легально по 3 сегмента, трек неприкосновенен (G5). Динамика + анти-echo применяются ко ВСЕМ (это корректность, не длина).
+Грабли:
+- Первая версия lint (expect как подстрока question ИЛИ run) давала 6 ложных на frozen-PY (predict-output ЗАКОННО показывает код, порождающий вывод; run-имя-файла содержит цифры). Снёс «в question»-чек целиком, run-чек сузил до emit-вызова. Правило трёх правок не превышено.
+Доказательство (evidence/F5/authoring-harness.txt):
+- fixtures ALL GREEN (violators ловятся, легальный чист, 0 ложных). density на 16 уроках ALL GREEN. `npm run verify:all` FULL = **7/7 шагов ALL GREEN**, exit 0. `-- --lessons CS.S1.value-types-copy` = 2 шага (density scoped + fixtures), без браузера, ALL GREEN.

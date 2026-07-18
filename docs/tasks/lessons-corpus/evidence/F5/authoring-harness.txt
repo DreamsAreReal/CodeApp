@@ -1,0 +1,33 @@
+# F5 — authoring harness: verify:all + density(G7) + anti-echo lint + --lessons. command + output
+date: 2026-07-18
+
+## Deliverables
+- npm script `verify:all` -> verify/all.mjs: FULL = 5 browser harnesses + density + fixtures;
+  `-- --lessons <ids>` = INCREMENTAL (density lint on listed lessons + fixture self-test, no browser).
+- verify/density.mjs (G7): per lesson — >=4 segments & >=2 cards (authored track; PY grandfathered
+  on count-gate, brief G5), >=90% segments DYNAMIC (nodes/edges/code-pointer change between frames),
+  anti-echo lint (verify.run must not be crafted to echo verify.expect). --lessons flag; unknown id -> error.
+- verify/density-fixtures.mjs: self-test proving the lint CATCHES violators and PASSES legal lessons.
+
+## ACCEPTANCE 1 — fixtures: violators caught, legal passes, no false positive
+$ node verify/density-fixtures.mjs
+  ✓ a legal lesson (4 dyn seg, 2 exec cards, no echo) passes clean
+  ✓ an echo card (run: 'echo 42', expect: '42') is caught by the anti-echo lint
+  ✓ a filename-exec run containing the digit is NOT flagged (no false positive)
+  ✓ a static segment (identical frames) is caught by the dynamic-ratio gate
+  ✓ a <4-segment authored lesson is caught by the count gate
+  ✓ a <2-card authored lesson is caught by the count gate
+  ==== ALL GREEN · density-fixtures ====
+
+## ACCEPTANCE 2 — density over all 16 real lessons: ALL GREEN
+CS.S1.type-system-map 5/5 dyn 2c · value-types-copy 6/6 dyn 3c · classes-virtual-dispatch 5/5 dyn 2c
+PY.* all pass (dynamics + anti-echo; count-gate skipped as frozen). ==== ALL GREEN · density ====
+
+## ACCEPTANCE 3 — verify:all FULL (7 steps) ALL GREEN
+density-fixtures · density · run · viz-fit · shell · new-lessons · loop  -> each ALL GREEN
+===== verify:all ALL GREEN =====   exit 0
+
+## ACCEPTANCE 4 — --lessons runs ONLY the listed lesson (+ fixtures), no browser
+$ npm run verify:all -- --lessons CS.S1.value-types-copy
+density-fixtures ALL GREEN · density "over 1 lesson(s) [--lessons]": CS.S1.value-types-copy ✓
+===== verify:all ALL GREEN =====   (2 steps, no browser harnesses)

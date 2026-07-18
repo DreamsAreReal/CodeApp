@@ -10,7 +10,8 @@
     "build:deploy": "tsc --noEmit && VITE_API_BASE= vite build --outDir dist-deploy --emptyOutDir",
     "deploy:pack": "npm run build:deploy && rm -rf ../backend/Codex.Backend/wwwroot && cp -r dist-deploy ../backend/Codex.Backend/wwwroot",
     "preview": "vite preview --port 4173",
-    "verify": "node verify/run.mjs"
+    "verify": "node verify/run.mjs",
+    "verify:all": "node verify/all.mjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.12.1",
