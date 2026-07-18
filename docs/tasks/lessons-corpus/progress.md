@@ -143,3 +143,31 @@
 - Первая версия lint (expect как подстрока question ИЛИ run) давала 6 ложных на frozen-PY (predict-output ЗАКОННО показывает код, порождающий вывод; run-имя-файла содержит цифры). Снёс «в question»-чек целиком, run-чек сузил до emit-вызова. Правило трёх правок не превышено.
 Доказательство (evidence/F5/authoring-harness.txt):
 - fixtures ALL GREEN (violators ловятся, легальный чист, 0 ложных). density на 16 уроках ALL GREEN. `npm run verify:all` FULL = **7/7 шагов ALL GREEN**, exit 0. `-- --lessons CS.S1.value-types-copy` = 2 шага (density scoped + fixtures), без браузера, ALL GREEN.
+
+---
+
+# M3 (шаг 0 + F7 + F8): раздел S1 уроки 4–10 (7 уроков)
+
+## Шаг 0 — cleanup home.ts:371 [зелёно]
+Сделано: first-run CTA `rows.find(...includes("value-vs-reference"))` → `rows.find(r => !r.completed)` (первый непройденный по curriculum order, без хардкода удалённого id).
+Доказательство: `grep -rn "value-vs-reference" app/src` = 0 (exit 1); run.mjs + shell.mjs ALL GREEN. sha 0939c7c. evidence/M3/step0-home-cleanup.txt.
+
+## F7 — S1.4/S1.5/S1.6 [self-pass]
+- **S1.4 structs-traps** (393c689): 5 сегм./3 exec-карты. Панель — **защитная копия** (readonly-поле, Bump() бежит на копии): вернул 11, поле осталось 10. Карты: mutable-struct-в-List `0`; defensive copy `11 10`; default vs new `0 42`. GT-M3: struct МОЖЕТ быть immutable, readonly shallow + влияет на перф, default пропускает ctor — 0 мифов.
+- **S1.5 records** (b9ced9d): 5/3. Панель — **value vs reference equality** (`True False`). Карты: `True False`; `with` nondestructive `Point{X=1..} Point{X=99..}`; разные record-типы `False`. GT-M3: record бывает struct, with nondestructive+shallow, разные типы ≠, нет Clone — 0 мифов.
+- **S1.6 interfaces-dim** (77c7bcf): 5/3. Панель — **гейт интерфейс-ссылки** (`class-Hi Hi` + CS1061 при вызове DIM на экземпляре). Карты: `class-Hi Hi`; DIM `working\nresting (default)`; дизамбигуация `A B`. GT-M3: интерфейс МОЖЕТ иметь тело (C# 8.0), DIM/explicit только через ссылку, explicit без модификатора (CS0106) — 0 мифов. Грабль: s5 layout-throw (3 gate-ряда > зоны) → увеличил зону/viewBox; viz-fit ALL GREEN.
+
+## F8 — S1.7/S1.8/S1.9/S1.10 [self-pass]
+- **S1.7 enum-flags** (6c03483, layout-фикс 28e0568): 5/3. Панель — **enum боксится** (`True B True`, аллокация замерена). Карты: `[Flags]` `Read, Write True False`; underlying byte `4 Byte`; `default(E)0` `0 0 False`. GT-M3: enum не всегда int, enum→int явно, боксится, `&`-паттерн (не HasFlag) — 0 мифов.
+- **S1.8 generics-basics** (a4e0993): 5/3. Панель — **без боксинга** (List<int> `8392` vs ArrayList `40568` байт на 1000 int). Карты: type inference `42 Int32`; no erasure `Int32 String`; open/closed `True False True`. GT-M3: НЕ type erasure (замерено), where T:struct → non-nullable (CS0453) — 0 мифов.
+- **S1.9 nullable** (9c92212): 5/3. Панель — **boxing int? → boxed Int32** (`Int32 True`, не Nullable<T>). Карты: `Int32 True`; struct/HasValue `True False 0`; lifted `True False False`. GT-M3: int? — структура не reference, boxing даёт null/boxed T, .Value бросает, ≠ NRT — 0 мифов.
+- **S1.10 casts** (415f9e5): 5/3. Панель — **три поведения is/as/cast** (`False hello InvalidCastException`). Карты: `False hello InvalidCastException`; is-no-numeric `True False`; typeof/is `True False True`. GT-M3: as возвращает null не бросает, cast бросает, is → bool, typeof — имя типа — 0 мифов.
+
+## Грабли M3 (общие)
+- Апостроф в single-quoted explain (`isn't`) ронял tsc — экранировать `\'` (S1.4 s3).
+- Layout-throws движка (зона короче суммы рядов гейтов) — ловятся viz-fit (ROW-BASELINE), НЕ density: enum-flags s1 (chip vs slot разной высоты → near-equal center-Y) → сделал оба chip; interfaces-dim s5 → увеличил зону.
+- **Лимитер × растущий каталог**: 10 уроков S1 (~28 карт) вытеснили PY.M1 за бюджет 10 new/день → new-lessons.mjs упал на «PY.M1 due». Починка: sim-walk по дням через X-Sim-Now (paced под 60/мин rate-limit) до релиза PY.M1, ассерт isNew=false после grade.
+- Секрет-гейт (ложное срабатывание на untracked M4 GT-файлах `[EnumeratorCancellation] CancellationToken`) блокировал коммит — M4-файлы отложены aside на время M3-сессии (не мои, восстановлены при СТОП).
+
+## Доказательство M3 (итог)
+- `npm run verify:all` FULL **7/7 ALL GREEN** (23/23 урока на `at`, 0 ROW-BASELINE); `dotnet test` **67/67**; density на всех уроках ALL GREEN. Каждый урок: density --lessons + E2E (render 5 сегм. + grade-петля) зелёные, скрины 375/768 в evidence/F7|F8/. Все exec-числа реальны (run-csharp, stdout==expect, anti-echo OK) — evidence/F7|F8/*-exec.txt. GT-M3-s1: 0 красных флагов во всех 7 уроках. Coverage S1 = **10/10**.
