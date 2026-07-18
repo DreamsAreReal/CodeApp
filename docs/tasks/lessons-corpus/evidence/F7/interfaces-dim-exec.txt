@@ -1,0 +1,23 @@
+# F7 · S1.6 CS.S1.interfaces-dim — real run-csharp measurements (POST /api/authoring/run-csharp)
+date: 2026-07-18
+
+## c1 / SIGNATURE PANEL — explicit implementation: class var vs interface var over one object
+$ POST run-csharp {interface IGreet; class En with explicit IGreet.Hello()="Hi" + public Hello()="class-Hi"; e.Hello(), i.Hello()}
+stdout: "class-Hi Hi\n"   -> expect "class-Hi Hi"   (class var -> public; interface var -> explicit)
+
+## c2 — DIM version resilience: interface gains Rest() default, old class Bee (only Work) still runs
+$ POST run-csharp {interface IWorker{Work(); Rest()=>...default}; class Bee:IWorker{Work()}; w.Work(); w.Rest()}
+stdout: "working\nresting (default)\n"   -> expect "working\nresting (default)"
+
+## c3 — two interfaces same member name -> explicit disambiguation
+$ POST run-csharp {IA.Id()="A", IB.Id()="B"; (IA)c.Id(), (IB)c.Id()}
+stdout: "A B\n"   -> expect "A B"
+
+## supporting (in-lesson fact): DIM NOT accessible on class instance (compile error proves the gate)
+$ POST run-csharp {interface ILog{Info()=>...}; class Svc:ILog{}; s.Info("x")}
+error: CS1061: 'Svc' does not contain a definition for 'Info'   (DIM only via interface reference)
+
+## G4 anti-echo: every card verify.run == "dotnet run"; expect NOT a substring of run. PASS.
+## Source URLs resolve 200 (interfaces, explicit-interface-implementation, DIM tutorial).
+## GT-M3 red flags: 0 (interfaces CAN have method body since C# 8.0; DIM/explicit only via interface ref;
+##   explicit has no access modifier CS0106; DIM is not multiple inheritance of state).

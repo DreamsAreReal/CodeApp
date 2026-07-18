@@ -1,0 +1,67 @@
+{
+  "id": "CS.S1.interfaces-dim",
+  "track": "CS",
+  "section": "CS.S1",
+  "module": "S1.6",
+  "title": "Интерфейсы: explicit-реализация и DIM",
+  "status": "published",
+  "order": 6,
+  "sources": [
+    {
+      "id": "ms-iface",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/types/interfaces",
+      "date": "2026-04-10"
+    },
+    {
+      "id": "ms-explicit",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/interfaces/explicit-interface-implementation",
+      "date": "2021-03-24"
+    },
+    {
+      "id": "ms-dim",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/advanced-topics/interface-implementation/default-interface-methods-versions",
+      "date": "2024-11-01"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "explicit IGreet.Hello() + public Hello(): e.Hello() (class) и i.Hello() (interface)?",
+      "code": "using System; interface IGreet { string Hello(); } class En : IGreet { string IGreet.Hello() => \"Hi\"; public string Hello() => \"class-Hi\"; } var e = new En(); IGreet i = e; Console.WriteLine($\"{e.Hello()} {i.Hello()}\");",
+      "expectedOutput": "class-Hi Hi",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-explicit"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "DIM: interface с Rest() default, class Bee только Work(); w.Work(); w.Rest()?",
+      "code": "using System; interface IWorker { void Work(); void Rest() => Console.WriteLine(\"resting (default)\"); } class Bee : IWorker { public void Work() => Console.WriteLine(\"working\"); } IWorker w = new Bee(); w.Work(); w.Rest();",
+      "expectedOutput": "working\nresting (default)",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-dim"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "два интерфейса IA/IB с Id(); explicit A и B: (IA)c.Id() и (IB)c.Id()?",
+      "code": "using System; interface IA { string Id(); } interface IB { string Id(); } class C : IA, IB { string IA.Id() => \"A\"; string IB.Id() => \"B\"; } var c = new C(); Console.WriteLine($\"{((IA)c).Id()} {((IB)c).Id()}\");",
+      "expectedOutput": "A B",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-explicit"
+      ]
+    }
+  ]
+}

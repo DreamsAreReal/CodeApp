@@ -193,6 +193,20 @@ const CS_S1: Section = {
       },
       () => import("./cs/records.ts").then((m) => m.records),
     ),
+    entry(
+      {
+        id: "CS.S1.interfaces-dim",
+        track: "CS",
+        section: "CS.S1",
+        title: "Интерфейсы: explicit-реализация и DIM",
+        kicker: "C# вглубь · S1 · диспетчер контракта",
+        icon: "types",
+        subtitle: "explicit vs implicit, default interface methods",
+        estMinutes: 10,
+        cards: 3,
+      },
+      () => import("./cs/interfaces-dim.ts").then((m) => m.interfacesDim),
+    ),
   ],
 };
 
