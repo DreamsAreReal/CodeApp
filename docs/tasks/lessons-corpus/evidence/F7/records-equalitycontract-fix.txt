@@ -1,0 +1,27 @@
+# F7 · S1.5 records — EqualityContract fix: live build proof (POST /api/authoring/run-csharp)
+date: 2026-07-18
+
+## Finding (adversarial audit, confirmed): the lesson wrongly listed 'override EqualityContract'
+## as a compile error. Live Learn: «You can declare this property explicitly.»
+
+## PROOF 1a — a base record CAN declare EqualityContract explicitly (virtual): COMPILES
+$ run-csharp {record Point(int X) { protected virtual Type EqualityContract => typeof(Point); } ...}
+{"success":true,"stdout":"1\n","error":null,"elapsedMs":73}
+## PROOF 1b — a DERIVED record CAN declare override EqualityContract: COMPILES
+$ run-csharp {record Base(int X); record Derived(int X,int Y):Base(X){ protected override Type EqualityContract => typeof(Derived); } ...}
+{"success":true,"stdout":"1 2\n","error":null,"elapsedMs":79}
+## CONTRAST (correctly still forbidden) — override Object.Equals in a record: COMPILE ERROR
+$ run-csharp {record P(int X){ public override bool Equals(object o)=>true; } ...}
+{"success":false,"stdout":"","error":"(1,54): error CS0111: Type \u0027P\u0027 already defines a member called \u0027Equals\u0027 with the same parameter types","elapsedMs":37}
+## CONTRAST (correctly still forbidden) — operator == in a record: COMPILE ERROR
+$ run-csharp {record P(int X){ public static bool operator ==(P a,P b)=>true; ... } ...}
+{"success":false,"stdout":"","error":"(1,61): error CS0111: Type \u0027P\u0027 already defines a member called \u0027op_Equality\u0027 with the same parameter types\n(1,111): error CS0111: Type \u0027P\u0027 already defines a member called \u0027op_Inequality\u0027 with the same parameter types","elapsedMs":40}
+## Live Learn quote (records / Value equality, fetch 2026-07-18):
+## «If the record type is derived from a base record type, protected override Type EqualityContract { get; };.
+##  You can declare this property explicitly.»
+## vs (unchanged) «An override of Object.Equals(Object). Its an error if you declare the override explicitly.»
+##      «Overrides of operator == and operator !=. Its an error if you declare the operators explicitly.»
+
+## Fix: 3 places (edgeCases, s2 explain, takeaways) — removed EqualityContract from the
+## error-to-declare list; kept Object.Equals + ==/!=; added the correct 'can declare' fact.
+## s5 (EqualityContract as the runtime-type check) UNCHANGED — it was correct.
