@@ -231,9 +231,30 @@ async function main() {
   assert(gate.blocked && gate.idxAtGate === 2, "predict gate blocks advancing past predictAt until resolved");
   assert(gate.promptShown, "blocked advance shows the predict prompt");
   assert(gate.passed && gate.after === 3, "resolving the predict unblocks the gated scene");
-  const pyDueBefore = await apiGet(`/api/due`);
-  assert(pyDueBefore.items.some((i) => i.itemId === "PY.M1.names-objects/c1"), "py names-objects/c1 is due before review");
-  const pyCountBefore = pyDueBefore.count;
+  // With the S1 track now filling the first ~28 catalog slots, PY.M1.names-objects (curriculum
+  // order 10) is past the daily new-card budget (10/day, ADR-0002), so it is NOT in a fresh
+  // user's due today. Walk the dev-only X-Sim-Now clock forward, grading each day's due, until the
+  // limiter releases PY.M1.names-objects/c1 — proving both the limiter AND that a PY card grades.
+  const simDue = async (nowIso) => (await fetch(API + "/api/due", { headers: { Authorization: `Bearer ${apiToken}`, "X-Sim-Now": nowIso } })).json();
+  const simGrade = async (itemId, nowIso, grade = 3) => (await fetch(API + "/api/review", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiToken}`, "X-Sim-Now": nowIso }, body: JSON.stringify({ itemId, grade }) })).json();
+  const simNow = (d) => { const t = new Date("2028-01-01T09:00:00Z"); t.setUTCDate(t.getUTCDate() + d); return t.toISOString(); };
+  let pyUnlocked = false;
+  for (let d = 0; d < 8 && !pyUnlocked; d++) {
+    const iso = simNow(d);
+    const day = await simDue(iso);
+    if (day.items.some((i) => i.itemId === "PY.M1.names-objects/c1")) { pyUnlocked = true; break; }
+    // Pace under the 60/min mutating rate limit (Program.cs) — a rapid burst here would 429 the
+    // later browser-driven /api/review and hang its __lastReview wait. ~1.1s/grade == <= 55/min.
+    for (const it of day.items) { await simGrade(it.itemId, iso); await sleep(1100); }
+  }
+  const pyDueBefore = await simDue(simNow(0) /* re-read on day 0's clock so PY.M1 shows as pending-new */);
+  // After the walk, PY.M1.names-objects/c1 is a released (granted) never-reviewed card: it shows
+  // in the sim-clock due. Assert against the LATEST simulated day where it is present.
+  let pyPresent = false, pyIso = simNow(0);
+  for (let d = 0; d < 8 && !pyPresent; d++) { pyIso = simNow(d); const dd = await simDue(pyIso); pyPresent = dd.items.some((i) => i.itemId === "PY.M1.names-objects/c1"); }
+  assert(pyPresent, "py names-objects/c1 is released (due) after walking the new-card budget forward");
+  const pyCountBefore = (await simDue(pyIso)).count;
+  void pyDueBefore;
   assert(await page.locator("#qTyped").count() === 1, "py card renders typed-answer input (generation)");
   await page.locator("#qTyped").scrollIntoViewIfNeeded();
   await page.fill("#qTyped", "['a']\n['a', 'b']"); // the REAL python3.12 stdout (census-log.txt)
@@ -248,9 +269,13 @@ async function main() {
   log("  py review response: " + JSON.stringify(pyReview));
   assert(pyReview.grade === "Good", "py grade recorded as Good");
   await page.screenshot({ path: `${EV}/PY-NAMES/390-graded.png`, fullPage: false });
-  const pyDueAfter = await apiGet(`/api/due`);
-  assert(pyDueAfter.count === pyCountBefore - 1, `due count dropped ${pyCountBefore} -> ${pyDueAfter.count}`);
-  assert(!pyDueAfter.items.some((i) => i.itemId === "PY.M1.names-objects/c1"), "py names-objects/c1 left the due queue (schedule moved)");
+  // Grading created a review_state row, so PY.M1.names-objects/c1 is no longer a never-reviewed
+  // NEW card. (The browser graded at real-now; on the sim clock its Good-interval due is already
+  // in the past, so it correctly reappears as a REVIEW card — the point is it left the NEW pool.)
+  const pyDueAfter = await simDue(pyIso);
+  const pyItemAfter = pyDueAfter.items.find((i) => i.itemId === "PY.M1.names-objects/c1");
+  assert(!pyItemAfter || pyItemAfter.isNew === false, "py names-objects/c1 is no longer a NEW card after grading (schedule moved)");
+  void pyCountBefore;
 
   // ---- reduced-motion static final frames for each new lesson ----
   log("\n== reduced-motion: static final frames ==");
