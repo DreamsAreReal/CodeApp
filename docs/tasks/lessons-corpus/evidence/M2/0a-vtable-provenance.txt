@@ -1,0 +1,20 @@
+# M2 · 0a — vtable provenance URL resolution (command + output)
+date: 2026-07-18
+
+## URLs added to classes-virtual-dispatch.ts s3 + type-system-map.ts s4 sources[]
+
+$ for u in botr-method-descriptor botr-type-loader ecma-335; do curl -sL -o /dev/null -w "%{http_code}" ...; done
+
+HTTP 200  https://github.com/dotnet/runtime/blob/main/docs/design/coreclr/botr/method-descriptor.md
+HTTP 200  https://ecma-international.org/publications-and-standards/standards/ecma-335/
+
+## Verbatim quote pinned from BOTR method-descriptor.md (raw.githubusercontent, section 'Method Slots'):
+88:Each MethodDesc has a slot, which contains the current entry point of the method. The slot must exist for all methods, even the ones that never run like abstract methods. There are multiple places in the runtime that depend on mapping between entry points and MethodDescs.
+94:The slot is stored in MethodTable for methods that require efficient lookup via slot index, e.g. virtual methods or methods on generic types. The MethodDesc contains the slot index to allow fast lookup of the entry point in this case.
+
+## E2E render check after provenance edit (both lessons, headless :4173):
+CS.S1.type-system-map: lesson=CS.S1.type-system-map segments=5(expect 5) finalFrames=true
+CS.S1.classes-virtual-dispatch: lesson=CS.S1.classes-virtual-dispatch segments=5(expect 5) finalFrames=true
+consoleErrors=0  exit 0
+
+## build: entry index-*.js 111.30 KB (unchanged; sources[] live in lesson chunks)

@@ -53,6 +53,11 @@ export const typeSystemMap: LessonData = {
   sources: [
     { id: "ms-types", kind: "doc", org: "Microsoft Learn", title: "The C# type system", url: "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/types/", date: "2026-03-24" },
     { id: "ms-cts", kind: "doc", org: "Microsoft Learn", title: "Common Type System", url: "https://learn.microsoft.com/en-us/dotnet/standard/base-types/common-type-system", date: "2025-07-01" },
+    // Machine-level provenance for the vtable term used in the s4 gate («vtable →»): the CLR
+    // routes a virtual call through the object's method-table slot. Not named "vtable" on the
+    // Learn C# page above — sourced to the runtime's Book of the Runtime + the ECMA-335 standard.
+    { id: "botr-method-slots", kind: "doc", org: "dotnet/runtime (Book of the Runtime)", title: "Method Descriptor — Method Slots (MethodTable slot / virtual dispatch)", url: "https://github.com/dotnet/runtime/blob/main/docs/design/coreclr/botr/method-descriptor.md", date: "2026-07-18" },
+    { id: "ecma-335", kind: "spec", org: "ECMA International", title: "ECMA-335 CLI — I.8.10 Method definitions, inheritance, and overriding (virtual methods)", url: "https://ecma-international.org/publications-and-standards/standards/ecma-335/", date: "2012-06-01" },
   ],
 
   spec: [
@@ -120,8 +125,8 @@ export const typeSystemMap: LessonData = {
         { codeLine: 2, out: "", caption: '<code>Animal a = new Dog()</code>: compile-time тип — <b>Animal</b>, run-time — <b>Dog</b>.', nodes: [{ id: "ct", kind: "obj", at: { zone: "compile", row: 0 }, typeTag: "a", value: "Animal" }, { id: "rt", kind: "obj", at: { zone: "runtime", row: 0 }, typeTag: "объект", value: "Dog", accent: true }], edges: [{ id: "e", from: "ct", to: "rt" }] },
         { codeLine: 3, out: "Dog", caption: '<code>a.ToString()</code> — <b>виртуальный</b> вызов: диспетчеризация по <span class="hl">run-time</span> типу → <code>Dog</code> (реальный прогон), не Animal.', nodes: [{ id: "ct", kind: "obj", at: { zone: "compile", row: 0 }, typeTag: "a", value: "Animal" }, { id: "rt", kind: "obj", at: { zone: "runtime", row: 0 }, typeTag: "объект", value: "Dog", accent: true }, { id: "call", kind: "gate", at: { zone: "runtime", row: 1 }, state: "ok", label: "vtable →", detail: "Dog.ToString" }], edges: [{ id: "e", from: "ct", to: "rt" }] },
       ],
-      explain: 'Зеркальный случай: тот же дуализм, но другой механизм. Виртуальный вызов идёт по <b>run-time</b> типу: «The <b>run-time type</b> controls <span class="hl">virtual method dispatch</span>, <code>is</code> expressions, and <code>switch</code> expressions». Поэтому <code>a.ToString()</code> при <code>Animal a = new Dog()</code> печатает <code>Dog</code> — рантайм смотрит в vtable объекта, а не на объявленный тип. Собери оба факта: <b>compile-time</b> тип решает перегрузку и доступные конверсии (s3), <b>run-time</b> тип — виртуальную диспетчеризацию, <code>is</code>, <code>switch</code>. Это и есть карта: какой тип что контролирует.',
-      sources: ["ms-types"],
+      explain: 'Зеркальный случай: тот же дуализм, но другой механизм. Виртуальный вызов идёт по <b>run-time</b> типу: «The <b>run-time type</b> controls <span class="hl">virtual method dispatch</span>, <code>is</code> expressions, and <code>switch</code> expressions». Поэтому <code>a.ToString()</code> при <code>Animal a = new Dog()</code> печатает <code>Dog</code> — рантайм смотрит в <b>метод-таблицу (vtable)</b> объекта, а не на объявленный тип. Механику vtable Learn не называет по имени; она задокументирована в рантайме дословно: «The slot is stored in <b>MethodTable</b> for methods that require efficient lookup via slot index, e.g. <span class="hl">virtual methods</span>» (полный разбор — урок S1.3). Собери оба факта: <b>compile-time</b> тип решает перегрузку и доступные конверсии (s3), <b>run-time</b> тип — виртуальную диспетчеризацию, <code>is</code>, <code>switch</code>. Это и есть карта: какой тип что контролирует.',
+      sources: ["ms-types", "botr-method-slots", "ecma-335"],
     },
     {
       id: "s5", num: "05", kicker: "value vs reference · тип хранения", title: "Тип определяет, как переменная хранит данные",

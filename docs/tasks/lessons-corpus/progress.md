@@ -65,3 +65,18 @@
 - `node verify/viz-fit.mjs` ALL GREEN (22/22 lessons на `at`, оба урока 0 нарушений); run/new-lessons/shell/loop ALL GREEN; `dotnet test` 65/65 — evidence/F6/harness-runs.txt.
 
 ## Итог M1 (F1+F6): скелет + 3 урока S1 (первые 3 урока трека). Все харнессы + dotnet test зелёные. Coverage S1 = 3/10.
+
+---
+
+# M2 (F2–F5 + долги 0a/0b)
+
+## Смоук старта M2 [зелёно]
+`npm run build` (entry 111.30 KB / 34.88 gzip; 22 чанка на урок) + 5 харнессов ALL GREEN (run/viz-fit 359 сцен/shell/new-lessons/loop) + `dotnet test` 65/65. Fresh due=66 (лимита нет — подтверждает F3). Регресса M1 нет.
+
+## Долг 0a — vtable-провенанс (evaluator R-05) [зелёно]
+Сделано:
+- В `cs/classes-virtual-dispatch.ts` s3 (панель «МЕТОД-ТАБЛИЦА/vtable») и `cs/type-system-map.ts` s4 (gate «vtable →») добавлен машинный первоисточник термина vtable: `botr-method-slots` (dotnet/runtime Book of the Runtime — Method Descriptor, §Method Slots) + `ecma-335` (I.8.10 virtual methods). В s3.explain вплетены ДОСЛОВНЫЕ цитаты BOTR: «Each MethodDesc has a slot… entry point» и «The slot is stored in MethodTable… e.g. virtual methods»; в s4.explain — та же цитата про MethodTable-слот + ссылка на S1.3.
+Решения:
+- Термин «vtable» отсутствует на Learn C# fundamentals → механика слота метод-таблицы сорсится к ECMA-335 (стандарт CLI) + BOTR рантайма (первоисточник реализации). URL обоих резолвятся 200.
+Доказательство (evidence/M2/0a-vtable-provenance.txt):
+- HTTP 200 обоих URL; дословная цитата запинена из raw BOTR (строки 88/94). `npm run build` tsc clean, entry 111.30 KB неизменен. E2E: оба урока 5 сегментов, финальный кадр, 0 console errors.

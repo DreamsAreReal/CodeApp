@@ -52,6 +52,11 @@ export const classesVirtualDispatch: LessonData = {
   sources: [
     { id: "ms-poly", kind: "doc", org: "Microsoft Learn", title: "Polymorphism (C#)", url: "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/object-oriented/polymorphism", date: "2025-10-13" },
     { id: "ms-oop", kind: "doc", org: "Microsoft Learn", title: "Classes, structs, and records (C#)", url: "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/object-oriented/", date: "2025-04-17" },
+    // Machine-level provenance for the vtable/method-table mechanic (s3): the term "vtable"
+    // is not on the Learn C# fundamentals pages, so the SLOT-in-method-table mechanism is
+    // sourced to the CLR's own Book of the Runtime (BOTR) + the ECMA-335 CLI standard.
+    { id: "botr-method-slots", kind: "doc", org: "dotnet/runtime (Book of the Runtime)", title: "Method Descriptor — Method Slots (MethodTable slot / virtual dispatch)", url: "https://github.com/dotnet/runtime/blob/main/docs/design/coreclr/botr/method-descriptor.md", date: "2026-07-18" },
+    { id: "ecma-335", kind: "spec", org: "ECMA International", title: "ECMA-335 CLI — I.8.10 Method definitions, inheritance, and overriding (virtual methods)", url: "https://ecma-international.org/publications-and-standards/standards/ecma-335/", date: "2012-06-01" },
   ],
 
   spec: [
@@ -106,8 +111,8 @@ export const classesVirtualDispatch: LessonData = {
         { codeLine: 1, out: "", caption: 'В рантайме слот V в <span class="hl">метод-таблице объекта Derived</span> указывает на <b>Derived.V</b> — override перезаписал слот базы.', nodes: [{ id: "b", kind: "ref", at: { zone: "call", row: 0 }, name: "b.V()", value: "слот V" }, { id: "vt", kind: "obj", at: { zone: "vtable", row: 0 }, typeTag: "vtable", value: "[V]→Derived", accent: true }], edges: [{ id: "e", from: "b", to: "vt", accent: true }] },
         { codeLine: 1, out: "Derived.V", caption: 'Прыжок по адресу из слота → выполняется <b>Derived.V</b> (реальный прогон). Диспетчеризация — <span class="hl">один indirect-переход</span> через таблицу.', nodes: [{ id: "b", kind: "ref", at: { zone: "call", row: 0 }, name: "b.V()", value: "слот V" }, { id: "vt", kind: "obj", at: { zone: "vtable", row: 0 }, typeTag: "vtable", value: "[V]→Derived" }, { id: "run", kind: "gate", at: { zone: "vtable", row: 1 }, state: "ok", label: "jump →", detail: "Derived.V" }], edges: [{ id: "e", from: "b", to: "vt" }] },
       ],
-      explain: 'Это машинная панель урока — как именно вызов находит override. У каждого объекта есть <b>метод-таблица</b> (vtable): для виртуального члена компилятор эмитит не прямой вызов, а обращение к <span class="hl">слоту</span> таблицы. <code>override</code> в Derived <b>перезаписывает</b> этот слот адресом своей реализации, поэтому <code>b.V()</code> через слот попадает в <code>Derived.V</code> (собственный прогон: <b>Derived.V</b>). Ключ: слот выбирается по типу переменной (Base знает, где слот V), а адрес в слоте — от run-time типа объекта. Отсюда цена и сила виртуальности: один indirect-переход, но истинный полиморфизм.',
-      sources: ["ms-poly"],
+      explain: 'Это машинная панель урока — как именно вызов находит override. У каждого объекта есть <b>метод-таблица</b> (MethodTable), и в ней — <b>слоты</b> виртуальных методов; дословно из Book of the Runtime рантайма: «Each MethodDesc has a <span class="hl">slot</span>, which contains the current entry point of the method» и «The slot is stored in <b>MethodTable</b> for methods that require efficient lookup via slot index, e.g. <span class="hl">virtual methods</span>». Для виртуального члена компилятор эмитит не прямой вызов, а обращение к слоту таблицы; <code>override</code> в Derived <b>перезаписывает</b> этот слот адресом своей реализации, поэтому <code>b.V()</code> через слот попадает в <code>Derived.V</code> (собственный прогон: <b>Derived.V</b>). Ключ: слот выбирается по типу переменной (Base знает, где слот V), а адрес в слоте — от run-time типа объекта (ECMA-335 §I.8.10: «types can provide their own implementation of a virtual method… this is known as overriding»). Отсюда цена и сила виртуальности: один indirect-переход, но истинный полиморфизм.',
+      sources: ["ms-poly", "botr-method-slots", "ecma-335"],
     },
     {
       id: "s4", num: "04", kicker: "new · сокрытие", title: "new прячет по compile-time типу",
