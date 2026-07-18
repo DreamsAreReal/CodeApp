@@ -1,0 +1,61 @@
+{
+  "id": "CS.S2.async-streams",
+  "track": "CS",
+  "section": "CS.S2",
+  "module": "S2.9",
+  "title": "Async streams: IAsyncEnumerable, await foreach",
+  "status": "published",
+  "order": 19,
+  "sources": [
+    {
+      "id": "ms-stream",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/generate-consume-asynchronous-stream",
+      "date": "2023-02-14"
+    },
+    {
+      "id": "ms-await",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/await",
+      "date": "2024-11-11"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "An async IAsyncEnumerable<int> with yield return, consumed via await foreach, prints the squares 1 4 9",
+      "code": "using System; using System.Collections.Generic; using System.Text; using System.Threading.Tasks; async IAsyncEnumerable<int> Nums(){ for(int i=1;i<=3;i++){ await Task.Delay(1); yield return i*i; } } var sb = new StringBuilder(); await foreach (var n in Nums()) sb.Append(n).Append(\" \"); Console.WriteLine(sb.ToString().Trim());",
+      "expectedOutput": "1 4 9",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-stream"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "IAsyncEnumerator<T>.MoveNextAsync returns ValueTask<bool>, and the enumerator is IAsyncDisposable",
+      "code": "using System; using System.Collections.Generic; using System.Threading.Tasks; using System.Reflection; bool vt = typeof(IAsyncEnumerator<int>).GetMethod(\"MoveNextAsync\").ReturnType == typeof(ValueTask<bool>); bool disp = typeof(IAsyncDisposable).IsAssignableFrom(typeof(IAsyncEnumerator<int>)); Console.WriteLine($\"moveNextIsValueTaskBool={vt} enumeratorIsAsyncDisposable={disp}\");",
+      "expectedOutput": "moveNextIsValueTaskBool=True enumeratorIsAsyncDisposable=True",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-stream"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "An async stream is lazy/on-demand: you can break out of an infinite one after 3 elements (took=3 vals=012)",
+      "code": "using System; using System.Collections.Generic; using System.Text; using System.Threading.Tasks; async IAsyncEnumerable<int> Infinite(){ int i=0; while(true){ await Task.Delay(1); yield return i++; } } int taken=0; var sb=new StringBuilder(); await foreach (var n in Infinite()){ sb.Append(n); if(++taken==3) break; } Console.WriteLine($\"took={taken} vals={sb}\");",
+      "expectedOutput": "took=3 vals=012",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-stream"
+      ]
+    }
+  ]
+}

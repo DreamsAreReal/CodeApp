@@ -386,6 +386,20 @@ const CS_S2: Section = {
       },
       () => import("./cs/cancellation.ts").then((m) => m.cancellation),
     ),
+    entry(
+      {
+        id: "CS.S2.async-streams",
+        track: "CS",
+        section: "CS.S2",
+        title: "Async streams: IAsyncEnumerable, await foreach",
+        kicker: "C# вглубь · S2 · поток по требованию",
+        icon: "async",
+        subtitle: "async yield return, await foreach, лениво, WithCancellation",
+        estMinutes: 10,
+        cards: 3,
+      },
+      () => import("./cs/async-streams.ts").then((m) => m.asyncStreams),
+    ),
   ],
 };
 

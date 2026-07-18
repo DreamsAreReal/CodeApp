@@ -1,0 +1,11 @@
+# CS.S2.async-streams (S2.9) — exec evidence (run-csharp, Roslyn top-level)
+# Captured 2026-07-18T23:18:37Z against backend health 200
+
+## c1 — async IAsyncEnumerable<int> with yield return, consumed via await foreach -> 1 4 9 (expect: 1 4 9)
+{"success":true,"stdout":"1 4 9\n","error":null,"elapsedMs":24}
+
+## c2 — stream machinery: IAsyncEnumerator.MoveNextAsync returns ValueTask<bool>; the enumerator is IAsyncDisposable (expect: moveNextIsValueTaskBool=True enumeratorIsAsyncDisposable=True)
+{"success":true,"stdout":"moveNextIsValueTaskBool=True enumeratorIsAsyncDisposable=True\n","error":null,"elapsedMs":14}
+
+## c3 — lazy / on-demand: break out of an INFINITE async stream after 3 elements (Task<IEnumerable> could not) (expect: took=3 vals=012)
+{"success":true,"stdout":"took=3 vals=012\n","error":null,"elapsedMs":27}
