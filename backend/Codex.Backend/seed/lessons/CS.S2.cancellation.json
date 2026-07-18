@@ -1,0 +1,61 @@
+{
+  "id": "CS.S2.cancellation",
+  "track": "CS",
+  "section": "CS.S2",
+  "module": "S2.8",
+  "title": "Кооперативная отмена: токен, ThrowIf, статусы",
+  "status": "published",
+  "order": 18,
+  "sources": [
+    {
+      "id": "ms-cancel",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/standard/threading/cancellation-in-managed-threads",
+      "date": "2023-05-24"
+    },
+    {
+      "id": "ms-task-cancel",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/standard/parallel-programming/task-cancellation",
+      "date": "2023-05-24"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "A delegate that just returns gives RanToCompletion even under cancellation; ThrowIfCancellationRequested with the matching token gives Canceled",
+      "code": "using System; using System.Threading; using System.Threading.Tasks; var cts = new CancellationTokenSource(); var ct = cts.Token; cts.Cancel(); var justReturn = Task.Run(() => { }); justReturn.Wait(); var threw = Task.Run(() => { ct.ThrowIfCancellationRequested(); }, ct); try { threw.Wait(); } catch { } Console.WriteLine($\"return={justReturn.Status} throwIf={threw.Status}\");",
+      "expectedOutput": "return=RanToCompletion throwIf=Canceled",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-task-cancel"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "CancellationToken is a value type; IsCancellationRequested is one-way False -> True",
+      "code": "using System; using System.Threading; var cts = new CancellationTokenSource(); var ct = cts.Token; bool before = ct.IsCancellationRequested; cts.Cancel(); bool after = ct.IsCancellationRequested; Console.WriteLine($\"{typeof(CancellationToken).IsValueType} {before} {after}\");",
+      "expectedOutput": "True False True",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-cancel"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Awaiting a Canceled task throws TaskCanceledException (a subclass of OperationCanceledException)",
+      "code": "using System; using System.Threading; using System.Threading.Tasks; var cts = new CancellationTokenSource(); cts.Cancel(); var t = Task.Run(() => cts.Token.ThrowIfCancellationRequested(), cts.Token); string type; try { await t; type=\"none\"; } catch (OperationCanceledException e){ type = e.GetType().Name; } Console.WriteLine($\"status={t.Status} caught={type}\");",
+      "expectedOutput": "status=Canceled caught=TaskCanceledException",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-task-cancel"
+      ]
+    }
+  ]
+}

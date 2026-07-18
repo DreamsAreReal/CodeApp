@@ -1,0 +1,14 @@
+# CS.S2.cancellation (S2.8) — exec evidence (run-csharp, Roslyn top-level)
+# Captured 2026-07-18T22:52:48Z against backend health 200
+
+## c1 — cooperative: a delegate that just returns => RanToCompletion (NOT Canceled); ThrowIfCancellationRequested with the matching token => Canceled (expect: return=RanToCompletion throwIf=Canceled)
+{"success":true,"stdout":"return=RanToCompletion throwIf=Canceled\n","error":null,"elapsedMs":18}
+
+## c2 — CancellationToken is a VALUE type; IsCancellationRequested is one-way False->True (expect: True False True)
+{"success":true,"stdout":"True False True\n","error":null,"elapsedMs":15}
+
+## c3 — awaiting a Canceled task throws TaskCanceledException (: OperationCanceledException) (expect: status=Canceled caught=TaskCanceledException)
+{"success":true,"stdout":"status=Canceled caught=TaskCanceledException\n","error":null,"elapsedMs":17}
+
+## (fact, not a card) linked tokens: cancelling any source cancels the linked token (linkedBefore=False linkedAfter=True)
+{"success":true,"stdout":"linkedBefore=False linkedAfter=True\n","error":null,"elapsedMs":14}

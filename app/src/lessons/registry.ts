@@ -372,6 +372,20 @@ const CS_S2: Section = {
       },
       () => import("./cs/exceptions.ts").then((m) => m.exceptions),
     ),
+    entry(
+      {
+        id: "CS.S2.cancellation",
+        track: "CS",
+        section: "CS.S2",
+        title: "Кооперативная отмена: токен, ThrowIf, статусы",
+        kicker: "C# вглубь · S2 · отмена не убивает поток",
+        icon: "async",
+        subtitle: "CancellationToken, ThrowIfCancellationRequested, linked, статусы",
+        estMinutes: 10,
+        cards: 3,
+      },
+      () => import("./cs/cancellation.ts").then((m) => m.cancellation),
+    ),
   ],
 };
 
