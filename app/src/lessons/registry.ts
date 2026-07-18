@@ -165,6 +165,20 @@ const CS_S1: Section = {
       },
       () => import("./cs/classes-virtual-dispatch.ts").then((m) => m.classesVirtualDispatch),
     ),
+    entry(
+      {
+        id: "CS.S1.structs-traps",
+        track: "CS",
+        section: "CS.S1",
+        title: "Структуры: ловушки value-семантики",
+        kicker: "C# вглубь · S1 · defensive copy",
+        icon: "types",
+        subtitle: "readonly struct, защитная копия, мутабельные ловушки",
+        estMinutes: 10,
+        cards: 3,
+      },
+      () => import("./cs/structs-traps.ts").then((m) => m.structsTraps),
+    ),
   ],
 };
 

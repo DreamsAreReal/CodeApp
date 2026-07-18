@@ -1,0 +1,61 @@
+{
+  "id": "CS.S1.structs-traps",
+  "track": "CS",
+  "section": "CS.S1",
+  "module": "S1.4",
+  "title": "Структуры: ловушки value-семантики",
+  "status": "published",
+  "order": 4,
+  "sources": [
+    {
+      "id": "ms-struct",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/struct",
+      "date": "2026-01-14"
+    },
+    {
+      "id": "ms-perf",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/advanced-topics/performance/",
+      "date": "2023-10-13"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "list[0].Inc() над List<Counter> (struct) — что печатает list[0].N?",
+      "code": "using System; using System.Collections.Generic; struct Counter { public int N; public void Inc() { N++; } } var list = new List<Counter> { new Counter { N = 0 } }; list[0].Inc(); Console.WriteLine(list[0].N);",
+      "expectedOutput": "0",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-struct"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "readonly-поле V, Bump() не readonly: Touch()=>V.Bump(); что печатает {r} {h.V.N}?",
+      "code": "using System; struct Val { public int N; public int Bump() { N++; return N; } } readonly struct Holder { public readonly Val V; public Holder(Val v) { V = v; } public int Touch() => V.Bump(); } var h = new Holder(new Val { N = 10 }); int r = h.Touch(); Console.WriteLine($\"{r} {h.V.N}\");",
+      "expectedOutput": "11 10",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-struct"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "struct P с P(){X=42;}: P a=default; P b=new P(); что печатает {a.X} {b.X}?",
+      "code": "using System; struct P { public int X; public P() { X = 42; } } P a = default; P b = new P(); Console.WriteLine($\"{a.X} {b.X}\");",
+      "expectedOutput": "0 42",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-struct"
+      ]
+    }
+  ]
+}

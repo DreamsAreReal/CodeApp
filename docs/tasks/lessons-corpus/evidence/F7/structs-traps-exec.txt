@@ -1,0 +1,21 @@
+# F7 · S1.4 CS.S1.structs-traps — real run-csharp measurements (POST /api/authoring/run-csharp)
+date: 2026-07-18
+
+## c1 — mutable struct in List: list[0].Inc() mutates a COPY (indexer returns a copy)
+$ POST run-csharp {"code":"using System; using System.Collections.Generic; struct Counter { public int N; public void Inc() { N++; } } var list = new List<Counter> { new Counter { N = 0 } }; list[0].Inc(); Console.WriteLine(list[0].N);"}
+stdout: "0\n"   -> expect "0"   (mutation hit the throwaway copy; element unchanged)
+
+## c2 / SIGNATURE PANEL — defensive copy: readonly field V, non-readonly Bump()
+$ POST run-csharp {"code":"using System; struct Val { public int N; public int Bump() { N++; return N; } } readonly struct Holder { public readonly Val V; public Holder(Val v) { V = v; } public int Touch() => V.Bump(); } var h = new Holder(new Val { N = 10 }); int r = h.Touch(); Console.WriteLine($\"{r} {h.V.N}\");"}
+stdout: "11 10\n"   -> expect "11 10"   (Bump() ran on a defensive copy: returned 11, field V.N stayed 10)
+
+## c3 — default(P) IGNORES parameterless ctor; new P() runs it
+$ POST run-csharp {"code":"using System; struct P { public int X; public P() { X = 42; } } P a = default; P b = new P(); Console.WriteLine($\"{a.X} {b.X}\");"}
+stdout: "0 42\n"   -> expect "0 42"   (default = 0-bit pattern, ctor skipped; new P() = 42)
+
+## supporting (in-lesson facts, not cards): readonly ref field mutation + readonly-struct alloc
+$ POST run-csharp {readonly List<int> field: box.Items.Add(5); Add(9); Count} -> stdout "2\n"  (object mutates; reference frozen)
+$ POST run-csharp {readonly struct copy alloc: GC.GetAllocatedBytesForCurrentThread around Pt q = p} -> stdout "readonly struct copy: 0 bytes\n"
+
+## G4 anti-echo: every card verify.run == "dotnet run"; expect NOT a substring of run. PASS.
+## Source URLs resolve 200 (struct, readonly, advanced-topics/performance). GT-M3 red flags: 0.
