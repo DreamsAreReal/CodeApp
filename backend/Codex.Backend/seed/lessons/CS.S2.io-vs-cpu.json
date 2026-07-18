@@ -1,0 +1,61 @@
+{
+  "id": "CS.S2.io-vs-cpu",
+  "track": "CS",
+  "section": "CS.S2",
+  "module": "S2.3",
+  "title": "I/O-bound vs CPU-bound: когда Task.Run",
+  "status": "published",
+  "order": 13,
+  "sources": [
+    {
+      "id": "ms-scenarios",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/async-scenarios",
+      "date": "2025-03-12"
+    },
+    {
+      "id": "ms-tap",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/task-asynchronous-programming-model",
+      "date": "2025-10-13"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Task.Run moves work to a pool thread: main != poolId and IsThreadPoolThread",
+      "code": "using System; using System.Threading; using System.Threading.Tasks; int main = Thread.CurrentThread.ManagedThreadId; int poolId = await Task.Run(()=> Thread.CurrentThread.ManagedThreadId); bool onPool = await Task.Run(()=> Thread.CurrentThread.IsThreadPoolThread); Console.WriteLine($\"{main != poolId} {onPool}\");",
+      "expectedOutput": "True True",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-scenarios"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "CPU-bound Compute via Task.Run runs on a background thread (main != t)",
+      "code": "using System; using System.Threading; using System.Threading.Tasks; long Compute(){ long s=0; for(long i=0;i<50_000_000;i++) s+=i; return s; } int main=Thread.CurrentThread.ManagedThreadId; int t = await Task.Run(()=>{ Compute(); return Thread.CurrentThread.ManagedThreadId; }); Console.WriteLine(main != t);",
+      "expectedOutput": "True",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-scenarios"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Task.Run does NOT speed up I/O: wrapped ~= direct (same)",
+      "code": "using System; using System.Diagnostics; using System.Threading.Tasks; async Task<int> Io(){ await Task.Delay(100); return 1; } var sw=Stopwatch.StartNew(); await Io(); long direct=sw.ElapsedMilliseconds; sw.Restart(); await Task.Run(async()=> await Io()); long wrapped=sw.ElapsedMilliseconds; Console.Write(Math.Abs(direct-wrapped) < 40 ? \"same\" : \"diff\");",
+      "expectedOutput": "same",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-tap"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+# F9 · S2.3 CS.S2.io-vs-cpu — real run-csharp measurements (POST /api/authoring/run-csharp)
+date: 2026-07-18
+
+## SIGNATURE PANEL (s1) / c1 — Task.Run moves work to a POOL thread (id differs, IsThreadPoolThread)
+$ POST run-csharp {main id; poolId=await Task.Run(()=>thread id); onPool=await Task.Run(IsThreadPoolThread)}
+stdout: "True True\n"   -> expect "True True"   (main != poolId True; IsThreadPoolThread True)
+
+## c2 — CPU-bound Compute via Task.Run runs on a background thread
+$ POST run-csharp {Compute 50M loop via Task.Run returns thread id; main != t}
+stdout: "True\n"   -> expect "True"
+
+## c3 — Task.Run does NOT speed up I/O (wrapped ~= direct time)
+$ POST run-csharp {await Io()(100ms) direct vs await Task.Run(async()=>await Io()); abs(diff)<40 ? same : diff}
+stdout: "same"   -> expect "same"   (background thread doesn't help a process that's just waiting)
+
+## G4 anti-echo: every card verify.run == "dotnet run"; expect NOT a substring of run. PASS.
+## Source URLs resolve 200 (async-scenarios, TAP model). GT-M4 myths: 0 (Task.Run does NOT speed up
+##   I/O M-async-3; await does not create a thread for I/O M-async-2; a background thread doesn't help waiting).

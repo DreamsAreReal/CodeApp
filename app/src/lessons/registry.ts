@@ -302,6 +302,20 @@ const CS_S2: Section = {
       },
       () => import("./cs/composition.ts").then((m) => m.composition),
     ),
+    entry(
+      {
+        id: "CS.S2.io-vs-cpu",
+        track: "CS",
+        section: "CS.S2",
+        title: "I/O-bound vs CPU-bound: когда Task.Run",
+        kicker: "C# вглубь · S2 · решение о потоке",
+        icon: "async",
+        subtitle: "await без Task.Run vs Task.Run на пул, замер",
+        estMinutes: 9,
+        cards: 3,
+      },
+      () => import("./cs/io-vs-cpu.ts").then((m) => m.ioVsCpu),
+    ),
   ],
 };
 
