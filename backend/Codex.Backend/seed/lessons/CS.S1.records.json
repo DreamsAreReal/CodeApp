@@ -1,0 +1,55 @@
+{
+  "id": "CS.S1.records",
+  "track": "CS",
+  "section": "CS.S1",
+  "module": "S1.5",
+  "title": "Records: value equality и синтез компилятора",
+  "status": "published",
+  "order": 5,
+  "sources": [
+    {
+      "id": "ms-record",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/record",
+      "date": "2026-06-05"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "record vs class equality: r1==r2 (record) и c1==c2 (class), одинаковые поля?",
+      "code": "using System; record Point(int X, int Y); class CPoint { public int X, Y; public CPoint(int x,int y){X=x;Y=y;} } var r1=new Point(1,2); var r2=new Point(1,2); var c1=new CPoint(1,2); var c2=new CPoint(1,2); Console.WriteLine($\"{r1==r2} {c1==c2}\");",
+      "expectedOutput": "True False",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-record"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "with nondestructive: p2 = p1 with { X=99 }; печать p1 и p2 (synthesized ToString)?",
+      "code": "using System; record Point(int X, int Y); var p1=new Point(1,2); var p2=p1 with { X=99 }; Console.WriteLine($\"{p1} {p2}\");",
+      "expectedOutput": "Point { X = 1, Y = 2 } Point { X = 99, Y = 2 }",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-record"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "два разных record-типа A(1) и B(1): a.Equals(b)?",
+      "code": "using System; record A(int X); record B(int X); object a=new A(1); object b=new B(1); Console.WriteLine(a.Equals(b));",
+      "expectedOutput": "False",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-record"
+      ]
+    }
+  ]
+}

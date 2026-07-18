@@ -179,6 +179,20 @@ const CS_S1: Section = {
       },
       () => import("./cs/structs-traps.ts").then((m) => m.structsTraps),
     ),
+    entry(
+      {
+        id: "CS.S1.records",
+        track: "CS",
+        section: "CS.S1",
+        title: "Records: value equality и синтез компилятора",
+        kicker: "C# вглубь · S1 · синтез методов",
+        icon: "types",
+        subtitle: "Value equality, with, синтез Equals/Deconstruct",
+        estMinutes: 9,
+        cards: 3,
+      },
+      () => import("./cs/records.ts").then((m) => m.records),
+    ),
   ],
 };
 

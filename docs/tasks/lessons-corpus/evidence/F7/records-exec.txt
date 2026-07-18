@@ -1,0 +1,22 @@
+# F7 · S1.5 CS.S1.records — real run-csharp measurements (POST /api/authoring/run-csharp)
+date: 2026-07-18
+
+## c1 / SIGNATURE PANEL — record value equality vs class reference equality
+$ POST run-csharp {record Point(int X,int Y); class CPoint; r1==r2 (record), c1==c2 (class), same fields}
+stdout: "True False\n"   -> expect "True False"   (record value equality True; class reference equality False)
+
+## c2 — with = nondestructive mutation (new instance, original untouched); synthesized ToString
+$ POST run-csharp {var p1=new Point(1,2); var p2=p1 with { X=99 }; WriteLine($"{p1} {p2}")}
+stdout: "Point { X = 1, Y = 2 } Point { X = 99, Y = 2 }\n"   -> expect same   (p1 unchanged, p2 is the copy)
+
+## c3 — two DIFFERENT record types, same field -> NOT equal (EqualityContract / runtime type)
+$ POST run-csharp {record A(int X); record B(int X); object a=new A(1),b=new B(1); WriteLine(a.Equals(b))}
+stdout: "False\n"   -> expect "False"
+
+## supporting (in-lesson facts): with is SHALLOW; record struct value equality
+$ POST run-csharp {record Basket(List<int> Items); b2=b1 with {}; b2.Items.Add(2); Count1 Count2 ReferenceEquals} -> "2 2 True\n"
+$ POST run-csharp {record struct RS(int X,int Y); s1==s2; IsValueType} -> "True True\n"
+
+## G4 anti-echo: every card verify.run == "dotnet run"; expect NOT a substring of run. PASS.
+## Source URL resolves 200 (record). GT-M3 red flags: 0 (record can be struct; with is nondestructive+shallow;
+##   different record types not equal; no user Clone).
