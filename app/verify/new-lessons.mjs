@@ -29,6 +29,7 @@ const EXPECT = [
   { id: "CS.S1.type-system-map", segs: 5, ev: "CS-TYPEMAP" },
   { id: "CS.S1.value-types-copy", segs: 6, ev: "CS-VALCOPY" },
   { id: "CS.S1.classes-virtual-dispatch", segs: 5, ev: "CS-VDISPATCH" },
+  { id: "CS.S2.return-types", segs: 5, ev: "CS-RETTYPES" },
   { id: "PY.M1.names-objects", segs: 8, ev: "PY-NAMES" },
   { id: "PY.M2.collections-hash", segs: 5, ev: "PY-COLL" },
   { id: "PY.M3.args-unpacking", segs: 4, ev: "PY-ARGS" },
@@ -136,7 +137,10 @@ async function main() {
     assert(ready, `${e.id} lesson opened and __viz ready`);
     const segCount = await page.evaluate(() => Object.keys(window.__viz.vizByKey).length);
     assert(segCount === e.segs, `${e.id} built ${e.segs} animated segments (got ${segCount})`);
-    // segment 1 autoplays on view -> index advances beyond 0
+    // segment 1 autoplays on view -> index advances beyond 0. Autoplay is gated by an
+    // IntersectionObserver, so put s1 in the viewport first (a real user scrolls to it);
+    // otherwise a taller intro block can leave s1 below the fold and autoplay never fires.
+    await page.evaluate(() => document.querySelector('section[data-seg="s1"]')?.scrollIntoView({ block: "center" }));
     await page.waitForFunction(() => { const s = window.__viz.segments["s1"]; return s && s.index > 0; }, { timeout: 8000 }).catch(() => {});
     const s1i = await page.evaluate(() => window.__viz.segments["s1"].index);
     assert(s1i > 0, `${e.id} segment s1 advanced by autoplay (index=${s1i})`);

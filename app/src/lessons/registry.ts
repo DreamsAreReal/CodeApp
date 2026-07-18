@@ -316,6 +316,20 @@ const CS_S2: Section = {
       },
       () => import("./cs/io-vs-cpu.ts").then((m) => m.ioVsCpu),
     ),
+    entry(
+      {
+        id: "CS.S2.return-types",
+        track: "CS",
+        section: "CS.S2",
+        title: "Async return types: Task, Task<T>, void",
+        kicker: "C# вглубь · S2 · что возвращать",
+        icon: "async",
+        subtitle: "Task/Task<T>/void, async void, task-like",
+        estMinutes: 9,
+        cards: 3,
+      },
+      () => import("./cs/return-types.ts").then((m) => m.returnTypes),
+    ),
   ],
 };
 

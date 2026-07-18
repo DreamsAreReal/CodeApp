@@ -1,0 +1,61 @@
+{
+  "id": "CS.S2.return-types",
+  "track": "CS",
+  "section": "CS.S2",
+  "module": "S2.4",
+  "title": "Async return types: Task, Task<T>, void",
+  "status": "published",
+  "order": 14,
+  "sources": [
+    {
+      "id": "ms-return",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/async-return-types",
+      "date": "2024-11-01"
+    },
+    {
+      "id": "ms-tap",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/task-asynchronous-programming-model",
+      "date": "2025-10-13"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Task has no value (done), Task<int> carries the value via await (42)",
+      "code": "using System; using System.Threading.Tasks; async Task NoValue(){ await Task.Delay(1); Console.Write(\"done \"); } async Task<int> WithValue(){ await Task.Delay(1); return 42; } await NoValue(); int r = await WithValue(); Console.WriteLine(r);",
+      "expectedOutput": "done 42",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-tap"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "async Task stores its exception in the task; await rethrows it so try/catch catches it",
+      "code": "using System; using System.Threading.Tasks; async Task Safe(){ await Task.Delay(1); throw new InvalidOperationException(\"boom\"); } try { await Safe(); } catch (InvalidOperationException e) { Console.WriteLine($\"Task caught: {e.Message}\"); }",
+      "expectedOutput": "Task caught: boom",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-tap"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "ValueTask<int> is a value type (True); Task<int> is a reference type allocated from the heap (False)",
+      "code": "using System; using System.Threading.Tasks; Console.WriteLine($\"{typeof(ValueTask<int>).IsValueType} {typeof(Task<int>).IsValueType}\");",
+      "expectedOutput": "True False",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-return"
+      ]
+    }
+  ]
+}

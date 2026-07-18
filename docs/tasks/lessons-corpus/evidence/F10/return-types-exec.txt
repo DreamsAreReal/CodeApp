@@ -1,0 +1,11 @@
+# CS.S2.return-types (S2.4) — exec evidence (run-csharp, Roslyn top-level)
+# Captured 2026-07-18T21:20:21Z against backend health 200
+
+## c1 — Task vs Task<T> value (expect: done 42)
+{"success":true,"stdout":"done 42\n","error":null,"elapsedMs":73}
+
+## c2 — async Task exception caught on await (expect: Task caught: boom)
+{"success":true,"stdout":"Task caught: boom\n","error":null,"elapsedMs":76}
+
+## c3 (SIGNATURE machine panel) — Task<int> reference vs ValueTask<int> value type (expect: True False)
+{"success":true,"stdout":"True False\n","error":null,"elapsedMs":61}
