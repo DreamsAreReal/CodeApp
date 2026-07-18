@@ -1,0 +1,61 @@
+{
+  "id": "CS.S2.valuetask",
+  "track": "CS",
+  "section": "CS.S2",
+  "module": "S2.5",
+  "title": "ValueTask<T>: когда брать и его ограничения",
+  "status": "published",
+  "order": 15,
+  "sources": [
+    {
+      "id": "ms-vt",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.valuetask-1",
+      "date": "2024-12-01"
+    },
+    {
+      "id": "ms-vt0",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.valuetask",
+      "date": "2024-12-01"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "A ValueTask wrapping a ready value completes synchronously (IsCompleted True) with no per-call Task heap allocation",
+      "code": "using System; using System.Threading.Tasks; ValueTask<int> Cached(int x) => new ValueTask<int>(x); int r = await Cached(7); Console.WriteLine($\"r={r} completed={Cached(7).IsCompleted}\");",
+      "expectedOutput": "r=7 completed=True",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-vt"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "default(ValueTask<int>) is a synchronously-completed result whose value is default(TResult) == 0",
+      "code": "using System; using System.Threading.Tasks; var d = default(ValueTask<int>); Console.WriteLine($\"{d.IsCompletedSuccessfully} {d.Result}\");",
+      "expectedOutput": "True 0",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-vt"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "ValueTask<int> is a value type (True) of 4 instance fields; Task<int> is a reference type (False) of one reference field",
+      "code": "using System; using System.Threading.Tasks; using System.Reflection; var t = typeof(ValueTask<int>); int fields = t.GetFields(BindingFlags.Instance|BindingFlags.NonPublic|BindingFlags.Public).Length; Console.WriteLine($\"{t.IsValueType} {typeof(Task<int>).IsValueType} fields={fields}\");",
+      "expectedOutput": "True False fields=4",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-vt"
+      ]
+    }
+  ]
+}

@@ -330,6 +330,20 @@ const CS_S2: Section = {
       },
       () => import("./cs/return-types.ts").then((m) => m.returnTypes),
     ),
+    entry(
+      {
+        id: "CS.S2.valuetask",
+        track: "CS",
+        section: "CS.S2",
+        title: "ValueTask<T>: когда брать и его ограничения",
+        kicker: "C# вглубь · S2 · горячий путь",
+        icon: "async",
+        subtitle: "value type вместо Task, await один раз, трейдофы",
+        estMinutes: 9,
+        cards: 3,
+      },
+      () => import("./cs/valuetask.ts").then((m) => m.valueTask),
+    ),
   ],
 };
 

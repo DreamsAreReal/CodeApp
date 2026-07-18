@@ -1,0 +1,14 @@
+# CS.S2.valuetask (S2.5) — exec evidence (run-csharp, Roslyn top-level)
+# Captured 2026-07-18T21:49:00Z against backend health 200
+
+## c1 — ValueTask wrapping a value completes synchronously, no per-call Task heap alloc (expect: r=7 completed=True)
+{"success":true,"stdout":"r=7 completed=True\n","error":null,"elapsedMs":60}
+
+## c2 — default(ValueTask<int>) is a sync-completed result carrying default(TResult)=0 (expect: True 0)
+{"success":true,"stdout":"True 0\n","error":null,"elapsedMs":57}
+
+## c3 (SIGNATURE machine panel) — ValueTask<int> value type (True) w/ 4 instance fields vs Task<int> reference (False) (expect: True False fields=4)
+{"success":true,"stdout":"True False fields=4\n","error":null,"elapsedMs":59}
+
+## (fact, not a card) AsTask() escape hatch — reusable Task, await multiple times (5 5)
+{"success":true,"stdout":"5 5\n","error":null,"elapsedMs":55}
