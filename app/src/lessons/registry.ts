@@ -221,6 +221,20 @@ const CS_S1: Section = {
       },
       () => import("./cs/enum-flags.ts").then((m) => m.enumFlags),
     ),
+    entry(
+      {
+        id: "CS.S1.generics-basics",
+        track: "CS",
+        section: "CS.S1",
+        title: "Generics: механика и constraints",
+        kicker: "C# вглубь · S1 · без боксинга",
+        icon: "types",
+        subtitle: "type safety, open/closed, where, без боксинга",
+        estMinutes: 10,
+        cards: 3,
+      },
+      () => import("./cs/generics-basics.ts").then((m) => m.genericsBasics),
+    ),
   ],
 };
 

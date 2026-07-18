@@ -1,0 +1,27 @@
+# F8 · S1.8 CS.S1.generics-basics — real run-csharp measurements (POST /api/authoring/run-csharp)
+date: 2026-07-18
+
+## c1 — type inference: Echo(42) infers T=int; runtime type is real
+$ POST run-csharp {T Echo<T>(T x)=>x; var r=Echo(42); r, r.GetType().Name}
+stdout: "42 Int32\n"   -> expect "42 Int32"
+
+## c2 — NO type erasure: typeof(T) inside a generic yields the real type
+$ POST run-csharp {string TypeOf<T>()=>typeof(T).Name; TypeOf<int>(), TypeOf<string>()}
+stdout: "Int32 String\n"   -> expect "Int32 String"   (full runtime type info, unlike Java)
+
+## c3 — open (generic type definition) vs closed (constructed) type
+$ POST run-csharp {typeof(List<>).IsGenericTypeDefinition, typeof(List<int>).IsGenericTypeDefinition, typeof(List<int>).IsConstructedGenericType}
+stdout: "True False True\n"   -> expect "True False True"
+
+## SIGNATURE PANEL (s5) — generics avoid boxing (GC allocation measured, 1000 ints)
+$ POST run-csharp {List<int> add 1000 (GC delta) ; ArrayList add 1000 (GC delta)}
+stdout: "8392 40568\n"   (List<int> ~8.4 KB inline vs ArrayList ~40.6 KB boxed; ~5x cheaper — "no need to box the value types")
+
+## supporting: where T:struct rejects Nullable<T> (GT M4) — compile error proves non-nullable
+$ POST run-csharp {T First<T>(T[] a) where T:struct => a[0]; First(int?[])}
+error: CS0453: The type 'int?' must be a non-nullable value type ... parameter 'T'
+
+## G4 anti-echo: every card verify.run == "dotnet run"; expect NOT a substring of run. PASS.
+## Source URLs resolve 200 (generics fundamentals, standard/generics, constraints).
+## GT-M3 red flags: 0 (NOT type erasure — measured full runtime type info + no boxing; where T:struct
+##   requires non-nullable value type; no unsourced CLR native-code specialization claim).

@@ -1,0 +1,67 @@
+{
+  "id": "CS.S1.generics-basics",
+  "track": "CS",
+  "section": "CS.S1",
+  "module": "S1.8",
+  "title": "Generics: механика и constraints",
+  "status": "published",
+  "order": 8,
+  "sources": [
+    {
+      "id": "ms-generics-cs",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/types/generics",
+      "date": "2026-04-10"
+    },
+    {
+      "id": "ms-generics-std",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/standard/generics/",
+      "date": "2022-07-26"
+    },
+    {
+      "id": "ms-constraints",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/constraints-on-type-parameters",
+      "date": "2025-11-25"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "type inference: Echo<T>(T x)=>x; Echo(42) -> r и r.GetType().Name?",
+      "code": "using System; T Echo<T>(T x) => x; var r = Echo(42); Console.WriteLine($\"{r} {r.GetType().Name}\");",
+      "expectedOutput": "42 Int32",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-generics-std"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "no type erasure: typeof(T).Name for int and string inside a generic?",
+      "code": "using System; string TypeOf<T>() => typeof(T).Name; Console.WriteLine($\"{TypeOf<int>()} {TypeOf<string>()}\");",
+      "expectedOutput": "Int32 String",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-generics-std"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "open vs closed: typeof(List<>) vs typeof(List<int>) — IsGenericTypeDefinition x2, IsConstructedGenericType?",
+      "code": "using System; using System.Collections.Generic; Type open = typeof(List<>); Type closed = typeof(List<int>); Console.WriteLine($\"{open.IsGenericTypeDefinition} {closed.IsGenericTypeDefinition} {closed.IsConstructedGenericType}\");",
+      "expectedOutput": "True False True",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-generics-std"
+      ]
+    }
+  ]
+}
