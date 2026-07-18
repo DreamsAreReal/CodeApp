@@ -1,0 +1,25 @@
+# F8 · S1.7 CS.S1.enum-flags — real run-csharp measurements (POST /api/authoring/run-csharp)
+date: 2026-07-18
+
+## c1 — [Flags]: combine with |, ToString, test with &
+$ POST run-csharp {[Flags] Perm{None=0,Read=1,Write=2,Exec=4}; p=Read|Write; p, (p&Write)==Write, (p&Exec)==Exec}
+stdout: "Read, Write True False\n"   -> expect "Read, Write True False"
+
+## c2 — underlying type is a CHOICE: enum : byte
+$ POST run-csharp {enum Size : byte {S=1,M=2,L=4}; (int)Size.L, GetUnderlyingType.Name}
+stdout: "4 Byte\n"   -> expect "4 Byte"   (enum is NOT always int)
+
+## c3 — default(E) = (E)0 even without a 0-member -> invalid value
+$ POST run-csharp {enum Color{Red=1,Green=2}; c=default; (int)c, c, Enum.IsDefined}
+stdout: "0 0 False\n"   -> expect "0 0 False"
+
+## SIGNATURE PANEL (s5) — enum BOXES (real value type), allocation measured
+$ POST run-csharp {enum E{A,B}; b0=GC.GetAllocatedBytesForCurrentThread(); object boxed=E.B; b1=...; (b1-b0>0), boxed, boxed is Enum}
+stdout: "True B True\n"   (allocation > 0 True; boxed value B; boxed is Enum True — enum is NOT "just int")
+
+## supporting: enum->int is EXPLICIT (only 0 implicit)
+$ POST run-csharp {enum E{A=5,B=6}; E e=0; int x=(int)E.B; e, x} -> "0 6\n"
+
+## G4 anti-echo: every card verify.run == "dotnet run"; expect NOT a substring of run. PASS.
+## Source URL resolves 200 (enum). GT-M3 red flags: 0 (enum not always int; enum->int not implicit;
+##   enum boxes; used the & bit-test pattern, NOT Enum.HasFlag which this page does not document).

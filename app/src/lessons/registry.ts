@@ -207,6 +207,20 @@ const CS_S1: Section = {
       },
       () => import("./cs/interfaces-dim.ts").then((m) => m.interfacesDim),
     ),
+    entry(
+      {
+        id: "CS.S1.enum-flags",
+        track: "CS",
+        section: "CS.S1",
+        title: "Enum и [Flags]: value type под именами",
+        kicker: "C# вглубь · S1 · биты и боксинг",
+        icon: "types",
+        subtitle: "underlying type, [Flags], боксинг, приведения",
+        estMinutes: 9,
+        cards: 3,
+      },
+      () => import("./cs/enum-flags.ts").then((m) => m.enumFlags),
+    ),
   ],
 };
 

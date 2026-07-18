@@ -1,0 +1,55 @@
+{
+  "id": "CS.S1.enum-flags",
+  "track": "CS",
+  "section": "CS.S1",
+  "module": "S1.7",
+  "title": "Enum и [Flags]: value type под именами",
+  "status": "published",
+  "order": 7,
+  "sources": [
+    {
+      "id": "ms-enum",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/enum",
+      "date": "2026-01-14"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "[Flags] Perm: p=Read|Write; ToString(p), (p&Write)==Write, (p&Exec)==Exec?",
+      "code": "using System; [Flags] enum Perm { None=0, Read=1, Write=2, Exec=4 } var p = Perm.Read | Perm.Write; Console.WriteLine($\"{p} {(p & Perm.Write) == Perm.Write} {(p & Perm.Exec) == Perm.Exec}\");",
+      "expectedOutput": "Read, Write True False",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-enum"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "enum Size : byte { S=1,M=2,L=4 }: (int)Size.L и GetUnderlyingType(...).Name?",
+      "code": "using System; enum Size : byte { S=1, M=2, L=4 } Console.WriteLine($\"{(int)Size.L} {Enum.GetUnderlyingType(typeof(Size)).Name}\");",
+      "expectedOutput": "4 Byte",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-enum"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "enum Color{Red=1,Green=2} c=default: (int)c, c, Enum.IsDefined(...)?",
+      "code": "using System; enum Color { Red=1, Green=2 } Color c = default; Console.WriteLine($\"{(int)c} {c} {Enum.IsDefined(typeof(Color), c)}\");",
+      "expectedOutput": "0 0 False",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-enum"
+      ]
+    }
+  ]
+}
