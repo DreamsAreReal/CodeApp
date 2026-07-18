@@ -232,7 +232,11 @@
   border: 1px solid var(--line);
   border-radius: var(--r-m);
   padding: 8px;
-  overflow: hidden;
+  /* Long code lines must stay intact (wrapping breaks code structure): scroll horizontally
+     instead of clipping. -webkit-overflow-scrolling for momentum on iOS Telegram WebView. */
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 .cl-line {
   display: flex;
@@ -244,6 +248,9 @@
   transition: background 0.25s ease, border-color 0.25s ease;
   white-space: pre;
   letter-spacing: -0.01em;
+  /* Don't let a flex line collapse narrower than its content — keep the full code line
+     reachable via the panel's horizontal scroll (fix A: code clipped on narrow screens). */
+  min-width: max-content;
 }
 .cl-line .ln {
   color: var(--muted);
@@ -847,8 +854,20 @@
   font-size: 16px;
   color: var(--ink);
 }
+/* Code inside a predict-output question must render AS code: monospace on a tinted chip,
+   not the proportional display font (fix B). Long inline code wraps so it never overflows the
+   card, and break-word keeps a very long token (e.g. an interpolated string) inside the box. */
 .q-title code {
-  font-size: 0.86em;
+  font-family: var(--mono);
+  font-size: 0.82em;
+  background: var(--code-bg);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 1px 5px;
+  color: var(--ink);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 .opts {
   margin-top: 13px;
