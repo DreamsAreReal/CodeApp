@@ -1,0 +1,53 @@
+# M4 · async state-machine — REAL Roslyn-generated artifact (ilspycmd 10.1.1, Release)
+date: 2026-07-18
+
+## Source (Program.cs, compiled -c Release Optimize=true):
+  public async Task<int> GetValueAsync() { int local = 41; await Task.Delay(100); return local + 1; }
+
+## Command:
+  dotnet build -c Release ; ilspycmd -il asyncsm.dll   (async pattern NOT reconstructed -> raw state machine visible)
+
+## Generated state-machine struct (IL, verbatim key lines):
+	.class nested private auto ansi sealed beforefieldinit '<GetValueAsync>d__0'
+		implements IAsyncStateMachine
+		.field public int32 '<>1__state'
+		.field public valuetype AsyncTaskMethodBuilder`1<int32> '<>t__builder'
+		.field private int32 '<local>5__2'
+		.field private valuetype TaskAwaiter '<>u__1'
+			instance void MoveNext () cil managed 
+			.override method instance void IAsyncStateMachine::MoveNext()
+			IL_0001: ldfld int32 Demo/'<GetValueAsync>d__0'::'<>1__state'
+				IL_000d: stfld int32 Demo/'<GetValueAsync>d__0'::'<local>5__2'
+				IL_002c: stfld int32 Demo/'<GetValueAsync>d__0'::'<>1__state'
+				IL_0033: stfld valuetype TaskAwaiter Demo/'<GetValueAsync>d__0'::'<>u__1'
+				IL_0039: ldflda valuetype AsyncTaskMethodBuilder`1<int32> Demo/'<GetValueAsync>d__0'::'<>t__builder'
+				IL_0041: call instance void valuetype AsyncTaskMethodBuilder`1<int32>::AwaitUnsafeOnCompleted<valuetype TaskAwaiter, valuetype Demo/'<GetValueAsync>d__0'>(!!0&, !!1&)
+				IL_0049: ldfld valuetype TaskAwaiter Demo/'<GetValueAsync>d__0'::'<>u__1'
+				IL_0050: ldflda valuetype TaskAwaiter Demo/'<GetValueAsync>d__0'::'<>u__1'
+				IL_005f: stfld int32 Demo/'<GetValueAsync>d__0'::'<>1__state'
+				IL_006c: ldfld int32 Demo/'<GetValueAsync>d__0'::'<local>5__2'
+				IL_007a: stfld int32 Demo/'<GetValueAsync>d__0'::'<>1__state'
+				IL_0080: ldflda valuetype AsyncTaskMethodBuilder`1<int32> Demo/'<GetValueAsync>d__0'::'<>t__builder'
+				IL_0086: call instance void valuetype AsyncTaskMethodBuilder`1<int32>::SetException(class [System.Runtime]System.Exception)
+			IL_0090: stfld int32 Demo/'<GetValueAsync>d__0'::'<>1__state'
+			IL_0096: ldflda valuetype AsyncTaskMethodBuilder`1<int32> Demo/'<GetValueAsync>d__0'::'<>t__builder'
+			IL_009c: call instance void valuetype AsyncTaskMethodBuilder`1<int32>::SetResult(!0)
+		} // end of method '<GetValueAsync>d__0'::MoveNext
+				class IAsyncStateMachine stateMachine
+			.override method instance void IAsyncStateMachine::SetStateMachine(class IAsyncStateMachine)
+			IL_0001: ldflda valuetype AsyncTaskMethodBuilder`1<int32> Demo/'<GetValueAsync>d__0'::'<>t__builder'
+			IL_0007: call instance void valuetype AsyncTaskMethodBuilder`1<int32>::SetStateMachine(class IAsyncStateMachine)
+		} // end of method '<GetValueAsync>d__0'::SetStateMachine
+
+## Interpretation (для урока — signature machine panel):
+  - компилятор превращает async-метод в СТРУКТУРУ <GetValueAsync>d__0 : IAsyncStateMachine
+  - поле <>1__state — номер состояния (-1 не начато/готово, 0 = ждём на await)
+  - поле <>t__builder = AsyncTaskMethodBuilder<int> — строит и завершает Task
+  - локал int local=41 ГОИСТИТСЯ в поле <local>5__2 (переживает await)
+  - awaiter TaskAwaiter в поле <>u__1
+  - MoveNext(): switch по <>1__state; на await -> AwaitUnsafeOnCompleted + return (НЕ разматывает стек);
+    возобновление -> тот же MoveNext, потом builder.SetResult(local+1)
+
+## ПРОВЕНАНС (GT-M4 §машинная панель п.2, str:F21): имена <>1__state/<>t__builder и emit-скелет
+## MoveNext Learn/Roslyn design НЕ печатают дословно — источник помечен «Roslyn-generated,
+## декомпиляция ilspycmd», уверенность «средняя», как иллюстрация уровня-ниже, НЕ как Learn-факт.
