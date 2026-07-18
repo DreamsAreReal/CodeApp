@@ -18,8 +18,8 @@
  */
 import { api } from "../api/client.ts";
 import type { DueResponse, LessonSummary, ProgressResponse, StatsResponse } from "../api/types.ts";
-import { LESSONS, TRACK_GROUPS } from "../lessons/index.ts";
-import type { LessonMeta, TrackGroup } from "../lessons/index.ts";
+import { LESSONS, TRACK_GROUPS, getTrack, sectionsInPrereqOrder } from "../lessons/index.ts";
+import type { LessonMeta, TrackGroup, Section } from "../lessons/index.ts";
 import { activeGroupId, setActiveGroup } from "./trackPref.ts";
 import type { LessonIcon } from "../lessons/types.ts";
 import { ICON } from "../engine/index.ts";
@@ -549,13 +549,160 @@ function trackArea(rows: LessonRow[], heroRow: LessonRow, state: HomeState, know
   const tabs = `<div class="track-tabs" role="group" aria-label="${esc(S.trackTabsLabel)}">${TRACK_GROUPS.map(chip).join("")}</div>`;
   const sub = g.sub ? `<div class="track-sub">${esc(g.sub)}</div>` : "";
   const groupRows = rows.filter((r) => g.tracks.includes(r.lesson.track));
-  const body = groupRows
-    .map((r, i) => topicRow(r, r === heroRow && state !== "first-run", i, knownDue > 0))
-    .join("");
+  const body = sectionNavBody(g, groupRows, heroRow, state, knownDue);
   return tabs + sub + `<div class="path" data-track-path="${esc(g.id)}">${body}</div>`;
 }
 
-function topicRow(r: LessonRow, active: boolean, index: number, hasSession: boolean): string {
+/**
+ * The "продолжить здесь" recommendation: the first not-yet-completed lesson walking the track's
+ * sections in prereq order (design «Опыт»: S1 → S7 → S17 → S18 → S2 for CS), then lessons in
+ * registry order within each section. Returns null once everything is completed. This is a SOFT
+ * hint only — there is no hard lock; the learner may open any lesson.
+ */
+function recommendedNextLessonId(sections: Section[], rowById: Map<string, LessonRow>): string | null {
+  for (const s of sections)
+    for (const l of s.lessons) {
+      const row = rowById.get(l.id);
+      if (row && !row.completed) return l.id;
+    }
+  return null;
+}
+
+/**
+ * A track group's lessons grouped BY SECTION (F4). A track can span several registry tracks
+ * (e.g. the legacy group), but the wave-1 CS group is one registry track ("CS") with real
+ * sections; PY is a single flat "PY" section. We render every section that has visible rows,
+ * in prereq order, with a per-section progress line and a soft "продолжить" marker on the
+ * recommended next lesson. Sections with no rows in this group are skipped.
+ *
+ * THREE presentation variants (F4 tournament) select on `window.__f4Variant` for pairwise
+ * comparison; the WINNER is the default. See docs/tasks/lessons-corpus/evidence/F4/.
+ */
+function sectionNavBody(
+  g: TrackGroup,
+  groupRows: LessonRow[],
+  heroRow: LessonRow,
+  state: HomeState,
+  knownDue: number,
+): string {
+  const rowById = new Map(groupRows.map((r) => [r.lesson.id, r]));
+  // Collect the registry sections for every registry track in this group, in prereq order.
+  const sections: Section[] = g.tracks
+    .flatMap((trackId) => (getTrack(trackId) ? sectionsInPrereqOrder(trackId) : []));
+  // Fallback: a group whose registry track has no sections (shouldn't happen in wave 1) —
+  // render a single flat section so nothing is ever dropped.
+  const usable = sections.filter((s) => s.lessons.some((l) => rowById.has(l.id)));
+  if (usable.length === 0) {
+    return groupRows.map((r, i) => topicRow(r, r === heroRow && state !== "first-run", i, knownDue > 0)).join("");
+  }
+  const nextId = recommendedNextLessonId(usable, rowById);
+  const variant = (window as unknown as { __f4Variant?: string }).__f4Variant ?? F4_WINNER;
+  const render = SECTION_VARIANTS[variant] ?? SECTION_VARIANTS[F4_WINNER];
+  return render(usable, rowById, { heroRow, state, knownDue, nextId });
+}
+
+interface SectionRenderCtx {
+  heroRow: LessonRow;
+  state: HomeState;
+  knownDue: number;
+  nextId: string | null;
+}
+
+/** Section rows in a group, as LessonRows in registry order (only those present). */
+function sectionRows(s: Section, rowById: Map<string, LessonRow>): LessonRow[] {
+  return s.lessons.map((l) => rowById.get(l.id)).filter((r): r is LessonRow => !!r);
+}
+
+/** Per-section progress: completed lessons / total visible lessons. */
+function sectionProgress(rows: LessonRow[]): { done: number; total: number } {
+  return { done: rows.filter((r) => r.completed).length, total: rows.length };
+}
+
+// The tournament winner (integrated default). See evidence/F4/tournament-section-nav.md.
+const F4_WINNER = "B";
+
+type SectionRenderer = (
+  sections: Section[],
+  rowById: Map<string, LessonRow>,
+  ctx: SectionRenderCtx,
+) => string;
+
+// VARIANT A — MINIMAL: a quiet uppercase section divider + a thin progress caption, then the
+// existing flat topic rows. Least visual weight; the section is a label, not a container.
+const variantA: SectionRenderer = (sections, rowById, ctx) => {
+  let i = 0;
+  return sections
+    .map((s) => {
+      const srows = sectionRows(s, rowById);
+      const { done, total } = sectionProgress(srows);
+      const header =
+        `<div class="sec-label" aria-label="${esc(S.sectionAria(s.title, done, total))}">` +
+        `<span>${esc(s.title)}</span></div>` +
+        `<div class="sec-progress-min">${esc(S.sectionProgress(done, total))}</div>`;
+      const body = srows
+        .map((r) => topicRow(r, r === ctx.heroRow && ctx.state !== "first-run", i++, ctx.knownDue > 0, r.lesson.id === ctx.nextId))
+        .join("");
+      return `<div class="sec-block sec-min">${header}${body}</div>`;
+    })
+    .join("");
+};
+
+// VARIANT B — BOLD (WINNER): each section is a CARD-HEADER with an icon tile, a progress ring,
+// and a "N из M пройдено" line; its lessons nest under it, and the recommended next lesson wears
+// a coral "Продолжить здесь" marker. The section reads as a chapter you are moving through.
+const variantB: SectionRenderer = (sections, rowById, ctx) => {
+  let i = 0;
+  return sections
+    .map((s) => {
+      const srows = sectionRows(s, rowById);
+      const { done, total } = sectionProgress(srows);
+      const pct = total > 0 ? (100 * done) / total : 0;
+      const header =
+        `<div class="sec-head" aria-label="${esc(S.sectionAria(s.title, done, total))}">` +
+        `<span class="sec-head-ic" aria-hidden="true">${TOPIC_ICON.types}</span>` +
+        `<div class="sec-head-body"><div class="sec-head-title">${esc(s.title)}</div>` +
+        `<div class="sec-head-sub">${esc(S.sectionProgress(done, total))}</div></div>` +
+        ring(38, 15, 4, pct, "sec-ring") +
+        `</div>`;
+      const body = srows
+        .map((r) => topicRow(r, r === ctx.heroRow && ctx.state !== "first-run", i++, ctx.knownDue > 0, r.lesson.id === ctx.nextId))
+        .join("");
+      return `<section class="sec-block sec-card">${header}<div class="sec-card-body">${body}</div></section>`;
+    })
+    .join("");
+};
+
+// VARIANT C — RAIL: a stepped left rail of section numbers/titles (echoing the reference's
+// laddered structure) beside the active section's lessons. The rail makes the curriculum shape
+// legible at a glance; lessons of the FIRST (recommended) section render expanded, others collapse
+// to a compact count row you tap to expand. Reference-flavoured: structure-forward.
+const variantC: SectionRenderer = (sections, rowById, ctx) => {
+  let i = 0;
+  return sections
+    .map((s, si) => {
+      const srows = sectionRows(s, rowById);
+      const { done, total } = sectionProgress(srows);
+      const expanded = si === 0; // the recommended section leads, expanded; the rest collapse
+      const rail =
+        `<div class="sec-rail-mark"><span class="sec-rail-num">${si + 1}</span>` +
+        `<span class="sec-rail-line" aria-hidden="true"></span></div>`;
+      const head =
+        `<div class="sec-rail-head" aria-label="${esc(S.sectionAria(s.title, done, total))}">` +
+        `<div class="sec-rail-title">${esc(s.title)}</div>` +
+        `<div class="sec-rail-sub">${esc(S.sectionProgress(done, total))}</div></div>`;
+      const body = expanded
+        ? `<div class="sec-rail-body">${srows
+            .map((r) => topicRow(r, r === ctx.heroRow && ctx.state !== "first-run", i++, ctx.knownDue > 0, r.lesson.id === ctx.nextId))
+            .join("")}</div>`
+        : "";
+      return `<div class="sec-block sec-rail${expanded ? " open" : ""}">${rail}<div class="sec-rail-col">${head}${body}</div></div>`;
+    })
+    .join("");
+};
+
+const SECTION_VARIANTS: Record<string, SectionRenderer> = { A: variantA, B: variantB, C: variantC };
+
+function topicRow(r: LessonRow, active: boolean, index: number, hasSession: boolean, isNext = false): string {
   const icon = TOPIC_ICON[r.lesson.home.icon];
   const smallLabel = r.newCount === r.due && r.due > 0 ? plural(r.due, "новое", "новых", "новых") : S.topicDue;
   let badge: string;
@@ -573,13 +720,16 @@ function topicRow(r: LessonRow, active: boolean, index: number, hasSession: bool
     : r.viewPct > 0
       ? S.topicViewing(Math.round(r.viewPct))
       : escapeHtml(r.lesson.home.subtitle);
+  // The soft "продолжить здесь" marker on the recommended next lesson (prereq order). It is a
+  // hint, not a lock — the row is a normal button and any lesson stays openable.
+  const nextPill = isNext ? `<span class="pill pill-next">${S.sectionNextHint}</span>` : "";
   return `
-    <button class="topic${active ? " active" : ""}" data-lesson="${r.lesson.id}" title="${escapeHtml(r.lesson.title)}" style="animation-delay:${index * 40}ms">
+    <button class="topic${active ? " active" : ""}${isNext ? " topic-next" : ""}" data-lesson="${r.lesson.id}" data-next="${isNext ? "1" : "0"}" title="${escapeHtml(r.lesson.title)}" style="animation-delay:${index * 40}ms">
       <span class="t-ic" aria-hidden="true">${icon}</span>
       <div class="t-body">
         <div class="t-title">${escapeHtml(r.lesson.title)}</div>
         <div class="t-sub">${sub}</div>
-        ${active && hasSession ? `<span class="pill">${S.topicActive}</span>` : ""}
+        ${nextPill || (active && hasSession ? `<span class="pill">${S.topicActive}</span>` : "")}
       </div>
       ${badge}
     </button>`;

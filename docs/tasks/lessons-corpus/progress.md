@@ -117,3 +117,16 @@
 - sim без пейсинга: rate-limit 60/мин рубил grade→карты оставались never-reviewed→накопление isNew. Починка: пейсинг 1.05s + ретрай 429 + ассерт `itemId==` (grade не мог тихо провалиться).
 Доказательство (evidence/F3/limiter.txt, sim-14d-output.txt):
 - fresh due день1 = **10** new (было 66/60), curl PASS. `node verify/sim-14d.mjs` exit 0 (14 дней, new≤10 & due≤25). `dotnet test` **67/67** (+2 лимитер-теста). Регресс харнессов: run/new-lessons/shell/loop ALL GREEN (PY.M1.names-objects/c1 — карта #8, в бюджете 10).
+
+## F4 — Навигация home: трек → раздел → урок (турнир) [self-pass] [золотой путь]
+Сделано:
+- registry: `getTrack(id)`, `sectionsInPrereqOrder(trackId)` (топосорт разделов по `Section.prereqs`, tie-break `order` — мягкая цепочка S1→S7→S17→S18→S2, без хард-лока). Реэкспорт в index.ts.
+- home.ts: `trackArea` группирует уроки активного трека ПО РАЗДЕЛУ (`sectionNavBody`), прогресс раздела (пройдено/всего), мягкая рекомендация «дальше» (`recommendedNextLessonId` = первый непройденный по prereq-порядку) — пилюля «Продолжить здесь» + `data-next`. `topicRow(...isNext)`. Строки `sectionProgress/sectionNextHint/sectionAria`. CSS home.css: 3 варианта + маркер.
+- ТУРНИР нулевого экрана: 3 радикально разных варианта (A минимал-разделитель / B карта-раздел с кольцом / C ступенчатый рельс), скрины 375+768, парные сравнения В ОБОИХ ПОРЯДКАХ. Победитель **B** (карта-раздел): масштаб на N разделов (рельс C схлопывается при 1 разделе волны 1), кольцо = требование design «Опыт». `F4_WINNER="B"` дефолт; A/C переключаемы `__f4Variant` только для турнира.
+Решения:
+- Рекомендация «дальше» — SOFT (пилюля-маркер, не lock): урок остаётся кликабельным. Порядок разделов — топосорт prereqs (не просто order), чтобы цепочка S1→S7→… соблюдалась при добавлении разделов волн 2+.
+Грабли:
+- axe-контраст: `.pill-next` white-on-`--coral`(#f0533a)=3.5:1 < AA 4.5. Починка: `--coral-d`(#c43d28) → 5.19:1 (посчитано + axe-verified). shell/loop axe снова 0 serious/critical.
+- `\bиз\b` в ассерте run.mjs не матчит кириллицу (нет `\w`) → заменил на `\d+ из \d+`.
+Доказательство (evidence/F4/tournament-section-nav.md + 8 png):
+- E2E: раздел-заголовок «Типовая система / 0 из 3 пройдено» рендерится; ровно 1 маркер «дальше» = `CS.S1.type-system-map` (первый по prereq); урок открывается из раздела; 0 console errors (ассерты в run.mjs). build entry 112.57 KB (<G1+10%). 5 харнессов ALL GREEN (axe 0 serious/critical на home).

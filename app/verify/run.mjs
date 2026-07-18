@@ -93,6 +93,22 @@ async function main() {
   assert(ids.includes("CS.S1.type-system-map"), "type-system-map present in path");
   const flagRow = home.lessons.find((l) => l.id === "CS.S1.value-types-copy");
   assert(flagRow.due === flagRow.total && flagRow.total > 0, "value-types-copy shows real due=total for a fresh user");
+
+  // F4 — track → SECTION → lesson navigation (the winning variant B renders a section card
+  // header with a progress line, and a soft "продолжить здесь" marker on the recommended next
+  // lesson = the first not-yet-completed one in prereq order).
+  const secHeadCount = await page.locator(".sec-head").count();
+  assert(secHeadCount >= 1, "home groups the CS track by SECTION (section card header rendered)");
+  const secTitle = await page.locator(".sec-head-title").first().innerText();
+  assert(secTitle.trim().length > 0, `section header carries a title (got "${secTitle}")`);
+  const secSub = await page.locator(".sec-head-sub").first().innerText();
+  assert(/\d+ из \d+/.test(secSub), `section header shows progress "N из M" (got "${secSub}")`);
+  const nextCount = await page.locator('.topic[data-next="1"]').count();
+  assert(nextCount === 1, `exactly one lesson carries the "продолжить" marker (got ${nextCount})`);
+  const nextLesson = await page.locator('.topic[data-next="1"]').first().getAttribute("data-lesson");
+  // Fresh user completed nothing -> the recommendation is the first lesson in prereq order (S1.1).
+  assert(nextLesson === "CS.S1.type-system-map", `recommended-next is the first uncompleted lesson in prereq order (got ${nextLesson})`);
+
   for (const vp of [375, 768, 1440]) {
     await page.setViewportSize(VIEWPORTS[vp]);
     await sleep(250);

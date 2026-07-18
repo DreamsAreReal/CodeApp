@@ -47,6 +47,14 @@ export const S = {
   topicDue: "к повтору",
   topicNew: "новое",
   topicLockedSub: "Скоро · продолжай текущую тему",
+  // ---- F4 section navigation (track → section → lesson) ----
+  // Per-section progress line under a section header: "N из M пройдено".
+  sectionProgress: (done: number, total: number) => `${done} из ${total} пройдено`,
+  // The soft "continue here" hint on the recommended next lesson (prereq order, no hard lock).
+  sectionNextHint: "Продолжить здесь",
+  // Section header ARIA name: "раздел «<title>», N из M уроков пройдено".
+  sectionAria: (title: string, done: number, total: number) =>
+    `раздел «${title}», ${done} из ${total} уроков пройдено`,
   statStreakUnit: "дней",
   // honest per-lesson signals (viewing progress ≠ card mastery)
   heroLessonsCompleted: (done: number, total: number) => `Пройдено тем: ${done} из ${total}`,

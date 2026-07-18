@@ -984,3 +984,191 @@
 .tab.active {
   color: var(--coral-text);
 }
+
+/* ============================================================================
+   F4 · SECTION NAVIGATION (track → section → lesson). Three tournament variants;
+   the winner (B) is the integrated default. All use the frozen cream/coral tokens.
+   ============================================================================ */
+.sec-block {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+.path > .sec-block + .sec-block {
+  margin-top: 18px;
+}
+
+/* soft "продолжить здесь" marker on the recommended lesson (a hint, not a lock).
+   White on --coral (#f0533a) fails AA for this small 10px text; use the darker --coral-d
+   (#c43d28) so white text clears the 4.5:1 threshold (axe-verified). */
+.pill.pill-next {
+  color: #fff;
+  background: var(--coral-d);
+}
+.topic.topic-next {
+  border-color: var(--coral);
+  box-shadow: var(--shadow-1), 0 0 0 1px var(--coral) inset;
+}
+
+/* ---- Variant A · MINIMAL: quiet divider + thin progress caption ---- */
+.sec-min .sec-progress-min {
+  font-size: 11px;
+  color: var(--muted);
+  padding: 0 2px 2px;
+  margin-top: -4px;
+}
+
+/* ---- Variant B · BOLD (WINNER): section card-header with ring ---- */
+.sec-card {
+  gap: 0;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-l, 22px);
+  box-shadow: var(--shadow-1);
+  overflow: hidden;
+}
+.sec-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: linear-gradient(180deg, rgba(240, 83, 58, 0.05), rgba(240, 83, 58, 0));
+  border-bottom: 1px solid var(--line);
+}
+.sec-head-ic {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--sage-tint);
+  color: var(--sage-text);
+}
+.sec-head-ic svg {
+  width: 19px;
+  height: 19px;
+}
+.sec-head-body {
+  flex: 1;
+  min-width: 0;
+}
+.sec-head-title {
+  font-family: Rubik, system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--ink);
+}
+.sec-head-sub {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 1px;
+}
+.sec-ring {
+  flex: none;
+  position: relative;
+  width: 38px;
+  height: 38px;
+}
+.sec-ring svg {
+  width: 38px;
+  height: 38px;
+  transform: rotate(-90deg);
+}
+.sec-ring .track {
+  stroke: var(--line);
+}
+.sec-ring .val {
+  stroke: var(--coral);
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.sec-ring .pct {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.sec-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+}
+/* inside the card, topics are flatter (the card already carries the elevation) */
+.sec-card-body .topic {
+  box-shadow: none;
+  background: var(--bg);
+}
+.sec-card-body .topic.topic-next {
+  background: var(--surface);
+}
+
+/* ---- Variant C · RAIL: stepped left rail beside the active section ---- */
+.sec-rail {
+  flex-direction: row;
+  gap: 12px;
+  align-items: stretch;
+}
+.sec-rail-mark {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 26px;
+}
+.sec-rail-num {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+.sec-rail.open .sec-rail-num {
+  color: #fff;
+  background: var(--coral);
+  border-color: var(--coral);
+}
+.sec-rail-line {
+  flex: 1;
+  width: 2px;
+  background: var(--line);
+  margin-top: 4px;
+}
+.sec-rail-col {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.sec-rail-head {
+  padding-top: 3px;
+}
+.sec-rail-title {
+  font-family: Rubik, system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--ink);
+}
+.sec-rail-sub {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 1px;
+}
+.sec-rail-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}

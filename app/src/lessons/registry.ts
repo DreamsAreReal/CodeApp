@@ -280,3 +280,41 @@ export function firstSectionId(): string | undefined {
 export function sectionLessonIds(sectionId: string): string[] {
   return SECTION_BY_ID.get(sectionId)?.lessons.map((e) => e.id) ?? [];
 }
+
+const TRACK_BY_ID = new Map<string, Track>(TRACKS.map((t) => [t.id, t]));
+
+/** The track object for an id (undefined if unknown). */
+export function getTrack(id: string): Track | undefined {
+  return TRACK_BY_ID.get(id);
+}
+
+/**
+ * A track's sections in RECOMMENDED order (F4 «дальше»-цепочка): a stable topological sort by
+ * `Section.prereqs` (a section comes after all of its prereqs), with `Section.order` as the
+ * deterministic tie-break. This is the SOFT recommendation order (design «Опыт»: S1 → S7 → S17
+ * → S18 → S2 for CS) — there is no hard lock in wave 1, so a learner may open any section; this
+ * only drives which lesson the "продолжить" hint points at. Cycles/dangling prereqs degrade
+ * gracefully to `order` (a prereq not in this track is ignored).
+ */
+export function sectionsInPrereqOrder(trackId: string): Section[] {
+  const track = TRACK_BY_ID.get(trackId);
+  if (!track) return [];
+  const sections = [...track.sections].sort((a, b) => a.order - b.order);
+  const byId = new Map(sections.map((s) => [s.id, s]));
+  const out: Section[] = [];
+  const done = new Set<string>();
+  const visiting = new Set<string>();
+  const visit = (s: Section): void => {
+    if (done.has(s.id) || visiting.has(s.id)) return; // done or a cycle back-edge → stop
+    visiting.add(s.id);
+    for (const p of s.prereqs) {
+      const dep = byId.get(p); // ignore prereqs pointing outside this track
+      if (dep) visit(dep);
+    }
+    visiting.delete(s.id);
+    done.add(s.id);
+    out.push(s);
+  };
+  for (const s of sections) visit(s); // iterate in `order` so ties resolve deterministically
+  return out;
+}

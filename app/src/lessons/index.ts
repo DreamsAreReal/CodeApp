@@ -25,6 +25,8 @@ import {
   prefetchSection,
   firstSectionId,
   sectionLessonIds,
+  getTrack,
+  sectionsInPrereqOrder,
 } from "./registry.ts";
 import type { LessonManifestEntry, Section, Track } from "./registry.ts";
 import { S } from "../strings.ts";
@@ -93,7 +95,7 @@ export function hasLesson(id: string): boolean {
  * warms a given section; `sectionLessonIds` lists a section's lesson ids.
  */
 export { prefetchSection, firstSectionId, sectionLessonIds };
-export { getEntry };
+export { getEntry, getTrack, sectionsInPrereqOrder };
 export type { LessonManifestEntry, Section, Track };
 export { TRACKS };
 
