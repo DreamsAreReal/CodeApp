@@ -1,0 +1,23 @@
+# F8 · S1.9 CS.S1.nullable — real run-csharp measurements (POST /api/authoring/run-csharp)
+date: 2026-07-18
+
+## c1 / SIGNATURE PANEL — boxing int? boxes the UNDERLYING type (Int32), not Nullable<T>
+$ POST run-csharp {int? n = 17; object boxed = n; boxed.GetType().Name, boxed is int}
+stdout: "Int32 True\n"   -> expect "Int32 True"   (int? is a struct; boxed is Int32, is int True)
+
+## c2 — int? IS a value type (struct); null = HasValue==false; GetValueOrDefault
+$ POST run-csharp {int? n=null; typeof(int?).IsValueType, n.HasValue, n.GetValueOrDefault()}
+stdout: "True False 0\n"   -> expect "True False 0"
+
+## c3 — lifted operators: null propagates; comparisons with null -> false (both sides)
+$ POST run-csharp {int? a=5,b=null; a+b==null, a>b, a<b}
+stdout: "True False False\n"   -> expect "True False False"   (a>b false does NOT mean a<b true)
+
+## supporting: boxing null nullable -> null; .Value throws when empty
+$ POST run-csharp {int? n=null; object boxed=n; boxed==null} -> "True\n"
+$ POST run-csharp {int? n=null; try n.Value catch InvalidOperationException} -> "InvalidOperationException\n"
+
+## G4 anti-echo: every card verify.run == "dotnet run"; expect NOT a substring of run. PASS.
+## Source URLs resolve 200 (nullable-value-types, Nullable<T> API). GT-M3 red flags: 0
+##   (int? is a struct not reference type; boxing gives null or boxed T not boxed Nullable<T>;
+##   .Value throws when empty; nullable value type != nullable reference type).

@@ -1,0 +1,61 @@
+{
+  "id": "CS.S1.nullable",
+  "track": "CS",
+  "section": "CS.S1",
+  "module": "S1.9",
+  "title": "Nullable<T>: value type, который умеет null",
+  "status": "published",
+  "order": 9,
+  "sources": [
+    {
+      "id": "ms-nullable",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/nullable-value-types",
+      "date": "2026-01-14"
+    },
+    {
+      "id": "ms-nullable-api",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/api/system.nullable-1",
+      "date": "2025-07-01"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "boxing int? 17 -> boxed.GetType().Name и boxed is int?",
+      "code": "using System; int? n = 17; object boxed = n; Console.WriteLine($\"{boxed.GetType().Name} {boxed is int}\");",
+      "expectedOutput": "Int32 True",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-nullable"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "int? n=null: typeof(int?).IsValueType, n.HasValue, n.GetValueOrDefault()?",
+      "code": "using System; int? n = null; Console.WriteLine($\"{typeof(int?).IsValueType} {n.HasValue} {n.GetValueOrDefault()}\");",
+      "expectedOutput": "True False 0",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-nullable"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "lifted: int? a=5,b=null: a+b==null, a>b, a<b?",
+      "code": "using System; int? a = 5; int? b = null; Console.WriteLine($\"{a+b == null} {(a > b)} {(a < b)}\");",
+      "expectedOutput": "True False False",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-nullable"
+      ]
+    }
+  ]
+}

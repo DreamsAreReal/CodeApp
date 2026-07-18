@@ -235,6 +235,20 @@ const CS_S1: Section = {
       },
       () => import("./cs/generics-basics.ts").then((m) => m.genericsBasics),
     ),
+    entry(
+      {
+        id: "CS.S1.nullable",
+        track: "CS",
+        section: "CS.S1",
+        title: "Nullable<T>: value type, который умеет null",
+        kicker: "C# вглубь · S1 · структура под T?",
+        icon: "types",
+        subtitle: "Nullable<T> struct, боксинг, lifted operators",
+        estMinutes: 9,
+        cards: 3,
+      },
+      () => import("./cs/nullable.ts").then((m) => m.nullable),
+    ),
   ],
 };
 
