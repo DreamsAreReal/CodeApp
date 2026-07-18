@@ -295,53 +295,54 @@ async function main() {
   const progBefore = await apiGet(`/api/progress`, COMPLETE_USER);
   assert(progBefore.lessonsCompleted === 0 && progBefore.segmentsViewed === 0, "backend baseline: nothing viewed");
 
-  // open the boxing lesson (7 segments) and view all of them, then answer + grade
-  await page3.evaluate(() => window.__app.openLesson("T1.M3.boxing"));
-  await page3.waitForFunction(() => window.__viz && window.__viz.ready && window.__lesson && window.__lesson.id === "T1.M3.boxing", { timeout: 15000 });
+  // open value-types-copy (6 segments) and view all of them, then answer + grade
+  const VTC_C1_EXPECT = "a=(1,2) b=(99,2)"; // value-types-copy/c1 verify.expect (real dotnet stdout)
+  await page3.evaluate(() => window.__app.openLesson("CS.S1.value-types-copy"));
+  await page3.waitForFunction(() => window.__viz && window.__viz.ready && window.__lesson && window.__lesson.id === "CS.S1.value-types-copy", { timeout: 15000 });
   const total = await page3.evaluate(() => window.__lesson.segments);
-  assert(total === 7, "boxing has 7 segments (segmentsTotal)");
+  assert(total === 6, "value-types-copy has 6 segments (segmentsTotal)");
   await page3.evaluate(() => window.__viz.forcePlayAll()); // marks every segment seen -> partial reports
   await sleep(600); // let the debounced partial report flush
-  // answer correctly by TYPING the real expected output "123", tap "уверен", grade Good ->
+  // answer correctly by TYPING the real expected output, tap "уверен", grade Good ->
   // completion report fires (typed generation flow, not MCQ)
-  assert(await page3.locator("#qTyped").count() === 1, "boxing card renders typed-answer input (generation)");
+  assert(await page3.locator("#qTyped").count() === 1, "value-types-copy card renders typed-answer input (generation)");
   await page3.locator("#qTyped").scrollIntoViewIfNeeded();
-  await page3.fill("#qTyped", "123");
+  await page3.fill("#qTyped", VTC_C1_EXPECT);
   await page3.click('[data-conf="1"]'); // calibration: уверен
   await page3.click("#qCheck");
   await page3.waitForSelector("#qVerdict", { state: "visible", timeout: 8000 });
-  const boxAnswer = await page3.evaluate(() => window.__lastAnswer);
-  assert(boxAnswer.correct === true && boxAnswer.confidence === true, "typed ✓ + confidence captured (right+sure = well-calibrated)");
+  const vtcAnswer = await page3.evaluate(() => window.__lastAnswer);
+  assert(vtcAnswer.correct === true && vtcAnswer.confidence === true, "typed ✓ + confidence captured (right+sure = well-calibrated)");
   assert(await page3.locator('.grade-btn[data-g="3"].preselected').count() === 1, "correct -> Good (3) pre-selected");
   await page3.click('.grade-btn[data-g="3"]');
   await page3.waitForFunction(() => window.__lastReview, { timeout: 8000 });
   // wait for the completion report to reach the client hook
   await page3.waitForFunction(
-    () => window.__lessonProgress && window.__lessonProgress.completed === true && window.__lessonProgress.lessonId === "T1.M3.boxing",
+    () => window.__lessonProgress && window.__lessonProgress.completed === true && window.__lessonProgress.lessonId === "CS.S1.value-types-copy",
     { timeout: 8000 },
   );
   const lprog = await page3.evaluate(() => window.__lessonProgress);
   log("  __lessonProgress: " + JSON.stringify(lprog));
   assert(lprog.completed === true, "client saw completion report (completed=true)");
-  assert(lprog.segmentsSeen === 7 && lprog.segmentsTotal === 7, "completion report is 7/7 segments");
+  assert(lprog.segmentsSeen === 6 && lprog.segmentsTotal === 6, "completion report is 6/6 segments");
 
   // the SERVER now shows the lesson completed + segments seen (real, persisted)
   const progAfter = await apiGet(`/api/progress`, COMPLETE_USER);
   assert(progAfter.lessonsCompleted >= 1, `/api/progress lessonsCompleted>=1 (got ${progAfter.lessonsCompleted})`);
-  assert(progAfter.segmentsViewed >= 7, `/api/progress segmentsViewed>=7 (got ${progAfter.segmentsViewed})`);
-  const boxingRow = progAfter.perLesson.find((l) => l.lessonId === "T1.M3.boxing");
-  assert(boxingRow && boxingRow.completed === true, "per-lesson boxing.completed=true on the server");
-  assert(boxingRow.segmentsSeen === 7, "per-lesson boxing.segmentsSeen=7 on the server");
+  assert(progAfter.segmentsViewed >= 6, `/api/progress segmentsViewed>=6 (got ${progAfter.segmentsViewed})`);
+  const vtcRow = progAfter.perLesson.find((l) => l.lessonId === "CS.S1.value-types-copy");
+  assert(vtcRow && vtcRow.completed === true, "per-lesson value-types-copy.completed=true on the server");
+  assert(vtcRow.segmentsSeen === 6, "per-lesson value-types-copy.segmentsSeen=6 on the server");
 
-  // returning home reflects it HONESTLY: 1 lesson completed, and boxing shows completed
+  // returning home reflects it HONESTLY: 1 lesson completed, and value-types-copy shows completed
   await page3.evaluate(() => window.__app.showHome());
   await page3.waitForFunction(() => window.__home && window.__home.lessonsCompleted >= 1, { timeout: 8000 });
   const homeAfter = await page3.evaluate(() => window.__home);
   assert(homeAfter.lessonsCompleted >= 1, `home shows lessonsCompleted>=1 (got ${homeAfter.lessonsCompleted})`);
-  assert(homeAfter.segmentsViewed >= 7, "home shows segments viewed after completion");
-  const homeBoxing = homeAfter.lessons.find((l) => l.id === "T1.M3.boxing");
-  assert(homeBoxing.completed === true, "home per-lesson boxing.completed=true (honest, not 'not due')");
-  assert(homeBoxing.viewPct === 100, "home boxing viewPct=100 (segments viewed, honest)");
+  assert(homeAfter.segmentsViewed >= 6, "home shows segments viewed after completion");
+  const homeVtc = homeAfter.lessons.find((l) => l.id === "CS.S1.value-types-copy");
+  assert(homeVtc.completed === true, "home per-lesson value-types-copy.completed=true (honest, not 'not due')");
+  assert(homeVtc.viewPct === 100, "home value-types-copy viewPct=100 (segments viewed, honest)");
   // honesty guard: a lesson the user only reviewed a card for (not viewed) must NOT be 'completed'
   const anyOverstated = homeAfter.lessons.some((l) => l.completed && l.viewPct < 100);
   assert(!anyOverstated, "no lesson is marked completed without 100% segments viewed (never overstates)");

@@ -26,10 +26,9 @@ export const S = {
   heroMinutes: (n: number) => `~${n} мин`,
   // ---- track switcher (home path shows ONE group at a time — chips over the path;
   //      groups come from TRACK_GROUPS in lessons/index.ts) ----
-  trackCsharpLabel: "Фундамент C#",
-  // New re-built C# track (ADR-0004): «C#/.NET вглубь» — sectioned track (S1 type system,
-  // S2 async, S7 memory/GC, …). Shown as its own home group; the legacy T1/T2 lessons keep
-  // the «Фундамент C#» group until the F2 migration retires them.
+  // Re-built C# track (ADR-0004): «C#/.NET вглубь» — sectioned track (S1 type system,
+  // S2 async, S7 memory/GC, …), its own home group. The legacy «Фундамент C#» group and its
+  // 6 T1/T2 lessons were retired in the F2 migration.
   trackCsDeepLabel: "C#/.NET вглубь",
   trackCsDeepSub: "Уровень ниже абстракции: IL, стек/куча, стейт-машины",
   trackPythonLabel: "Python для AQA",

@@ -125,8 +125,8 @@ public sealed class ApiTests : IClassFixture<ApiTests.Factory>
         long user = FreshUser();
         string token = await AuthToken(user);
 
-        var good = await Json(await Post("/api/review", token, new { itemId = "T1.M3.boxing/c1", grade = 3 }));
-        var again = await Json(await Post("/api/review", token, new { itemId = "T1.M3.boxing/c2", grade = 1 }));
+        var good = await Json(await Post("/api/review", token, new { itemId = "CS.S1.value-types-copy/c1", grade = 3 }));
+        var again = await Json(await Post("/api/review", token, new { itemId = "CS.S1.value-types-copy/c2", grade = 1 }));
 
         Assert.True(good.GetProperty("intervalDays").GetDouble()
                     > again.GetProperty("intervalDays").GetDouble());
@@ -250,7 +250,7 @@ public sealed class ApiTests : IClassFixture<ApiTests.Factory>
     public async Task LessonProgress_IsMonotonic_AndReflectedInProgress()
     {
         long user = FreshUser();
-        const string lesson = "T1.M3.boxing";
+        const string lesson = "CS.S1.value-types-copy";
         string token = await AuthToken(user);
 
         // First report: got 3 of 7 segments, not completed.
@@ -299,7 +299,7 @@ public sealed class ApiTests : IClassFixture<ApiTests.Factory>
         long user = FreshUser();
         string token = await AuthToken(user);
         await Post("/api/lesson-progress", token,
-            new { lessonId = "T1.M3.boxing", segmentsSeen = 7, segmentsTotal = 7, completed = true });
+            new { lessonId = "CS.S1.value-types-copy", segmentsSeen = 7, segmentsTotal = 7, completed = true });
 
         Assert.Equal(1, (await Json(await Get("/api/progress", token)))
             .GetProperty("lessonsCompleted").GetInt32());
@@ -320,11 +320,11 @@ public sealed class ApiTests : IClassFixture<ApiTests.Factory>
         string token = await AuthToken(user);
 
         // right + sure  -> well-calibrated
-        await Post("/api/review", token, new { itemId = "T1.M3.boxing/c1", grade = 3, correct = true, confidence = true });
+        await Post("/api/review", token, new { itemId = "CS.S1.value-types-copy/c1", grade = 3, correct = true, confidence = true });
         // wrong + sure  -> overconfident (the valuable signal)
-        await Post("/api/review", token, new { itemId = "T1.M2.value-vs-reference/c1", grade = 1, correct = false, confidence = true });
+        await Post("/api/review", token, new { itemId = "CS.S1.type-system-map/c1", grade = 1, correct = false, confidence = true });
         // right + unsure -> underconfident
-        await Post("/api/review", token, new { itemId = "T1.M4.gc/c1", grade = 3, correct = true, confidence = false });
+        await Post("/api/review", token, new { itemId = "CS.S1.classes-virtual-dispatch/c1", grade = 3, correct = true, confidence = false });
 
         var p = await Json(await Get("/api/progress", token));
         var cal = p.GetProperty("calibration");
@@ -344,7 +344,7 @@ public sealed class ApiTests : IClassFixture<ApiTests.Factory>
         string token = await AuthToken(user);
 
         // The exact OLD request shape (itemId + grade only) must still work and record no calibration.
-        var r = await Post("/api/review", token, new { itemId = "T1.M3.boxing/c1", grade = 3 });
+        var r = await Post("/api/review", token, new { itemId = "CS.S1.value-types-copy/c1", grade = 3 });
         r.EnsureSuccessStatusCode();
 
         var p = await Json(await Get("/api/progress", token));
@@ -360,10 +360,10 @@ public sealed class ApiTests : IClassFixture<ApiTests.Factory>
         string token = await AuthToken(user);
 
         // A mix: one fully-rated, one with only `correct`, one with only `confidence`, one bare.
-        await Post("/api/review", token, new { itemId = "T1.M3.boxing/c1", grade = 3, correct = true, confidence = true });
-        await Post("/api/review", token, new { itemId = "T1.M2.value-vs-reference/c1", grade = 3, correct = true });
-        await Post("/api/review", token, new { itemId = "T1.M4.gc/c1", grade = 3, confidence = true });
-        await Post("/api/review", token, new { itemId = "T2.M2.closures/c1", grade = 3 });
+        await Post("/api/review", token, new { itemId = "CS.S1.value-types-copy/c1", grade = 3, correct = true, confidence = true });
+        await Post("/api/review", token, new { itemId = "CS.S1.type-system-map/c1", grade = 3, correct = true });
+        await Post("/api/review", token, new { itemId = "CS.S1.classes-virtual-dispatch/c1", grade = 3, confidence = true });
+        await Post("/api/review", token, new { itemId = "CS.S1.classes-virtual-dispatch/c2", grade = 3 });
 
         var cal = (await Json(await Get("/api/progress", token))).GetProperty("calibration");
         // Only the first event has BOTH correct AND confidence -> it alone is eligible.
@@ -376,7 +376,7 @@ public sealed class ApiTests : IClassFixture<ApiTests.Factory>
     {
         long user = FreshUser();
         string token = await AuthToken(user);
-        await Post("/api/review", token, new { itemId = "T1.M3.boxing/c1", grade = 3, correct = true, confidence = true });
+        await Post("/api/review", token, new { itemId = "CS.S1.value-types-copy/c1", grade = 3, correct = true, confidence = true });
         Assert.Equal(1, (await Json(await Get("/api/progress", token)))
             .GetProperty("calibration").GetProperty("answered").GetInt32());
 
@@ -517,7 +517,7 @@ public sealed class ApiTests : IClassFixture<ApiTests.Factory>
     public async Task Review_OutOfRangeGrade_Is400(int grade)
     {
         string token = await AuthToken(FreshUser());
-        var r = await Post("/api/review", token, new { itemId = "T1.M3.boxing/c1", grade });
+        var r = await Post("/api/review", token, new { itemId = "CS.S1.value-types-copy/c1", grade });
         Assert.Equal(HttpStatusCode.BadRequest, r.StatusCode);
     }
 
@@ -535,7 +535,7 @@ public sealed class ApiTests : IClassFixture<ApiTests.Factory>
     {
         string token = await AuthToken(FreshUser());
         var r = await Post("/api/lesson-progress", token,
-            new { lessonId = "T1.M3.boxing", segmentsSeen = -1, segmentsTotal = 3, completed = false });
+            new { lessonId = "CS.S1.value-types-copy", segmentsSeen = -1, segmentsTotal = 3, completed = false });
         Assert.Equal(HttpStatusCode.BadRequest, r.StatusCode);
     }
 
@@ -634,12 +634,12 @@ public sealed class ApiTests : IClassFixture<ApiTests.Factory>
         for (int i = 0; i < nA; i++)
             all.Add(Post("/api/review", tokenA, new { itemId = itemsA[i].GetProperty("itemId").GetString(), grade = 3 }));
         all.Add(Post("/api/lesson-progress", tokenA,
-            new { lessonId = "T1.M3.boxing", segmentsSeen = 4, segmentsTotal = 7, completed = false }));
+            new { lessonId = "CS.S1.value-types-copy", segmentsSeen = 4, segmentsTotal = 7, completed = false }));
         // B: nB reviews (all Again -> lapses) + a DIFFERENT lesson-progress report.
         for (int i = 0; i < nB; i++)
             all.Add(Post("/api/review", tokenB, new { itemId = itemsB[i].GetProperty("itemId").GetString(), grade = 1 }));
         all.Add(Post("/api/lesson-progress", tokenB,
-            new { lessonId = "T1.M2.value-vs-reference", segmentsSeen = 7, segmentsTotal = 7, completed = true }));
+            new { lessonId = "CS.S1.type-system-map", segmentsSeen = 7, segmentsTotal = 7, completed = true }));
 
         var results = await Task.WhenAll(all);
         foreach (var res in results)
@@ -757,7 +757,7 @@ public sealed class ApiTests : IClassFixture<ApiTests.Factory>
         // that would perturb the count — the limiter, not the handler, decides the outcome.
         HttpRequestMessage Build() =>
             Req(HttpMethod.Post, "/api/lesson-progress", token,
-                new { lessonId = "T1.M3.boxing", segmentsSeen = 1, segmentsTotal = 7, completed = false });
+                new { lessonId = "CS.S1.value-types-copy", segmentsSeen = 1, segmentsTotal = 7, completed = false });
 
         // The first 3 requests fit the permit and succeed (200).
         for (int i = 1; i <= 3; i++)

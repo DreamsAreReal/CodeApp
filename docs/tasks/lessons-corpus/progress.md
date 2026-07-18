@@ -89,3 +89,16 @@
 - Section-scoped (вариант C ADR-0005): греем только вход первой сессии (S1, 3 тела). Остальное — lazy по клику (контракт `runLesson` уже рисует loading-скелет + `await loadLesson` на промах кэша — ADR-0003 fallback).
 Доказательство (evidence/M2/0b-section-on-demand.txt):
 - home: было 22/22 тел → стало **3/22** (ровно уроки CS.S1). Холодный урок вне S1 (PY.M6.generators) открывается по требованию — 6 сегментов. `run.mjs` ALL GREEN (lesson-open путь цел). build entry 111.60 KB (+0.30 KB хелперы, << G1).
+
+## F2 — Миграция удаления 6 старых C#-уроков [self-pass]
+Сделано:
+- Удалены (git rm) 6 TS (`value-vs-reference,boxing,gc,async-await,closures,hashtable`) + 6 сид-JSON (T1.M2/M3/M4, T2.M1/M2/M5). Registry: убран `LEGACY_CS` трек → `TRACKS=[CS,PY]`; `firstSectionId` упрощён (нет legacy-фильтра); `index.ts` TRACK_GROUPS без ветки LEGACY_CS; `strings.trackCsharpLabel` удалён (осиротел). Комментарий lessonRunner обезличен.
+- Харнессы переведены на CS.S1: `run.mjs` (value-types-copy 6 сег + type-system-map 5 сег; expect'ы новых карт), `shell.mjs` (value-types-copy 6/6 completion), `new-lessons.mjs` (EXPECT = 3 CS.S1 + 13 PY; grade-петля на classes-virtual-dispatch/c1 + value-types-copy/c1), `viz-fit.mjs` (SHOTS → панели CS.S1). Backend-тесты: старые id → реальные сидовые CS id (`T1.M3.boxing/c1`→`CS.S1.value-types-copy/c1` и т.д.).
+- dev-БД: остановил backend → удалил stale-копии сидов из bin/Debug → явный purge `DELETE ... WHERE item_id LIKE 'T1.%' OR 'T2.%'` из review_state/progress_events/items (ловит и сироту `T1.M3.boxing/c2`, которой не было в items — ReconcileCatalog её бы не поймал) → рестарт backend (ReconcileCatalog доотсекает по сиду).
+Решения:
+- Явный SQL-purge помимо серверного `ReconcileCatalog` (Db.cs): reconcile каскадит только по строкам, что ЕСТЬ в `items`; сирота в review_state без items-строки требует прямого DELETE. Зафиксировано как решение F2.
+- Backend-тесты правлю (в скоупе F2 «правка харнессов»): ссылались на сидовые id удалённых уроков; 2 теста (persist-across-restart, progress-monotonic) падали на членстве в due/каталоге. Ассерты НЕ ослаблены — только подменены id на реальные сидовые.
+Грабли:
+- 2 упавших dotnet-теста после удаления сидов — не логика, а ссылки на несуществующие теперь id. Правка = ремап id, ассерты целы. 65/65 восстановлено.
+Доказательство (evidence/F2/migration.txt):
+- grep старых id (app/backend/verify, без bin/obj/dist/node_modules) = **0** (exit 1). Сироты: review_state/progress_events/items по T1./T2. = **0/0/0**. `/api/due ⊆ registry`: каталог 16 (3 CS+13 PY), fresh due=60, legacy в due=[]. PY нетронут: 13 сидов/53 карты/13 registry, DB PY items=53/review_state=3415. 5 харнессов ALL GREEN + `dotnet test` 65/65.

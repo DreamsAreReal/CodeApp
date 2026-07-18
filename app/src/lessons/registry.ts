@@ -110,9 +110,9 @@ function entry(
 // ===========================================================================
 //
 // New C# track "CS" (ADR-0004): sectioned, wave-1 sections S1/S2/S7/S17/S18/S4.
-// Legacy T1/T2 lessons stay live under the «Фундамент C#» flat group until F2
-// migration retires them; Python PY.* lessons are a flat group (untouched, G5).
-// Every `import()` is a self-contained chunk — Vite code-splits automatically.
+// The legacy T1/T2 C# lessons were retired in the F2 migration; Python PY.* lessons are
+// a flat group (untouched, G5). Every `import()` is a self-contained chunk — Vite
+// code-splits automatically.
 
 const CS_S1: Section = {
   id: "CS.S1",
@@ -176,53 +176,9 @@ const CS_TRACK: Track = {
   sections: [CS_S1],
 };
 
-// Legacy C# track (T1/T2) — kept as a single flat section until F2 migration.
-const LEGACY_CS: Track = {
-  id: "LEGACY_CS",
-  title: S.trackCsharpLabel,
-  sections: [
-    {
-      id: "T1",
-      title: S.trackCsharpLabel,
-      order: 90,
-      prereqs: [],
-      lessons: [
-        entry(
-          { id: "T1.M2.value-vs-reference", track: "T1", section: "T1", title: "Value vs reference", kicker: "Ядро C# · память", icon: "types", subtitle: "Копия значения против ссылки", estMinutes: 7, cards: 1 },
-          () => import("./value-vs-reference.ts").then((m) => m.valueVsReference),
-        ),
-        entry(
-          { id: "T1.M3.boxing", track: "T1", section: "T1", title: "Boxing и unboxing", kicker: "Ядро C# · память · нюанс", icon: "types", subtitle: "Упаковка, IL, куча и цена в цикле", estMinutes: 9, cards: 1 },
-          () => import("./boxing.ts").then((m) => m.boxing),
-        ),
-        entry(
-          { id: "T1.M4.gc", track: "T1", section: "T1", title: "Сборка мусора", kicker: "Ядро C# · GC", icon: "gc", subtitle: "Поколения, куча, продвижение, LOH", estMinutes: 9, cards: 1 },
-          () => import("./gc.ts").then((m) => m.gc),
-        ),
-      ],
-    },
-    {
-      id: "T2",
-      title: S.trackCsharpLabel,
-      order: 91,
-      prereqs: [],
-      lessons: [
-        entry(
-          { id: "T2.M1.async-await", track: "T2", section: "T2", title: "async/await", kicker: "Ядро C# · async", icon: "async", subtitle: "Стейт-машина, await, дедлок", estMinutes: 9, cards: 1 },
-          () => import("./async-await.ts").then((m) => m.asyncAwait),
-        ),
-        entry(
-          { id: "T2.M2.closures", track: "T2", section: "T2", title: "Замыкания", kicker: "Ядро C# · делегаты", icon: "types", subtitle: "Захват переменных, компиляторные классы", estMinutes: 8, cards: 1 },
-          () => import("./closures.ts").then((m) => m.closures),
-        ),
-        entry(
-          { id: "T2.M5.hashtable", track: "T2", section: "T2", title: "Hashtable и Dictionary", kicker: "Ядро C# · коллекции", icon: "collections", subtitle: "Бакеты, коллизии, resize", estMinutes: 9, cards: 1 },
-          () => import("./hashtable.ts").then((m) => m.hashtable),
-        ),
-      ],
-    },
-  ],
-};
+// The legacy flat C# track and its 6 old lessons were removed in the F2 migration (their
+// files + seeds deleted, orphan review rows purged). Every topic is re-covered by the new
+// sectioned CS track (RS-03 anti-regression matrix). Only CS and PY groups remain.
 
 // Python track (flat) — untouched (G5).
 const PY_TRACK: Track = {
@@ -256,7 +212,7 @@ const PY_TRACK: Track = {
 };
 
 /** All tracks, in home render order. */
-export const TRACKS: Track[] = [CS_TRACK, LEGACY_CS, PY_TRACK];
+export const TRACKS: Track[] = [CS_TRACK, PY_TRACK];
 
 // ---------------------------------------------------------------------------
 // Flat views over the registry (used by home / progress / the runner).
@@ -310,15 +266,13 @@ export function prefetchSection(sectionId: string): Promise<void> {
 }
 
 /**
- * The section that opens the first session: the lowest-`order` section of the first NON-legacy
- * track (design «Опыт»: the CS track's S1 is entered first). Legacy T1/T2 sections carry a high
- * order so they never win here. Returns undefined only if there are no sections at all.
+ * The section that opens the first session: the lowest-`order` section across all tracks
+ * (design «Опыт»: the CS track's S1, order 1, is entered first). Returns undefined only if
+ * there are no sections at all.
  */
 export function firstSectionId(): string | undefined {
-  const nonLegacy = TRACKS.filter((t) => t.id !== "LEGACY_CS").flatMap((t) => t.sections);
-  const pool = nonLegacy.length > 0 ? nonLegacy : ALL_SECTIONS;
   let best: Section | undefined;
-  for (const s of pool) if (!best || s.order < best.order) best = s;
+  for (const s of ALL_SECTIONS) if (!best || s.order < best.order) best = s;
   return best?.id;
 }
 

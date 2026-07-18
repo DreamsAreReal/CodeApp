@@ -1,6 +1,6 @@
 /**
  * LessonRunner — a GENERIC renderer for any lesson-as-data. It is not aware of
- * boxing or value-vs-reference specifically: it walks `lesson.segments[]` and
+ * any specific lesson: it walks `lesson.segments[]` and
  * mounts each one as its own animated card (shared living-diagram engine), then
  * the predict MCQ and the FSRS grade strip that CLOSES THE LOOP:
  *

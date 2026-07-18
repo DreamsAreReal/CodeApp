@@ -1,0 +1,37 @@
+# F2 — deletion migration of the 6 legacy C# lessons: command + output
+date: 2026-07-18
+
+## Deleted (git rm): 6 TS + 6 seed JSON
+TS:   app/src/lessons/{value-vs-reference,boxing,gc,async-await,closures,hashtable}.ts
+seed: backend/Codex.Backend/seed/lessons/{T1.M2.value-vs-reference,T1.M3.boxing,T1.M4.gc,
+                                          T2.M1.async-await,T2.M2.closures,T2.M5.hashtable}.json
+Registry: LEGACY_CS track removed; TRACKS = [CS_TRACK, PY_TRACK].
+Harnesses repointed to CS.S1 lessons: run.mjs (value-types-copy + type-system-map),
+  shell.mjs (value-types-copy completion), new-lessons.mjs (3 CS.S1 + all PY),
+  viz-fit.mjs (SHOTS -> CS.S1 panels). Backend tests remapped to real seeded CS ids.
+
+## ACCEPTANCE 1 — grep old ids in app/ backend/ verify/ (excl. bin/obj/dist/node_modules) = 0
+$ grep -rn 'T1.M2.value-vs-reference|T1.M3.boxing|T1.M4.gc|T2.M1.async-await|T2.M2.closures|T2.M5.hashtable|LEGACY_CS' app backend --include=*.ts --include=*.mjs --include=*.cs --include=*.json | grep -v /bin/ /obj/ /dist/ /node_modules/
+(no output)   grep exit 1 = 0 matches = PASS
+
+## ACCEPTANCE 2 — dev-DB orphans purged (review_state/progress_events/items)
+Before: review_state had T1.M3.boxing/c1..c2, T1.M2..., T1.M4..., T2.M1..., T2.M2..., T2.M5... (7 ids)
+        progress_events + items likewise. (incl. leftover T1.M3.boxing/c2 not in items)
+Purge: DELETE FROM review_state/progress_events/items WHERE item_id LIKE 'T1.%' OR 'T2.%';
+After:  review_state|0  progress_events|0  items|0   (all three tables, 0 old rows)
+
+## ACCEPTANCE 3 — /api/due ⊆ registry (fresh user, live backend)
+catalog (GET /api/lessons) = 16 lessons: 3 CS.S1 + 13 PY, legacy T = []
+fresh due = 60 cards, distinct lessons all CS.S1/PY, legacy in due = []
+
+## ACCEPTANCE 4 — Python untouched (G5)
+PY seed files: 13   PY seed cards: 53   PY registry entries: 13
+PY DB rows intact: items=53, review_state=3415 (untouched by purge)
+
+## ACCEPTANCE 5 — 5 harnesses + dotnet test GREEN (against migrated build+seed)
+run.mjs        ALL GREEN (value-types-copy 6 seg, type-system-map 5 seg, loop)
+shell.mjs      ALL GREEN (value-types-copy 6/6 completion, axe 0 serious/critical)
+new-lessons.mjs ALL GREEN (3 CS.S1 + 13 PY render + grade loop)
+viz-fit.mjs    ALL GREEN (16/16 lessons fully on `at`, 0 FIT/CLIP/OVERLAP)
+loop.mjs       ALL GREEN (first-run/session/done/empty states)
+dotnet test    Passed! 0 failed, 65 passed  (tests remapped T1.M3.boxing/c1 -> CS.S1.value-types-copy/c1 etc.)

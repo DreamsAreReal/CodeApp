@@ -119,7 +119,7 @@ function trackIdsOf(t: Track): string[] {
 }
 
 export const TRACK_GROUPS: TrackGroup[] = TRACKS.map((t) => ({
-  id: t.id === "LEGACY_CS" ? "csharp" : t.id === "PY" ? "python" : t.id.toLowerCase(),
+  id: t.id === "PY" ? "python" : t.id.toLowerCase(),
   label: t.title,
   sub: t.sub,
   badge: t.badge,

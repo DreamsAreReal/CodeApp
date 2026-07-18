@@ -114,7 +114,7 @@ public sealed class FsrsFlowTests
         using var factory = new FakeClockFactory(dbPath, start);
         var client = factory.CreateClient();
         long user = 42_000 + Random.Shared.Next(1, 500_000);
-        const string item = "T1.M3.boxing/c1";
+        const string item = "CS.S1.value-types-copy/c1";
 
         double lastInterval = 0;
         double stability = 0, difficulty = 0;
@@ -159,7 +159,7 @@ public sealed class FsrsFlowTests
         using var factory = new FakeClockFactory(dbPath, start);
         var client = factory.CreateClient();
         long user = 33_000 + Random.Shared.Next(1, 500_000);
-        const string item = "T1.M3.boxing/c1";
+        const string item = "CS.S1.value-types-copy/c1";
 
         string token = await AuthToken(client, user);
         var res = JsonDocument.Parse(await (await client.SendAsync(
@@ -187,7 +187,7 @@ public sealed class FsrsFlowTests
         string dbPath = Path.Combine(Path.GetTempPath(), $"codex-persist-{Guid.NewGuid():N}.db");
         var start = new DateTimeOffset(2026, 3, 1, 0, 0, 0, TimeSpan.Zero);
         long user = 55_000 + Random.Shared.Next(1, 500_000);
-        const string item = "T1.M3.boxing/c1";
+        const string item = "CS.S1.value-types-copy/c1";
         double interval;
 
         // --- boot 1: review the card Good ---

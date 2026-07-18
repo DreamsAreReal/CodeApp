@@ -1,6 +1,7 @@
 /**
- * Focused verification for the wave-1 lessons added in phase 4:
- *   T1.M4.gc (6 segments), T2.M2.closures (5), T2.M1.async-await (5).
+ * Focused verification for the rebuilt C# track (CS.S1) + the Python track:
+ *   CS.S1.type-system-map (5), CS.S1.value-types-copy (6), CS.S1.classes-virtual-dispatch (5),
+ *   plus every PY.* lesson.
  * Proves, against the LIVE backend + preview build:
  *   (a) each lesson renders its segments and the animation reaches the final
  *       frame (autoplay + StepPlayer end), (b) at least one lesson's card ->
@@ -25,10 +26,9 @@ const evDirFor = (e) =>
 const RUN_USER = 800000 + Math.floor(Math.random() * 90000);
 
 const EXPECT = [
-  { id: "T1.M4.gc", segs: 6, ev: "GC" },
-  { id: "T2.M2.closures", segs: 5, ev: "CLOSURES" },
-  { id: "T2.M1.async-await", segs: 5, ev: "ASYNC" },
-  { id: "T2.M5.hashtable", segs: 6, ev: "HASHTABLE" },
+  { id: "CS.S1.type-system-map", segs: 5, ev: "CS-TYPEMAP" },
+  { id: "CS.S1.value-types-copy", segs: 6, ev: "CS-VALCOPY" },
+  { id: "CS.S1.classes-virtual-dispatch", segs: 5, ev: "CS-VDISPATCH" },
   { id: "PY.M1.names-objects", segs: 8, ev: "PY-NAMES" },
   { id: "PY.M2.collections-hash", segs: 5, ev: "PY-COLL" },
   { id: "PY.M3.args-unpacking", segs: 4, ev: "PY-ARGS" },
@@ -148,61 +148,62 @@ async function main() {
     await page.screenshot({ path: join(evDirFor(e), "375-full.png"), fullPage: true });
   }
 
-  // ---- the loop: GC card -> TYPE correct answer -> ✓ -> Good pre-selected -> /api/review ----
-  log("\n== T1.M4.gc: TYPE correct answer -> ✓ -> Good pre-selected -> POST /api/review moves schedule ==");
-  await page.evaluate(() => window.__app.openLesson("T1.M4.gc"));
-  await page.waitForFunction(() => window.__viz && window.__viz.ready && window.__lesson.id === "T1.M4.gc", { timeout: 15000 });
+  // ---- the loop: classes-virtual-dispatch card -> TYPE correct answer -> ✓ -> Good -> /api/review ----
+  const CVD_C1_EXPECT = "Derived.V\nBase.N"; // classes-virtual-dispatch/c1 verify.expect (real dotnet stdout)
+  log("\n== CS.S1.classes-virtual-dispatch: TYPE correct answer -> ✓ -> Good pre-selected -> POST /api/review moves schedule ==");
+  await page.evaluate(() => window.__app.openLesson("CS.S1.classes-virtual-dispatch"));
+  await page.waitForFunction(() => window.__viz && window.__viz.ready && window.__lesson.id === "CS.S1.classes-virtual-dispatch", { timeout: 15000 });
   await authApi();
   const dueBefore = await apiGet(`/api/due`);
-  const gcDueBefore = dueBefore.items.some((i) => i.itemId === "T1.M4.gc/c1");
-  assert(gcDueBefore, "gc/c1 is due before review");
+  const cvdDueBefore = dueBefore.items.some((i) => i.itemId === "CS.S1.classes-virtual-dispatch/c1");
+  assert(cvdDueBefore, "classes-virtual-dispatch/c1 is due before review");
   const countBefore = dueBefore.count;
   // typed-answer card: the monospace input is present, MCQ options are NOT
-  assert(await page.locator("#qTyped").count() === 1, "gc card renders typed-answer input (generation)");
-  assert(await page.locator("[data-opt]").count() === 0, "gc card has no MCQ options (typed flow)");
+  assert(await page.locator("#qTyped").count() === 1, "classes-virtual-dispatch card renders typed-answer input (generation)");
+  assert(await page.locator("[data-opt]").count() === 0, "classes-virtual-dispatch card has no MCQ options (typed flow)");
   await page.locator("#qTyped").scrollIntoViewIfNeeded();
-  await page.fill("#qTyped", "01"); // the REAL expected output (verify.expect)
+  await page.fill("#qTyped", CVD_C1_EXPECT); // the REAL expected output (verify.expect)
   await page.click("#qCheck");
   await page.waitForSelector("#qVerdict", { state: "visible", timeout: 8000 });
-  const gcAnswer = await page.evaluate(() => window.__lastAnswer);
-  assert(gcAnswer.correct === true, "typing the exact expect '01' is graded objectively correct");
+  const cvdAnswer = await page.evaluate(() => window.__lastAnswer);
+  assert(cvdAnswer.correct === true, "typing the exact expect is graded objectively correct");
   assert(await page.locator('.grade-btn[data-g="3"].preselected').count() === 1, "correct -> Good (3) pre-selected");
   await page.click('.grade-btn[data-g="3"]'); // confirm the pre-selected Good
   await page.waitForFunction(() => window.__lastReview, { timeout: 8000 });
   const review = await page.evaluate(() => window.__lastReview);
   log("  review response: " + JSON.stringify(review));
-  assert(review.itemId === "T1.M4.gc/c1", "review posted for gc/c1");
+  assert(review.itemId === "CS.S1.classes-virtual-dispatch/c1", "review posted for classes-virtual-dispatch/c1");
   assert(review.grade === "Good", "grade recorded as Good (objective correct -> Good)");
   // FSRS-6 (py-fsrs 6.3.1): a brand-new Good advances one learning step (600s == ~0.00694 d),
   // due (now + 600s) is in the future, so the card leaves the immediate due queue.
   assert(review.intervalDays > 0 && review.intervalDays < 0.02, "new Good -> learning-step interval ~600s (" + review.intervalDays + "d)");
-  await page.screenshot({ path: `${EV}/GC/390-graded.png`, fullPage: false });
+  await page.screenshot({ path: `${EV}/CS-VDISPATCH/390-graded.png`, fullPage: false });
   const dueAfter = await apiGet(`/api/due`);
   assert(dueAfter.count === countBefore - 1, `due count dropped ${countBefore} -> ${dueAfter.count}`);
-  assert(!dueAfter.items.some((i) => i.itemId === "T1.M4.gc/c1"), "gc/c1 left the due queue (schedule moved)");
+  assert(!dueAfter.items.some((i) => i.itemId === "CS.S1.classes-virtual-dispatch/c1"), "classes-virtual-dispatch/c1 left the due queue (schedule moved)");
 
-  // ---- the loop (wrong path): hashtable card -> TYPE wrong -> ✗ -> Again pre-selected -> posts Again ----
-  log("\n== T2.M5.hashtable: TYPE wrong answer -> ✗ -> Again pre-selected -> posts Again (same-session re-queue) ==");
-  await page.evaluate(() => window.__app.openLesson("T2.M5.hashtable"));
-  await page.waitForFunction(() => window.__viz && window.__viz.ready && window.__lesson.id === "T2.M5.hashtable", { timeout: 15000 });
-  const htDueBefore = await apiGet(`/api/due`);
-  assert(htDueBefore.items.some((i) => i.itemId === "T2.M5.hashtable/c1"), "hashtable/c1 is due before the wrong review");
+  // ---- the loop (wrong path): value-types-copy card -> TYPE wrong -> ✗ -> Again pre-selected -> posts Again ----
+  log("\n== CS.S1.value-types-copy: TYPE wrong answer -> ✗ -> Again pre-selected -> posts Again (same-session re-queue) ==");
+  await page.evaluate(() => window.__app.openLesson("CS.S1.value-types-copy"));
+  await page.waitForFunction(() => window.__viz && window.__viz.ready && window.__lesson.id === "CS.S1.value-types-copy", { timeout: 15000 });
+  const vtcDueBefore = await apiGet(`/api/due`);
+  assert(vtcDueBefore.items.some((i) => i.itemId === "CS.S1.value-types-copy/c1"), "value-types-copy/c1 is due before the wrong review");
   await page.locator("#qTyped").scrollIntoViewIfNeeded();
-  await page.fill("#qTyped", "3"); // WRONG — the real expect is "2"
+  await page.fill("#qTyped", "nope"); // WRONG — the real expect is "a=(1,2) b=(99,2)"
   await page.click("#qCheck");
   await page.waitForSelector("#qVerdict", { state: "visible", timeout: 8000 });
-  const htAnswer = await page.evaluate(() => window.__lastAnswer);
-  assert(htAnswer.correct === false, "typing a wrong output is graded objectively incorrect");
+  const vtcAnswer = await page.evaluate(() => window.__lastAnswer);
+  assert(vtcAnswer.correct === false, "typing a wrong output is graded objectively incorrect");
   assert(await page.locator('.grade-btn[data-g="1"].preselected').count() === 1, "wrong -> Again (1) pre-selected");
   assert(await page.locator("#qVerdict .tv-row.yours").count() === 1, "miss shows a yours-vs-expected diff");
   await page.click('.grade-btn[data-g="1"]'); // confirm the pre-selected Again
-  await page.waitForFunction(() => window.__lastReview && window.__lastReview.itemId === "T2.M5.hashtable/c1", { timeout: 8000 });
-  const htReview = await page.evaluate(() => window.__lastReview);
-  log("  wrong review response: " + JSON.stringify(htReview));
-  assert(htReview.grade === "Again", "grade recorded as Again (objective wrong -> Again)");
+  await page.waitForFunction(() => window.__lastReview && window.__lastReview.itemId === "CS.S1.value-types-copy/c1", { timeout: 8000 });
+  const vtcReview = await page.evaluate(() => window.__lastReview);
+  log("  wrong review response: " + JSON.stringify(vtcReview));
+  assert(vtcReview.grade === "Again", "grade recorded as Again (objective wrong -> Again)");
   // Again lands on the 1-minute learning step -> due is a short within-session step in the future.
-  const htDueDeltaSec = (new Date(htReview.due).getTime() - Date.now()) / 1000;
-  assert(htDueDeltaSec > 0 && htDueDeltaSec < 120, `Again re-queues hashtable/c1 due ${htDueDeltaSec.toFixed(0)}s out (< 2 min, this session)`);
+  const vtcDueDeltaSec = (new Date(vtcReview.due).getTime() - Date.now()) / 1000;
+  assert(vtcDueDeltaSec > 0 && vtcDueDeltaSec < 120, `Again re-queues value-types-copy/c1 due ${vtcDueDeltaSec.toFixed(0)}s out (< 2 min, this session)`);
 
   // ---- the loop (Python track): PY names-objects card -> TYPE multi-line stdout -> Good -> /api/review ----
   log("\n== PY.M1.names-objects: dis badge + TYPE the real python3.12 stdout -> ✓ -> /api/review moves schedule ==");

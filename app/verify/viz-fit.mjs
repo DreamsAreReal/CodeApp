@@ -50,26 +50,20 @@ const RUN_USER = 700000 + Math.floor(Math.random() * 90000);
 // is covered by the browser checks automatically and can never be forgotten here.
 const LESSONS = LESSON_DATA.map((l) => ({ id: l.id, segs: l.segments.length }));
 
-// Element-screenshots of the previously-broken segments (id -> stage index, filename).
+// Element-screenshots of specific segments for a human eyeball (id -> stage index, filename).
+// The old T1/T2 lesson captures were dropped with the F2 migration; the new CS.S1 panels
+// (the signature machine panels) are captured here instead. Any id not in the registry is
+// simply skipped (the FIT/CLIP/OVERLAP proof itself runs over EVERY registered lesson).
 const SHOTS = {
-  "T2.M1.async-await": [
-    { seg: 0, file: "async-await-s1-state-machine" },
-    { seg: 1, file: "async-await-s2-await-block" },
-    { seg: 4, file: "async-await-s5-deadlock" },
+  "CS.S1.type-system-map": [
+    { seg: 2, file: "cs-type-system-map-s3-overload-panel" },
+    { seg: 3, file: "cs-type-system-map-s4-vtable-gate" },
   ],
-  "T1.M4.gc": [
-    { seg: 0, file: "gc-s1-heap" },
-    { seg: 1, file: "gc-s2-generations" },
-    { seg: 2, file: "gc-s3-trigger" },
-    { seg: 3, file: "gc-s4-promotion" },
-    { seg: 4, file: "gc-s5-phases" },
-    { seg: 5, file: "gc-s6-loh" },
+  "CS.S1.value-types-copy": [
+    { seg: 4, file: "cs-value-types-copy-s5-alloc-counter-panel" },
   ],
-  "T2.M5.hashtable": [
-    { seg: 2, file: "hashtable-s3-hash-key" },
-    { seg: 3, file: "hashtable-s4-worst-case" },
-    { seg: 4, file: "hashtable-s5-resize" },
-    { seg: 5, file: "hashtable-s6-bucket" },
+  "CS.S1.classes-virtual-dispatch": [
+    { seg: 2, file: "cs-classes-virtual-dispatch-s3-vtable-panel" },
   ],
 };
 
