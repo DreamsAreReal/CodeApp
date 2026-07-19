@@ -12,3 +12,6 @@
 
 ## (fact, not a card) AsTask() escape hatch — reusable Task, await multiple times (5 5)
 {"success":true,"stdout":"5 5\n","error":null,"elapsedMs":55}
+
+## (fix, audit M4) REAL instance field names of ValueTask<int> via reflection (the 4 fields; the 4th is _continueOnCapturedContext, NOT "_flag")
+{"success":true,"stdout":"_continueOnCapturedContext, _obj, _result, _token\n","error":null,"elapsedMs":26}
