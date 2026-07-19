@@ -54,10 +54,13 @@ Re-audit подтвердил: факт-баги честно исправлен
 ## M5 (S7 «Память и GC», 10 уроков F12–F14) — В РАБОТЕ
 Ветка lessons-corpus/wave1. Аккуратность по GT-M5-s7.md (60 фактов + 20 мифов MM1–MM20). Verbatim-дисциплина: КАЖДАЯ « »-цитата берётся прямым fetch страницы + скрипт-сверка перед коммитом (0 MISS) — усвоенный урок M4.
 Пайплайн на урок: fetch source-страниц → probe реальных GC-чисел (run-csharp) → авторинг → авто-эскейп mid-word апострофов (иначе ломает single-quoted строки) → verbatim скрипт-сверка → registry(CS_S7)+seed+E2E-list → density/E2E/viz-fit/grade-check → full verify:all ALL GREEN → коммит по уроку.
-Готово (2/10):
+Готово (4/10 — F12 ПОЛНОСТЬЮ: S7.1–S7.4):
 - **900a8a4** S7.1 gc-overview: GC=авто-менеджер, roots, аллокация=сдвиг указателя, недетерминизм момента (MM1). Панель: byte[1000]=1024 байта, ranAutomatically=True (без GC.Collect()), zeroed=True. 31 цитата verbatim OK.
 - **8d32720** S7.2 generations: три поколения gen0/1/2, продвижение, gen2=full GC (MM3). Панель: gen0=0 afterCollect=1 (промоушен 5/5), maxGen=2 generations=3, gen0Bumped=True gen2Bumped=True (full GC 3/3). 23 цитаты verbatim OK.
-Осталось (8/10): F12 — S7.3 workstation-server, S7.4 latency-modes; F13 — S7.5 loh, S7.6 finalizers-dispose, S7.7 weak-references; F14 — S7.8 span-memory, S7.9 memory-guidelines, S7.10 stackalloc-refstruct.
+- **69cb2c8** S7.3 workstation-server: два флейвора, Server=heap+поток на CPU, WKS=user thread (и всегда на 1 CPU), concurrent/background (MM4). Панель: isServerGC=True latencyMode=Interactive (реальный флейвор процесса), server=True logicalCpus>=1=True, set=SustainedLowLatency restored=True. 21 цитата verbatim OK.
+- **2431ff2** S7.4 latency-modes: GCLatencyMode, LowLatency (WKS-only, подавляет gen2), SustainedLowLatency (WKS+SVR, foreground gen2 подавлен + background gen2), подавление не абсолютно, цена (MM5/MM6). Панель: default=Interactive, lowLatencyStuck=False sustainedStuck=True (реальное WKS-only-ограничение на Server-процессе 3/3), gen2StillRanOnExplicitCollect=True. 22 цитаты verbatim OK.
+Осталось (6/10): F13 — S7.5 loh, S7.6 finalizers-dispose, S7.7 weak-references; F14 — S7.8 span-memory, S7.9 memory-guidelines, S7.10 stackalloc-refstruct.
+ВАЖНО для восстановления: seed order идёт 20(S7.1)…23(S7.4); следующий S7.5=order 24. Все уроки в CS_S7 (registry.ts), icon "gc" (уже есть в home.ts). Verbatim-скрипт: извлечь « »-англ.цитаты, нормализовать регистр/апострофы/пробелы/теги, сверить сегменты по … против fetched-текста — 0 MISS перед коммитом. Апострофы в single-quoted полях эскейпить (авто-regex mid-word).
 Находка (для координатора, не мой скоуп): viz-fit ловил стохастический MID-TRANSITION overlap в закоммиченном CS.S2.async-streams s1 (узлы r/y меняются местами) — НЕ воспроизводится стабильно (последние прогоны 0), CI M4 проходил. Флаг в progress.md; развести своп при следующем касании async-streams.
 → Продолжаю S7.3…S7.10, затем СТОП, дайджест. НЕ иду к M6.
 
