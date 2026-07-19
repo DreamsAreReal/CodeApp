@@ -1,0 +1,17 @@
+# CS.S7.loh (S7.5) — exec evidence (run-csharp, real Large Object Heap measurements)
+# Captured 2026-07-19T03:55:59Z against backend health 200
+# Threshold note: GetGeneration on a byte[] reflects TOTAL object size (payload + 24-byte header);
+#   exact boundary measured: byte[84972]=gen0, byte[84976]=gen2 (payload+header crosses 85000).
+
+## c1 — the 85000-byte threshold: a small object is gen0, a large object (>=85000) is gen2/LOH (deterministic 3/3) (expect: small=0 large=2)
+{"success":true,"stdout":"small=0 large=2\n","error":null,"elapsedMs":12}
+
+## c2 — the LOH is NOT compacted by default (Default); compaction is opt-in via GCSettings.LargeObjectHeapCompactionMode = CompactOnce (expect: default=Default afterSet=CompactOnce)
+{"success":true,"stdout":"default=Default afterSet=CompactOnce\n","error":null,"elapsedMs":11}
+
+## c3 (SIGNATURE) — a LOH object belongs to gen2: it SURVIVES a gen0 collection but is freed only by a gen2 (full) collection (deterministic 3/3) (expect: aliveAfterGen0=True aliveAfterGen2=False)
+{"success":true,"stdout":"aliveAfterGen0=True aliveAfterGen2=False\n","error":null,"elapsedMs":23}
+
+## (panel bonus) exact threshold boundary for byte[] (payload+header crosses 85000): 84972=gen0, 84976=gen2
+{"success":true,"stdout":"len=84972 gen=0\n","error":null,"elapsedMs":10}
+{"success":true,"stdout":"len=84976 gen=2\n","error":null,"elapsedMs":11}

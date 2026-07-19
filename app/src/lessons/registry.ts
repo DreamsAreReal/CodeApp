@@ -467,6 +467,20 @@ const CS_S7: Section = {
       },
       () => import("./cs/latency-modes.ts").then((m) => m.latencyModes),
     ),
+    entry(
+      {
+        id: "CS.S7.loh",
+        track: "CS",
+        section: "CS.S7",
+        title: "Large Object Heap: порог 85000, gen2, sweep",
+        kicker: "C# вглубь · S7 · большие объекты",
+        icon: "gc",
+        subtitle: "порог 85000, LOH=gen2, не компактится, CompactOnce",
+        estMinutes: 10,
+        cards: 3,
+      },
+      () => import("./cs/loh.ts").then((m) => m.loh),
+    ),
   ],
 };
 

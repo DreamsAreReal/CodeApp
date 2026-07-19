@@ -1,0 +1,61 @@
+{
+  "id": "CS.S7.loh",
+  "track": "CS",
+  "section": "CS.S7",
+  "module": "S7.5",
+  "title": "Large Object Heap: порог 85000, gen2, sweep",
+  "status": "published",
+  "order": 24,
+  "sources": [
+    {
+      "id": "ms-loh",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/large-object-heap",
+      "date": "2021-11-11"
+    },
+    {
+      "id": "ms-loh-compact",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/api/system.runtime.gcsettings.largeobjectheapcompactionmode",
+      "date": "2024-11-01"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "The 85000-byte threshold: a small object is gen0, a large object (>=85000) is gen2 on the LOH",
+      "code": "using System; var small = new byte[1000]; var large = new byte[100000]; Console.WriteLine($\"small={GC.GetGeneration(small)} large={GC.GetGeneration(large)}\"); GC.KeepAlive(small); GC.KeepAlive(large);",
+      "expectedOutput": "small=0 large=2",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-loh"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "The LOH is not compacted by default (Default); compaction is opt-in via LargeObjectHeapCompactionMode = CompactOnce",
+      "code": "using System; using System.Runtime; var def = GCSettings.LargeObjectHeapCompactionMode; GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce; var set = GCSettings.LargeObjectHeapCompactionMode; GCSettings.LargeObjectHeapCompactionMode = def; Console.WriteLine($\"default={def} afterSet={set}\");",
+      "expectedOutput": "default=Default afterSet=CompactOnce",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-loh-compact"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "A LOH object belongs to gen2: it survives a gen0 collection but is freed only by a gen2 collection",
+      "code": "using System; static WeakReference Make(){ var big = new byte[200000]; return new WeakReference(big); } var wr = Make(); GC.Collect(0); GC.WaitForPendingFinalizers(); bool afterGen0 = wr.IsAlive; GC.Collect(2); GC.WaitForPendingFinalizers(); bool afterGen2 = wr.IsAlive; Console.WriteLine($\"aliveAfterGen0={afterGen0} aliveAfterGen2={afterGen2}\");",
+      "expectedOutput": "aliveAfterGen0=True aliveAfterGen2=False",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-loh"
+      ]
+    }
+  ]
+}
