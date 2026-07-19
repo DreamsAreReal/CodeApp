@@ -453,6 +453,20 @@ const CS_S7: Section = {
       },
       () => import("./cs/workstation-server.ts").then((m) => m.workstationServer),
     ),
+    entry(
+      {
+        id: "CS.S7.latency-modes",
+        track: "CS",
+        section: "CS.S7",
+        title: "Latency-режимы GC: LowLatency, SustainedLowLatency",
+        kicker: "C# вглубь · S7 · пауза сборщика",
+        icon: "gc",
+        subtitle: "GCLatencyMode, подавление gen2, трейдофы",
+        estMinutes: 10,
+        cards: 3,
+      },
+      () => import("./cs/latency-modes.ts").then((m) => m.latencyModes),
+    ),
   ],
 };
 
