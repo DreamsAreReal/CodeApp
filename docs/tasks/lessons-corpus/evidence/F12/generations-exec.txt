@@ -1,0 +1,14 @@
+# CS.S7.generations (S7.2) — exec evidence (run-csharp, real GC generation measurements)
+# Captured 2026-07-19T02:20:04Z against backend health 200
+
+## c1 — a new object starts in gen0; after surviving a gen0 collection it is promoted to gen1 (deterministic 5/5) (expect: gen0=0 afterCollect=1)
+{"success":true,"stdout":"gen0=0 afterCollect=1\n","error":null,"elapsedMs":19}
+
+## c2 — the managed heap has exactly THREE generations, 0/1/2 (GC.MaxGeneration==2) (expect: maxGen=2 generations=3)
+{"success":true,"stdout":"maxGen=2 generations=3\n","error":null,"elapsedMs":12}
+
+## c3 (SIGNATURE machine panel) — a gen2 collection is a FULL GC: GC.Collect(2) bumps BOTH the gen0 and gen2 counts (collects a generation AND all younger) (deterministic 3/3) (expect: gen0Bumped=True gen2Bumped=True)
+{"success":true,"stdout":"gen0Bumped=True gen2Bumped=True\n","error":null,"elapsedMs":16}
+
+## (panel bonus) a large object (>=85000 bytes) is placed in gen2 immediately, small stays gen0 (LOH detail in S7.5) (deterministic 3/3)
+{"success":true,"stdout":"small=0 large=2\n","error":null,"elapsedMs":13}

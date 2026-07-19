@@ -1,0 +1,55 @@
+{
+  "id": "CS.S7.generations",
+  "track": "CS",
+  "section": "CS.S7",
+  "module": "S7.2",
+  "title": "Поколения GC: gen0/1/2, managed heap, продвижение",
+  "status": "published",
+  "order": 21,
+  "sources": [
+    {
+      "id": "ms-gc-fund",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/fundamentals",
+      "date": "2025-10-22"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "A new object is in gen0; after surviving a gen0 collection it is promoted to gen1",
+      "code": "using System; var o = new byte[100]; int g0 = GC.GetGeneration(o); GC.Collect(0); GC.WaitForPendingFinalizers(); int g1 = GC.GetGeneration(o); GC.KeepAlive(o); Console.WriteLine($\"gen0={g0} afterCollect={g1}\");",
+      "expectedOutput": "gen0=0 afterCollect=1",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-gc-fund"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "The managed heap has exactly three generations 0/1/2 (GC.MaxGeneration == 2)",
+      "code": "using System; Console.WriteLine($\"maxGen={GC.MaxGeneration} generations={GC.MaxGeneration+1}\");",
+      "expectedOutput": "maxGen=2 generations=3",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-gc-fund"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "A gen2 collection is a full GC: GC.Collect(2) bumps both the gen0 and gen2 collection counts",
+      "code": "using System; int g0 = GC.CollectionCount(0); int g2 = GC.CollectionCount(2); GC.Collect(2); int g0b = GC.CollectionCount(0); int g2b = GC.CollectionCount(2); Console.WriteLine($\"gen0Bumped={g0b>g0} gen2Bumped={g2b>g2}\");",
+      "expectedOutput": "gen0Bumped=True gen2Bumped=True",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-gc-fund"
+      ]
+    }
+  ]
+}

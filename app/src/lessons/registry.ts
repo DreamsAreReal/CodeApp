@@ -425,6 +425,20 @@ const CS_S7: Section = {
       },
       () => import("./cs/gc-overview.ts").then((m) => m.gcOverview),
     ),
+    entry(
+      {
+        id: "CS.S7.generations",
+        track: "CS",
+        section: "CS.S7",
+        title: "Поколения GC: gen0/1/2, managed heap, продвижение",
+        kicker: "C# вглубь · S7 · поколения кучи",
+        icon: "gc",
+        subtitle: "три поколения, продвижение, gen2 = full GC",
+        estMinutes: 10,
+        cards: 3,
+      },
+      () => import("./cs/generations.ts").then((m) => m.generations),
+    ),
   ],
 };
 

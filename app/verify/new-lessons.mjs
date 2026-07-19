@@ -36,6 +36,7 @@ const EXPECT = [
   { id: "CS.S2.cancellation", segs: 5, ev: "CS-CANCELLATION" },
   { id: "CS.S2.async-streams", segs: 5, ev: "CS-ASYNCSTREAMS" },
   { id: "CS.S7.gc-overview", segs: 5, ev: "CS-GCOVERVIEW" },
+  { id: "CS.S7.generations", segs: 5, ev: "CS-GENERATIONS" },
   { id: "PY.M1.names-objects", segs: 8, ev: "PY-NAMES" },
   { id: "PY.M2.collections-hash", segs: 5, ev: "PY-COLL" },
   { id: "PY.M3.args-unpacking", segs: 4, ev: "PY-ARGS" },
