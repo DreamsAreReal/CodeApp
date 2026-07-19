@@ -1,0 +1,16 @@
+# CS.S7.workstation-server (S7.3) — exec evidence (run-csharp, real GC flavor/latency measurements)
+# Captured 2026-07-19T02:55:28Z against backend health 200
+# NOTE: the running backend process is configured with Server GC; these are real measurements
+#   of the actual process (GCSettings.IsServerGC / LatencyMode). Deterministic on this deployment.
+
+## c1 — the running process reports its real GC flavor + default latency mode (expect: isServerGC=True latencyMode=Interactive)
+{"success":true,"stdout":"isServerGC=True latencyMode=Interactive\n","error":null,"elapsedMs":13}
+
+## c2 — Server GC provides a heap + dedicated thread per logical CPU; the process sees its logical CPUs (expect: server=True logicalCpus>=1=True)
+{"success":true,"stdout":"server=True logicalCpus\u003E=1=True\n","error":null,"elapsedMs":13}
+
+## c3 — the GC latency mode is a real process-wide settable property (SustainedLowLatency works on both WKS and SVR); set + restore (expect: set=SustainedLowLatency restored=True)
+{"success":true,"stdout":"set=SustainedLowLatency restored=True\n","error":null,"elapsedMs":38}
+
+## (panel bonus) logical CPU count of this deployment (Server GC => this many heaps + GC threads) — machine-specific, illustrative not asserted
+{"success":true,"stdout":"logicalCpus=8\n","error":null,"elapsedMs":12}

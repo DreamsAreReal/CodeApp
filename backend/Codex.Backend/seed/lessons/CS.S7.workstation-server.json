@@ -1,0 +1,55 @@
+{
+  "id": "CS.S7.workstation-server",
+  "track": "CS",
+  "section": "CS.S7",
+  "module": "S7.3",
+  "title": "Workstation vs Server GC, concurrent/background",
+  "status": "published",
+  "order": 22,
+  "sources": [
+    {
+      "id": "ms-wks-svr",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/workstation-server-gc",
+      "date": "2023-03-03"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "The running process reports its real GC flavor and default latency mode",
+      "code": "using System; using System.Runtime; Console.WriteLine($\"isServerGC={GCSettings.IsServerGC} latencyMode={GCSettings.LatencyMode}\");",
+      "expectedOutput": "isServerGC=True latencyMode=Interactive",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-wks-svr"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Server GC provides a heap and a dedicated thread per logical CPU; the process sees its logical CPUs",
+      "code": "using System; using System.Runtime; bool server = GCSettings.IsServerGC; int cpus = Environment.ProcessorCount; Console.WriteLine($\"server={server} logicalCpus>=1={cpus>=1}\");",
+      "expectedOutput": "server=True logicalCpus>=1=True",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-wks-svr"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "The GC latency mode is a process-wide settable property; set SustainedLowLatency then restore",
+      "code": "using System; using System.Runtime; var orig = GCSettings.LatencyMode; GCSettings.LatencyMode = GCLatencyMode.SustainedLowLatency; var now = GCSettings.LatencyMode; GCSettings.LatencyMode = orig; Console.WriteLine($\"set={now} restored={GCSettings.LatencyMode==orig}\");",
+      "expectedOutput": "set=SustainedLowLatency restored=True",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-wks-svr"
+      ]
+    }
+  ]
+}

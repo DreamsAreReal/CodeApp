@@ -439,6 +439,20 @@ const CS_S7: Section = {
       },
       () => import("./cs/generations.ts").then((m) => m.generations),
     ),
+    entry(
+      {
+        id: "CS.S7.workstation-server",
+        track: "CS",
+        section: "CS.S7",
+        title: "Workstation vs Server GC, concurrent/background",
+        kicker: "C# вглубь · S7 · флейворы GC",
+        icon: "gc",
+        subtitle: "два флейвора, heap на CPU, concurrent/background",
+        estMinutes: 10,
+        cards: 3,
+      },
+      () => import("./cs/workstation-server.ts").then((m) => m.workstationServer),
+    ),
   ],
 };
 
