@@ -71,7 +71,7 @@ export const valueTask: LessonData = {
   ],
   edgeCases: [
     { text: "«should never» (иначе поведение UNDEFINED): await один экземпляр <b>несколько раз</b>; вызывать <code>AsTask</code> несколько раз; читать <code>.Result</code>/<code>.GetAwaiter().GetResult()</code> <b>до завершения</b> или повторно; <b>смешивать</b> способы потребления. Один экземпляр — один способ, один раз.", source: "ms-vt" },
-    { text: "Non-generic <code>ValueTask</code> «is not recommended for most scenarios» — брать почти всегда стоит <code>ValueTask&lt;T&gt;</code> либо <code>Task</code>, а не голый <code>ValueTask</code>.", source: "ms-vt0" },
+    { text: "«The non generic version of ValueTask is not recommended for most scenarios» — брать почти всегда стоит <code>ValueTask&lt;T&gt;</code> либо <code>Task</code>, а не голый <code>ValueTask</code>.", source: "ms-vt" },
     { text: "<code>default(ValueTask&lt;T&gt;)</code> — валидный <b>синхронно завершённый</b> результат со значением <code>default(TResult)</code>: удобно возвращать «готово, значение по умолчанию» без аллокации.", source: "ms-vt" },
   ],
 
@@ -179,7 +179,7 @@ export const valueTask: LessonData = {
 
   takeaways: [
     { icon: "why", k: "Что и когда", v: '<code>ValueTask&lt;T&gt;</code> — <b>readonly struct</b>, оборачивает <code>Task&lt;T&gt;</code> ИЛИ <code>T</code>. Брать ТОЛЬКО когда результат обычно синхронный И метод горячий (замером). Дефолт — <code>Task</code>/<code>Task&lt;T&gt;</code>.' },
-    { icon: "avoid", k: "await один раз", v: 'Экземпляр — «<span class="hl">awaited only once</span>»; повторно/<code>.Result</code> до завершения — <b>undefined</b>. Нужен повтор — <code>AsTask()</code> (замер: 5 5). Non-generic <code>ValueTask</code> — «not recommended».' },
+    { icon: "avoid", k: "await один раз", v: 'Экземпляр — «<span class="hl">may only be awaited once</span>»; повторно/<code>.Result</code> до завершения — <b>undefined</b>. Нужен повтор — <code>AsTask()</code> (замер: 5 5). Non-generic <code>ValueTask</code> «is not recommended for most scenarios».' },
     { icon: "cost", k: "не бесплатно", v: 'Value type в <b>4 поля</b> (замер: True False fields=4) — возврат копирует больше, чем 1 ссылка <code>Task</code>, стейт-машина толще. <code>default(ValueTask&lt;T&gt;)</code> = sync-completed с <code>default(T)</code>.' },
   ],
 
