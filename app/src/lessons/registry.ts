@@ -403,12 +403,37 @@ const CS_S2: Section = {
   ],
 };
 
+// Section S7 «Память и GC» (RS-03 §2 раздел 7 · 10 уроков). Curriculum recommendation
+// (design «Опыт»: S1 → S7 → S17 → S18 → S2); ordered after S2 in the catalog.
+const CS_S7: Section = {
+  id: "CS.S7",
+  title: "Память и GC",
+  order: 7,
+  prereqs: ["CS.S1"],
+  lessons: [
+    entry(
+      {
+        id: "CS.S7.gc-overview",
+        track: "CS",
+        section: "CS.S7",
+        title: "Garbage Collector: автоматический менеджер памяти",
+        kicker: "C# вглубь · S7 · память ниже абстракции",
+        icon: "gc",
+        subtitle: "GC = авто-менеджер, roots, аллокация, когда сбор",
+        estMinutes: 10,
+        cards: 3,
+      },
+      () => import("./cs/gc-overview.ts").then((m) => m.gcOverview),
+    ),
+  ],
+};
+
 const CS_TRACK: Track = {
   id: "CS",
   title: S.trackCsDeepLabel,
   sub: S.trackCsDeepSub,
   badge: S.trackNewBadge,
-  sections: [CS_S1, CS_S2],
+  sections: [CS_S1, CS_S2, CS_S7],
 };
 
 // The legacy flat C# track and its 6 old lessons were removed in the F2 migration (their

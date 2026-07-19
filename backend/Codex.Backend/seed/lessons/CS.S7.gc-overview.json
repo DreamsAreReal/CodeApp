@@ -1,0 +1,61 @@
+{
+  "id": "CS.S7.gc-overview",
+  "track": "CS",
+  "section": "CS.S7",
+  "module": "S7.1",
+  "title": "Garbage Collector: автоматический менеджер памяти",
+  "status": "published",
+  "order": 20,
+  "sources": [
+    {
+      "id": "ms-gc-ov",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/",
+      "date": "2024-11-01"
+    },
+    {
+      "id": "ms-gc-fund",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/fundamentals",
+      "date": "2025-10-22"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Sustained allocation triggers a gen0 collection with no GC.Collect() call: the GC runs on its own",
+      "code": "using System; int before = GC.CollectionCount(0); var sink = new object[16]; for (int i=0;i<2_000_000;i++){ sink[i%16] = new byte[64]; } int after = GC.CollectionCount(0); Console.WriteLine($\"ranAutomatically={after>before}\");",
+      "expectedOutput": "ranAutomatically=True",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-gc-fund"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "GC guarantee: new managed objects start with clean (zeroed) content",
+      "code": "using System; var a = new int[4]; Console.WriteLine($\"zeroed={a[0]==0 && a[1]==0 && a[2]==0 && a[3]==0}\");",
+      "expectedOutput": "zeroed=True",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-gc-fund"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Real bytes allocated from the managed heap for a byte[1000]: exactly 1024 (payload + object header, 8-byte aligned)",
+      "code": "using System; long a = GC.GetAllocatedBytesForCurrentThread(); var o = new byte[1000]; GC.KeepAlive(o); long b = GC.GetAllocatedBytesForCurrentThread(); Console.WriteLine(b - a);",
+      "expectedOutput": "1024",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-gc-fund"
+      ]
+    }
+  ]
+}
