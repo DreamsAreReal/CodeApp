@@ -8,8 +8,12 @@
  * and — the myth this lesson kills — async/await do NOT create threads.
  *
  * SIGNATURE machine panel (s1): the execution TIMELINE, proven by a real thread-id measurement —
- * caller T, before-await T (SAME thread, ran synchronously), control returns, resume, result.
- * REAL run-csharp measurement, evidence/F9/tap-model-exec.txt.
+ * caller T, before-await T (SAME thread — the synchronous prefix always runs on the caller's
+ * thread; deterministic), control returns, resume. After the await the continuation runs on the
+ * CURRENT SYNCHRONIZATION CONTEXT: with a captured context (UI/legacy ASP.NET) the original thread,
+ * with NO captured context (console/ASP.NET Core) a pool thread that MAY DIFFER from the caller.
+ * await creates NO new thread and does not block either way. REAL run-csharp measurement,
+ * evidence/F9/tap-model-exec.txt.
  *
  * Accuracy contract (G4/G7/G8) — verified against Learn TAP model (fetch 2026-07-18) + GT-M4-s2.md:
  *   - every English quote is VERBATIM from learn.microsoft.com/.../task-asynchronous-programming-model;
@@ -76,7 +80,7 @@ export const tapModel: LessonData = {
   misconceptions: [
     {
       wrong: "async делает код параллельным / await создаёт поток",
-      hook: 'Самый живучий миф: «<span class="wrong">async делает код параллельным</span>» и «<span class="wrong">await создаёт поток</span>». На деле <code>async</code>/<code>await</code> — это <b>компиляторная абстракция</b>, не потоки: async-метод бежит <span class="hl">синхронно на потоке вызывающего</span> до первого <code>await</code>, а <code>await</code> «doesn\'t cause extra threads to be created». Ниже <b>пять разборов</b>: <b>машинная панель</b> — реально снятый таймлайн (один поток T до и после await), что делает <code>await</code> (приостановка, не выход), <code>Task</code> как обещание, <code>async</code> без <code>await</code> = синхронно, и почему «async ≠ поток».',
+      hook: 'Самый живучий миф: «<span class="wrong">async делает код параллельным</span>» и «<span class="wrong">await создаёт поток</span>». На деле <code>async</code>/<code>await</code> — это <b>компиляторная абстракция</b>, не потоки: async-метод бежит <span class="hl">синхронно на потоке вызывающего</span> до первого <code>await</code>, а <code>await</code> «doesn\'t cause extra threads to be created». Ниже <b>пять разборов</b>: <b>машинная панель</b> — реально снятый таймлайн (до <code>await</code> — поток вызывающего; после — текущий sync-context, в консоли может отличаться, но нового потока НЕТ), что делает <code>await</code> (приостановка, не выход), <code>Task</code> как обещание, <code>async</code> без <code>await</code> = синхронно, и почему «async ≠ поток».',
       source: "ms-tap",
     },
   ],
@@ -90,9 +94,9 @@ export const tapModel: LessonData = {
       scenes: [
         { codeLine: 1, out: "caller: T27", caption: 'Вызывающий на потоке <b>T27</b> зовёт <code>Work()</code>. Код async-метода до <code>await</code> бежит <span class="hl">синхронно на том же потоке</span>.', nodes: [{ id: "c", kind: "gate", at: { zone: "caller", row: 0 }, state: "ok", label: "caller", detail: "T27" }, { id: "a", kind: "gate", at: { zone: "asyncm", row: 0 }, state: "ok", label: "before await", detail: "T27", accent: true }], edges: [] },
         { codeLine: 2, out: "caller: T27\nbefore await: T27\ngot task, result later", caption: 'На <code>await</code> метод <b>приостановлен</b>, <span class="hl">control возвращается вызывающему</span> — тот получает <code>Task</code> и идёт дальше («got task, result later»).', nodes: [{ id: "c", kind: "gate", at: { zone: "caller", row: 0 }, state: "ok", label: "caller продолжает", detail: "task на руках", accent: true }, { id: "a", kind: "gate", at: { zone: "asyncm", row: 0 }, state: "fail", label: "await", detail: "приостановлен" }], edges: [] },
-        { codeLine: 3, out: "caller: T27\nbefore await: T27\ngot task, result later\nafter await: T27\n42", caption: 'Возобновление: <code>after await: T27</code> — <b>тот же поток</b> (новый не создавался), затем <code>return 42</code>. Реальный прогон.', nodes: [{ id: "a1", kind: "gate", at: { zone: "asyncm", row: 0 }, state: "ok", label: "after await", detail: "T27" }, { id: "a2", kind: "gate", at: { zone: "asyncm", row: 1 }, state: "ok", label: "result", detail: "42", accent: true }], edges: [] },
+        { codeLine: 3, out: "caller: T27\nbefore await: T27\ngot task, result later\nafter await: T27 или T31\n42", caption: 'Возобновление: continuation бежит <span class="hl">на текущем sync-context</span>. В консоли контекста нет → <b>поток пула, МОЖЕТ отличаться</b> (T27 <b>или</b> T31); новый поток не создавался. Затем <code>return 42</code>.', nodes: [{ id: "a1", kind: "gate", at: { zone: "asyncm", row: 0 }, state: "ok", label: "after await", detail: "T27 / T31" }, { id: "a2", kind: "gate", at: { zone: "asyncm", row: 1 }, state: "ok", label: "result", detail: "42", accent: true }], edges: [] },
       ],
-      explain: 'Это машинная панель урока — таймлайн исполнения, снятый по <code>Thread.CurrentThread.ManagedThreadId</code>. Прогон: <code>caller: T27</code> → <code>before await: T27</code> (один и тот же поток — async-метод исполнился синхронно на потоке вызывающего до <code>await</code>), затем <code>got task, result later</code> (control вернулся), потом <code>after await: T27</code> и <code>42</code>. Дословно про поведение <code>await</code>: «control returns to the caller of the async method»; и про потоки: «an async method <span class="hl">doesn\'t run on its own thread</span>… uses time on the thread only when the method is active». Ни на одном шаге поток не сменился и не был заблокирован — это ядро TAP-модели.',
+      explain: 'Это машинная панель урока — таймлайн исполнения, снятый по <code>Thread.CurrentThread.ManagedThreadId</code>. Что <b>детерминированно верно</b> (замер 5/5): <code>before await</code> == <code>caller</code> — async-метод исполняется <span class="hl">синхронно на потоке вызывающего</span> до первого <code>await</code>. Про поток <b>после</b> <code>await</code> важно не соврать: дословно «The method <span class="hl">runs on the current synchronization context</span> and uses time on the thread only when the method is active». То есть continuation возобновляется на <b>текущем контексте синхронизации</b>: при <b>захваченном</b> контексте (UI, legacy ASP.NET) — на исходном потоке; <b>без</b> контекста (консоль, ASP.NET Core) — на потоке пула, который <b>МОЖЕТ отличаться</b> от вызвавшего (в замере встречается и <code>same=False</code>). Ключевое, что верно всегда: «The <code>async</code> and <code>await</code> keywords <b>don\'t cause extra threads to be created</b>» и «an async method <span class="hl">doesn\'t run on its own thread</span>» — <code>await</code> не создаёт поток и не блокирует. Миф «await держит тот же поток» верен лишь при захваченном контексте, а не как общая истина.',
       sources: ["ms-tap"],
     },
     {
@@ -178,5 +182,5 @@ export const tapModel: LessonData = {
     { icon: "avoid", k: "Task и async без await", v: '<code>Task</code> — обещание: state + результат-или-исключение, возвращается на паузе. <code>async</code> <b>без</b> <code>await</code> исполняется <span class="hl">синхронно</span> (warning CS1998) — сам <code>async</code> ничего не распараллеливает.' },
   ],
 
-  foot: 'урок · <b>TAP-модель</b> · 5 анимир. разборов · панель таймлайна (один поток T) · дизайн <b>mid</b>',
+  foot: 'урок · <b>TAP-модель</b> · 5 анимир. разборов · панель таймлайна потоков (без нового потока) · дизайн <b>mid</b>',
 };
