@@ -166,7 +166,7 @@ export const spanMemory: LessonData = {
       id: "c2", type: "predict-output", engagementLevel: "responding",
       question: '<code>var t = typeof(Span&lt;int&gt;); Console.WriteLine($"spanIsValueType={t.IsValueType} spanIsRefStruct={t.IsByRefLike}");</code> — что напечатает?',
       options: ["spanIsValueType=True spanIsRefStruct=True", "spanIsValueType=False spanIsRefStruct=True", "spanIsValueType=True spanIsRefStruct=False", "spanIsValueType=False spanIsRefStruct=False"], correctIndex: 0, xp: 10,
-      okText: '<code>Span&lt;T&gt;</code> — <b>ref struct</b> (<code>IsByRefLike=True</code>), это value type (<code>IsValueType=True</code>) → «<span class="hl">allocated on the stack… can\'t escape to the managed heap</span>». Печать: <b>spanIsValueType=True spanIsRefStruct=True</b>.',
+      okText: '<code>Span&lt;T&gt;</code> — <b>ref struct</b> (<code>IsByRefLike=True</code>), это value type (<code>IsValueType=True</code>) → «You <span class="hl">allocate instances of a ref struct type on the stack, and they can\'t escape to the managed heap</span>». Печать: <b>spanIsValueType=True spanIsRefStruct=True</b>.',
       noText: 'Span — by-ref-like value type (ref struct). Реальный вывод: <b>spanIsValueType=True spanIsRefStruct=True</b>.',
       verify: { kind: "exec", run: "dotnet run", expect: "spanIsValueType=True spanIsRefStruct=True" }, sourceRefs: ["ms-refstruct"],
     },
@@ -182,7 +182,7 @@ export const spanMemory: LessonData = {
 
   takeaways: [
     { icon: "why", k: "Span = вью без аллокации", v: 'Span<T> — вью над непрерывной памятью (backed <code>T[]</code>/<code>stackalloc</code>/unmanaged); создание «<span class="hl">does not involve duplicating the underlying buffers</span>» → 0 байт кучи (замер: spanAllocates=False vs copy=True). Для срезов без мусора.' },
-    { icon: "cost", k: "ref struct · стек-только", v: 'Span — <b>ref struct</b> (<code>IsByRefLike=True</code>): «allocated on the stack… can\'t escape». Нельзя: поле class (замер: CS8345), элемент массива, боксинг, лямбда, async (до C# 13; с C# 13 — не в одном блоке с <code>await</code>).' },
+    { icon: "cost", k: "ref struct · стек-только", v: 'Span — <b>ref struct</b> (<code>IsByRefLike=True</code>): «You allocate instances of a ref struct type on the stack, and they <span class="hl">can\'t escape to the managed heap</span>». Нельзя: поле class (замер: CS8345), элемент массива, боксинг, лямбда, async (до C# 13; с C# 13 — не в одном блоке с <code>await</code>).' },
     { icon: "avoid", k: "ReadOnlySpan / Memory", v: '<code>ReadOnlySpan&lt;T&gt;</code> — иммутабельна, backed <code>String</code> (срез строки, 0 байт — замер). Нужен async / поле / куча → <code>Memory&lt;T&gt;</code>: «<span class="hl">none of the limitations of Span<T></span>» (S7.9). Span ≠ Memory.' },
   ],
 
