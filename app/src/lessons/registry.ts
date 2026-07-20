@@ -523,6 +523,20 @@ const CS_S7: Section = {
       },
       () => import("./cs/span-memory.ts").then((m) => m.spanMemory),
     ),
+    entry(
+      {
+        id: "CS.S7.memory-guidelines",
+        track: "CS",
+        section: "CS.S7",
+        title: "Memory<T>: владение, аренда, usage-guidelines",
+        kicker: "C# вглубь · S7 · владение буфером",
+        icon: "gc",
+        subtitle: "Memory на куче, ownership/lease, Rule #1, IMemoryOwner",
+        estMinutes: 10,
+        cards: 3,
+      },
+      () => import("./cs/memory-guidelines.ts").then((m) => m.memoryGuidelines),
+    ),
   ],
 };
 

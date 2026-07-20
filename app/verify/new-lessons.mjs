@@ -43,6 +43,7 @@ const EXPECT = [
   { id: "CS.S7.finalizers-dispose", segs: 5, ev: "CS-FINDISP" },
   { id: "CS.S7.weak-references", segs: 5, ev: "CS-WEAKREF" },
   { id: "CS.S7.span-memory", segs: 5, ev: "CS-SPANMEM" },
+  { id: "CS.S7.memory-guidelines", segs: 5, ev: "CS-MEMGUIDE" },
   { id: "PY.M1.names-objects", segs: 8, ev: "PY-NAMES" },
   { id: "PY.M2.collections-hash", segs: 5, ev: "PY-COLL" },
   { id: "PY.M3.args-unpacking", segs: 4, ev: "PY-ARGS" },

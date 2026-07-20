@@ -1,0 +1,55 @@
+{
+  "id": "CS.S7.memory-guidelines",
+  "track": "CS",
+  "section": "CS.S7",
+  "module": "S7.9",
+  "title": "Memory<T>: владение, аренда, usage-guidelines",
+  "status": "published",
+  "order": 28,
+  "sources": [
+    {
+      "id": "ms-memguide",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/standard/memory-and-spans/memory-t-usage-guidelines",
+      "date": "2025-04-09"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Memory<T> can be a field of a class (stored on the managed heap), unlike Span<T> which was CS8345",
+      "code": "using System; class Holder { public Memory<int> field; } var h = new Holder(); h.field = new int[10]; Console.WriteLine($\"memoryAsClassField={h.field.Length==10}\");",
+      "expectedOutput": "memoryAsClassField=True",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-memguide"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Memory<T>.Span conversion exists but the reverse Span<T>-to-Memory<T> does not (Rule #1 rationale)",
+      "code": "using System; using System.Linq; using System.Reflection; bool memHasSpan = typeof(Memory<int>).GetProperty(\"Span\") != null; bool spanHasAsMemory = typeof(Span<int>).GetMethods().Any(m => m.Name.Contains(\"Memory\")); Console.WriteLine($\"memoryHasSpanProp={memHasSpan} spanHasToMemory={spanHasAsMemory}\");",
+      "expectedOutput": "memoryHasSpanProp=True spanHasToMemory=False",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-memguide"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "MemoryPool<T>.Rent returns an IMemoryOwner<T> (IDisposable) that the caller owns and must Dispose (Rule #7)",
+      "code": "using System; using System.Buffers; IMemoryOwner<int> owner = MemoryPool<int>.Shared.Rent(100); bool isOwner = owner is IDisposable; int len = owner.Memory.Length; owner.Dispose(); Console.WriteLine($\"rentGivesDisposableOwner={isOwner} lenAtLeast100={len>=100}\");",
+      "expectedOutput": "rentGivesDisposableOwner=True lenAtLeast100=True",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-memguide"
+      ]
+    }
+  ]
+}
