@@ -537,6 +537,20 @@ const CS_S7: Section = {
       },
       () => import("./cs/memory-guidelines.ts").then((m) => m.memoryGuidelines),
     ),
+    entry(
+      {
+        id: "CS.S7.stackalloc-refstruct",
+        track: "CS",
+        section: "CS.S7",
+        title: "stackalloc и ref struct: стек, ограничения",
+        kicker: "C# вглубь · S7 · аллокация на стеке",
+        icon: "gc",
+        subtitle: "stackalloc на стеке, Span без unsafe, лимиты, ref struct",
+        estMinutes: 10,
+        cards: 3,
+      },
+      () => import("./cs/stackalloc-refstruct.ts").then((m) => m.stackallocRefstruct),
+    ),
   ],
 };
 

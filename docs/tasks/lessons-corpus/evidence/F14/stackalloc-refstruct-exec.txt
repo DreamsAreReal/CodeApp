@@ -1,0 +1,16 @@
+# CS.S7.stackalloc-refstruct (S7.10) — exec evidence (run-csharp, real stackalloc/ref-struct measurements)
+# Captured 2026-07-20T19:49:37Z against backend health 200
+# NOTE: stackalloc/Span locals kept in a method (stack), not top-level (would hoist a ref struct field → CS8345).
+#   VOLATILE: the 1024 threshold is the page's illustrative MaxStackLimit, not a hard guarantee (env-dependent).
+
+## c1 — stackalloc int[100] assigns to a Span<int> WITHOUT unsafe and allocates 0 managed-heap bytes (it's on the stack) (deterministic 3/3) (expect: stackallocNoHeapAlloc=True lastElem=99)
+{"success":true,"stdout":"stackallocNoHeapAlloc=True lastElem=99\n","error":null,"elapsedMs":89}
+
+## c2 (SIGNATURE) — the page-recommended safe pattern: n<=1024 ? stackalloc : new[] — small stays on the stack (0 heap bytes), large goes on the heap (deterministic 3/3) (expect: smallOnStack=True largeOnHeap=True)
+{"success":true,"stdout":"smallOnStack=True largeOnHeap=True\n","error":null,"elapsedMs":57}
+
+## c3 — a ref struct CAN implement IDisposable (C# 13) and works with the using statement (deterministic 3/3) (expect: refStructDisposed=True)
+{"success":true,"stdout":"refStructDisposed=True\n","error":null,"elapsedMs":35}
+
+## (restriction demo, not a card) stackalloc T[E]: T must be an unmanaged type — stackalloc string[3] is a COMPILE ERROR:
+{"success":false,"stdout":"","error":"(1,56): error CS0208: Cannot take the address of, get the size of, or declare a pointer to a managed type (\u0027string\u0027)","elapsedMs":44}
