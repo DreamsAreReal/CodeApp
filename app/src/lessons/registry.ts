@@ -586,7 +586,10 @@ const CS_S5: Section = {
       { id: "CS.S5.property-positional", track: "CS", section: "CS.S5", title: "Property и positional patterns, Deconstruct", kicker: "C# вглубь · S5 · паттерны по форме", icon: "types", subtitle: "property {}, positional (), Deconstruct, extended", estMinutes: 11, cards: 3 },
       () => import("./cs/property-positional.ts").then((m) => m.propertyPositional),
     ),
-    // S5.7 registered as its body file lands (one lesson at a time).
+    entry(
+      { id: "CS.S5.list-patterns", track: "CS", section: "CS.S5", title: "List patterns и slice", kicker: "C# вглубь · S5 · форма последовательности", icon: "types", subtitle: "[..], discard/var в списке, slice .., один slice", estMinutes: 10, cards: 3 },
+      () => import("./cs/list-patterns.ts").then((m) => m.listPatterns),
+    ),
   ],
 };
 

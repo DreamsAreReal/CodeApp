@@ -1,0 +1,62 @@
+{
+  "id": "CS.S5.list-patterns",
+  "track": "CS",
+  "section": "CS.S5",
+  "module": "S5.7",
+  "title": "List patterns и slice",
+  "status": "published",
+  "order": 57,
+  "sources": [
+    {
+      "id": "ms-patterns",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/patterns",
+      "date": "2026-06-05"
+    },
+    {
+      "id": "ms-is",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/is",
+      "date": "2026-01-20"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "List pattern форма и длина: четыре is-проверки для {1,2,3}?",
+      "code": "int[] numbers = { 1, 2, 3 }; System.Console.WriteLine(numbers is [1, 2, 3]); System.Console.WriteLine(numbers is [1, 2, 4]); System.Console.WriteLine(numbers is [1, 2, 3, 4]); System.Console.WriteLine(numbers is [0 or 1, <= 2, >= 3]);",
+      "expectedOutput": "True\nFalse\nFalse\nTrue",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-patterns"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Slice .. матчит ноль или больше: четыре is-проверки?",
+      "code": "System.Console.WriteLine(new[] { 1, 2, 3, 4, 5 } is [> 0, > 0, ..]); System.Console.WriteLine(new[] { 1, 2, 3, 4 } is [.., > 0, > 0]); System.Console.WriteLine(new[] { 2, 4 } is [.., 2, 4]); System.Console.WriteLine(new[] { 1, 2, 3, 4 } is [>= 0, .., 2 or 4]);",
+      "expectedOutput": "True\nTrue\nTrue\nTrue",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-patterns"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Slice с захватом .. var s: MatchMessage(aBBA)/MatchMessage(apron)?",
+      "code": "void MatchMessage(string message) { var result = message is ['a' or 'A', .. var s, 'a' or 'A'] ? $\"Message {message} matches; inner part is {s}.\" : $\"Message {message} doesn't match.\"; System.Console.WriteLine(result); } MatchMessage(\"aBBA\"); MatchMessage(\"apron\");",
+      "expectedOutput": "Message aBBA matches; inner part is BB.\nMessage apron doesn't match.",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-patterns",
+        "ms-is"
+      ]
+    }
+  ]
+}
