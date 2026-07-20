@@ -495,7 +495,20 @@ const CS_S17: Section = {
       },
       () => import("./cs/concurrent-collections.ts").then((m) => m.concurrentCollections),
     ),
-    // S17.7 lesson registers here as its body file lands (built lesson-by-lesson).
+    entry(
+      {
+        id: "CS.S17.immutable-collections",
+        track: "CS",
+        section: "CS.S17",
+        title: "Immutable-коллекции: структурное разделение",
+        kicker: "C# вглубь · S17 · дерево вместо копии",
+        icon: "collections",
+        subtitle: "новый объект на мутацию, ImmutableArray vs List, Builder",
+        estMinutes: 11,
+        cards: 3,
+      },
+      () => import("./cs/immutable-collections.ts").then((m) => m.immutableCollections),
+    ),
   ],
 };
 

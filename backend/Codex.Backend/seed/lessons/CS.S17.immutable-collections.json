@@ -1,0 +1,61 @@
+{
+  "id": "CS.S17.immutable-collections",
+  "track": "CS",
+  "section": "CS.S17",
+  "module": "S17.7",
+  "title": "Immutable-коллекции: структурное разделение",
+  "status": "published",
+  "order": 17,
+  "sources": [
+    {
+      "id": "ms-immutable",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/api/system.collections.immutable",
+      "date": "2026-05-27"
+    },
+    {
+      "id": "ms-immutablelist",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/api/system.collections.immutable.immutablelist-1",
+      "date": "2026-07-01"
+    },
+    {
+      "id": "ms-collections",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/standard/collections/",
+      "date": "2026-03-30"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "var a = ImmutableList.Create(1,2,3); var b = a.Add(4); печать a.Count, b.Count, ReferenceEquals(a,b)?",
+      "code": "using System.Reflection; var asm = Assembly.Load(\"System.Collections.Immutable\"); var stat = asm.GetType(\"System.Collections.Immutable.ImmutableList\"); MethodInfo createG = null; foreach (var m in stat.GetMethods()) { if (m.Name == \"Create\" && m.IsGenericMethodDefinition) { var ps = m.GetParameters(); if (ps.Length == 1 && ps[0].ParameterType.IsArray) { createG = m; break; } } } var create = createG.MakeGenericMethod(typeof(int)); object a = create.Invoke(null, new object[] { new int[] { 1, 2, 3 } }); object b = a.GetType().GetMethod(\"Add\").Invoke(a, new object[] { 4 }); var cp = a.GetType().GetProperty(\"Count\"); System.Console.WriteLine($\"a.Count={(int)cp.GetValue(a)} b.Count={(int)cp.GetValue(b)} same={object.ReferenceEquals(a, b)}\");",
+      "expectedOutput": "a.Count=3 b.Count=4 same=False",
+      "verify": "execute",
+      "sourceRefs": ["ms-immutablelist"]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "var arr = ImmutableArray.Create(10,20,30); var arr2 = arr.Add(40); печать arr.Length, arr2.Length, arr[1]?",
+      "code": "using System.Reflection; var asm = Assembly.Load(\"System.Collections.Immutable\"); var stat = asm.GetType(\"System.Collections.Immutable.ImmutableArray\"); MethodInfo createG = null; foreach (var m in stat.GetMethods()) { if (m.Name == \"Create\" && m.IsGenericMethodDefinition) { var ps = m.GetParameters(); if (ps.Length == 1 && ps[0].ParameterType.IsArray) { createG = m; break; } } } var create = createG.MakeGenericMethod(typeof(int)); object arr = create.Invoke(null, new object[] { new int[] { 10, 20, 30 } }); object arr2 = arr.GetType().GetMethod(\"Add\").Invoke(arr, new object[] { 40 }); var lenP = arr.GetType().GetProperty(\"Length\"); var itemP = arr.GetType().GetProperty(\"Item\"); int one = (int)itemP.GetValue(arr, new object[] { 1 }); System.Console.WriteLine($\"arr={(int)lenP.GetValue(arr)} arr2={(int)lenP.GetValue(arr2)} arr[1]={one}\");",
+      "expectedOutput": "arr=3 arr2=4 arr[1]=20",
+      "verify": "execute",
+      "sourceRefs": ["ms-collections"]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Builder: CreateBuilder<int>(), Add(i*i) для i=0..4, ToImmutable(); печать builder.Count и result?",
+      "code": "using System.Reflection; var asm = Assembly.Load(\"System.Collections.Immutable\"); var stat = asm.GetType(\"System.Collections.Immutable.ImmutableList\"); MethodInfo cbG = null; foreach (var m in stat.GetMethods()) { if (m.Name == \"CreateBuilder\" && m.IsGenericMethodDefinition && m.GetParameters().Length == 0) { cbG = m; break; } } object builder = cbG.MakeGenericMethod(typeof(int)).Invoke(null, null); var addM = builder.GetType().GetMethod(\"Add\"); for (int i = 0; i < 5; i++) addM.Invoke(builder, new object[] { i * i }); object result = builder.GetType().GetMethod(\"ToImmutable\").Invoke(builder, null); var bcP = builder.GetType().GetProperty(\"Count\"); var rcP = result.GetType().GetProperty(\"Count\"); var itemP = result.GetType().GetProperty(\"Item\"); var parts = new string[(int)rcP.GetValue(result)]; for (int i = 0; i < parts.Length; i++) parts[i] = itemP.GetValue(result, new object[] { i }).ToString(); System.Console.WriteLine($\"builder.Count={(int)bcP.GetValue(builder)} result=[{string.Join(\",\", parts)}]\");",
+      "expectedOutput": "builder.Count=5 result=[0,1,4,9,16]",
+      "verify": "execute",
+      "sourceRefs": ["ms-immutable"]
+    }
+  ]
+}
