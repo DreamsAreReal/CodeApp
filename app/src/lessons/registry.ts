@@ -573,6 +573,10 @@ const CS_S6: Section = {
       { id: "CS.S6.dynamic-loading", track: "CS", section: "CS.S6", title: "Динамическая загрузка и late binding", kicker: "C# вглубь · S6 · связывание в рантайме", icon: "types", subtitle: "early vs late binding, InvokeMember, Binder, ChangeType", estMinutes: 10, cards: 3 },
       () => import("./cs/dynamic-loading.ts").then((m) => m.dynamicLoading),
     ),
+    entry(
+      { id: "CS.S6.attributes", track: "CS", section: "CS.S6", title: "Атрибуты: создание и чтение", kicker: "C# вглубь · S6 · метаданные на декларации", icon: "types", subtitle: "custom attribute, AttributeUsage, positional/named, GetCustomAttribute", estMinutes: 10, cards: 3 },
+      () => import("./cs/attributes.ts").then((m) => m.attributes),
+    ),
   ],
 };
 
