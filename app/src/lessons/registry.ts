@@ -425,7 +425,21 @@ const CS_S17: Section = {
       },
       () => import("./cs/collections-overview.ts").then((m) => m.collectionsOverview),
     ),
-    // S17.2–S17.7 lessons register here as their body files land (built lesson-by-lesson).
+    entry(
+      {
+        id: "CS.S17.choosing-collection",
+        track: "CS",
+        section: "CS.S17",
+        title: "Выбор коллекции: алгоритмическая сложность",
+        kicker: "C# вглубь · S17 · O() решает",
+        icon: "collections",
+        subtitle: "amortized vs worst-case, List vs Dictionary vs HashSet",
+        estMinutes: 10,
+        cards: 3,
+      },
+      () => import("./cs/choosing-collection.ts").then((m) => m.choosingCollection),
+    ),
+    // S17.3–S17.7 lessons register here as their body files land (built lesson-by-lesson).
   ],
 };
 

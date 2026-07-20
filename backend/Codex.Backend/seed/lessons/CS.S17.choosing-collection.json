@@ -1,0 +1,55 @@
+{
+  "id": "CS.S17.choosing-collection",
+  "track": "CS",
+  "section": "CS.S17",
+  "module": "S17.2",
+  "title": "Выбор коллекции: алгоритмическая сложность",
+  "status": "published",
+  "order": 17,
+  "sources": [
+    {
+      "id": "ms-selecting",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/standard/collections/selecting-a-collection-class",
+      "date": "2026-03-30"
+    },
+    {
+      "id": "ms-collections",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/standard/collections/",
+      "date": "2026-03-30"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Probe.Equals считает вызовы. Ищем ОТСУТСТВУЮЩИЙ среди 1000: list.Contains vs set.Contains. Печать $\"{listCmp} {setCmp}\"?",
+      "code": "using System.Collections.Generic; class Probe { public static int EqCalls; public readonly int V; public Probe(int v){V=v;} public override bool Equals(object o){EqCalls++; return o is Probe p && p.V==V;} public override int GetHashCode()=>V.GetHashCode(); } const int N=1000; var list=new List<Probe>(); var set=new HashSet<Probe>(); for(int i=0;i<N;i++){var p=new Probe(i); list.Add(p); set.Add(p);} var target=new Probe(N+7); Probe.EqCalls=0; _=list.Contains(target); int listCmp=Probe.EqCalls; Probe.EqCalls=0; _=set.Contains(target); int setCmp=Probe.EqCalls; System.Console.WriteLine($\"{listCmp} {setCmp}\");",
+      "expectedOutput": "1000 0",
+      "verify": "execute",
+      "sourceRefs": ["ms-collections"]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Probe-счётчик, ищем элемент по индексу 500 (он есть): list.Contains(mid) vs set.Contains(mid). Печать $\"{listMid} {setMid}\"?",
+      "code": "using System.Collections.Generic; class Probe { public static int EqCalls; public readonly int V; public Probe(int v){V=v;} public override bool Equals(object o){EqCalls++; return o is Probe p && p.V==V;} public override int GetHashCode()=>V.GetHashCode(); } const int N=1000; var list=new List<Probe>(); var set=new HashSet<Probe>(); Probe mid=null; for(int i=0;i<N;i++){var p=new Probe(i); list.Add(p); set.Add(p); if(i==500) mid=p;} Probe.EqCalls=0; _=list.Contains(mid); int listMid=Probe.EqCalls; Probe.EqCalls=0; _=set.Contains(mid); int setMid=Probe.EqCalls; System.Console.WriteLine($\"{listMid} {setMid}\");",
+      "expectedOutput": "501 1",
+      "verify": "execute",
+      "sourceRefs": ["ms-collections"]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "List<int>{5,3,9,1}: печать list[2] и list.IndexOf(9)?",
+      "code": "using System.Collections.Generic; var list = new List<int> { 5, 3, 9, 1 }; System.Console.WriteLine(list[2]); System.Console.WriteLine(list.IndexOf(9));",
+      "expectedOutput": "9\n2",
+      "verify": "execute",
+      "sourceRefs": ["ms-collections"]
+    }
+  ]
+}
