@@ -403,12 +403,79 @@ const CS_S2: Section = {
   ],
 };
 
+// Section S18 «Итераторы и yield» (RS-03 §2 раздел 18 · 4 урока). Curriculum recommendation
+// (design «Опыт»: S1 → S7 → S17 → S18 → S2); ordered before S2 in the catalog. Prereq S1.
+const CS_S18: Section = {
+  id: "CS.S18",
+  title: "Итераторы и yield",
+  order: 18,
+  prereqs: ["CS.S1"],
+  lessons: [
+    entry(
+      {
+        id: "CS.S18.iterators-overview",
+        track: "CS",
+        section: "CS.S18",
+        title: "Итераторы и ленивое исполнение",
+        kicker: "C# вглубь · S18 · вызов ≠ исполнение",
+        icon: "async",
+        subtitle: "yield return, ленивость, foreach/await foreach",
+        estMinutes: 10,
+        cards: 3,
+      },
+      () => import("./cs/iterators-overview.ts").then((m) => m.iteratorsOverview),
+    ),
+    entry(
+      {
+        id: "CS.S18.yield-contract",
+        track: "CS",
+        section: "CS.S18",
+        title: "Контракт yield: return, break, где нельзя",
+        kicker: "C# вглубь · S18 · правила yield",
+        icon: "async",
+        subtitle: "yield return/break, типы возврата, запреты",
+        estMinutes: 10,
+        cards: 3,
+      },
+      () => import("./cs/yield-contract.ts").then((m) => m.yieldContract),
+    ),
+    entry(
+      {
+        id: "CS.S18.iterator-state-machine",
+        track: "CS",
+        section: "CS.S18",
+        title: "Стейт-машина итератора: во что компилятор превращает yield",
+        kicker: "C# вглубь · S18 · nested-класс = автомат",
+        icon: "async",
+        subtitle: "MoveNext/Current, <>1__state, Reset → NotSupported",
+        estMinutes: 11,
+        cards: 3,
+      },
+      () => import("./cs/iterator-state-machine.ts").then((m) => m.iteratorStateMachine),
+    ),
+    entry(
+      {
+        id: "CS.S18.async-iterator-statemachine",
+        track: "CS",
+        section: "CS.S18",
+        title: "Async-итератор изнутри: AsyncIteratorMethodBuilder",
+        kicker: "C# вглубь · S18 · итератор + async автомат",
+        icon: "async",
+        subtitle: "IAsyncStateMachine, AsyncIteratorMethodBuilder, комбинация",
+        estMinutes: 11,
+        cards: 3,
+      },
+      () => import("./cs/async-iterator-statemachine.ts").then((m) => m.asyncIteratorStatemachine),
+    ),
+  ],
+};
+
 const CS_TRACK: Track = {
   id: "CS",
   title: S.trackCsDeepLabel,
   sub: S.trackCsDeepSub,
   badge: S.trackNewBadge,
-  sections: [CS_S1, CS_S2],
+  sections: [CS_S1, CS_S2, CS_S18],
 };
 
 // The legacy flat C# track and its 6 old lessons were removed in the F2 migration (their
