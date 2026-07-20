@@ -1,0 +1,61 @@
+{
+  "id": "CS.S6.type-metadata",
+  "track": "CS",
+  "section": "CS.S6",
+  "module": "S6.2",
+  "title": "Type и метаданные членов",
+  "status": "published",
+  "order": 2,
+  "sources": [
+    {
+      "id": "ms-getmembers",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/fundamentals/reflection/get-type-member-information",
+      "date": "2019-09-03"
+    },
+    {
+      "id": "ms-bindingflags",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/api/system.reflection.bindingflags",
+      "date": "2025-07-01"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Type.GetType(\"System.Int32\"): печать Name и Namespace?",
+      "code": "using System; Type t = Type.GetType(\"System.Int32\"); Console.WriteLine(t.Name); Console.WriteLine(t.Namespace);",
+      "expectedOutput": "Int32\nSystem",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-getmembers"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Box{public A; private B; public M(); private N();}: GetMembers public vs +nonpublic (Instance|DeclaredOnly)?",
+      "code": "using System; using System.Reflection; class Box { public int A; private int B; public void M(){} private void N(){} } Type t = typeof(Box); var scope = BindingFlags.Instance | BindingFlags.DeclaredOnly; Console.WriteLine($\"public-only: {t.GetMembers(scope | BindingFlags.Public).Length}\"); Console.WriteLine($\"+ nonpublic: {t.GetMembers(scope | BindingFlags.Public | BindingFlags.NonPublic).Length}\");",
+      "expectedOutput": "public-only: 3\n+ nonpublic: 5",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-bindingflags"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "GetMembers(Public) без Instance/Static vs с Instance|DeclaredOnly?",
+      "code": "using System; using System.Reflection; class Box { public int A; } Type t = typeof(Box); Console.WriteLine(t.GetMembers(BindingFlags.Public).Length); Console.WriteLine(t.GetMembers(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).Length);",
+      "expectedOutput": "0\n2",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-bindingflags"
+      ]
+    }
+  ]
+}

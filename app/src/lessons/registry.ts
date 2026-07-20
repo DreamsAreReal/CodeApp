@@ -565,6 +565,10 @@ const CS_S6: Section = {
       { id: "CS.S6.reflection-overview", track: "CS", section: "CS.S6", title: "Reflection: обзор и граф метаданных", kicker: "C# вглубь · S6 · самоописание рантайма", icon: "types", subtitle: "System.Reflection, граф assembly→member, RuntimeType", estMinutes: 9, cards: 3 },
       () => import("./cs/reflection-overview.ts").then((m) => m.reflectionOverview),
     ),
+    entry(
+      { id: "CS.S6.type-metadata", track: "CS", section: "CS.S6", title: "Type и метаданные членов", kicker: "C# вглубь · S6 · запрос к метаданным", icon: "types", subtitle: "Type-свойства, MemberInfo, MemberType, BindingFlags-фильтр", estMinutes: 10, cards: 3 },
+      () => import("./cs/type-metadata.ts").then((m) => m.typeMetadata),
+    ),
   ],
 };
 
