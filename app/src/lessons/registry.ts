@@ -620,6 +620,20 @@ const CS_S3: Section = {
       },
       () => import("./cs/deferred-execution.ts").then((m) => m.deferredExecution),
     ),
+    entry(
+      {
+        id: "CS.S3.ienumerable-iqueryable",
+        track: "CS",
+        section: "CS.S3",
+        title: "IEnumerable<T> vs IQueryable<T>: делегаты и деревья выражений",
+        kicker: "C# вглубь · S3 · где бежит запрос",
+        icon: "collections",
+        subtitle: "делегат vs expression tree, in-memory vs provider, где исполняется",
+        estMinutes: 10,
+        cards: 3,
+      },
+      () => import("./cs/ienumerable-iqueryable.ts").then((m) => m.ienumerableIqueryable),
+    ),
   ],
 };
 
