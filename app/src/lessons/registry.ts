@@ -592,6 +592,20 @@ const CS_S3: Section = {
       },
       () => import("./cs/linq-execution.ts").then((m) => m.linqExecution),
     ),
+    entry(
+      {
+        id: "CS.S3.standard-operators",
+        track: "CS",
+        section: "CS.S3",
+        title: "Стандартные операторы: Where, Select, GroupBy, Join",
+        kicker: "C# вглубь · S3 · семейства операторов",
+        icon: "collections",
+        subtitle: "фильтр/проекция/группировка/join, extension-методы, композиция",
+        estMinutes: 10,
+        cards: 3,
+      },
+      () => import("./cs/standard-operators.ts").then((m) => m.standardOperators),
+    ),
   ],
 };
 

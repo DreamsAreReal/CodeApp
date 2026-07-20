@@ -1,0 +1,55 @@
+{
+  "id": "CS.S3.standard-operators",
+  "track": "CS",
+  "section": "CS.S3",
+  "module": "S3.3",
+  "title": "Стандартные операторы: Where, Select, GroupBy, Join",
+  "status": "published",
+  "order": 32,
+  "sources": [
+    {
+      "id": "ms-sqo",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/linq/standard-query-operators/",
+      "date": "2025-12-01"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Where filters then Select projects (pipeline): squares of numbers > 2",
+      "code": "using System; using System.Linq; int[] n = [1,2,3,4,5,6]; var r = n.Where(x => x > 2).Select(x => x * x); Console.WriteLine(string.Join(\",\", r));",
+      "expectedOutput": "9,16,25,36",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-sqo"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "GroupBy word length then count per group (docs example, deterministic)",
+      "code": "using System; using System.Linq; string[] words = \"the quick brown fox\".Split(\" \"); var g = words.GroupBy(w => w.Length).OrderBy(x => x.Key).Select(x => $\"{x.Key}:{x.Count()}\"); Console.WriteLine(string.Join(\" \", g));",
+      "expectedOutput": "3:2 5:2",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-sqo"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Join preserves outer order then matching inner (inner join semantics)",
+      "code": "using System; using System.Linq; using System.Collections.Generic; var deps = new[]{new{Id=1,Name=\"Eng\"},new{Id=2,Name=\"Math\"}}; var studs = new[]{new{Dep=1,N=\"Ann\"},new{Dep=2,N=\"Bob\"},new{Dep=1,N=\"Cy\"}}; var j = deps.Join(studs, d => d.Id, s => s.Dep, (d,s) => $\"{s.N}->{d.Name}\"); Console.WriteLine(string.Join(\",\", j));",
+      "expectedOutput": "Ann->Eng,Cy->Eng,Bob->Math",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-sqo"
+      ]
+    }
+  ]
+}

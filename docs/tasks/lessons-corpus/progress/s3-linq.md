@@ -32,7 +32,7 @@ cards[{id,type,engagementLevel,prompt,code,expectedOutput,verify:"execute",sourc
 ## Уроки (todo→self-pass):
 1. CS.S3.linq-query-syntax — self-pass (tsc0/layoutGREEN/exec 97 92 81·50,80,90·10; IL Where/Select)
 2. CS.S3.linq-execution — self-pass (tsc0/layoutGREEN/exec 0 2 4 6·2,5,9·2 4)
-3. CS.S3.standard-operators — todo
+3. CS.S3.standard-operators — self-pass (tsc0/layoutGREEN/exec 9,16,25,36·3:2 5:2·Join order)
 4. CS.S3.deferred-execution — todo
 5. CS.S3.ienumerable-iqueryable — todo
 6. CS.S3.linq-providers — todo
