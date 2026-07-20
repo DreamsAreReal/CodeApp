@@ -606,6 +606,20 @@ const CS_S3: Section = {
       },
       () => import("./cs/standard-operators.ts").then((m) => m.standardOperators),
     ),
+    entry(
+      {
+        id: "CS.S3.deferred-execution",
+        track: "CS",
+        section: "CS.S3",
+        title: "Отложенное выполнение: streaming vs buffering",
+        kicker: "C# вглубь · S3 · когда РЕАЛЬНО бежит",
+        icon: "collections",
+        subtitle: "deferred, streaming/nonstreaming, immediate, счётчик итераций",
+        estMinutes: 11,
+        cards: 3,
+      },
+      () => import("./cs/deferred-execution.ts").then((m) => m.deferredExecution),
+    ),
   ],
 };
 
