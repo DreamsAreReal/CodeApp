@@ -1,0 +1,80 @@
+{
+  "id": "CS.S4.closures-capture",
+  "track": "CS",
+  "section": "CS.S4",
+  "module": "S4.1",
+  "title": "Лямбды и замыкания: захват переменной",
+  "status": "published",
+  "order": 4,
+  "sources": [
+    {
+      "id": "ms-lambda",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/lambda-expressions",
+      "date": "2026-01-20"
+    },
+    {
+      "id": "ms-delegates",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/delegates/",
+      "date": "2025-03-11"
+    },
+    {
+      "id": "roslyn-closures",
+      "kind": "design-doc",
+      "url": "https://github.com/dotnet/roslyn/blob/main/docs/compilers/Design/Closure%20Conversion.md",
+      "date": "2026-07-21"
+    },
+    {
+      "id": "lippert-loop",
+      "kind": "blog",
+      "url": "https://learn.microsoft.com/en-us/archive/blogs/ericlippert/closing-over-the-loop-variable-considered-harmful",
+      "date": "2009-11-12"
+    },
+    {
+      "id": "devblogs-tepliakov",
+      "kind": "blog",
+      "url": "https://devblogs.microsoft.com/premier-developer/dissecting-the-local-functions-in-c-7/",
+      "date": "2017-10-03"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Func<int> f; int v=5; f=()=>v; печать f(); v=10; печать f(); — что напечатают обе строки?",
+      "code": "using System; Func<int> f; int v = 5; f = () => v; Console.WriteLine(f()); v = 10; Console.WriteLine(f());",
+      "expectedOutput": "5\n10",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-lambda",
+        "lippert-loop"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "for vs foreach: три делегата захватывают переменную цикла. Что напечатают строки for и foreach?",
+      "code": "using System; using System.Collections.Generic; var forF = new List<Func<int>>(); for (int i = 0; i < 3; i++) forF.Add(() => i); var feF = new List<Func<int>>(); foreach (var j in new[] { 0, 1, 2 }) feF.Add(() => j); Console.WriteLine(\"for: \" + string.Join(\",\", forF.ConvertAll(g => g()))); Console.WriteLine(\"foreach: \" + string.Join(\",\", feF.ConvertAll(g => g())));",
+      "expectedOutput": "for: 3,3,3\nforeach: 0,1,2",
+      "verify": "execute",
+      "sourceRefs": [
+        "lippert-loop"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "GC.GetAllocatedBytesForCurrentThread вокруг захватывающей лямбды () => x + 1 (прогретый метод) — сколько байт?",
+      "code": "using System; using System.Runtime.CompilerServices; long Cap() { int x = 41; long b0 = GC.GetAllocatedBytesForCurrentThread(); Func<int> f = () => x + 1; long b1 = GC.GetAllocatedBytesForCurrentThread(); GC.KeepAlive(f); return b1 - b0; } [MethodImpl(MethodImplOptions.NoInlining)] void Warm() { Cap(); } Warm(); Console.WriteLine($\"capturing lambda: {Cap()} bytes\");",
+      "expectedOutput": "capturing lambda: 64 bytes",
+      "verify": "execute",
+      "sourceRefs": [
+        "devblogs-tepliakov"
+      ]
+    }
+  ]
+}

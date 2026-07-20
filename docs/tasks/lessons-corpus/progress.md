@@ -171,3 +171,33 @@
 
 ## Доказательство M3 (итог)
 - `npm run verify:all` FULL **7/7 ALL GREEN** (23/23 урока на `at`, 0 ROW-BASELINE); `dotnet test` **67/67**; density на всех уроках ALL GREEN. Каждый урок: density --lessons + E2E (render 5 сегм. + grade-петля) зелёные, скрины 375/768 в evidence/F7|F8/. Все exec-числа реальны (run-csharp, stdout==expect, anti-echo OK) — evidence/F7|F8/*-exec.txt. GT-M3-s1: 0 красных флагов во всех 7 уроках. Coverage S1 = **10/10**.
+
+## S4 — Замыкания: `CS.S4.closures-capture` (раздел-билдер, worktree section/s4-closures)
+
+Сделано (1 урок, DoD выполнен):
+- `app/src/lessons/cs/closures-capture.ts`: 6 анимир. сегментов (лямбда→делегат · захват ПЕРЕМЕННОЙ не значения · display-класс/общее поле с вложенным `at:{in}` · ловушка `for` vs `foreach` рядом · МАШИННАЯ ПАНЕЛЬ счётчика аллокаций · `static`-лямбда как инструмент), 3 exec-карточки, ≥90% сегментов с динамикой узлов. Тон сеньора, контент RU / код EN.
+- Новый раздел `CS.S4` «Делегаты и события» в `registry.ts` (order 4, prereq CS.S1), в `CS_TRACK.sections`. Сид `backend/Codex.Backend/seed/lessons/CS.S4.closures-capture.json` (status published, 3 cards, те же id/card.id).
+
+Реальные числа/артефакты (все через POST :5090/api/authoring/run-csharp):
+- МАШИННАЯ ПАНЕЛЬ (signature, s5): захватывающая лямбда `() => x + 1` = **64 байта** кучи (стабильно ×3, прогретый метод), не-захватывающая `static () => 42` = **0 байт** (компилятор кэширует делегат). Живой `GC.GetAllocatedBytesForCurrentThread()`. Направление подтверждено Tepliakov «2 heap allocations…»/«0 heap allocations…».
+- EXEC c1 `5\n10` (захват = переменная: после `v=10` делегат видит 10); c2 `for: 3,3,3\nforeach: 0,1,2` (ловушка цикла: for делит переменную, foreach даёт копию с C# 5); c3 `capturing lambda: 64 bytes`. stdout==expect дословно, anti-echo OK (expect не подстрока code) — проверено Python-драйвером по самому сид-файлу.
+- CS8821 (эндпоинт): `static () => local` — реальная ошибка компиляции, доказательство F12/F13 (static запрещает захват).
+
+VERBATIM-аудит (G7): каждая « »-англ-цитата сверена ПРЯМЫМ fetch страницы 2026-07-21 —
+S1 lambda-expressions (полный текст страницы), S2 delegates, S5 Roslyn Closure Conversion,
+S7 Lippert (line 44/54/80: «Closures close over variables, not over values», UPDATE про C# 5 и «The "for" loop will not be changed», «one loop variable for the whole loop…»),
+S4 migration-guide («Beginning with C# 5…scoped within the iteration»), S8 Tepliakov (числа аллокаций).
+0 мифов из GT в утвердительной форме (все — как «миф → истина»).
+
+Решения/грабли:
+- **НЕ процитировал** дословно фразу Tepliakov про «hoisted as a field» (в GT F10 она есть): прямой скрейп DevBlogs НЕ дал её побуквенно → механику хойстинга подал СВОИМИ словами + дословной цитатой Roslyn design-doc (S5, подтверждена). Анти-фабрикация: перефразировка внутри « » запрещена.
+- **НЕ цитировал** S6 static-anonymous-functions (preview-URL 404 на прямой fetch, как и отмечено в GT) — тот же факт взят дословно из S1 (проверено). S6 оставлен как provenance-указатель без кавычек.
+- Layout-грабля (правило движка): вложенный `slot` (h40) растит display-класс до laid.h68 → DOM-height через `sizeNode`→`clampHeight` даёт 68 вне шкалы {28,40,44,48,60}. Починка как в эталоне py-names-objects: вложенное поле = `chip` (h28) → laid.h56 → DOM.h60 (в шкале). Подтверждено сравнением с эталоном (обе даёт 56→60).
+- FIT-грабля: `ref`/`slot` NAME-регион ≈3 символа (avail 30px). Имена `read`/`write`/`local`/`bad` и длинный value `static () => local` в ref не влезали → перевёл делегаты и локаль в `chip`/`gate` (лейбл на всю ширину w-10). FIT-префлайт (monoMeasure с реальными font-size): 0 fails.
+
+Самопроверка (без E2E/preview — бэкенд не поднимал):
+- `npx tsc --noEmit` (worktree app, deps через npm ci) — clean, exit 0.
+- Pure `layoutScene` probe по всем 19 сценам (реплика viz-fit authoringProof + HEIGHT/WIDTH через `sizeNode`): ALL GREEN (in-zone PAD≥8 · nested-contained · row center-Y · 0 overlap · grid-snap · DOM-height в шкале · DOM-width на лестнице).
+- FIT-префлайт: 0 нарушений (min head +1px на одноцифровых value, как в эталонах).
+- G4 exec: 3/3 карточки stdout==expectedOutput, success, anti-echo — по сид-файлу.
+- Паритет TS↔seed: verify.expect == expectedOutput (3/3), id и card.id совпадают, панель «64»/«0 байт» в обоих.

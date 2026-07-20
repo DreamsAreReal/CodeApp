@@ -403,12 +403,38 @@ const CS_S2: Section = {
   ],
 };
 
+// Section S4 «Делегаты и события» (RS-03 §2 раздел 4). Wave 1 seeds it with the single
+// «Лямбды и замыкания» lesson (closes the retired closures topic, RS-03 anti-regression
+// matrix); the rest of S4 lands in a later wave. Ordered after S2 in the curriculum.
+const CS_S4: Section = {
+  id: "CS.S4",
+  title: "Делегаты и события",
+  order: 4,
+  prereqs: ["CS.S1"],
+  lessons: [
+    entry(
+      {
+        id: "CS.S4.closures-capture",
+        track: "CS",
+        section: "CS.S4",
+        title: "Лямбды и замыкания: захват переменной",
+        kicker: "C# вглубь · S4 · display-класс",
+        icon: "types",
+        subtitle: "Захват переменной, ловушка цикла, аллокация замыкания",
+        estMinutes: 11,
+        cards: 3,
+      },
+      () => import("./cs/closures-capture.ts").then((m) => m.closuresCapture),
+    ),
+  ],
+};
+
 const CS_TRACK: Track = {
   id: "CS",
   title: S.trackCsDeepLabel,
   sub: S.trackCsDeepSub,
   badge: S.trackNewBadge,
-  sections: [CS_S1, CS_S2],
+  sections: [CS_S1, CS_S2, CS_S4],
 };
 
 // The legacy flat C# track and its 6 old lessons were removed in the F2 migration (their
