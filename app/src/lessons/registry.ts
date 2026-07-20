@@ -574,7 +574,11 @@ const CS_S5: Section = {
       { id: "CS.S5.switch-expressions", track: "CS", section: "CS.S5", title: "Switch expressions и exhaustiveness", kicker: "C# вглубь · S5 · рукава и полнота", icon: "types", subtitle: "рукава, case guard when, порядок текста, полнота", estMinutes: 10, cards: 3 },
       () => import("./cs/switch-expressions.ts").then((m) => m.switchExpressions),
     ),
-    // S5.4 … S5.7 registered as their body files land (one lesson at a time).
+    entry(
+      { id: "CS.S5.is-declaration", track: "CS", section: "CS.S5", title: "is-оператор и declaration patterns", kicker: "C# вглубь · S5 · тест типа + bind", icon: "types", subtitle: "is bool, declaration/type pattern, null → false, scope", estMinutes: 9, cards: 3 },
+      () => import("./cs/is-declaration.ts").then((m) => m.isDeclaration),
+    ),
+    // S5.5 … S5.7 registered as their body files land (one lesson at a time).
   ],
 };
 

@@ -1,0 +1,68 @@
+{
+  "id": "CS.S5.is-declaration",
+  "track": "CS",
+  "section": "CS.S5",
+  "module": "S5.4",
+  "title": "is-оператор и declaration patterns",
+  "status": "published",
+  "order": 54,
+  "sources": [
+    {
+      "id": "ms-is",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/is",
+      "date": "2026-01-20"
+    },
+    {
+      "id": "ms-patterns",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/patterns",
+      "date": "2026-06-05"
+    },
+    {
+      "id": "ms-pm-overview",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/functional/pattern-matching",
+      "date": "2025-11-18"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "boxed object и nullable int оба матчат is int: a + b?",
+      "code": "int i = 34; object iBoxed = i; int? jNullable = 42; if (iBoxed is int a && jNullable is int b) System.Console.WriteLine(a + b);",
+      "expectedOutput": "76",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-patterns",
+        "ms-is"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "object o = null; o is string s — declaration pattern на null?",
+      "code": "object o = null; System.Console.WriteLine(o is string s);",
+      "expectedOutput": "False",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-patterns"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "is как булев тест типа: o is string?",
+      "code": "object o = \"hi\"; bool r = o is string; System.Console.WriteLine(r);",
+      "expectedOutput": "True",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-is"
+      ]
+    }
+  ]
+}
