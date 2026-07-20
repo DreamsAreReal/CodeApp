@@ -570,7 +570,11 @@ const CS_S5: Section = {
       { id: "CS.S5.pattern-vocabulary", track: "CS", section: "CS.S5", title: "Словарь паттернов: полный набор", kicker: "C# вглубь · S5 · карта паттернов", icon: "types", subtitle: "declaration/type/constant/relational/logical/property/positional/list", estMinutes: 10, cards: 3 },
       () => import("./cs/pattern-vocabulary.ts").then((m) => m.patternVocabulary),
     ),
-    // S5.3 … S5.7 registered as their body files land (one lesson at a time).
+    entry(
+      { id: "CS.S5.switch-expressions", track: "CS", section: "CS.S5", title: "Switch expressions и exhaustiveness", kicker: "C# вглубь · S5 · рукава и полнота", icon: "types", subtitle: "рукава, case guard when, порядок текста, полнота", estMinutes: 10, cards: 3 },
+      () => import("./cs/switch-expressions.ts").then((m) => m.switchExpressions),
+    ),
+    // S5.4 … S5.7 registered as their body files land (one lesson at a time).
   ],
 };
 
