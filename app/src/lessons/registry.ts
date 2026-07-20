@@ -403,12 +403,38 @@ const CS_S2: Section = {
   ],
 };
 
+// Section S17 «Внутренности коллекций» (RS-03 §2 раздел 17 · 7 уроков). Curriculum
+// recommendation (design «Опыт»: S1 → S7 → S17 → S18 → S2); ordered by `order` after S2.
+const CS_S17: Section = {
+  id: "CS.S17",
+  title: "Внутренности коллекций",
+  order: 17,
+  prereqs: ["CS.S1"],
+  lessons: [
+    entry(
+      {
+        id: "CS.S17.collections-overview",
+        track: "CS",
+        section: "CS.S17",
+        title: "Обзор коллекций .NET: generic vs non-generic",
+        kicker: "C# вглубь · S17 · карта семейств",
+        icon: "collections",
+        subtitle: "generic vs non-generic, контракт, цена боксинга",
+        estMinutes: 9,
+        cards: 3,
+      },
+      () => import("./cs/collections-overview.ts").then((m) => m.collectionsOverview),
+    ),
+    // S17.2–S17.7 lessons register here as their body files land (built lesson-by-lesson).
+  ],
+};
+
 const CS_TRACK: Track = {
   id: "CS",
   title: S.trackCsDeepLabel,
   sub: S.trackCsDeepSub,
   badge: S.trackNewBadge,
-  sections: [CS_S1, CS_S2],
+  sections: [CS_S1, CS_S2, CS_S17],
 };
 
 // The legacy flat C# track and its 6 old lessons were removed in the F2 migration (their
