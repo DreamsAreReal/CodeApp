@@ -1,0 +1,67 @@
+{
+  "id": "CS.S17.list-internals",
+  "track": "CS",
+  "section": "CS.S17",
+  "module": "S17.4",
+  "title": "List<T> изнутри: массив, Capacity, рост",
+  "status": "published",
+  "order": 17,
+  "sources": [
+    {
+      "id": "ms-list",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.list-1",
+      "date": "2026-07-01"
+    },
+    {
+      "id": "ms-list-capacity",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.list-1.capacity",
+      "date": "2026-07-01"
+    },
+    {
+      "id": "ms-collections",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/standard/collections/",
+      "date": "2026-03-30"
+    },
+    {
+      "id": "runtime-list",
+      "kind": "source",
+      "url": "https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Collections/Generic/List.cs",
+      "date": "2026-07-21"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "5 Add в пустой List, затem TrimExcess: печать Capacity до и после (пример из доков)?",
+      "code": "using System.Collections.Generic; var list = new List<int>(); for (int i = 0; i < 5; i++) list.Add(i); int cap = list.Capacity; list.TrimExcess(); System.Console.WriteLine($\"Capacity: {cap}  after TrimExcess: {list.Capacity}\");",
+      "expectedOutput": "Capacity: 8  after TrimExcess: 5",
+      "verify": "execute",
+      "sourceRefs": ["ms-list-capacity"]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Сколько реаллокаций внутреннего массива за 1000 Add в пустой List?",
+      "code": "using System.Collections.Generic; var list = new List<int>(); int r = 0, p = list.Capacity; for (int i = 0; i < 1000; i++) { list.Add(i); if (list.Capacity != p) { r++; p = list.Capacity; } } System.Console.WriteLine($\"1000 Add -> {r} реаллокаций, финальная Capacity={list.Capacity}\");",
+      "expectedOutput": "1000 Add -> 9 реаллокаций, финальная Capacity=1024",
+      "verify": "execute",
+      "sourceRefs": ["ms-list-capacity"]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Пред-выделенный List<int>(1000): сколько реаллокаций за 1000 Add?",
+      "code": "using System.Collections.Generic; var list = new List<int>(1000); int r = 0, p = list.Capacity; for (int i = 0; i < 1000; i++) { list.Add(i); if (list.Capacity != p) { r++; p = list.Capacity; } } System.Console.WriteLine($\"prealloc 1000: {r} реаллокаций\");",
+      "expectedOutput": "prealloc 1000: 0 реаллокаций",
+      "verify": "execute",
+      "sourceRefs": ["ms-list-capacity"]
+    }
+  ]
+}

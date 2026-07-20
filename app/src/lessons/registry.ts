@@ -453,7 +453,21 @@ const CS_S17: Section = {
       },
       () => import("./cs/dictionary-internals.ts").then((m) => m.dictionaryInternals),
     ),
-    // S17.4–S17.7 lessons register here as their body files land (built lesson-by-lesson).
+    entry(
+      {
+        id: "CS.S17.list-internals",
+        track: "CS",
+        section: "CS.S17",
+        title: "List<T> изнутри: массив, Capacity, рост",
+        kicker: "C# вглубь · S17 · массив под капотом",
+        icon: "collections",
+        subtitle: "int[] под капотом, Capacity/Count, амортизированный Add",
+        estMinutes: 10,
+        cards: 3,
+      },
+      () => import("./cs/list-internals.ts").then((m) => m.listInternals),
+    ),
+    // S17.5–S17.7 lessons register here as their body files land (built lesson-by-lesson).
   ],
 };
 
