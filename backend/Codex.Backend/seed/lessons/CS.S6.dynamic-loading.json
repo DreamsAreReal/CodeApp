@@ -1,0 +1,62 @@
+{
+  "id": "CS.S6.dynamic-loading",
+  "track": "CS",
+  "section": "CS.S6",
+  "module": "S6.3",
+  "title": "Динамическая загрузка и late binding",
+  "status": "published",
+  "order": 3,
+  "sources": [
+    {
+      "id": "ms-dynload",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/fundamentals/reflection/dynamically-loading-and-using-types",
+      "date": "2017-03-30"
+    },
+    {
+      "id": "ms-invokemember",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/api/system.type.invokemember",
+      "date": "2025-07-01"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Late binding: Activator.CreateInstance(Calc) + InvokeMember Twice(21L)?",
+      "code": "using System; using System.Reflection; public class Calc { public long Twice(long v)=>v*2; } object c = Activator.CreateInstance(typeof(Calc)); Console.WriteLine(typeof(Calc).InvokeMember(\"Twice\", BindingFlags.InvokeMethod, null, c, new object[]{21L}));",
+      "expectedOutput": "42",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-dynload"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "asm.GetType(StringBuilder по строке) + CreateInstance + InvokeMember Append(late)?",
+      "code": "using System; using System.Reflection; Assembly asm = typeof(string).Assembly; Type t = asm.GetType(\"System.Text.StringBuilder\"); object sb = Activator.CreateInstance(t); t.InvokeMember(\"Append\", BindingFlags.InvokeMethod, null, sb, new object[]{\"late\"}); Console.WriteLine(sb); Console.WriteLine(t.FullName);",
+      "expectedOutput": "late\nSystem.Text.StringBuilder",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-dynload"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "InvokeMember PrintValue с long-аргументом vs string-аргументом — какая перегрузка?",
+      "code": "using System; using System.Reflection; public class D { public string PrintValue(long v)=>$\"long:{v}\"; public string PrintValue(string v)=>$\"str:{v}\"; } Type t=typeof(D); object d=Activator.CreateInstance(t); Console.WriteLine(t.InvokeMember(\"PrintValue\", BindingFlags.InvokeMethod, null, d, new object[]{42L})); Console.WriteLine(t.InvokeMember(\"PrintValue\", BindingFlags.InvokeMethod, null, d, new object[]{\"hi\"}));",
+      "expectedOutput": "long:42\nstr:hi",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-dynload",
+        "ms-invokemember"
+      ]
+    }
+  ]
+}

@@ -569,6 +569,10 @@ const CS_S6: Section = {
       { id: "CS.S6.type-metadata", track: "CS", section: "CS.S6", title: "Type и метаданные членов", kicker: "C# вглубь · S6 · запрос к метаданным", icon: "types", subtitle: "Type-свойства, MemberInfo, MemberType, BindingFlags-фильтр", estMinutes: 10, cards: 3 },
       () => import("./cs/type-metadata.ts").then((m) => m.typeMetadata),
     ),
+    entry(
+      { id: "CS.S6.dynamic-loading", track: "CS", section: "CS.S6", title: "Динамическая загрузка и late binding", kicker: "C# вглубь · S6 · связывание в рантайме", icon: "types", subtitle: "early vs late binding, InvokeMember, Binder, ChangeType", estMinutes: 10, cards: 3 },
+      () => import("./cs/dynamic-loading.ts").then((m) => m.dynamicLoading),
+    ),
   ],
 };
 
