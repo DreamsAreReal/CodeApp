@@ -1,0 +1,61 @@
+{
+  "id": "CS.S7.finalizers-dispose",
+  "track": "CS",
+  "section": "CS.S7",
+  "module": "S7.6",
+  "title": "Финализаторы и Dispose: паттерн, SuppressFinalize",
+  "status": "published",
+  "order": 25,
+  "sources": [
+    {
+      "id": "ms-dispose",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose",
+      "date": "2025-10-22"
+    },
+    {
+      "id": "ms-finalize",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/api/system.object.finalize",
+      "date": "2025-07-01"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "GC.SuppressFinalize prevents the finalizer from running",
+      "code": "using System; class F { public static int finalized=0; ~F(){ finalized++; } } var f = new F(); GC.SuppressFinalize(f); f = null; GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect(); Console.WriteLine($\"finalizerRan={F.finalized>0}\");",
+      "expectedOutput": "finalizerRan=False",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-dispose"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Dispose is idempotent: callable multiple times, subsequent calls do nothing",
+      "code": "using System; class R : IDisposable { bool d; public int count; public void Dispose(){ if(d) return; d=true; count++; } } var r = new R(); r.Dispose(); r.Dispose(); r.Dispose(); Console.WriteLine($\"disposeCount={r.count} idempotent={r.count==1}\");",
+      "expectedOutput": "disposeCount=1 idempotent=True",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-dispose"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "The disposing flag is true when Dispose(bool) is called from Dispose() (false from a finalizer)",
+      "code": "using System; class R : IDisposable { public bool? disposingSeen; public void Dispose(){ Dispose(true); GC.SuppressFinalize(this); } protected virtual void Dispose(bool disposing){ disposingSeen = disposing; } } var r = new R(); r.Dispose(); Console.WriteLine($\"disposingWhenCalledFromDispose={r.disposingSeen}\");",
+      "expectedOutput": "disposingWhenCalledFromDispose=True",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-dispose"
+      ]
+    }
+  ]
+}

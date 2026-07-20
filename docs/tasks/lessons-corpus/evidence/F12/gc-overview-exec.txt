@@ -1,0 +1,11 @@
+# CS.S7.gc-overview (S7.1) — exec evidence (run-csharp, real GC measurements)
+# Captured 2026-07-19T01:50:05Z against backend health 200
+
+## c1 — GC is automatic: sustained allocation triggers a gen0 collection with NO GC.Collect() call (MM1: GC decides, not the user) (expect: ranAutomatically=True)
+{"success":true,"stdout":"ranAutomatically=True\n","error":null,"elapsedMs":41}
+
+## c2 — GC guarantee: new managed objects start with clean (zeroed) content (expect: zeroed=True)
+{"success":true,"stdout":"zeroed=True\n","error":null,"elapsedMs":12}
+
+## c3 (SIGNATURE machine panel) — real bytes allocated from the managed heap for a byte[1000]: exactly 1024 (payload + object header, 8-byte aligned) — deterministic 3/3 (expect: 1024)
+{"success":true,"stdout":"1024\n","error":null,"elapsedMs":9}

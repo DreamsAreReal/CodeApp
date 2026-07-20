@@ -1,0 +1,16 @@
+# CS.S7.span-memory (S7.8) — exec evidence (run-csharp, real Span<T> measurements)
+# Captured 2026-07-20T18:19:00Z against backend health 200
+# NOTE: Span<T> locals must live in a method (stack), not top-level statements (which the runner
+#   hoists to fields — illegal for a ref struct: CS8345). This IS the Span restriction the lesson teaches.
+
+## c1 (SIGNATURE) — a Span slice does NOT allocate on the managed heap (a view); an array copy DOES (deterministic 3/3) (expect: spanAllocates=False arrayCopyAllocates=True)
+{"success":true,"stdout":"spanAllocates=False arrayCopyAllocates=True\n","error":null,"elapsedMs":54}
+
+## c2 — Span<T> is a ref struct (a value type; IsByRefLike == true) => stack-only (deterministic 3/3) (expect: spanIsValueType=True spanIsRefStruct=True)
+{"success":true,"stdout":"spanIsValueType=True spanIsRefStruct=True\n","error":null,"elapsedMs":16}
+
+## c3 — ReadOnlySpan<char> can be backed by a String: slicing allocates 0 bytes; "hello world".AsSpan(6) is "world" (len 5) (deterministic 3/3) (expect: sliceLen=5 allocatedBytes=0)
+{"success":true,"stdout":"sliceLen=5 allocatedBytes=0\n","error":null,"elapsedMs":16}
+
+## (restriction demo, not a card) a Span<T> field is a COMPILE ERROR CS8345 — proves the 'field in a class cannot be of type Span<T>' rule:
+{"success":false,"stdout":"","error":"(1,29): error CS8345: Field or auto-implemented property cannot be of type \u0027Span\u003Cint\u003E\u0027 unless it is an instance member of a ref struct.","elapsedMs":50}

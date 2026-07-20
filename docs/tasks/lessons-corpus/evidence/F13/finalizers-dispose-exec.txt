@@ -1,0 +1,16 @@
+# CS.S7.finalizers-dispose (S7.6) — exec evidence (run-csharp, real finalizer/dispose measurements)
+# Captured 2026-07-19T04:41:20Z against backend health 200
+# NOTE: the '2 GCs to reclaim a finalizable object' fact is verbatim from Object.Finalize Remarks
+#   ('requires at least two garbage collections') — used as a Learn-quoted fact, NOT a runnable
+#   card, because finalization timing/thread is non-deterministic (Object.Finalize: 'exact time undefined').
+
+## c1 — GC.SuppressFinalize prevents the finalizer from running (deterministic 3/3) (expect: finalizerRan=False)
+{"success":true,"stdout":"finalizerRan=False\n","error":null,"elapsedMs":20}
+
+## c2 — Dispose is idempotent: callable multiple times, subsequent calls do nothing (expect: disposeCount=1 idempotent=True)
+{"success":true,"stdout":"disposeCount=1 idempotent=True\n","error":null,"elapsedMs":11}
+
+## c3 (SIGNATURE) — the disposing flag is true when Dispose(bool) is called from Dispose() (deterministic vs a finalizer which would pass false) (expect: disposingWhenCalledFromDispose=True)
+{"success":true,"stdout":"disposingWhenCalledFromDispose=True\n","error":null,"elapsedMs":13}
+
+## (Learn-quoted facts, not cards) 2 GCs: Object.Finalize 'requires at least two garbage collections'; reference-types-only: 'The common language runtime only finalizes reference types. It ignores finalizers on value types.'; time undefined.

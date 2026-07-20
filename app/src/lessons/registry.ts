@@ -403,12 +403,163 @@ const CS_S2: Section = {
   ],
 };
 
+// Section S7 «Память и GC» (RS-03 §2 раздел 7 · 10 уроков). Curriculum recommendation
+// (design «Опыт»: S1 → S7 → S17 → S18 → S2); ordered after S2 in the catalog.
+const CS_S7: Section = {
+  id: "CS.S7",
+  title: "Память и GC",
+  order: 7,
+  prereqs: ["CS.S1"],
+  lessons: [
+    entry(
+      {
+        id: "CS.S7.gc-overview",
+        track: "CS",
+        section: "CS.S7",
+        title: "Garbage Collector: автоматический менеджер памяти",
+        kicker: "C# вглубь · S7 · память ниже абстракции",
+        icon: "gc",
+        subtitle: "GC = авто-менеджер, roots, аллокация, когда сбор",
+        estMinutes: 10,
+        cards: 3,
+      },
+      () => import("./cs/gc-overview.ts").then((m) => m.gcOverview),
+    ),
+    entry(
+      {
+        id: "CS.S7.generations",
+        track: "CS",
+        section: "CS.S7",
+        title: "Поколения GC: gen0/1/2, managed heap, продвижение",
+        kicker: "C# вглубь · S7 · поколения кучи",
+        icon: "gc",
+        subtitle: "три поколения, продвижение, gen2 = full GC",
+        estMinutes: 10,
+        cards: 3,
+      },
+      () => import("./cs/generations.ts").then((m) => m.generations),
+    ),
+    entry(
+      {
+        id: "CS.S7.workstation-server",
+        track: "CS",
+        section: "CS.S7",
+        title: "Workstation vs Server GC, concurrent/background",
+        kicker: "C# вглубь · S7 · флейворы GC",
+        icon: "gc",
+        subtitle: "два флейвора, heap на CPU, concurrent/background",
+        estMinutes: 10,
+        cards: 3,
+      },
+      () => import("./cs/workstation-server.ts").then((m) => m.workstationServer),
+    ),
+    entry(
+      {
+        id: "CS.S7.latency-modes",
+        track: "CS",
+        section: "CS.S7",
+        title: "Latency-режимы GC: LowLatency, SustainedLowLatency",
+        kicker: "C# вглубь · S7 · пауза сборщика",
+        icon: "gc",
+        subtitle: "GCLatencyMode, подавление gen2, трейдофы",
+        estMinutes: 10,
+        cards: 3,
+      },
+      () => import("./cs/latency-modes.ts").then((m) => m.latencyModes),
+    ),
+    entry(
+      {
+        id: "CS.S7.loh",
+        track: "CS",
+        section: "CS.S7",
+        title: "Large Object Heap: порог 85000, gen2, sweep",
+        kicker: "C# вглубь · S7 · большие объекты",
+        icon: "gc",
+        subtitle: "порог 85000, LOH=gen2, не компактится, CompactOnce",
+        estMinutes: 10,
+        cards: 3,
+      },
+      () => import("./cs/loh.ts").then((m) => m.loh),
+    ),
+    entry(
+      {
+        id: "CS.S7.finalizers-dispose",
+        track: "CS",
+        section: "CS.S7",
+        title: "Финализаторы и Dispose: паттерн, SuppressFinalize",
+        kicker: "C# вглубь · S7 · очистка ресурсов",
+        icon: "gc",
+        subtitle: "финализатор=fallback, Dispose pattern, SuppressFinalize, SafeHandle",
+        estMinutes: 10,
+        cards: 3,
+      },
+      () => import("./cs/finalizers-dispose.ts").then((m) => m.finalizersDispose),
+    ),
+    entry(
+      {
+        id: "CS.S7.weak-references",
+        track: "CS",
+        section: "CS.S7",
+        title: "Weak references: short/long, Target, resurrection",
+        kicker: "C# вглубь · S7 · слабые ссылки",
+        icon: "gc",
+        subtitle: "weak ref разрешает сбор, short/long, Target",
+        estMinutes: 10,
+        cards: 3,
+      },
+      () => import("./cs/weak-references.ts").then((m) => m.weakReferences),
+    ),
+    entry(
+      {
+        id: "CS.S7.span-memory",
+        track: "CS",
+        section: "CS.S7",
+        title: "Span<T>/ReadOnlySpan<T>: ref struct, без аллокаций",
+        kicker: "C# вглубь · S7 · вью без аллокаций",
+        icon: "gc",
+        subtitle: "Span=вью без аллокации, ref struct, стек-только, Memory",
+        estMinutes: 10,
+        cards: 3,
+      },
+      () => import("./cs/span-memory.ts").then((m) => m.spanMemory),
+    ),
+    entry(
+      {
+        id: "CS.S7.memory-guidelines",
+        track: "CS",
+        section: "CS.S7",
+        title: "Memory<T>: владение, аренда, usage-guidelines",
+        kicker: "C# вглубь · S7 · владение буфером",
+        icon: "gc",
+        subtitle: "Memory на куче, ownership/lease, Rule #1, IMemoryOwner",
+        estMinutes: 10,
+        cards: 3,
+      },
+      () => import("./cs/memory-guidelines.ts").then((m) => m.memoryGuidelines),
+    ),
+    entry(
+      {
+        id: "CS.S7.stackalloc-refstruct",
+        track: "CS",
+        section: "CS.S7",
+        title: "stackalloc и ref struct: стек, ограничения",
+        kicker: "C# вглубь · S7 · аллокация на стеке",
+        icon: "gc",
+        subtitle: "stackalloc на стеке, Span без unsafe, лимиты, ref struct",
+        estMinutes: 10,
+        cards: 3,
+      },
+      () => import("./cs/stackalloc-refstruct.ts").then((m) => m.stackallocRefstruct),
+    ),
+  ],
+};
+
 const CS_TRACK: Track = {
   id: "CS",
   title: S.trackCsDeepLabel,
   sub: S.trackCsDeepSub,
   badge: S.trackNewBadge,
-  sections: [CS_S1, CS_S2],
+  sections: [CS_S1, CS_S2, CS_S7],
 };
 
 // The legacy flat C# track and its 6 old lessons were removed in the F2 migration (their

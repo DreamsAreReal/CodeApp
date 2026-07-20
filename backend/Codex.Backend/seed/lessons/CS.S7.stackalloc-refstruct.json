@@ -1,0 +1,61 @@
+{
+  "id": "CS.S7.stackalloc-refstruct",
+  "track": "CS",
+  "section": "CS.S7",
+  "module": "S7.10",
+  "title": "stackalloc и ref struct: стек, ограничения",
+  "status": "published",
+  "order": 29,
+  "sources": [
+    {
+      "id": "ms-stackalloc",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/stackalloc",
+      "date": "2026-06-16"
+    },
+    {
+      "id": "ms-refstruct",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/ref-struct",
+      "date": "2026-01-14"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "stackalloc int[100] assigns to a Span<int> without unsafe and allocates 0 managed-heap bytes (it is on the stack)",
+      "code": "using System; static (bool,int) StackAllocMeasure(){ long a0=GC.GetAllocatedBytesForCurrentThread(); Span<int> s=stackalloc int[100]; for(int i=0;i<100;i++) s[i]=i; long a1=GC.GetAllocatedBytesForCurrentThread(); return ((a1-a0)==0, s[99]);} var(noHeapAlloc,last)=StackAllocMeasure(); Console.WriteLine($\"stackallocNoHeapAlloc={noHeapAlloc} lastElem={last}\");",
+      "expectedOutput": "stackallocNoHeapAlloc=True lastElem=99",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-stackalloc"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "The recommended conditional stackalloc pattern keeps a small buffer on the stack (0 heap bytes) but puts a large one on the heap",
+      "code": "using System; static long Alloc(int n){ long a0=GC.GetAllocatedBytesForCurrentThread(); Span<byte> b = n<=1024 ? stackalloc byte[n] : new byte[n]; b[0]=1; long a1=GC.GetAllocatedBytesForCurrentThread(); return a1-a0;} long smallBytes=Alloc(100); long largeBytes=Alloc(100000); Console.WriteLine($\"smallOnStack={smallBytes==0} largeOnHeap={largeBytes>0}\");",
+      "expectedOutput": "smallOnStack=True largeOnHeap=True",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-stackalloc"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "A ref struct can implement IDisposable (C# 13) and works with the using statement",
+      "code": "using System; ref struct R : IDisposable { public static int disposed=0; public void Dispose()=>disposed++; } static void Use(){ using var r=new R(); } Use(); Console.WriteLine($\"refStructDisposed={R.disposed==1}\");",
+      "expectedOutput": "refStructDisposed=True",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-refstruct"
+      ]
+    }
+  ]
+}

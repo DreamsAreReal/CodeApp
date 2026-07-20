@@ -171,3 +171,7 @@
 
 ## Доказательство M3 (итог)
 - `npm run verify:all` FULL **7/7 ALL GREEN** (23/23 урока на `at`, 0 ROW-BASELINE); `dotnet test` **67/67**; density на всех уроках ALL GREEN. Каждый урок: density --lessons + E2E (render 5 сегм. + grade-петля) зелёные, скрины 375/768 в evidence/F7|F8/. Все exec-числа реальны (run-csharp, stdout==expect, anti-echo OK) — evidence/F7|F8/*-exec.txt. GT-M3-s1: 0 красных флагов во всех 7 уроках. Coverage S1 = **10/10**.
+
+## M5 (S7 «Память и GC») — прогресс
+- **Находка (не мой скоуп, для координатора):** viz-fit при прогоне S7.1 поймал стохастический MID-TRANSITION overlap в УЖЕ закоммиченном `CS.S2.async-streams` s1 1→2 @190ms (`r ∩ y = [18.02,4.51]`) — узлы `r` и `y` меняются местами (row0col1 ↔ row1col0), их твины пересекаются на середине. НЕ воспроизвёлся на повторном прогоне (probe семплит случайные ms; CI M4 проходил). Пре-существующий borderline, не регресс от S7. Рекомендация: при следующем касании async-streams развести своп (не менять col одновременно) либо промежуточный кадр.
+- S7.1 gc-overview: панель-числа реальные (byte[1000]=1024 байта; ranAutomatically=True без GC.Collect(); zeroed=True). Все 31 англ. « »-цитата сверены скриптом против fetched fundamentals-страницы — 0 MISS. Инвариант verbatim соблюдён.

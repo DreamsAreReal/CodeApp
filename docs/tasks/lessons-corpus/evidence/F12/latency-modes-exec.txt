@@ -1,0 +1,11 @@
+# CS.S7.latency-modes (S7.4) — exec evidence (run-csharp, real GCLatencyMode measurements)
+# Captured 2026-07-19T03:25:03Z against backend health 200 (process is Server GC)
+
+## c1 — the default latency mode of this process is Interactive (expect: default=Interactive)
+{"success":true,"stdout":"default=Interactive\n","error":null,"elapsedMs":11}
+
+## c2 (SIGNATURE) — LowLatency is workstation-GC-only: on this Server GC process setting it does NOT stick (stays Interactive), while SustainedLowLatency (WKS+SVR) does (deterministic 3/3) (expect: lowLatencyStuck=False sustainedStuck=True)
+{"success":true,"stdout":"lowLatencyStuck=False sustainedStuck=True\n","error":null,"elapsedMs":11}
+
+## c3 — suppression of gen2 is NOT absolute: even under SustainedLowLatency, an explicit GC.Collect(2) still runs a gen2 (deterministic 3/3) (expect: gen2StillRanOnExplicitCollect=True)
+{"success":true,"stdout":"gen2StillRanOnExplicitCollect=True\n","error":null,"elapsedMs":17}

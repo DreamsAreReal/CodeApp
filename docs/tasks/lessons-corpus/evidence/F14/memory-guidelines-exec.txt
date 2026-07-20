@@ -1,0 +1,11 @@
+# CS.S7.memory-guidelines (S7.9) — exec evidence (run-csharp, real Memory<T> measurements)
+# Captured 2026-07-20T18:56:33Z against backend health 200
+
+## c1 (SIGNATURE) — Memory<T> CAN be a field of a class (it can be stored on the managed heap), unlike Span<T> which was CS8345 (deterministic 3/3) (expect: memoryAsClassField=True)
+{"success":true,"stdout":"memoryAsClassField=True\n","error":null,"elapsedMs":61}
+
+## c2 — Memory<T>.Span conversion exists but the reverse (Span<T> -> Memory<T>) does NOT (Rule #1 rationale) (deterministic 3/3) (expect: memoryHasSpanProp=True spanHasToMemory=False)
+{"success":true,"stdout":"memoryHasSpanProp=True spanHasToMemory=False\n","error":null,"elapsedMs":88}
+
+## c3 — MemoryPool<T>.Rent returns an IMemoryOwner<T> (IDisposable) that the caller owns and must Dispose (Rule #7) (deterministic 3/3) (expect: rentGivesDisposableOwner=True lenAtLeast100=True)
+{"success":true,"stdout":"rentGivesDisposableOwner=True lenAtLeast100=True\n","error":null,"elapsedMs":54}

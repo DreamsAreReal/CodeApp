@@ -1,0 +1,55 @@
+{
+  "id": "CS.S7.latency-modes",
+  "track": "CS",
+  "section": "CS.S7",
+  "module": "S7.4",
+  "title": "Latency-режимы GC: LowLatency, SustainedLowLatency",
+  "status": "published",
+  "order": 23,
+  "sources": [
+    {
+      "id": "ms-latency",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/latency",
+      "date": "2017-03-30"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "The default GC latency mode of this process is Interactive",
+      "code": "using System; using System.Runtime; Console.WriteLine($\"default={GCSettings.LatencyMode}\");",
+      "expectedOutput": "default=Interactive",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-latency"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "LowLatency is workstation-GC-only so it does not stick on a Server GC process; SustainedLowLatency (WKS+SVR) does",
+      "code": "using System; using System.Runtime; var o = GCSettings.LatencyMode; GCSettings.LatencyMode = GCLatencyMode.LowLatency; var lowResult = GCSettings.LatencyMode; GCSettings.LatencyMode = o; GCSettings.LatencyMode = GCLatencyMode.SustainedLowLatency; var sustResult = GCSettings.LatencyMode; GCSettings.LatencyMode = o; Console.WriteLine($\"lowLatencyStuck={lowResult==GCLatencyMode.LowLatency} sustainedStuck={sustResult==GCLatencyMode.SustainedLowLatency}\");",
+      "expectedOutput": "lowLatencyStuck=False sustainedStuck=True",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-latency"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "gen2 suppression is not absolute: under SustainedLowLatency an explicit GC.Collect(2) still runs a gen2",
+      "code": "using System; using System.Runtime; var o = GCSettings.LatencyMode; GCSettings.LatencyMode = GCLatencyMode.SustainedLowLatency; int g2 = GC.CollectionCount(2); GC.Collect(2); int g2b = GC.CollectionCount(2); GCSettings.LatencyMode = o; Console.WriteLine($\"gen2StillRanOnExplicitCollect={g2b>g2}\");",
+      "expectedOutput": "gen2StillRanOnExplicitCollect=True",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-latency"
+      ]
+    }
+  ]
+}
