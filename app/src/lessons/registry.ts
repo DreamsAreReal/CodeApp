@@ -566,7 +566,11 @@ const CS_S5: Section = {
       { id: "CS.S5.pattern-overview", track: "CS", section: "CS.S5", title: "Pattern matching: обзор и null-проверки", kicker: "C# вглубь · S5 · тест по признакам", icon: "types", subtitle: "is / switch, null-паттерны, exhaustiveness", estMinutes: 9, cards: 3 },
       () => import("./cs/pattern-overview.ts").then((m) => m.patternOverview),
     ),
-    // S5.2 … S5.7 registered as their body files land (one lesson at a time).
+    entry(
+      { id: "CS.S5.pattern-vocabulary", track: "CS", section: "CS.S5", title: "Словарь паттернов: полный набор", kicker: "C# вглубь · S5 · карта паттернов", icon: "types", subtitle: "declaration/type/constant/relational/logical/property/positional/list", estMinutes: 10, cards: 3 },
+      () => import("./cs/pattern-vocabulary.ts").then((m) => m.patternVocabulary),
+    ),
+    // S5.3 … S5.7 registered as their body files land (one lesson at a time).
   ],
 };
 

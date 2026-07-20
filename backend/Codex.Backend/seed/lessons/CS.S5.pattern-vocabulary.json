@@ -1,0 +1,55 @@
+{
+  "id": "CS.S5.pattern-vocabulary",
+  "track": "CS",
+  "section": "CS.S5",
+  "module": "S5.2",
+  "title": "Словарь паттернов: полный набор",
+  "status": "published",
+  "order": 52,
+  "sources": [
+    {
+      "id": "ms-patterns",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/patterns",
+      "date": "2026-06-05"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "GetSourceLabel<T> switch по типу: int[] и List<char> — какие рукава?",
+      "code": "using System.Collections.Generic; static int GetSourceLabel<T>(IEnumerable<T> source) => source switch { System.Array array => 1, ICollection<T> collection => 2, _ => 3 }; var numbers = new int[] { 10, 20, 30 }; var letters = new List<char> { 'a', 'b', 'c', 'd' }; System.Console.WriteLine(GetSourceLabel(numbers)); System.Console.WriteLine(GetSourceLabel(letters));",
+      "expectedOutput": "1\n2",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-patterns"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Constant pattern switch: GetGroupTicketPrice(3)?",
+      "code": "static decimal GetGroupTicketPrice(int visitorCount) => visitorCount switch { 1 => 12.0m, 2 => 20.0m, 3 => 27.0m, 4 => 32.0m, 0 => 0.0m, _ => throw new System.ArgumentException(\"bad\") }; System.Console.WriteLine(GetGroupTicketPrice(3));",
+      "expectedOutput": "27.0",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-patterns"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Relational pattern + NaN ловушка: Classify(13)/Classify(NaN)/Classify(2.4)?",
+      "code": "static string Classify(double measurement) => measurement switch { < -4.0 => \"Too low\", > 10.0 => \"Too high\", double.NaN => \"Unknown\", _ => \"Acceptable\" }; System.Console.WriteLine(Classify(13)); System.Console.WriteLine(Classify(double.NaN)); System.Console.WriteLine(Classify(2.4));",
+      "expectedOutput": "Too high\nUnknown\nAcceptable",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-patterns"
+      ]
+    }
+  ]
+}
