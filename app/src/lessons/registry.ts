@@ -554,12 +554,26 @@ const CS_S7: Section = {
   ],
 };
 
+// Section S6 «Reflection и атрибуты» (7 уроков). Prereq CS.S1 (тип во времени / метаданные).
+const CS_S6: Section = {
+  id: "CS.S6",
+  title: "Reflection и атрибуты",
+  order: 6,
+  prereqs: ["CS.S1"],
+  lessons: [
+    entry(
+      { id: "CS.S6.reflection-overview", track: "CS", section: "CS.S6", title: "Reflection: обзор и граф метаданных", kicker: "C# вглубь · S6 · самоописание рантайма", icon: "types", subtitle: "System.Reflection, граф assembly→member, RuntimeType", estMinutes: 9, cards: 3 },
+      () => import("./cs/reflection-overview.ts").then((m) => m.reflectionOverview),
+    ),
+  ],
+};
+
 const CS_TRACK: Track = {
   id: "CS",
   title: S.trackCsDeepLabel,
   sub: S.trackCsDeepSub,
   badge: S.trackNewBadge,
-  sections: [CS_S1, CS_S2, CS_S7],
+  sections: [CS_S1, CS_S2, CS_S7, CS_S6],
 };
 
 // The legacy flat C# track and its 6 old lessons were removed in the F2 migration (their
