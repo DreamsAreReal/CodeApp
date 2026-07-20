@@ -577,6 +577,10 @@ const CS_S6: Section = {
       { id: "CS.S6.attributes", track: "CS", section: "CS.S6", title: "Атрибуты: создание и чтение", kicker: "C# вглубь · S6 · метаданные на декларации", icon: "types", subtitle: "custom attribute, AttributeUsage, positional/named, GetCustomAttribute", estMinutes: 10, cards: 3 },
       () => import("./cs/attributes.ts").then((m) => m.attributes),
     ),
+    entry(
+      { id: "CS.S6.reflection-emit", track: "CS", section: "CS.S6", title: "Reflection.Emit: генерация IL в рантайме", kicker: "C# вглубь · S6 · reflection, которая пишет код", icon: "types", subtitle: "System.Reflection.Emit, DynamicMethod, ILGenerator, CreateDelegate", estMinutes: 11, cards: 3 },
+      () => import("./cs/reflection-emit.ts").then((m) => m.reflectionEmit),
+    ),
   ],
 };
 
