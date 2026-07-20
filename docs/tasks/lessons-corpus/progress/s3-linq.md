@@ -38,3 +38,18 @@ cards[{id,type,engagementLevel,prompt,code,expectedOutput,verify:"execute",sourc
 6. CS.S3.linq-providers — self-pass (tsc0/layoutGREEN/exec 3,4,5·3,6,9,12·55; infinite-source panel)
 7. CS.S3.plinq — self-pass (tsc0/layoutGREEN 6seg/exec 20..200·100000·dopSum=5050; REAL PLINQ compiled-app: threadsUsed>=2 True, AsOrdered order; runner lacks Parallel asm)
 8. CS.S3.custom-operators — self-pass (tsc0/layoutGREEN/exec 1,3,5,7,9·before=0 after=5·21; REAL IL: extension→static call, instance wins; runner cannot host top-level static class)
+
+
+## ИТОГ (все 8 self-pass)
+Секция CS.S3 «LINQ» — 8 уроков (order 30..37, prereqs ['CS.S1'], icon collections).
+Гейты: tsc --noEmit=0; layout ALL GREEN (все сцены, 0 clip/overlap); 24/24 exec-карты
+stdout==expect на :5101, anti-echo чисто; backend рестарт → все 8 в /api/lessons (3 карты каждый).
+Сегментов: 5·5·5·6·5·5·6·5 = 42; flagship deferred-execution и plinq по 6.
+Машинные панели: L1 IL query→Where/Select · L2 один q дважды 2→4 · L3 Join order ·
+L4 счётчик итераций 0→3/7из100/10из10 · L5 IL Func vs Expression · L6 бесконечный источник 3,6,9,12 ·
+L7 РЕАЛЬНЫЙ PLINQ (threadsUsed≥2, AsOrdered) · L8 IL extension→static call, instance wins.
+Ограничения scripting-хоста (НЕ трогал общий CSharpRunner — вне скоупа, влияет на др. агентов):
+нет System.Linq.Queryable/Expressions (L5 IQueryable-сторона доказана IL), нет System.Linq.Parallel
+(L7 PLINQ доказан компилированным приложением), нет top-level static class (L8 extension-def доказан IL;
+exec-карты гоняют тело оператора локальным итератором — идентичная yield/deferred-механика).
+Инъекций во внешнем контенте (fetch Learn) не обнаружено.
