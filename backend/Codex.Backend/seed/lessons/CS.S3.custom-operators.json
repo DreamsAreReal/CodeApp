@@ -1,0 +1,61 @@
+{
+  "id": "CS.S3.custom-operators",
+  "track": "CS",
+  "section": "CS.S3",
+  "module": "S3.8",
+  "title": "Кастомные операторы LINQ: extension-методы",
+  "status": "published",
+  "order": 37,
+  "sources": [
+    {
+      "id": "ms-ext",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/extension-methods",
+      "date": "2025-11-20"
+    },
+    {
+      "id": "ms-linq",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/linq/",
+      "date": "2025-12-01"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Custom operator body (yield iterator): EveryOther keeps values at even index",
+      "code": "using System; using System.Linq; using System.Collections.Generic; IEnumerable<T> EveryOther<T>(IEnumerable<T> src){ int i=0; foreach(var x in src){ if(i++ % 2 == 0) yield return x; } } var r = EveryOther(Enumerable.Range(1, 10)); Console.WriteLine(string.Join(\",\", r));",
+      "expectedOutput": "1,3,5,7,9",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-ext"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Custom operator with yield is deferred: counter stays 0 until ToList (before=0 after=5)",
+      "code": "using System; using System.Linq; using System.Collections.Generic; IEnumerable<int> Track(IEnumerable<int> src, Action onEach){ foreach(var x in src){ onEach(); yield return x; } } int calls=0; var q = Track(Enumerable.Range(1,5), () => calls++); Console.Write($\"before={calls} \"); var list = q.ToList(); Console.Write($\"after={calls}\");",
+      "expectedOutput": "before=0 after=5",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-linq"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Custom operator composes with built-in LINQ: EveryOther then Where>3 then Sum",
+      "code": "using System; using System.Linq; using System.Collections.Generic; IEnumerable<T> EveryOther<T>(IEnumerable<T> src){ int i=0; foreach(var x in src){ if(i++ % 2 == 0) yield return x; } } var r = EveryOther(Enumerable.Range(1, 10)).Where(x => x > 3).Sum(); Console.WriteLine(r);",
+      "expectedOutput": "21",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-ext"
+      ]
+    }
+  ]
+}

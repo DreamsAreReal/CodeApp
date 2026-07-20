@@ -662,6 +662,20 @@ const CS_S3: Section = {
       },
       () => import("./cs/plinq.ts").then((m) => m.plinq),
     ),
+    entry(
+      {
+        id: "CS.S3.custom-operators",
+        track: "CS",
+        section: "CS.S3",
+        title: "Кастомные операторы LINQ: extension-методы",
+        kicker: "C# вглубь · S3 · расширяем LINQ сами",
+        icon: "collections",
+        subtitle: "extension-метод, this-параметр, deferred через yield, приоритет instance",
+        estMinutes: 10,
+        cards: 3,
+      },
+      () => import("./cs/custom-operators.ts").then((m) => m.customOperators),
+    ),
   ],
 };
 

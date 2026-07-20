@@ -37,4 +37,4 @@ cards[{id,type,engagementLevel,prompt,code,expectedOutput,verify:"execute",sourc
 5. CS.S3.ienumerable-iqueryable — self-pass (tsc0/layoutGREEN/exec 7·hits=2·count=3; IL Func vs Expression; NOTE: runner lacks Queryable/Expressions asm — IQueryable proven by IL only)
 6. CS.S3.linq-providers — self-pass (tsc0/layoutGREEN/exec 3,4,5·3,6,9,12·55; infinite-source panel)
 7. CS.S3.plinq — self-pass (tsc0/layoutGREEN 6seg/exec 20..200·100000·dopSum=5050; REAL PLINQ compiled-app: threadsUsed>=2 True, AsOrdered order; runner lacks Parallel asm)
-8. CS.S3.custom-operators — todo
+8. CS.S3.custom-operators — self-pass (tsc0/layoutGREEN/exec 1,3,5,7,9·before=0 after=5·21; REAL IL: extension→static call, instance wins; runner cannot host top-level static class)
