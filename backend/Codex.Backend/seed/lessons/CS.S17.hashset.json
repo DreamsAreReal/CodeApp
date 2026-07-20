@@ -1,0 +1,61 @@
+{
+  "id": "CS.S17.hashset",
+  "track": "CS",
+  "section": "CS.S17",
+  "module": "S17.5",
+  "title": "HashSet<T>: множество и O(1) Contains",
+  "status": "published",
+  "order": 17,
+  "sources": [
+    {
+      "id": "ms-hashset",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.hashset-1",
+      "date": "2026-07-01"
+    },
+    {
+      "id": "ms-hashset-contains",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.hashset-1.contains",
+      "date": "2026-07-01"
+    },
+    {
+      "id": "ms-hashtable-dict",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/standard/collections/hashtable-and-dictionary-collection-types",
+      "date": "2026-03-30"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "set.Add(5) дважды: печать возвратов и Count?",
+      "code": "using System.Collections.Generic; var set = new HashSet<int>(); bool a = set.Add(5); bool b = set.Add(5); System.Console.WriteLine($\"{a} {b} {set.Count}\");",
+      "expectedOutput": "True False 1",
+      "verify": "execute",
+      "sourceRefs": ["ms-hashset"]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "A={1,2,3,4}, B={3,4,5,6}: union/intersect/except Count?",
+      "code": "using System.Collections.Generic; var a = new HashSet<int> { 1, 2, 3, 4 }; var b = new HashSet<int> { 3, 4, 5, 6 }; var u = new HashSet<int>(a); u.UnionWith(b); var i = new HashSet<int>(a); i.IntersectWith(b); var e = new HashSet<int>(a); e.ExceptWith(b); System.Console.WriteLine($\"union={u.Count} intersect={i.Count} except={e.Count}\");",
+      "expectedOutput": "union=6 intersect=2 except=2",
+      "verify": "execute",
+      "sourceRefs": ["ms-hashset"]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "HashSet из 100000 Probe, ищем присутствующий: Contains + счётчик Equals?",
+      "code": "using System.Collections.Generic; class Probe { public static int Eq; public readonly int V; public Probe(int v){V=v;} public override bool Equals(object o){Eq++; return o is Probe p && p.V==V;} public override int GetHashCode()=>V.GetHashCode(); } var set = new HashSet<Probe>(); for (int i = 0; i < 100000; i++) set.Add(new Probe(i)); var found = new Probe(50000); set.Add(found); Probe.Eq = 0; bool has = set.Contains(found); int cmp = Probe.Eq; System.Console.WriteLine($\"Contains(found)={has}, Equals-вызовов={cmp}\");",
+      "expectedOutput": "Contains(found)=True, Equals-вызовов=1",
+      "verify": "execute",
+      "sourceRefs": ["ms-hashset-contains"]
+    }
+  ]
+}

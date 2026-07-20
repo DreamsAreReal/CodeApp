@@ -467,7 +467,21 @@ const CS_S17: Section = {
       },
       () => import("./cs/list-internals.ts").then((m) => m.listInternals),
     ),
-    // S17.5–S17.7 lessons register here as their body files land (built lesson-by-lesson).
+    entry(
+      {
+        id: "CS.S17.hashset",
+        track: "CS",
+        section: "CS.S17",
+        title: "HashSet<T>: множество и O(1) Contains",
+        kicker: "C# вглубь · S17 · Dictionary без значений",
+        icon: "collections",
+        subtitle: "уникальность, Contains O(1), set-операции",
+        estMinutes: 9,
+        cards: 3,
+      },
+      () => import("./cs/hashset.ts").then((m) => m.hashSet),
+    ),
+    // S17.6–S17.7 lessons register here as their body files land (built lesson-by-lesson).
   ],
 };
 
