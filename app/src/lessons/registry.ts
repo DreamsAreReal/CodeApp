@@ -634,6 +634,20 @@ const CS_S3: Section = {
       },
       () => import("./cs/ienumerable-iqueryable.ts").then((m) => m.ienumerableIqueryable),
     ),
+    entry(
+      {
+        id: "CS.S3.linq-providers",
+        track: "CS",
+        section: "CS.S3",
+        title: "LINQ-провайдеры: in-memory и удалённые",
+        kicker: "C# вглубь · S3 · один синтаксис — разные бэкенды",
+        icon: "collections",
+        subtitle: "LINQ to Objects, IQueryable-провайдеры, спектр сложности, EF Core→SQL",
+        estMinutes: 10,
+        cards: 3,
+      },
+      () => import("./cs/linq-providers.ts").then((m) => m.linqProviders),
+    ),
   ],
 };
 

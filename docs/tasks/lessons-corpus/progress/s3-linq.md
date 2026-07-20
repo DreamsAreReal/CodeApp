@@ -35,6 +35,6 @@ cards[{id,type,engagementLevel,prompt,code,expectedOutput,verify:"execute",sourc
 3. CS.S3.standard-operators — self-pass (tsc0/layoutGREEN/exec 9,16,25,36·3:2 5:2·Join order)
 4. CS.S3.deferred-execution — self-pass (tsc0/layoutGREEN 6seg/exec before=0 after=3·first=7 seen=7·first=10 seen=10) FLAGSHIP
 5. CS.S3.ienumerable-iqueryable — self-pass (tsc0/layoutGREEN/exec 7·hits=2·count=3; IL Func vs Expression; NOTE: runner lacks Queryable/Expressions asm — IQueryable proven by IL only)
-6. CS.S3.linq-providers — todo
+6. CS.S3.linq-providers — self-pass (tsc0/layoutGREEN/exec 3,4,5·3,6,9,12·55; infinite-source panel)
 7. CS.S3.plinq — todo
 8. CS.S3.custom-operators — todo
