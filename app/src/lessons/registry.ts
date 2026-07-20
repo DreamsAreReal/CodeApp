@@ -439,7 +439,21 @@ const CS_S17: Section = {
       },
       () => import("./cs/choosing-collection.ts").then((m) => m.choosingCollection),
     ),
-    // S17.3–S17.7 lessons register here as their body files land (built lesson-by-lesson).
+    entry(
+      {
+        id: "CS.S17.dictionary-internals",
+        track: "CS",
+        section: "CS.S17",
+        title: "Dictionary изнутри: бакеты, хеш, коллизии",
+        kicker: "C# вглубь · S17 · хеш-таблица",
+        icon: "collections",
+        subtitle: "бакеты, GetHashCode/Equals, resize, коллизии",
+        estMinutes: 11,
+        cards: 3,
+      },
+      () => import("./cs/dictionary-internals.ts").then((m) => m.dictionaryInternals),
+    ),
+    // S17.4–S17.7 lessons register here as their body files land (built lesson-by-lesson).
   ],
 };
 

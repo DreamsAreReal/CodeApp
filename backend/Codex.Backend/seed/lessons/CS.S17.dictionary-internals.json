@@ -1,0 +1,61 @@
+{
+  "id": "CS.S17.dictionary-internals",
+  "track": "CS",
+  "section": "CS.S17",
+  "module": "S17.3",
+  "title": "Dictionary изнутри: бакеты, хеш, коллизии",
+  "status": "published",
+  "order": 17,
+  "sources": [
+    {
+      "id": "ms-hashtable-dict",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/standard/collections/hashtable-and-dictionary-collection-types",
+      "date": "2026-03-30"
+    },
+    {
+      "id": "ms-dictionary",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.dictionary-2",
+      "date": "2026-07-01"
+    },
+    {
+      "id": "runtime-dict",
+      "kind": "source",
+      "url": "https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Collections/Generic/Dictionary.cs",
+      "date": "2026-07-21"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Хеш=сумма ASCII: (stressed==desserts) и (picnic!=basket)?",
+      "code": "int AsciiSum(string s) { int h = 0; foreach (char c in s) h += (int)c; return h; } bool a = AsciiSum(\"stressed\") == AsciiSum(\"desserts\"); bool b = AsciiSum(\"picnic\") != AsciiSum(\"basket\"); System.Console.WriteLine($\"{a} {b}\");",
+      "expectedOutput": "True True",
+      "verify": "execute",
+      "sourceRefs": ["ms-hashtable-dict"]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Мутируем ключ после вставки: before=ContainsKey, key.Id=999, after=ContainsKey. $\"{before} {after}\"?",
+      "code": "using System.Collections.Generic; class MutableKey { public int Id; public override int GetHashCode() => Id.GetHashCode(); public override bool Equals(object o) => o is MutableKey k && k.Id == Id; } var d = new Dictionary<MutableKey, string>(); var key = new MutableKey { Id = 1 }; d[key] = \"v\"; bool before = d.ContainsKey(key); key.Id = 999; bool after = d.ContainsKey(key); System.Console.WriteLine($\"{before} {after}\");",
+      "expectedOutput": "True False",
+      "verify": "execute",
+      "sourceRefs": ["ms-dictionary"]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "d[\"cat\"]=1; d[\"cat\"]=2; печать Count и d[\"cat\"]?",
+      "code": "using System.Collections.Generic; var d = new Dictionary<string,int>(); d[\"cat\"]=1; d[\"cat\"]=2; System.Console.WriteLine($\"{d.Count} {d[\"cat\"]}\");",
+      "expectedOutput": "1 2",
+      "verify": "execute",
+      "sourceRefs": ["ms-dictionary"]
+    }
+  ]
+}
