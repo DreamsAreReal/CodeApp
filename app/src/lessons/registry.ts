@@ -554,12 +554,39 @@ const CS_S7: Section = {
   ],
 };
 
+// Section S3 «LINQ» (RS-03 §2 раздел 3 · 8 уроков). Prereq CS.S1 (needs the type-system /
+// IEnumerable mental model). Curriculum: ordered after S1..S18 in the catalog; card release
+// order 30.. (after the 29 S1/S2/S7 lessons). Kept as its own section so navigation groups
+// the LINQ lessons from day one. Lessons are registered as their body files land.
+const CS_S3: Section = {
+  id: "CS.S3",
+  title: "LINQ",
+  order: 3,
+  prereqs: ["CS.S1"],
+  lessons: [
+    entry(
+      {
+        id: "CS.S3.linq-query-syntax",
+        track: "CS",
+        section: "CS.S3",
+        title: "LINQ: query-синтаксис и method-синтаксис",
+        kicker: "C# вглубь · S3 · две формы — один запрос",
+        icon: "collections",
+        subtitle: "query expression, лоуэринг в методы, где метод обязателен",
+        estMinutes: 9,
+        cards: 3,
+      },
+      () => import("./cs/linq-query-syntax.ts").then((m) => m.linqQuerySyntax),
+    ),
+  ],
+};
+
 const CS_TRACK: Track = {
   id: "CS",
   title: S.trackCsDeepLabel,
   sub: S.trackCsDeepSub,
   badge: S.trackNewBadge,
-  sections: [CS_S1, CS_S2, CS_S7],
+  sections: [CS_S1, CS_S2, CS_S3, CS_S7],
 };
 
 // The legacy flat C# track and its 6 old lessons were removed in the F2 migration (their
