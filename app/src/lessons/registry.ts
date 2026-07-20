@@ -481,6 +481,20 @@ const CS_S7: Section = {
       },
       () => import("./cs/loh.ts").then((m) => m.loh),
     ),
+    entry(
+      {
+        id: "CS.S7.finalizers-dispose",
+        track: "CS",
+        section: "CS.S7",
+        title: "Финализаторы и Dispose: паттерн, SuppressFinalize",
+        kicker: "C# вглубь · S7 · очистка ресурсов",
+        icon: "gc",
+        subtitle: "финализатор=fallback, Dispose pattern, SuppressFinalize, SafeHandle",
+        estMinutes: 10,
+        cards: 3,
+      },
+      () => import("./cs/finalizers-dispose.ts").then((m) => m.finalizersDispose),
+    ),
   ],
 };
 
