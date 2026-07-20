@@ -648,6 +648,20 @@ const CS_S3: Section = {
       },
       () => import("./cs/linq-providers.ts").then((m) => m.linqProviders),
     ),
+    entry(
+      {
+        id: "CS.S3.plinq",
+        track: "CS",
+        section: "CS.S3",
+        title: "PLINQ: параллельные запросы, порядок, партиционирование",
+        kicker: "C# вглубь · S3 · LINQ на всех ядрах",
+        icon: "collections",
+        subtitle: "AsParallel, партиционирование, консервативность, AsOrdered, ForAll",
+        estMinutes: 11,
+        cards: 3,
+      },
+      () => import("./cs/plinq.ts").then((m) => m.plinq),
+    ),
   ],
 };
 
