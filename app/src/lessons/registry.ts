@@ -554,12 +554,28 @@ const CS_S7: Section = {
   ],
 };
 
+// Section S5 «Pattern Matching» (RS-03 §2 раздел 5 · 7 уроков). Prereq CS.S1; order 5 slots
+// it between S2 and S7 in the curriculum. Lessons registered as their bodies land (S5.1 …).
+const CS_S5: Section = {
+  id: "CS.S5",
+  title: "Pattern Matching",
+  order: 5,
+  prereqs: ["CS.S1"],
+  lessons: [
+    entry(
+      { id: "CS.S5.pattern-overview", track: "CS", section: "CS.S5", title: "Pattern matching: обзор и null-проверки", kicker: "C# вглубь · S5 · тест по признакам", icon: "types", subtitle: "is / switch, null-паттерны, exhaustiveness", estMinutes: 9, cards: 3 },
+      () => import("./cs/pattern-overview.ts").then((m) => m.patternOverview),
+    ),
+    // S5.2 … S5.7 registered as their body files land (one lesson at a time).
+  ],
+};
+
 const CS_TRACK: Track = {
   id: "CS",
   title: S.trackCsDeepLabel,
   sub: S.trackCsDeepSub,
   badge: S.trackNewBadge,
-  sections: [CS_S1, CS_S2, CS_S7],
+  sections: [CS_S1, CS_S2, CS_S5, CS_S7],
 };
 
 // The legacy flat C# track and its 6 old lessons were removed in the F2 migration (their

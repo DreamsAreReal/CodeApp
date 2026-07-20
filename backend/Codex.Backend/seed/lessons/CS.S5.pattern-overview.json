@@ -1,0 +1,69 @@
+{
+  "id": "CS.S5.pattern-overview",
+  "track": "CS",
+  "section": "CS.S5",
+  "module": "S5.1",
+  "title": "Pattern matching: обзор и null-проверки",
+  "status": "published",
+  "order": 51,
+  "sources": [
+    {
+      "id": "ms-pm-overview",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/functional/pattern-matching",
+      "date": "2025-11-18"
+    },
+    {
+      "id": "ms-switch-expr",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/switch-expression",
+      "date": "2026-03-20"
+    },
+    {
+      "id": "ms-switch-exc",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/api/system.runtime.compilerservices.switchexpressionexception",
+      "date": "2025-07-01"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "int? maybe = 12; if (maybe is int number) печатает has value {number}, иначе no value — что напечатает?",
+      "code": "int? maybe = 12; if (maybe is int number) System.Console.WriteLine($\"has value {number}\"); else System.Console.WriteLine(\"no value\");",
+      "expectedOutput": "has value 12",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-pm-overview"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "WaterState(int t) через relational+logical switch; WaterState(100)?",
+      "code": "string WaterState(int t) => t switch { < 32 => \"solid\", 32 => \"solid/liquid transition\", (> 32) and (< 212) => \"liquid\", 212 => \"liquid / gas transition\", > 212 => \"gas\" }; System.Console.WriteLine(WaterState(100));",
+      "expectedOutput": "liquid",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-switch-expr",
+        "ms-pm-overview"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Неполный switch (без _) на Name(3) — что печатает try/catch по SwitchExpressionException?",
+      "code": "string Name(int n) => n switch { 1 => \"one\", 2 => \"two\" }; try { System.Console.WriteLine(Name(3)); } catch (System.Runtime.CompilerServices.SwitchExpressionException e) { System.Console.WriteLine($\"threw: {e.GetType().Name}\"); }",
+      "expectedOutput": "threw: SwitchExpressionException",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-switch-expr",
+        "ms-switch-exc"
+      ]
+    }
+  ]
+}
