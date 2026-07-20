@@ -581,6 +581,10 @@ const CS_S6: Section = {
       { id: "CS.S6.reflection-emit", track: "CS", section: "CS.S6", title: "Reflection.Emit: генерация IL в рантайме", kicker: "C# вглубь · S6 · reflection, которая пишет код", icon: "types", subtitle: "System.Reflection.Emit, DynamicMethod, ILGenerator, CreateDelegate", estMinutes: 11, cards: 3 },
       () => import("./cs/reflection-emit.ts").then((m) => m.reflectionEmit),
     ),
+    entry(
+      { id: "CS.S6.reflection-generics", track: "CS", section: "CS.S6", title: "Reflection и generics: открытые и закрытые типы", kicker: "C# вглубь · S6 · параметры vs аргументы", icon: "types", subtitle: "открытый/закрытый, MakeGenericType, GetGenericArguments, IsGenericParameter", estMinutes: 10, cards: 3 },
+      () => import("./cs/reflection-generics.ts").then((m) => m.reflectionGenerics),
+    ),
   ],
 };
 
