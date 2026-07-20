@@ -578,6 +578,20 @@ const CS_S3: Section = {
       },
       () => import("./cs/linq-query-syntax.ts").then((m) => m.linqQuerySyntax),
     ),
+    entry(
+      {
+        id: "CS.S3.linq-execution",
+        track: "CS",
+        section: "CS.S3",
+        title: "Как выполняется LINQ-запрос: три части",
+        kicker: "C# вглубь · S3 · объявить ≠ исполнить",
+        icon: "collections",
+        subtitle: "три действия, query-переменная = рецепт, исполнение при итерации",
+        estMinutes: 9,
+        cards: 3,
+      },
+      () => import("./cs/linq-execution.ts").then((m) => m.linqExecution),
+    ),
   ],
 };
 
