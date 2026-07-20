@@ -578,7 +578,11 @@ const CS_S5: Section = {
       { id: "CS.S5.is-declaration", track: "CS", section: "CS.S5", title: "is-оператор и declaration patterns", kicker: "C# вглубь · S5 · тест типа + bind", icon: "types", subtitle: "is bool, declaration/type pattern, null → false, scope", estMinutes: 9, cards: 3 },
       () => import("./cs/is-declaration.ts").then((m) => m.isDeclaration),
     ),
-    // S5.5 … S5.7 registered as their body files land (one lesson at a time).
+    entry(
+      { id: "CS.S5.relational-logical", track: "CS", section: "CS.S5", title: "Relational и logical patterns", kicker: "C# вглубь · S5 · диапазоны и комбинаторы", icon: "types", subtitle: "< > <= >=, not/and/or, precedence, скобки", estMinutes: 10, cards: 3 },
+      () => import("./cs/relational-logical.ts").then((m) => m.relationalLogical),
+    ),
+    // S5.6 … S5.7 registered as their body files land (one lesson at a time).
   ],
 };
 
