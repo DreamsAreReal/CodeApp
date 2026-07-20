@@ -41,6 +41,7 @@ const EXPECT = [
   { id: "CS.S7.latency-modes", segs: 5, ev: "CS-LATENCY" },
   { id: "CS.S7.loh", segs: 5, ev: "CS-LOH" },
   { id: "CS.S7.finalizers-dispose", segs: 5, ev: "CS-FINDISP" },
+  { id: "CS.S7.weak-references", segs: 5, ev: "CS-WEAKREF" },
   { id: "PY.M1.names-objects", segs: 8, ev: "PY-NAMES" },
   { id: "PY.M2.collections-hash", segs: 5, ev: "PY-COLL" },
   { id: "PY.M3.args-unpacking", segs: 4, ev: "PY-ARGS" },

@@ -495,6 +495,20 @@ const CS_S7: Section = {
       },
       () => import("./cs/finalizers-dispose.ts").then((m) => m.finalizersDispose),
     ),
+    entry(
+      {
+        id: "CS.S7.weak-references",
+        track: "CS",
+        section: "CS.S7",
+        title: "Weak references: short/long, Target, resurrection",
+        kicker: "C# вглубь · S7 · слабые ссылки",
+        icon: "gc",
+        subtitle: "weak ref разрешает сбор, short/long, Target",
+        estMinutes: 10,
+        cards: 3,
+      },
+      () => import("./cs/weak-references.ts").then((m) => m.weakReferences),
+    ),
   ],
 };
 

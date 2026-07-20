@@ -1,0 +1,55 @@
+{
+  "id": "CS.S7.weak-references",
+  "track": "CS",
+  "section": "CS.S7",
+  "module": "S7.7",
+  "title": "Weak references: short/long, Target, resurrection",
+  "status": "published",
+  "order": 26,
+  "sources": [
+    {
+      "id": "ms-weak",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/weak-references",
+      "date": "2017-03-30"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "A weak reference does not prevent collection: after a GC the target is gone (Target -> null)",
+      "code": "using System; static WeakReference Make(){ return new WeakReference(new byte[500000]); } static bool StillThere(WeakReference wr){ return (wr.Target as byte[]) != null; } var wr = Make(); bool before = StillThere(wr); GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect(); bool after = StillThere(wr); Console.WriteLine($\"beforeGC={before} afterGC={after}\");",
+      "expectedOutput": "beforeGC=True afterGC=False",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-weak"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Obtaining a strong reference via Target prevents collection: the object stays alive",
+      "code": "using System; var o = new object(); var wr = new WeakReference(o); object strong = wr.Target; o = null; GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect(); bool stillAlive = wr.Target != null; GC.KeepAlive(strong); Console.WriteLine($\"strongRefKeepsAlive={stillAlive}\");",
+      "expectedOutput": "strongRefKeepsAlive=True",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-weak"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Short weak reference (parameterless ctor) vs long (second arg true): TrackResurrection distinguishes them",
+      "code": "using System; var wShort = new WeakReference(new object()); var wLong = new WeakReference(new object(), true); Console.WriteLine($\"shortTracksResurrection={wShort.TrackResurrection} longTracksResurrection={wLong.TrackResurrection}\");",
+      "expectedOutput": "shortTracksResurrection=False longTracksResurrection=True",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-weak"
+      ]
+    }
+  ]
+}
