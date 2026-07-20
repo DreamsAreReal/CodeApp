@@ -1,0 +1,61 @@
+{
+  "id": "CS.S7.span-memory",
+  "track": "CS",
+  "section": "CS.S7",
+  "module": "S7.8",
+  "title": "Span<T>/ReadOnlySpan<T>: ref struct, без аллокаций",
+  "status": "published",
+  "order": 27,
+  "sources": [
+    {
+      "id": "ms-span",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/standard/memory-and-spans/",
+      "date": "2024-07-12"
+    },
+    {
+      "id": "ms-refstruct",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/ref-struct",
+      "date": "2026-01-14"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "A Span slice does not allocate on the managed heap (a view); an array copy does",
+      "code": "using System; static (bool,bool) Measure(){ var arr=new int[1000]; long a0=GC.GetAllocatedBytesForCurrentThread(); Span<int> s=arr.AsSpan(100,500); s[0]=1; long a1=GC.GetAllocatedBytesForCurrentThread(); long b0=GC.GetAllocatedBytesForCurrentThread(); int[] copy=arr[100..600]; long b1=GC.GetAllocatedBytesForCurrentThread(); GC.KeepAlive(copy); return ((a1-a0)>0,(b1-b0)>0);} var(spanAlloc,copyAlloc)=Measure(); Console.WriteLine($\"spanAllocates={spanAlloc} arrayCopyAllocates={copyAlloc}\");",
+      "expectedOutput": "spanAllocates=False arrayCopyAllocates=True",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-span"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Span<T> is a ref struct (a value type with IsByRefLike true) so it is stack-only",
+      "code": "using System; var t = typeof(Span<int>); Console.WriteLine($\"spanIsValueType={t.IsValueType} spanIsRefStruct={t.IsByRefLike}\");",
+      "expectedOutput": "spanIsValueType=True spanIsRefStruct=True",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-refstruct"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "ReadOnlySpan<char> can be backed by a String: slicing allocates 0 bytes; hello world from index 6 is world (length 5)",
+      "code": "using System; static (int,long) Slice(){ string str=\"hello world\"; long a0=GC.GetAllocatedBytesForCurrentThread(); ReadOnlySpan<char> span=str.AsSpan(6); int len=span.Length; long a1=GC.GetAllocatedBytesForCurrentThread(); return (len,a1-a0);} var(len,bytes)=Slice(); Console.WriteLine($\"sliceLen={len} allocatedBytes={bytes}\");",
+      "expectedOutput": "sliceLen=5 allocatedBytes=0",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-span"
+      ]
+    }
+  ]
+}

@@ -509,6 +509,20 @@ const CS_S7: Section = {
       },
       () => import("./cs/weak-references.ts").then((m) => m.weakReferences),
     ),
+    entry(
+      {
+        id: "CS.S7.span-memory",
+        track: "CS",
+        section: "CS.S7",
+        title: "Span<T>/ReadOnlySpan<T>: ref struct, без аллокаций",
+        kicker: "C# вглубь · S7 · вью без аллокаций",
+        icon: "gc",
+        subtitle: "Span=вью без аллокации, ref struct, стек-только, Memory",
+        estMinutes: 10,
+        cards: 3,
+      },
+      () => import("./cs/span-memory.ts").then((m) => m.spanMemory),
+    ),
   ],
 };
 
