@@ -554,12 +554,91 @@ const CS_S7: Section = {
   ],
 };
 
+// Section S17 «Внутренности коллекций» (RS-03 §2 раздел 17 · 7 уроков). Prereq CS.S1;
+// ordered after S7 in the catalog (curriculum «Опыт»: S1 → S7 → S17 → S18 → S2).
+const CS_S17: Section = {
+  id: "CS.S17",
+  title: "Внутренности коллекций",
+  order: 17,
+  prereqs: ["CS.S1"],
+  lessons: [
+    entry(
+      { id: "CS.S17.collections-overview", track: "CS", section: "CS.S17", title: "Обзор коллекций .NET: generic vs non-generic", kicker: "C# вглубь · S17 · карта семейств", icon: "collections", subtitle: "generic vs non-generic, контракт, цена боксинга", estMinutes: 9, cards: 3 },
+      () => import("./cs/collections-overview.ts").then((m) => m.collectionsOverview),
+    ),
+    entry(
+      { id: "CS.S17.choosing-collection", track: "CS", section: "CS.S17", title: "Выбор коллекции: алгоритмическая сложность", kicker: "C# вглубь · S17 · O() решает", icon: "collections", subtitle: "amortized vs worst-case, List vs Dictionary vs HashSet", estMinutes: 10, cards: 3 },
+      () => import("./cs/choosing-collection.ts").then((m) => m.choosingCollection),
+    ),
+    entry(
+      { id: "CS.S17.dictionary-internals", track: "CS", section: "CS.S17", title: "Dictionary изнутри: бакеты, хеш, коллизии", kicker: "C# вглубь · S17 · хеш-таблица", icon: "collections", subtitle: "бакеты, GetHashCode/Equals, resize, коллизии", estMinutes: 11, cards: 3 },
+      () => import("./cs/dictionary-internals.ts").then((m) => m.dictionaryInternals),
+    ),
+    entry(
+      { id: "CS.S17.list-internals", track: "CS", section: "CS.S17", title: "List<T> изнутри: массив, Capacity, рост", kicker: "C# вглубь · S17 · массив под капотом", icon: "collections", subtitle: "int[] под капотом, Capacity/Count, амортизированный Add", estMinutes: 10, cards: 3 },
+      () => import("./cs/list-internals.ts").then((m) => m.listInternals),
+    ),
+    entry(
+      { id: "CS.S17.hashset", track: "CS", section: "CS.S17", title: "HashSet<T>: множество и O(1) Contains", kicker: "C# вглубь · S17 · Dictionary без значений", icon: "collections", subtitle: "уникальность, Contains O(1), set-операции", estMinutes: 9, cards: 3 },
+      () => import("./cs/hashset.ts").then((m) => m.hashSet),
+    ),
+    entry(
+      { id: "CS.S17.concurrent-collections", track: "CS", section: "CS.S17", title: "Concurrent-коллекции: fine-grained, lock-free", kicker: "C# вглубь · S17 · цена синхронизации", icon: "collections", subtitle: "ConcurrentDictionary/Queue/Bag, GetOrAdd, снимок", estMinutes: 11, cards: 3 },
+      () => import("./cs/concurrent-collections.ts").then((m) => m.concurrentCollections),
+    ),
+    entry(
+      { id: "CS.S17.immutable-collections", track: "CS", section: "CS.S17", title: "Immutable-коллекции: структурное разделение", kicker: "C# вглубь · S17 · дерево вместо копии", icon: "collections", subtitle: "новый объект на мутацию, ImmutableArray vs List, Builder", estMinutes: 11, cards: 3 },
+      () => import("./cs/immutable-collections.ts").then((m) => m.immutableCollections),
+    ),
+  ],
+};
+
+// Section S18 «Итераторы и yield» (RS-03 §2 раздел 18 · 4 урока). Prereq CS.S1.
+const CS_S18: Section = {
+  id: "CS.S18",
+  title: "Итераторы и yield",
+  order: 18,
+  prereqs: ["CS.S1"],
+  lessons: [
+    entry(
+      { id: "CS.S18.iterators-overview", track: "CS", section: "CS.S18", title: "Итераторы и ленивое исполнение", kicker: "C# вглубь · S18 · вызов ≠ исполнение", icon: "async", subtitle: "yield return, ленивость, foreach/await foreach", estMinutes: 10, cards: 3 },
+      () => import("./cs/iterators-overview.ts").then((m) => m.iteratorsOverview),
+    ),
+    entry(
+      { id: "CS.S18.yield-contract", track: "CS", section: "CS.S18", title: "Контракт yield: return, break, где нельзя", kicker: "C# вглубь · S18 · правила yield", icon: "async", subtitle: "yield return/break, типы возврата, запреты", estMinutes: 10, cards: 3 },
+      () => import("./cs/yield-contract.ts").then((m) => m.yieldContract),
+    ),
+    entry(
+      { id: "CS.S18.iterator-state-machine", track: "CS", section: "CS.S18", title: "Стейт-машина итератора: во что компилятор превращает yield", kicker: "C# вглубь · S18 · nested-класс = автомат", icon: "async", subtitle: "MoveNext/Current, <>1__state, Reset → NotSupported", estMinutes: 11, cards: 3 },
+      () => import("./cs/iterator-state-machine.ts").then((m) => m.iteratorStateMachine),
+    ),
+    entry(
+      { id: "CS.S18.async-iterator-statemachine", track: "CS", section: "CS.S18", title: "Async-итератор изнутри: AsyncIteratorMethodBuilder", kicker: "C# вглубь · S18 · итератор + async автомат", icon: "async", subtitle: "IAsyncStateMachine, AsyncIteratorMethodBuilder, комбинация", estMinutes: 11, cards: 3 },
+      () => import("./cs/async-iterator-statemachine.ts").then((m) => m.asyncIteratorStatemachine),
+    ),
+  ],
+};
+
+// Section S4 «Замыкания» (RS-03 §2 раздел 4 · 1 урок). Prereq CS.S1.
+const CS_S4: Section = {
+  id: "CS.S4",
+  title: "Замыкания",
+  order: 4,
+  prereqs: ["CS.S1"],
+  lessons: [
+    entry(
+      { id: "CS.S4.closures-capture", track: "CS", section: "CS.S4", title: "Лямбды и замыкания: захват переменной", kicker: "C# вглубь · S4 · display-класс", icon: "types", subtitle: "Захват переменной, ловушка цикла, аллокация замыкания", estMinutes: 11, cards: 3 },
+      () => import("./cs/closures-capture.ts").then((m) => m.closuresCapture),
+    ),
+  ],
+};
+
 const CS_TRACK: Track = {
   id: "CS",
   title: S.trackCsDeepLabel,
   sub: S.trackCsDeepSub,
   badge: S.trackNewBadge,
-  sections: [CS_S1, CS_S2, CS_S7],
+  sections: [CS_S1, CS_S2, CS_S7, CS_S17, CS_S18, CS_S4],
 };
 
 // The legacy flat C# track and its 6 old lessons were removed in the F2 migration (their

@@ -1,0 +1,74 @@
+{
+  "id": "CS.S18.async-iterator-statemachine",
+  "track": "CS",
+  "section": "CS.S18",
+  "module": "S18.4",
+  "title": "Async-итератор изнутри: AsyncIteratorMethodBuilder",
+  "status": "published",
+  "order": 40,
+  "sources": [
+    {
+      "id": "ms-iterators",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/iterators",
+      "date": "2026-03-30"
+    },
+    {
+      "id": "ms-builder",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/api/system.runtime.compilerservices.asynciteratormethodbuilder",
+      "date": "2025-07-01"
+    },
+    {
+      "id": "ms-attr",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/api/system.runtime.compilerservices.iteratorstatemachineattribute",
+      "date": "2025-07-01"
+    },
+    {
+      "id": "roslyn-async-sm",
+      "kind": "artifact",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/iterators",
+      "date": "2026-07-21"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "The generated type of an async iterator implements IAsyncStateMachine; a plain sync iterator does not.",
+      "code": "using System; using System.Collections.Generic; using System.Runtime.CompilerServices; using System.Threading.Tasks; static class D { public static IEnumerable<int> S(){ yield return 1; } public static async IAsyncEnumerable<int> A(){ await Task.Yield(); yield return 1; } } bool s = typeof(IAsyncStateMachine).IsAssignableFrom(D.S().GetType()); bool a = typeof(IAsyncStateMachine).IsAssignableFrom(D.A().GetType()); Console.WriteLine($\"syncIterator.IAsyncStateMachine={s} asyncIterator.IAsyncStateMachine={a}\");",
+      "expectedOutput": "syncIterator.IAsyncStateMachine=False asyncIterator.IAsyncStateMachine=True",
+      "verify": "execute",
+      "sourceRefs": [
+        "roslyn-async-sm",
+        "ms-builder"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "AsyncIteratorMethodBuilder is a struct with Create/MoveNext/Complete members (the builder for async iterators).",
+      "code": "using System; using System.Runtime.CompilerServices; var t = typeof(AsyncIteratorMethodBuilder); Console.WriteLine($\"isStruct={t.IsValueType} Create={t.GetMethod(\"Create\")!=null} MoveNext={t.GetMethod(\"MoveNext\")!=null} Complete={t.GetMethod(\"Complete\")!=null}\");",
+      "expectedOutput": "isStruct=True Create=True MoveNext=True Complete=True",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-builder"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "An async iterator interleaves await and yield return (yields 1 then 2) and its type is an async state machine.",
+      "code": "using System; using System.Collections.Generic; using System.Runtime.CompilerServices; using System.Threading.Tasks; using System.Text; static class D { public static async IAsyncEnumerable<int> G(){ await Task.Yield(); yield return 1; await Task.Yield(); yield return 2; } } var sb = new StringBuilder(); await foreach(var x in D.G()) sb.Append(x); bool asyncSM = typeof(IAsyncStateMachine).IsAssignableFrom(D.G().GetType()); Console.WriteLine($\"vals={sb} asyncStateMachine={asyncSM}\");",
+      "expectedOutput": "vals=12 asyncStateMachine=True",
+      "verify": "execute",
+      "sourceRefs": [
+        "roslyn-async-sm"
+      ]
+    }
+  ]
+}

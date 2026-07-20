@@ -1,0 +1,61 @@
+{
+  "id": "CS.S17.collections-overview",
+  "track": "CS",
+  "section": "CS.S17",
+  "module": "S17.1",
+  "title": "Обзор коллекций .NET: generic vs non-generic",
+  "status": "published",
+  "order": 30,
+  "sources": [
+    {
+      "id": "ms-collections",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/standard/collections/",
+      "date": "2026-03-30"
+    },
+    {
+      "id": "ms-hashtable-dict",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/standard/collections/hashtable-and-dictionary-collection-types",
+      "date": "2026-03-30"
+    },
+    {
+      "id": "ms-alloc-bytes",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/api/system.gc.getallocatedbytesforcurrentthread",
+      "date": "2025-07-01"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "ArrayList vs List<int>: суммируем {1,2,3} в обеих, WriteLine($\"{s} {s2}\")?",
+      "code": "using System.Collections; using System.Collections.Generic; var al = new ArrayList(); al.Add(1); al.Add(2); al.Add(3); int s = 0; foreach (object o in al) s += (int)o; var list = new List<int>(); list.Add(1); list.Add(2); list.Add(3); int s2 = 0; foreach (int x in list) s2 += x; System.Console.WriteLine($\"{s} {s2}\");",
+      "expectedOutput": "6 6",
+      "verify": "execute",
+      "sourceRefs": ["ms-collections"]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "List<int>{10,20,30}: печать Count и (list is IEnumerable<int>)?",
+      "code": "using System.Collections.Generic; var list = new List<int> { 10, 20, 30 }; System.Console.WriteLine(list.Count); System.Console.WriteLine(list is IEnumerable<int>);",
+      "expectedOutput": "3\nTrue",
+      "verify": "execute",
+      "sourceRefs": ["ms-collections"]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "GC.GetAllocatedBytesForCurrentThread вокруг заливки 1000 int в List<int> (после прогрева) — сколько байт?",
+      "code": "using System.Collections; using System.Collections.Generic; const int N = 1000; var warm1 = new ArrayList(N); for (int i = 0; i < N; i++) warm1.Add(i); var warm2 = new List<int>(N); for (int i = 0; i < N; i++) warm2.Add(i); long a0 = GC.GetAllocatedBytesForCurrentThread(); var al = new ArrayList(N); for (int i = 0; i < N; i++) al.Add(i); long a1 = GC.GetAllocatedBytesForCurrentThread(); var list = new List<int>(N); for (int i = 0; i < N; i++) list.Add(i); long a2 = GC.GetAllocatedBytesForCurrentThread(); System.Console.WriteLine($\"List<int>: {a2 - a1} bytes\");",
+      "expectedOutput": "List<int>: 4056 bytes",
+      "verify": "execute",
+      "sourceRefs": ["ms-alloc-bytes"]
+    }
+  ]
+}
