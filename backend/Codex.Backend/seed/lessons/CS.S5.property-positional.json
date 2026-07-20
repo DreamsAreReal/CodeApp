@@ -1,0 +1,62 @@
+{
+  "id": "CS.S5.property-positional",
+  "track": "CS",
+  "section": "CS.S5",
+  "module": "S5.6",
+  "title": "Property и positional patterns, Deconstruct",
+  "status": "published",
+  "order": 56,
+  "sources": [
+    {
+      "id": "ms-patterns",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/patterns",
+      "date": "2026-06-05"
+    },
+    {
+      "id": "ms-deconstruct",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/functional/deconstruct",
+      "date": "2024-11-22"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Property pattern Discount(Order): (12,1200)/(6,600)/(1,300)?",
+      "code": "record Order(int Items, decimal Cost); static decimal Discount(Order o) => o switch { { Items: > 10, Cost: > 1000.00m } => 0.10m, { Items: > 5, Cost: > 500.00m } => 0.05m, { Cost: > 250.00m } => 0.02m, null => throw new System.ArgumentNullException(), _ => 0m }; System.Console.WriteLine(Discount(new Order(12, 1200m))); System.Console.WriteLine(Discount(new Order(6, 600m))); System.Console.WriteLine(Discount(new Order(1, 300m)));",
+      "expectedOutput": "0.10\n0.05\n0.02",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-patterns"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Positional pattern через Deconstruct: Classify(0,0)/(1,0)/(3,4)?",
+      "code": "System.Console.WriteLine(Classify(new Point(0,0))); System.Console.WriteLine(Classify(new Point(1,0))); System.Console.WriteLine(Classify(new Point(3,4))); static string Classify(Point pt) => pt switch { (0, 0) => \"Origin\", (1, 0) => \"positive X basis end\", (0, 1) => \"positive Y basis end\", _ => \"Just a point\" }; public readonly struct Point { public int X { get; } public int Y { get; } public Point(int x, int y) => (X, Y) = (x, y); public void Deconstruct(out int x, out int y) => (x, y) = (X, Y); }",
+      "expectedOutput": "Origin\npositive X basis end\nJust a point",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-patterns",
+        "ms-deconstruct"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Extended property pattern { Start.Y: 0 }: OnXAxis двух сегментов?",
+      "code": "record Point(int X, int Y); record Segment(Point Start, Point End); static bool OnXAxis(Segment s) => s is { Start.Y: 0 } or { End.Y: 0 }; System.Console.WriteLine(OnXAxis(new Segment(new Point(1,0), new Point(2,2)))); System.Console.WriteLine(OnXAxis(new Segment(new Point(1,1), new Point(2,2))));",
+      "expectedOutput": "True\nFalse",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-patterns"
+      ]
+    }
+  ]
+}

@@ -582,7 +582,11 @@ const CS_S5: Section = {
       { id: "CS.S5.relational-logical", track: "CS", section: "CS.S5", title: "Relational и logical patterns", kicker: "C# вглубь · S5 · диапазоны и комбинаторы", icon: "types", subtitle: "< > <= >=, not/and/or, precedence, скобки", estMinutes: 10, cards: 3 },
       () => import("./cs/relational-logical.ts").then((m) => m.relationalLogical),
     ),
-    // S5.6 … S5.7 registered as their body files land (one lesson at a time).
+    entry(
+      { id: "CS.S5.property-positional", track: "CS", section: "CS.S5", title: "Property и positional patterns, Deconstruct", kicker: "C# вглубь · S5 · паттерны по форме", icon: "types", subtitle: "property {}, positional (), Deconstruct, extended", estMinutes: 11, cards: 3 },
+      () => import("./cs/property-positional.ts").then((m) => m.propertyPositional),
+    ),
+    // S5.7 registered as its body file lands (one lesson at a time).
   ],
 };
 
