@@ -11,7 +11,7 @@ Workspace: /Users/admin/Desktop/CodeApp/docs/tasks/lessons-corpus/
 - [x] 1 RESEARCH — ПРИНЯТО критиком (R-02, раунд 2, 2026-07-17)
 - [x] 2 ТЗ — Гейт ТЗ: УТВЕРЖДЕНО 2026-07-18 (все дефолты) — Режим: полный — чекпойнт после скелета: да (первые ~3 урока волны 1)
 - [x] 3 DESIGN — ПРИНЯТО критиком (R-04 раунд 2, 2026-07-18); design.md + ADR-0001..0004 + features.md (F1–F18, M1–M6)
-- [ ] 4 BUILD (builder; счётчик майлстоунов: 3/~7 — M1 R-05, M2 R-06, M3 R-07 ПРИНЯТ; прогноз волны вырос M6→~M7-M8 по факт-скорости 7/майлстоун)
+- [ ] 4 BUILD (builder; счётчик майлстоунов: M1 R-05, M2 R-06, M3 R-07 ПРИНЯТ; M4 (S2 async) + M5 (S7 память) задеплоены; M6 (S17+S18+S4 интеграция) self-pass 12/12 → ждёт accuracy-аудит. Каталог 54 урока; волна 1 близка к финишу)
 - [ ] 5 VERIFY (финал + ретро)
 
 ## Рекап задачи (ЖИВОЙ — обновляется при смене вводных)
@@ -72,6 +72,20 @@ Re-audit подтвердил: факт-баги честно исправлен
 Грабли прогона (для восстановления/след. builder-а): запускать viz-fit и verify:all ПОСЛЕДОВАТЕЛЬНО, не параллельно (конкуренция за preview → ложный exit-1/flaky-overlap); ждать терминальной строки лога (`pgrep -f verify/all.mjs`, notification о launcher ≠ конец детача). Span/stackalloc-локали держать В МЕТОДЕ (top-level statements хостятся в поля → CS8345). Verbatim-скрипт: normalize `\"`→`"`+`\'`→`'`+.lower()+strip ТОЛЬКО named-html-теги (span/code/b/i, НЕ <T>/<int>)+`&lt;`→`<`, сегменты по … . Апострофы в single-quoted полях авто-эскейпить.
 → Продолжаю S7.8…S7.10, затем СТОП, дайджест. НЕ иду к M6.
 
+## M6 (интеграция S17 коллекции 7 + S18 итераторы 4 + S4 closures 1) — SELF-PASS 12/12, ждёт accuracy-аудит
+Ветка lessons-corpus/wave1. Я НЕ переписывал контент — 12 уроков написаны параллельно другими агентами (staged), я интегрировал и технически верифицировал.
+- **Регистрация** (registry.ts): CS.S17 (collections, 7 уроков, после S7), CS.S18 (iterators, 4), CS.S4 (closures, 1); у каждого prereqs [CS.S1]. CS_TRACK.sections расширен → каталог 54 урока (было 42).
+- **Сиды**: 12 сидов получили уникальные глобальные `order` 30..41 (было коллизия: S17 все=17, S18=20..23 налезали на S7-блок 20..29, S4=4). Правка order-only, карточки не тронуты. LessonStore.Ord = order*100+cardIndex → очередь новых карт без коллизий.
+- **Exec re-verify (доказательство)**: `python3 exec_verify.py` (все 36 карт через живой run-csharp :5080) → **EXEC 36/36 MATCH** verbatim с expectedOutput, включая immutable-collections (Assembly.Load-рефлексия) и async-iterator-statemachine (interface-факт панель).
+- **Браузерный viz-fit** (реальная геометрия, не переприпрогон CI) — 2 фикса раскладки:
+  * list-internals s1: sub-лейблы зон `arr`/`list` подняты из 3-рядного блока слотов (subY 47→38, ly 24→22) — был overlap узла a0 с лейблом «непрерывная память» [72×7.1].
+  * hashset s2: value слота-бакета стабилизирован в кадре дубликата («5 (тот же)»→«5»), чтобы соседний Count-chip не дрейфовал сквозь него mid-transition (e5∩cnt [23.6×28] @190ms).
+- **Харнесс new-lessons.mjs**: 3 EXPECT-правки — реальные segs (list-internals 6→5, closures-capture 7→6) + обработка predict-гейта НА s1 (yield-contract predictAt=1): автоплей играет кадр 0 и ЗАМИРАЕТ на гейте, поэтому проверяю «гейт взведён + played», а не «index>0».
+- **Доказательство зелёного**: `npm run verify:all` FULL **7/7 ALL GREEN** (density-fixtures·density·run·viz-fit·shell·new-lessons·loop; 0 FAIL, 0 console/page errors, каталог 54 урока). `dotnet test` **67/67 Passed**.
+Коммит M6: **f62a669** (registry + 12 сидов order + 12 уроков + 2 viz-фикса + харнесс).
+→ По остановке M6 → оркестратор: адверсариальный accuracy-аудит по всем 12 урокам (GT-M6 collections/iterators/closures). Затем авто-деплой. НЕ иду дальше.
+Грабли M6: (a) backend :5080 умирал в ходе длинного verify:all (browser-шаги падали на preflight «не подняты» — это инфра, не дефект; поднять `ASPNETCORE_ENVIRONMENT=Development ASPNETCORE_URLS=http://localhost:5080 dotnet run` и перезапустить); (b) `json.dump(indent=2)` по сидам добавляет форматный шум — правил order ТОЛЬКО хирургическим regex `re.subn`; (c) predictAt на s1 ломает наивную autoplay-проверку «index>0» — гейт держит index=0, проверять played/гейт.
+
 ## Фиче-борд (волна 1; правда — features.md)
 | F | Название | Майлстоун | Золотой путь | Статус |
 |---|---|---|---|---|
@@ -84,9 +98,9 @@ Re-audit подтвердил: факт-баги честно исправлен
 | F7–F8 | S1 уроки 4–10 | M3 | — | verified (R-07; records-баг найден аудитом и исправлен 9f7ec30) |
 | F9–F11 | S2 async 1–9 | M4 | да (стейт-машина) | self-pass (9/9; ждёт accuracy-аудит M4) |
 | F12–F14 | S7 память 1–10 | M5 | да (машинные панели) | self-pass (10/10; ждёт accuracy-аудит M5) |
-| F15–F16 | S17 коллекции 1–7 | M6 | — | todo |
-| F17 | S18 итераторы 1–4 | M6 | — | todo |
-| F18 | closures + закрытие волны | M6 | — | todo |
+| F15–F16 | S17 коллекции 1–7 | M6 | — | self-pass (7/7 интегрированы; ждёт accuracy-аудит M6) |
+| F17 | S18 итераторы 1–4 | M6 | — | self-pass (4/4 интегрированы; ждёт accuracy-аудит M6) |
+| F18 | closures + закрытие волны | M6 | — | self-pass (1/1 интегрирован; ждёт accuracy-аудит M6) |
 Решения гейта (2026-07-18): ТЗ утверждено целиком; цитаты — идеи своими словами, дословно только открытые доки; нечитаемые — OCR в P2, Седжвик исключён; волна 1 = инфраструктура + миграция + ~41 урок C# core. Режим: полный.
 
 ## Синтез research (итог фазы 1, ≤10 строк)
@@ -213,3 +227,7 @@ Re-audit подтвердил: факт-баги честно исправлен
 - 2026-07-21 — Section-factory-b1 ЗАВЕРШЕНА: S17 коллекции(7), S18 итераторы(4), S4 замыкания(1) = 12 уроков, все запушены (section/s17-collections, /s18-iterators, /s4-closures), verbatim confirmed. КАВЕАТЫ (интеграция — работа оркестратора): (1) общий :5090 бэкенд НЕСТАБИЛЕН всю сессию → часть exec-чисел S17 L7 (immutable) не переподтверждена — перепроверить на стабильном :5090; (2) immutable-карты через Assembly.Load+reflection (CSharpScript не референсит System.Collections.Immutable) — подтвердить, что прод run-csharp так же исполнит; (3) worktree branched from ebae98d (S1+S2, БЕЗ S7) → их registry без S7 → мерджить ЛЕССОН-ФАЙЛЫ + регистрировать в registry wave1 (с S7) централизованно, не их registry; (4) браузерный viz-fit builders НЕ гоняли (только pure layoutScene) → ОРКЕСТРАТОР обязан прогнать центрально; (5) S18.4 панель на стабильных interface-фактах (поля async-итератора недетерминированы в CSharpScript-хосте); (6) S17 находка: SyncRoot на concurrent в .NET10 бросает NotSupportedException (не null) — урок корректно избегает. ВЫВОД для след. волн: worktree branch от wave1-HEAD (не ebae98d); стабильный exec (свой порт на билдера ИЛИ надёжный shared); центральный viz-fit per section. :5090 перезапущен стабильно.
 - ПОРЯДОК: сначала доделать+задеплоить M5 (память/GC, чище, почти готов); ЗАТЕМ интеграция section-factory (checkout лессон-файлов из 3 веток → registry wave1 → re-verify exec → central verify:all+viz-fit → accuracy-аудит M6 → автодеплой).
 - 2026-07-21 — M5 ПРИНЯТ (R-09): 3 мелочи исправлены (finalizers «на экземпляр» 99b9962; span-memory точный ms-refstruct текст d655416; gc-overview exec_ok=false = ложный флаг, 3/3 MATCH). verify:all 7/7 GREEN. F12-F14 verified. Деплой M5: merge wave1→main (реконсиляция топологии) → CI автодеплой S1+S2+S7 (29 CS уроков). Milestone 5.
+- 2026-07-21 — M5 (память/GC) LIVE на проде через АВТОДЕПЛОЙ (CI test+deploy success, merge wave1→main): 29 CS уроков (S1 10 + S2 9 + S7 10) + 13 PY. Автодеплой доставил раздел hands-off. Milestone 5 задеплоен.
+- Интеграция section-factory: 12 новых уроков (S17×7/S18×4/S4×1) + 12 сидов вычекаутены из section-веток в wave1 (только новые файлы, не устаревшие S7-less версии). :5080 поднят. Дан builder-у на интеграцию: регистрация 3 секций в registry (CS_TRACK.sections, prereqs CS.S1) + new-lessons.mjs, re-verify ВСЕХ 12 exec-карт (часть чисел на флейки :5090 не подтверждена), полный verify:all + БРАУЗЕРНЫЙ viz-fit (section-builders гоняли только pure layoutScene), фикс layout/exec/console. Потом оркестратор: accuracy-аудит M6 (GT-M6) → автодеплой.
+- 2026-07-21 — Section-factory-b2 запущена (параллельно интеграции b1): S3 LINQ(8), S5 pattern-matching(7), S6 reflection(7) — по билдеру на раздел, КАЖДЫЙ со СВОИМ backend-портом (5101/5102/5103, не общий флейкающий :5090), worktree-isolated, база wave1-HEAD 6176639, self-source Learn + verbatim строго. Батч 3 (не 8) — надёжность на одной машине (общий :5090 флейкал под нагрузкой = потолок). НЕ гнать `git worktree prune` пока b2 бежит. Итого сейчас 4 билдера: 1 интеграция b1 (:5080) + 3 авторинг b2. По завершении b2 → интеграция+аудит+автодеплой; b1 → аудит M6+автодеплой.
+- 2026-07-21 — Section-factory-b2 ЗАВЕРШЕНА: S3 LINQ(8), S5 pattern-matching(7), S6 reflection(7) = 22 урока, все запушены (section/s3-linq, /s5-pattern-matching, /s6-reflection), verbatim confirmed. КАВЕАТ (систематика): run-csharp sandbox (CSharpScript) НЕ хостит: System.Linq.Queryable/Expressions (S3.L5 IQueryable), System.Linq.Parallel (S3.L7 PLINQ), top-level static class (S3.L8 extension def), source generators (S6). Билдеры честно обошли: exec-карты гоняют sandbox-совместимую форму (реальный stdout), глубокие панели — из скомпилированных артефактов (реальный run, не sandbox). Прод-карты валидны (supported-форма). Оценщик подтвердит приемлемость compiled-артефактов как panel-evidence. Также: evidence gitignored → не на ветке (числа в commit-msg/progress). Очередь интеграции: 6 разделов (b1 S17/S18/S4 + b2 S3/S5/S6) = 34 урока.
