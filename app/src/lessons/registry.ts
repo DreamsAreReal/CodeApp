@@ -481,7 +481,21 @@ const CS_S17: Section = {
       },
       () => import("./cs/hashset.ts").then((m) => m.hashSet),
     ),
-    // S17.6–S17.7 lessons register here as their body files land (built lesson-by-lesson).
+    entry(
+      {
+        id: "CS.S17.concurrent-collections",
+        track: "CS",
+        section: "CS.S17",
+        title: "Concurrent-коллекции: fine-grained, lock-free",
+        kicker: "C# вглубь · S17 · цена синхронизации",
+        icon: "collections",
+        subtitle: "ConcurrentDictionary/Queue/Bag, GetOrAdd, снимок",
+        estMinutes: 11,
+        cards: 3,
+      },
+      () => import("./cs/concurrent-collections.ts").then((m) => m.concurrentCollections),
+    ),
+    // S17.7 lesson registers here as its body file lands (built lesson-by-lesson).
   ],
 };
 
