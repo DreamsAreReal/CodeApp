@@ -795,6 +795,10 @@ const CS_S8: Section = {
       { id: "CS.S8.lock-statement", track: "CS", section: "CS.S8", title: "lock и System.Threading.Lock (.NET 9+)", kicker: "C# вглубь · S8 · взаимное исключение", icon: "async", subtitle: "lock → Monitor/EnterScope, реентерабельность, что не лочить", estMinutes: 10, cards: 3 },
       () => import("./cs/lock-statement.ts").then((m) => m.lockStatement),
     ),
+    entry(
+      { id: "CS.S8.sync-primitives-overview", track: "CS", section: "CS.S8", title: "Обзор примитивов синхронизации", kicker: "C# вглубь · S8 · карта примитивов", icon: "async", subtitle: "WaitHandle vs lightweight, доступ к ресурсу, сигналинг", estMinutes: 10, cards: 3 },
+      () => import("./cs/sync-primitives-overview.ts").then((m) => m.syncPrimitivesOverview),
+    ),
   ],
 };
 
