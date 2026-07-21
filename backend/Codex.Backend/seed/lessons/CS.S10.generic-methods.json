@@ -1,0 +1,44 @@
+{
+  "id": "CS.S10.generic-methods",
+  "track": "CS",
+  "section": "CS.S10",
+  "module": "S10.5",
+  "title": "Generic-методы и вывод типов",
+  "status": "published",
+  "order": 91,
+  "sources": [
+    { "id": "ms-gen-methods", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/generic-methods", "date": "2015-07-20" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Type inference from the argument: Echo(42) infers T=int, Echo(\"hi\") T=string, Echo(3.5) T=double, and typeof(T) yields the reified CLR names, so the output is 42:Int32 hi:String 3.5:Double",
+      "code": "using System; static string Echo<T>(T x) => $\"{x}:{typeof(T).Name}\"; Console.WriteLine($\"{Echo(42)} {Echo(\"hi\")} {Echo(3.5)}\");",
+      "expectedOutput": "42:Int32 hi:String 3.5:Double",
+      "verify": "execute",
+      "sourceRefs": ["ms-gen-methods"]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Multi-parameter inference: each type parameter is inferred from its own argument, so Pair(1,\"x\") gives K=int V=string and Pair(true,2.0) gives K=bool V=double, printing Int32->String | Boolean->Double",
+      "code": "using System; static string Pair<K,V>(K k, V v) => $\"{typeof(K).Name}->{typeof(V).Name}\"; Console.WriteLine($\"{Pair(1, \"x\")} | {Pair(true, 2.0)}\");",
+      "expectedOutput": "Int32->String | Boolean->Double",
+      "verify": "execute",
+      "sourceRefs": ["ms-gen-methods"]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Overload resolution prefers the more specific non-generic Which(int) for an int argument (prints int) while only the generic Which<T> matches a string (prints generic), so the output is int generic",
+      "code": "using System; static string Which<T>(T x) => \"generic\"; static string Which(int x) => \"int\"; Console.WriteLine($\"{Which(5)} {Which(\"s\")}\");",
+      "expectedOutput": "int generic",
+      "verify": "execute",
+      "sourceRefs": ["ms-gen-methods"]
+    }
+  ]
+}

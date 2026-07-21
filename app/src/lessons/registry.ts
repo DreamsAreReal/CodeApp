@@ -892,6 +892,10 @@ const CS_S10: Section = {
       { id: "CS.S10.interface-variance", track: "CS", section: "CS.S10", title: "Ковариантность интерфейсов: out T / in T", kicker: "C# вглубь · S10 · вариантность интерфейсов", icon: "types", subtitle: "out T (IEnumerable<out T>), in T (IComparer<in T>), инвариантность по умолчанию", estMinutes: 10, cards: 3 },
       () => import("./cs/interface-variance.ts").then((m) => m.interfaceVariance),
     ),
+    entry(
+      { id: "CS.S10.generic-methods", track: "CS", section: "CS.S10", title: "Generic-методы и вывод типов", kicker: "C# вглубь · S10 · type inference", icon: "types", subtitle: "свой <T>, вывод из аргументов, границы вывода, overload-резолв", estMinutes: 9, cards: 3 },
+      () => import("./cs/generic-methods.ts").then((m) => m.genericMethods),
+    ),
   ],
 };
 
