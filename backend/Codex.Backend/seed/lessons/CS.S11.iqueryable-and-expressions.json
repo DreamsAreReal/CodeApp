@@ -1,0 +1,45 @@
+{
+  "id": "CS.S11.iqueryable-and-expressions",
+  "track": "CS",
+  "section": "CS.S11",
+  "module": "S11.6",
+  "title": "IQueryable-провайдеры транслируют дерево",
+  "status": "published",
+  "order": 100,
+  "sources": [
+    { "id": "ms-linq", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/csharp/linq/", "date": "2025-12-01" },
+    { "id": "ms-et", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/csharp/advanced-topics/expression-trees/", "date": "2025-10-13" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "The same lambda x => x > 2: a Func is opaque (only del(5)=True is observable) while Expression<Func<int,bool>> captures a navigable tree whose Body.NodeType is GreaterThan and whose right leaf is Constant 2, so the output is del:True tree.NodeType:GreaterThan right:2",
+      "code": "using System; using System.Linq.Expressions; Func<int,bool> del = x => x > 2; Expression<Func<int,bool>> tree = x => x > 2; var b=(BinaryExpression)tree.Body; Console.WriteLine($\"del:{del(5)} tree.NodeType:{tree.Body.NodeType} right:{((ConstantExpression)b.Right).Value}\");",
+      "expectedOutput": "del:True tree.NodeType:GreaterThan right:2",
+      "verify": "execute",
+      "sourceRefs": ["ms-et"]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "A mini provider reads the tree of x => x > 2: Left.Name is the column x, NodeType is the operator GreaterThan, Right.Value is the value 2, and it assembles WHERE x GreaterThan 2 without executing the lambda",
+      "code": "using System; using System.Linq.Expressions; Expression<Func<int,bool>> tree = x => x > 2; var b=(BinaryExpression)tree.Body; var col=((ParameterExpression)b.Left).Name; var op=b.NodeType; var val=((ConstantExpression)b.Right).Value; Console.WriteLine($\"WHERE {col} {op} {val}\");",
+      "expectedOutput": "WHERE x GreaterThan 2",
+      "verify": "execute",
+      "sourceRefs": ["ms-et", "ms-linq"]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Expression<Func<int,bool>> for x => x > 2 exposes the full structure a provider needs: root NodeType Lambda, single parameter x, body NodeType GreaterThan, ReturnType.Name Boolean, so the output is Lambda|x|GreaterThan|Boolean",
+      "code": "using System; using System.Linq.Expressions; Expression<Func<int,bool>> tree = x => x > 2; Console.WriteLine($\"{tree.NodeType}|{tree.Parameters[0].Name}|{tree.Body.NodeType}|{tree.ReturnType.Name}\");",
+      "expectedOutput": "Lambda|x|GreaterThan|Boolean",
+      "verify": "execute",
+      "sourceRefs": ["ms-et"]
+    }
+  ]
+}

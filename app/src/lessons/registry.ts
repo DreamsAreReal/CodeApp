@@ -942,6 +942,10 @@ const CS_S11: Section = {
       { id: "CS.S11.debugview", track: "CS", section: "CS.S11", title: "DebugView: синтаксис инспекции дерева", kicker: "C# вглубь · S11 · чтение дерева", icon: "types", subtitle: "$-параметры, суффиксы констант, .Lambda #, #-checked, реальный DebugView", estMinutes: 9, cards: 3 },
       () => import("./cs/debugview.ts").then((m) => m.debugview),
     ),
+    entry(
+      { id: "CS.S11.iqueryable-and-expressions", track: "CS", section: "CS.S11", title: "IQueryable-провайдеры транслируют дерево", kicker: "C# вглубь · S11 · дерево → SQL", icon: "types", subtitle: "компилятор → дерево, провайдер обходит узлы, спектр сложности, EF Core → SQL", estMinutes: 10, cards: 3 },
+      () => import("./cs/iqueryable-and-expressions.ts").then((m) => m.iqueryableAndExpressions),
+    ),
   ],
 };
 
