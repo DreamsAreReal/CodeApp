@@ -863,12 +863,32 @@ const CS_S9: Section = {
   ],
 };
 
+// Section S10 «Generics вглубь» (RS-03 §2 раздел 10 · 8 уроков). Prereq CS.S1. A DEDICATED,
+// deeper generics treatment that complements CS.S1.generics-basics (compile-time mechanics,
+// open/closed, where, the boxing headline), CS.S4.delegate-variance (variance of DELEGATES) and
+// CS.S6.reflection-generics (open/closed types via reflection) — zero overlap: S10 covers the
+// runtime representation (reification, specialization), the FULL constraint vocabulary, default(T),
+// variance of INTERFACES, generic-method type inference, per-closed-type statics, boxing-removal
+// measured, and generic math (static abstract members, INumber<T>).
+const CS_S10: Section = {
+  id: "CS.S10",
+  title: "Generics вглубь",
+  order: 10,
+  prereqs: ["CS.S1"],
+  lessons: [
+    entry(
+      { id: "CS.S10.generics-runtime", track: "CS", section: "CS.S10", title: "Generics в рантайме: специализация и код-шаринг", kicker: "C# вглубь · S10 · представление в рантайме", icon: "types", subtitle: "Реификация, ref-код-шаринг, специализация value-типов, замер", estMinutes: 10, cards: 3 },
+      () => import("./cs/generics-runtime.ts").then((m) => m.genericsRuntime),
+    ),
+  ],
+};
+
 const CS_TRACK: Track = {
   id: "CS",
   title: S.trackCsDeepLabel,
   sub: S.trackCsDeepSub,
   badge: S.trackNewBadge,
-  sections: [CS_S1, CS_S2, CS_S3, CS_S5, CS_S7, CS_S8, CS_S9, CS_S17, CS_S18, CS_S4, CS_S6],
+  sections: [CS_S1, CS_S2, CS_S3, CS_S5, CS_S7, CS_S8, CS_S9, CS_S10, CS_S17, CS_S18, CS_S4, CS_S6],
 };
 
 // The legacy flat C# track and its 6 old lessons were removed in the F2 migration (their

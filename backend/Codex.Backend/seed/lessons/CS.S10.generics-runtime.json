@@ -1,0 +1,44 @@
+{
+  "id": "CS.S10.generics-runtime",
+  "track": "CS",
+  "section": "CS.S10",
+  "module": "S10.1",
+  "title": "Generics в рантайме: специализация и код-шаринг",
+  "status": "published",
+  "order": 87,
+  "sources": [
+    { "id": "ms-generics-std", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/standard/generics/", "date": "2022-07-26" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": ".NET reifies generics (unlike Java type erasure): typeof(T) inside a generic yields the real argument type at run time, so TN<int>/TN<string> print Int32/String and GetGenericArguments on List<int> also yields Int32",
+      "code": "using System; using System.Collections.Generic; static string TN<T>() => typeof(T).Name; Console.WriteLine($\"{TN<int>()} {TN<string>()} {typeof(List<int>).GetGenericArguments()[0].Name}\");",
+      "expectedOutput": "Int32 String Int32",
+      "verify": "execute",
+      "sourceRefs": ["ms-generics-std"]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "One definition List`1 but distinct constructed types: GetGenericTypeDefinition matches (True) while the closed types List<string> and List<object> are different runtime types (False)",
+      "code": "using System; using System.Collections.Generic; bool sameDef = typeof(List<string>).GetGenericTypeDefinition() == typeof(List<object>).GetGenericTypeDefinition(); bool sameClosed = typeof(List<string>) == typeof(List<object>); Console.WriteLine($\"{sameDef} {sameClosed}\");",
+      "expectedOutput": "True False",
+      "verify": "execute",
+      "sourceRefs": ["ms-generics-std"]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "List<object> boxes each int (reference-type layout) allocating 32056 bytes, while the value-specialized List<int> stores ints inline for 4056 bytes; same Add code, two runtime specializations of List`1",
+      "code": "using System; using System.Collections.Generic; const int N=1000; var w1=new List<object>(N); for(int i=0;i<N;i++)w1.Add(i); var w2=new List<int>(N); for(int i=0;i<N;i++)w2.Add(i); long a0=GC.GetAllocatedBytesForCurrentThread(); var boxed=new List<object>(N); for(int i=0;i<N;i++)boxed.Add(i); long a1=GC.GetAllocatedBytesForCurrentThread(); var inline=new List<int>(N); for(int i=0;i<N;i++)inline.Add(i); long a2=GC.GetAllocatedBytesForCurrentThread(); Console.WriteLine($\"List<object>: {a1-a0} List<int>: {a2-a1}\");",
+      "expectedOutput": "List<object>: 32056 List<int>: 4056",
+      "verify": "execute",
+      "sourceRefs": ["ms-generics-std"]
+    }
+  ]
+}
