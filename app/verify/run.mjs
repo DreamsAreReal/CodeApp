@@ -122,6 +122,15 @@ async function main() {
   await page.waitForFunction(() => window.__viz && window.__viz.ready, { timeout: 15000 });
   const segCount = await page.evaluate(() => Object.keys(window.__viz.vizByKey).length);
   assert(segCount === 6, "value-types-copy built 6 animated segments (got " + segCount + ")");
+  // Autoplay is IntersectionObserver-based (fires at >=35% in view) — bring s1 into view
+  // first. A user scrolls to a segment and it plays; with richer lesson prose (e.g. the
+  // Russian translation glosses) s1 can start below the fold, where on-view autoplay would
+  // not fire on open. Scrolling to it is how the real reader triggers the same autoplay.
+  await page.evaluate(() => {
+    const st = document.querySelectorAll(".stage")[0];
+    if (st) st.scrollIntoView({ block: "center" });
+  });
+  await sleep(400);
   // segment 1 autoplays on view -> its step index advances beyond 0
   await page.waitForFunction(
     () => {
