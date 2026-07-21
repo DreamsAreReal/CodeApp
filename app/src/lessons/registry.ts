@@ -815,6 +815,10 @@ const CS_S8: Section = {
       { id: "CS.S8.tpl-parallel", track: "CS", section: "CS.S8", title: "TPL: Parallel.For/ForEach и degree of parallelism", kicker: "C# вглубь · S8 · data parallelism", icon: "async", subtitle: "Parallel.For/ForEach, партиции, MaxDegreeOfParallelism, overhead", estMinutes: 10, cards: 3 },
       () => import("./cs/tpl-parallel.ts").then((m) => m.tplParallel),
     ),
+    entry(
+      { id: "CS.S8.thread-async-local", track: "CS", section: "CS.S8", title: "ThreadLocal<T> / AsyncLocal<T>: контекст в async", kicker: "C# вглубь · S8 · амбиентное состояние", icon: "async", subtitle: "per-thread vs per-async-flow, фабрика, поток управления", estMinutes: 10, cards: 3 },
+      () => import("./cs/thread-async-local.ts").then((m) => m.threadAsyncLocal),
+    ),
   ],
 };
 

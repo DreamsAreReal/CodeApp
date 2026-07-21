@@ -1,0 +1,45 @@
+{
+  "id": "CS.S8.thread-async-local",
+  "track": "CS",
+  "section": "CS.S8",
+  "module": "S8.9",
+  "title": "ThreadLocal<T> / AsyncLocal<T>: контекст в async",
+  "status": "published",
+  "order": 79,
+  "sources": [
+    { "id": "ms-threadlocal", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/api/system.threading.threadlocal-1", "date": "2026-01-20" },
+    { "id": "ms-asynclocal", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/api/system.threading.asynclocal-1", "date": "2026-01-20" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "ThreadLocal<T> gives each thread its own copy: main and worker both read 100 from the factory, and worker's write of 999 is invisible to main",
+      "code": "using System; using System.Threading; var tl = new ThreadLocal<int>(() => 100); int mainVal = tl.Value; int workerVal = 0; var t = new Thread(() => { workerVal = tl.Value; tl.Value = 999; }); t.Start(); t.Join(); int mainAfter = tl.Value; Console.WriteLine($\"main={mainVal} worker={workerVal} mainAfter={mainAfter}\");",
+      "expectedOutput": "main=100 worker=100 mainAfter=100",
+      "verify": "execute",
+      "sourceRefs": ["ms-threadlocal"]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "ThreadLocal<T> initializes lazily: IsValueCreated is False before the first Value access, the factory yields 42 on first access, then IsValueCreated is True",
+      "code": "using System; using System.Threading; var tl = new ThreadLocal<int>(() => 42); bool before = tl.IsValueCreated; int v = tl.Value; bool after = tl.IsValueCreated; Console.WriteLine($\"before={before} value={v} after={after}\");",
+      "expectedOutput": "before=False value=42 after=True",
+      "verify": "execute",
+      "sourceRefs": ["ms-threadlocal"]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "AsyncLocal<T> is ambient to the async control flow: a value set before an await is still observable after the await, even when the continuation runs on another thread",
+      "code": "using System; using System.Threading; using System.Threading.Tasks; var al = new AsyncLocal<string>(); al.Value = \"ctx\"; string beforeAwait = al.Value; async Task<string> Inner() { await Task.Delay(10); return al.Value; } string afterAwait = Inner().GetAwaiter().GetResult(); Console.WriteLine($\"before={beforeAwait} after={afterAwait}\");",
+      "expectedOutput": "before=ctx after=ctx",
+      "verify": "execute",
+      "sourceRefs": ["ms-asynclocal"]
+    }
+  ]
+}
