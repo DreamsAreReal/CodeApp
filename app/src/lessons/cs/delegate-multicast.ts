@@ -37,8 +37,9 @@ const Z_INST: Zone = { id: "inst", x: 176, y: 34, w: 150, h: 168, cls: "vz-zone 
 const DECL_ZONES: Zone[] = [Z_DECL, Z_INST];
 
 // s2: the invocation list building up with += (three methods in one delegate).
-const Z_DVAR: Zone = { id: "dvar", x: 14, y: 34, w: 138, h: 168, cls: "vz-zone", label: "a (Action)", labelCls: "vz-zlabel", lx: 83, ly: 24, sub: "один делегат", subCls: "vz-zsub", subY: 47 };
-const Z_LIST: Zone = { id: "list", x: 188, y: 34, w: 138, h: 168, cls: "vz-zone heap", label: "INVOCATION LIST", labelCls: "vz-zlabel heap sm", lx: 257, ly: 24, sub: "методы по порядку", subCls: "vz-zsub heap", subY: 47 };
+// Tall zones (h=232 → inner 216u) so three stacked chip rows fit with PAD≥8.
+const Z_DVAR: Zone = { id: "dvar", x: 14, y: 34, w: 138, h: 232, cls: "vz-zone", label: "a (Action)", labelCls: "vz-zlabel", lx: 83, ly: 22, sub: "один делегат", subCls: "vz-zsub", subY: 40 };
+const Z_LIST: Zone = { id: "list", x: 188, y: 34, w: 138, h: 232, cls: "vz-zone heap", label: "INVOCATION LIST", labelCls: "vz-zlabel heap sm", lx: 257, ly: 22, sub: "методы по порядку", subCls: "vz-zsub heap", subY: 40 };
 const LIST_ZONES: Zone[] = [Z_DVAR, Z_LIST];
 
 // s3: immutability — combining builds a NEW delegate, operands untouched.
@@ -47,18 +48,21 @@ const Z_NEW: Zone = { id: "newd", x: 176, y: 34, w: 150, h: 168, cls: "vz-zone h
 const IMMUT_ZONES: Zone[] = [Z_ORIG, Z_NEW];
 
 // s4: -= removes the rightmost matching entry.
-const Z_BEFORE: Zone = { id: "before", x: 14, y: 34, w: 150, h: 168, cls: "vz-zone", label: "m + m + m", labelCls: "vz-zlabel sm", lx: 89, ly: 24, sub: "дубликаты в списке", subCls: "vz-zsub", subY: 47 };
-const Z_AFTER: Zone = { id: "after", x: 176, y: 34, w: 150, h: 168, cls: "vz-zone good", label: "после -= m", labelCls: "vz-zlabel good sm", lx: 251, ly: 24, sub: "снят самый правый", subCls: "vz-zsub good", subY: 47 };
+// Tall zones (h=232 → inner 216u) so three stacked chip rows fit with PAD≥8.
+const Z_BEFORE: Zone = { id: "before", x: 14, y: 34, w: 150, h: 232, cls: "vz-zone", label: "m + m + m", labelCls: "vz-zlabel sm", lx: 89, ly: 22, sub: "дубликаты в списке", subCls: "vz-zsub", subY: 40 };
+const Z_AFTER: Zone = { id: "after", x: 176, y: 34, w: 150, h: 232, cls: "vz-zone good", label: "после -= m", labelCls: "vz-zlabel good sm", lx: 251, ly: 22, sub: "снят самый правый", subCls: "vz-zsub good", subY: 40 };
 const REMOVE_ZONES: Zone[] = [Z_BEFORE, Z_AFTER];
 
 // s5 (SIGNATURE): the return-value trap — a multicast Func yields only the last result.
-const Z_CHAIN: Zone = { id: "chain", x: 14, y: 34, w: 150, h: 168, cls: "vz-zone heap", label: "Func: 1 + 2 + 3", labelCls: "vz-zlabel heap sm", lx: 89, ly: 24, sub: "три метода", subCls: "vz-zsub heap", subY: 47 };
-const Z_RET: Zone = { id: "ret", x: 176, y: 34, w: 150, h: 168, cls: "vz-zone", label: "ЧТО ВЕРНЁТ", labelCls: "vz-zlabel sm", lx: 251, ly: 24, sub: "combo()", subCls: "vz-zsub", subY: 47 };
+// Tall zones (h=232 → inner 216u) so three stacked chip rows fit with PAD≥8.
+const Z_CHAIN: Zone = { id: "chain", x: 14, y: 34, w: 150, h: 232, cls: "vz-zone heap", label: "Func: 1 + 2 + 3", labelCls: "vz-zlabel heap sm", lx: 89, ly: 22, sub: "три метода", subCls: "vz-zsub heap", subY: 40 };
+const Z_RET: Zone = { id: "ret", x: 176, y: 34, w: 150, h: 232, cls: "vz-zone", label: "ЧТО ВЕРНЁТ", labelCls: "vz-zlabel sm", lx: 251, ly: 22, sub: "combo()", subCls: "vz-zsub", subY: 40 };
 const RETURN_ZONES: Zone[] = [Z_CHAIN, Z_RET];
 
 // s6: exception short-circuits the rest of the list.
-const Z_RUN: Zone = { id: "run", x: 14, y: 34, w: 150, h: 168, cls: "vz-zone", label: "ВЫЗОВ ПО СПИСКУ", labelCls: "vz-zlabel sm", lx: 89, ly: 24, sub: "M1 → M2 → M3", subCls: "vz-zsub", subY: 47 };
-const Z_THROW: Zone = { id: "throw", x: 176, y: 34, w: 150, h: 168, cls: "vz-zone heap", label: "ИСКЛЮЧЕНИЕ В M2", labelCls: "vz-zlabel heap sm", lx: 251, ly: 24, sub: "остаток не вызван", subCls: "vz-zsub heap", subY: 47 };
+// Tall zones (h=232 → inner 216u) so three stacked M1/M2/M3 rows fit with PAD≥8.
+const Z_RUN: Zone = { id: "run", x: 14, y: 34, w: 150, h: 232, cls: "vz-zone", label: "ВЫЗОВ ПО СПИСКУ", labelCls: "vz-zlabel sm", lx: 89, ly: 22, sub: "M1 → M2 → M3", subCls: "vz-zsub", subY: 40 };
+const Z_THROW: Zone = { id: "throw", x: 176, y: 34, w: 150, h: 232, cls: "vz-zone heap", label: "ИСКЛЮЧЕНИЕ В M2", labelCls: "vz-zlabel heap sm", lx: 251, ly: 22, sub: "остаток не вызван", subCls: "vz-zsub heap", subY: 40 };
 const THROW_ZONES: Zone[] = [Z_RUN, Z_THROW];
 
 export const delegateMulticast: LessonData = {
@@ -113,14 +117,14 @@ export const delegateMulticast: LessonData = {
     },
     {
       id: "s2", num: "02", kicker: "Invocation list · +=", title: "+= добавляет метод в список одного делегата",
-      viewBox: "0 0 340 210", zones: LIST_ZONES,
+      viewBox: "0 0 340 276", zones: LIST_ZONES,
       code: ["Action a = () => sb.Append(\"A\");", "a += () => sb.Append(\"B\");", "a += () => sb.Append(\"C\");", "a();  // вызывает ВСЕ три по порядку → \"ABC\""],
       predictAt: 3, predictQ: 'После трёх <code>+=</code> вызов <code>a()</code> прогоняет весь список. Что окажется в <code>sb</code>?', console: true,
       scenes: [
         { codeLine: 0, out: "", caption: '<code>a</code> держит один метод — печать <code>"A"</code>. Invocation list длиной 1.', nodes: [{ id: "a", kind: "ref", at: { zone: "dvar", row: 0 }, name: "a", value: "Action", accent: true }, { id: "m1", kind: "chip", at: { zone: "list", row: 0 }, value: "1. Append(A)", w: 120 }], edges: [{ id: "e1", from: "a", to: "m1" }] },
         { codeLine: 1, out: "", caption: '<code>a += …B</code> — <span class="hl">добавляет второй</span> метод в тот же делегат. Это не перезапись: список растёт.', nodes: [{ id: "a", kind: "ref", at: { zone: "dvar", row: 0 }, name: "a", value: "Action" }, { id: "m1", kind: "chip", at: { zone: "list", row: 0 }, value: "1. Append(A)", w: 120 }, { id: "m2", kind: "chip", at: { zone: "list", row: 1 }, value: "2. Append(B)", w: 120, accent: true }], edges: [{ id: "e1", from: "a", to: "m1" }] },
         { codeLine: 2, out: "", caption: 'Третий <code>+=</code> — три метода в одном делегате. Порядок в списке = порядок добавления.', nodes: [{ id: "a", kind: "ref", at: { zone: "dvar", row: 0 }, name: "a", value: "list = 3" }, { id: "m1", kind: "chip", at: { zone: "list", row: 0 }, value: "1. Append(A)", w: 120 }, { id: "m2", kind: "chip", at: { zone: "list", row: 1 }, value: "2. Append(B)", w: 120 }, { id: "m3", kind: "chip", at: { zone: "list", row: 2 }, value: "3. Append(C)", w: 120, accent: true }], edges: [] },
-        { codeLine: 3, out: "ABC", caption: 'Один вызов <code>a()</code> прогоняет <span class="hl">весь список по порядку</span> → <code>"ABC"</code> (реальный прогон). Три метода — один invoke.', nodes: [{ id: "a", kind: "ref", at: { zone: "dvar", row: 0 }, name: "a()", value: "→ ABC", accent: true }, { id: "m1", kind: "gate", at: { zone: "list", row: 0 }, state: "ok", label: "1. A", detail: "✓" }, { id: "m2", kind: "gate", at: { zone: "list", row: 1 }, state: "ok", label: "2. B", detail: "✓" }, { id: "m3", kind: "gate", at: { zone: "list", row: 2 }, state: "ok", label: "3. C", detail: "✓" }], edges: [] },
+        { codeLine: 3, out: "ABC", caption: 'Один вызов <code>a()</code> прогоняет <span class="hl">весь список по порядку</span> → <code>"ABC"</code> (реальный прогон). Три метода — один invoke.', nodes: [{ id: "a", kind: "ref", at: { zone: "dvar", row: 0 }, name: "a()", value: "→ ABC", accent: true }, { id: "m1", kind: "chip", at: { zone: "list", row: 0 }, value: "1. Append(A) ✓", w: 132 }, { id: "m2", kind: "chip", at: { zone: "list", row: 1 }, value: "2. Append(B) ✓", w: 132 }, { id: "m3", kind: "chip", at: { zone: "list", row: 2 }, value: "3. Append(C) ✓", w: 132 }], edges: [] },
       ],
       explain: 'Это multicasting: «A delegate can call more than one method when invoked, referred to as <b>multicasting</b>. To add an extra method to the delegate\'s list of methods—the <span class="hl">invocation list</span>—simply requires adding two delegates using the addition or addition assignment operators (\'+\' or \'+=\')». Порядок — по добавлению: «When you call the multicast delegate, it <b>invokes the delegates in the list, in order</b>». В доках прямой пример: «The <code>allMethodsDelegate</code> contains three methods in its invocation list… When <code>allMethodsDelegate</code> is invoked, <b>all three methods are called in order</b>». Реальный прогон подтверждает: три <code>+=</code>, один <code>a()</code> → <code>"ABC"</code>. Ограничение: «You can only combine delegates of the <b>same type</b>» — иначе ошибка компиляции.',
       sources: ["ms-using", "ms-combine"],
@@ -140,36 +144,36 @@ export const delegateMulticast: LessonData = {
     },
     {
       id: "s4", num: "04", kicker: "Удаление · -=", title: "-= снимает самый правый совпадающий метод",
-      viewBox: "0 0 340 210", zones: REMOVE_ZONES,
+      viewBox: "0 0 340 276", zones: REMOVE_ZONES,
       code: ["Action combo = m + m + m;   // один метод трижды", "combo -= m;                 // снять ОДИН, самый правый", "combo();                    // → \"XX\" (осталось два)", "// combo.GetInvocationList().Length → 2"],
       scenes: [
         { codeLine: 0, out: "", caption: 'Один и тот же метод <code>m</code> добавлен <b>трижды</b>. Дубликаты разрешены — в списке три записи <code>X</code>.', nodes: [{ id: "b1", kind: "chip", at: { zone: "before", row: 0 }, value: "1. X", w: 72 }, { id: "b2", kind: "chip", at: { zone: "before", row: 1 }, value: "2. X", w: 72 }, { id: "b3", kind: "chip", at: { zone: "before", row: 2 }, value: "3. X", w: 72, accent: true }], edges: [] },
-        { codeLine: 1, out: "", caption: '<code>combo -= m</code> снимает <span class="hl">самый правый</span> совпадающий — только одну запись, не все три.', nodes: [{ id: "b1", kind: "chip", at: { zone: "before", row: 0 }, value: "1. X", w: 72 }, { id: "b2", kind: "chip", at: { zone: "before", row: 1 }, value: "2. X", w: 72 }, { id: "b3", kind: "gate", at: { zone: "before", row: 2 }, state: "fail", label: "3. X", detail: "снят ✗", accent: true }, { id: "a1", kind: "chip", at: { zone: "after", row: 0 }, value: "1. X", w: 72 }, { id: "a2", kind: "chip", at: { zone: "after", row: 1 }, value: "2. X", w: 72, accent: true }], edges: [] },
-        { codeLine: 2, out: "XX", caption: 'Осталось два метода → <code>combo()</code> печатает <span class="hl">"XX"</span>, список длиной <b>2</b> (реальный прогон). Убрана ровно одна копия.', nodes: [{ id: "a1", kind: "gate", at: { zone: "after", row: 0 }, state: "ok", label: "1. X", detail: "✓" }, { id: "a2", kind: "gate", at: { zone: "after", row: 1 }, state: "ok", label: "2. X", detail: "✓", accent: true }], edges: [] },
+        { codeLine: 1, out: "", caption: '<code>combo -= m</code> снимает <span class="hl">самый правый</span> совпадающий — только одну запись, не все три.', nodes: [{ id: "b1", kind: "chip", at: { zone: "before", row: 0 }, value: "1. X", w: 72 }, { id: "b2", kind: "chip", at: { zone: "before", row: 1 }, value: "2. X", w: 72 }, { id: "b3", kind: "chip", at: { zone: "before", row: 2 }, value: "3. X ✗ снят", w: 108, accent: true }, { id: "a1", kind: "chip", at: { zone: "after", row: 0 }, value: "1. X", w: 72 }, { id: "a2", kind: "chip", at: { zone: "after", row: 1 }, value: "2. X", w: 72, accent: true }], edges: [] },
+        { codeLine: 2, out: "XX", caption: 'Осталось два метода → <code>combo()</code> печатает <span class="hl">"XX"</span>, список длиной <b>2</b> (реальный прогон). Убрана ровно одна копия.', nodes: [{ id: "a1", kind: "chip", at: { zone: "after", row: 0 }, value: "1. X ✓", w: 72 }, { id: "a2", kind: "chip", at: { zone: "after", row: 1 }, value: "2. X ✓", w: 72, accent: true }], edges: [] },
       ],
       explain: 'Удаление — оператор <code>-</code>/<code>-=</code>: «You can use the <code>-</code> operator to remove a component delegate from a multicast delegate». Тонкость с дубликатами прямо в доках: «You can add the same delegate to a multicast delegate multiple times. When you call the multicast delegate, it invokes all the delegates in the list, <b>including duplicates</b>. When you remove a delegate from a multicast delegate, it removes the <span class="hl">rightmost matching entry</span>, so only one instance is removed if there are multiple copies». Реальный прогон: <code>m + m + m</code>, затем <code>-= m</code> оставляет два вызова (<code>"XX"</code>, список 2). А если снять <b>последний</b> метод — делегат станет <code>null</code> (реальный прогон: <code>true</code>): пустого делегата с нулём методов не бывает, поэтому перед вызовом стоит проверить <code>?.Invoke()</code>.',
       sources: ["ms-combine"],
     },
     {
       id: "s5", num: "05", kicker: "Машинная панель · возврат multicast", title: "Multicast-Func возвращает только ПОСЛЕДНИЙ результат",
-      viewBox: "0 0 340 210", zones: RETURN_ZONES,
+      viewBox: "0 0 340 276", zones: RETURN_ZONES,
       code: ["Func<int> combo = (() => 1) + (() => 2) + (() => 3);", "Console.WriteLine(combo());              // ?", "combo -= (() => 2 - как та же? нет — тождества нет)", "// вернётся значение ПОСЛЕДНЕГО метода в списке"],
       predictAt: 1, predictQ: 'Multicast-<code>Func&lt;int&gt;</code> из трёх методов (1, 2, 3) — что вернёт один <code>combo()</code>?', console: true,
       scenes: [
         { codeLine: 0, out: "", caption: 'Три метода в одном <code>Func&lt;int&gt;</code>: возвращают 1, 2 и 3. Все они <b>выполнятся</b> при вызове.', nodes: [{ id: "m1", kind: "chip", at: { zone: "chain", row: 0 }, value: "1. () => 1", w: 108 }, { id: "m2", kind: "chip", at: { zone: "chain", row: 1 }, value: "2. () => 2", w: 108 }, { id: "m3", kind: "chip", at: { zone: "chain", row: 2 }, value: "3. () => 3", w: 108, accent: true }], edges: [] },
-        { codeLine: 1, out: "3", caption: 'Хотя вызвались <b>все три</b>, <code>combo()</code> вернёт <span class="hl">3</span> — значение <b>последнего</b> метода. Результаты 1 и 2 <b>потеряны</b> (реальный прогон).', nodes: [{ id: "m1", kind: "gate", at: { zone: "chain", row: 0 }, state: "fail", label: "() => 1", detail: "выполнен, но 1 ✗" }, { id: "m2", kind: "gate", at: { zone: "chain", row: 1 }, state: "fail", label: "() => 2", detail: "выполнен, но 2 ✗" }, { id: "m3", kind: "gate", at: { zone: "chain", row: 2 }, state: "ok", label: "() => 3", detail: "= 3 ←", accent: true }, { id: "r", kind: "obj", at: { zone: "ret", row: 0 }, typeTag: "combo()", value: "3", accent: true }], edges: [{ id: "e", from: "m3", to: "r", accent: true }] },
+        { codeLine: 1, out: "3", caption: 'Хотя вызвались <b>все три</b>, <code>combo()</code> вернёт <span class="hl">3</span> — значение <b>последнего</b> метода. Результаты 1 и 2 <b>потеряны</b> (реальный прогон).', nodes: [{ id: "m1", kind: "chip", at: { zone: "chain", row: 0 }, value: "1. () => 1 ✗", w: 120 }, { id: "m2", kind: "chip", at: { zone: "chain", row: 1 }, value: "2. () => 2 ✗", w: 120 }, { id: "m3", kind: "chip", at: { zone: "chain", row: 2 }, value: "3. () => 3 ←", w: 120, accent: true }, { id: "r", kind: "obj", at: { zone: "ret", row: 0 }, typeTag: "combo()", value: "3", accent: true }], edges: [{ id: "e", from: "m3", to: "r", accent: true }] },
       ],
       explain: 'Это машинная панель урока — реально снятое поведение возврата. Дословно: «If the delegate has a return value and/or out parameters, it <span class="hl">returns the return value and parameters of the last method invoked</span>». То есть в multicast-<code>Func</code> выполняются <b>все</b> методы, но наружу отдаётся только результат <b>последнего</b> — остальные молча отбрасываются (реальный прогон: <code>1 + 2 + 3</code> → <code>combo()</code> = <code>3</code>). Отсюда правило: <code>Func</code> для multicast почти всегда неправильный выбор — если нужны результаты всех методов, идут по <code>GetInvocationList()</code> и вызывают каждый вручную. И база подтверждает механику: «Delegates with more than one method in their invocation list <b>derive from</b> <code>MulticastDelegate</code>, which is a subclass of <code>System.Delegate</code>».',
       sources: ["ms-using"],
     },
     {
       id: "s6", num: "06", kicker: "Ловушка · исключение в списке", title: "Исключение в методе обрывает остаток invocation list",
-      viewBox: "0 0 340 210", zones: THROW_ZONES,
+      viewBox: "0 0 340 276", zones: THROW_ZONES,
       code: ["Action chain = M1;   // печатает 1", "chain += M2;         // бросает InvalidOperationException", "chain += M3;         // печатает 3", "chain();  // 1, затем throw — M3 НЕ вызовется"],
       scenes: [
         { codeLine: 0, out: "", caption: 'Три метода в списке: <code>M1</code>, <code>M2</code> (бросает), <code>M3</code>. Вызов пойдёт по порядку.', nodes: [{ id: "r1", kind: "chip", at: { zone: "run", row: 0 }, value: "M1: печать 1", w: 120 }, { id: "r2", kind: "chip", at: { zone: "run", row: 1 }, value: "M2: throw", w: 108, accent: true }, { id: "r3", kind: "chip", at: { zone: "run", row: 2 }, value: "M3: печать 3", w: 120 }], edges: [] },
-        { codeLine: 3, out: "", caption: '<code>M1</code> отработал, <code>M2</code> <span class="hl">бросил</span> исключение. Оно уходит вызывающему <b>сразу</b>.', nodes: [{ id: "r1", kind: "gate", at: { zone: "run", row: 0 }, state: "ok", label: "M1", detail: "печать 1 ✓" }, { id: "r2", kind: "gate", at: { zone: "run", row: 1 }, state: "fail", label: "M2", detail: "throw →", accent: true }, { id: "ex", kind: "obj", at: { zone: "throw", row: 0 }, typeTag: "exception", value: "→ caller", accent: true }], edges: [{ id: "e", from: "r2", to: "ex", accent: true }] },
-        { codeLine: 3, out: "", caption: '<code>M3</code> <span class="hl">не вызовется</span>: остаток списка обрывается. Один «падающий» подписчик глушит всех, кто после него.', nodes: [{ id: "r1", kind: "gate", at: { zone: "run", row: 0 }, state: "ok", label: "M1", detail: "1 ✓" }, { id: "r2", kind: "gate", at: { zone: "run", row: 1 }, state: "fail", label: "M2", detail: "throw" }, { id: "r3", kind: "gate", at: { zone: "run", row: 2 }, state: "fail", label: "M3", detail: "не вызван ✗", accent: true }], edges: [] },
+        { codeLine: 3, out: "", caption: '<code>M1</code> отработал, <code>M2</code> <span class="hl">бросил</span> исключение. Оно уходит вызывающему <b>сразу</b>.', nodes: [{ id: "r1", kind: "chip", at: { zone: "run", row: 0 }, value: "M1: печать 1 ✓", w: 132 }, { id: "r2", kind: "chip", at: { zone: "run", row: 1 }, value: "M2: throw →", w: 120, accent: true }, { id: "r3", kind: "chip", at: { zone: "run", row: 2 }, value: "M3: печать 3", w: 120 }, { id: "ex", kind: "obj", at: { zone: "throw", row: 0 }, typeTag: "exception", value: "→ caller", accent: true }], edges: [{ id: "e", from: "r2", to: "ex", accent: true }] },
+        { codeLine: 3, out: "", caption: '<code>M3</code> <span class="hl">не вызовется</span>: остаток списка обрывается. Один «падающий» подписчик глушит всех, кто после него.', nodes: [{ id: "r1", kind: "chip", at: { zone: "run", row: 0 }, value: "M1: печать 1 ✓", w: 132 }, { id: "r2", kind: "chip", at: { zone: "run", row: 1 }, value: "M2: throw", w: 108 }, { id: "r3", kind: "chip", at: { zone: "run", row: 2 }, value: "M3: не вызван ✗", w: 132, accent: true }], edges: [] },
       ],
       explain: 'Опасная деталь multicast: исключение обрывает список. «When any of the methods throws an exception that isn\'t caught within the method, that exception is passed to the caller of the delegate. <span class="hl">No subsequent methods in the invocation list are called</span>». То есть в <code>M1 → M2(throw) → M3</code> отработает <code>M1</code>, <code>M2</code> кинет исключение вызывающему, а <code>M3</code> уже не выполнится. В событийном коде это значит: один «падающий» обработчик глушит всех подписчиков после себя. Если нужна изоляция — итерируют <code>GetInvocationList()</code> и оборачивают каждый вызов в <code>try/catch</code>. И помним про reference-параметры: «If the delegate uses reference parameters, the reference is passed sequentially to each of the three methods… and any changes by one method are visible to the next».',
       sources: ["ms-using"],
