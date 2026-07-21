@@ -1,0 +1,45 @@
+{
+  "id": "CS.S11.compiling-expressions",
+  "track": "CS",
+  "section": "CS.S11",
+  "module": "S11.3",
+  "title": "Компиляция и исполнение деревьев",
+  "status": "published",
+  "order": 97,
+  "sources": [
+    { "id": "ms-exec", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/csharp/advanced-topics/expression-trees/expression-trees-execution", "date": "2023-03-06" },
+    { "id": "ms-compile", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/api/system.linq.expressions.lambdaexpression.compile", "date": "2025-07-01" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "A tree is data, not executable code; add.Compile() creates a delegate and func() invokes it, so () => 1 + 2 prints 3",
+      "code": "using System; using System.Linq.Expressions; Expression<Func<int>> add = () => 1 + 2; var func = add.Compile(); var answer = func(); Console.WriteLine(answer);",
+      "expectedOutput": "3",
+      "verify": "execute",
+      "sourceRefs": ["ms-exec"]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Expression<Func<int,bool>>.Compile() returns the strongly-typed Func<int,bool>; result(4) is 4<5 True and result(9) is False, so the output is True False",
+      "code": "using System; using System.Linq.Expressions; Expression<Func<int,bool>> expr = num => num < 5; Func<int,bool> result = expr.Compile(); Console.WriteLine($\"{result(4)} {result(9)}\");",
+      "expectedOutput": "True False",
+      "verify": "execute",
+      "sourceRefs": ["ms-exec"]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "An untyped LambdaExpression.Compile() returns the base Delegate; when the delegate type is not known you call DynamicInvoke, so 7*3 prints 21",
+      "code": "using System; using System.Linq.Expressions; var n = Expression.Parameter(typeof(int), \"n\"); LambdaExpression le = Expression.Lambda(Expression.Multiply(n, Expression.Constant(3)), n); Delegate d = le.Compile(); Console.WriteLine(d.DynamicInvoke(7));",
+      "expectedOutput": "21",
+      "verify": "execute",
+      "sourceRefs": ["ms-exec"]
+    }
+  ]
+}

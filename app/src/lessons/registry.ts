@@ -930,6 +930,10 @@ const CS_S11: Section = {
       { id: "CS.S11.building-expressions", track: "CS", section: "CS.S11", title: "Программное построение деревьев", kicker: "C# вглубь · S11 · снизу вверх", icon: "types", subtitle: "Expression.Parameter/Constant/Add/Lambda, неизменяемость, от листьев к корню", estMinutes: 10, cards: 3 },
       () => import("./cs/building-expressions.ts").then((m) => m.buildingExpressions),
     ),
+    entry(
+      { id: "CS.S11.compiling-expressions", track: "CS", section: "CS.S11", title: "Компиляция и исполнение деревьев", kicker: "C# вглубь · S11 · дерево → делегат", icon: "types", subtitle: "LambdaExpression.Compile() → делегат, invoke vs DynamicInvoke, что исполнимо", estMinutes: 9, cards: 3 },
+      () => import("./cs/compiling-expressions.ts").then((m) => m.compilingExpressions),
+    ),
   ],
 };
 
