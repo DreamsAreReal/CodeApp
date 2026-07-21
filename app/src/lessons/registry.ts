@@ -896,6 +896,10 @@ const CS_S10: Section = {
       { id: "CS.S10.generic-methods", track: "CS", section: "CS.S10", title: "Generic-методы и вывод типов", kicker: "C# вглубь · S10 · type inference", icon: "types", subtitle: "свой <T>, вывод из аргументов, границы вывода, overload-резолв", estMinutes: 9, cards: 3 },
       () => import("./cs/generic-methods.ts").then((m) => m.genericMethods),
     ),
+    entry(
+      { id: "CS.S10.generic-static-members", track: "CS", section: "CS.S10", title: "Статика в generic-типе: своя на каждый закрытый тип", kicker: "C# вглубь · S10 · static per closed type", icon: "types", subtitle: "Counter<int> ≠ Counter<string>, static ctor per closed type, замер", estMinutes: 9, cards: 3 },
+      () => import("./cs/generic-static-members.ts").then((m) => m.genericStaticMembers),
+    ),
   ],
 };
 

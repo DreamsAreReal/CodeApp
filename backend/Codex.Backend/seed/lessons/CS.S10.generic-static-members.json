@@ -1,0 +1,44 @@
+{
+  "id": "CS.S10.generic-static-members",
+  "track": "CS",
+  "section": "CS.S10",
+  "module": "S10.6",
+  "title": "Статика в generic-типе: своя на каждый закрытый тип",
+  "status": "published",
+  "order": 92,
+  "sources": [
+    { "id": "ms-gen-classes", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/generic-classes", "date": "2015-07-20" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "A static field of a generic type is per closed constructed type: Counter<int>.Count and Counter<string>.Count are independent, so two int-Bumps print 1,2 and one string-Bump prints 1, and the final counters are 2 and 1",
+      "code": "using System; Console.WriteLine($\"{Counter<int>.Bump()} {Counter<int>.Bump()} {Counter<string>.Bump()}\"); Console.WriteLine($\"{Counter<int>.Count} {Counter<string>.Count}\"); class Counter<T> { public static int Count; public static int Bump() => ++Count; }",
+      "expectedOutput": "1 2 1\n2 1",
+      "verify": "execute",
+      "sourceRefs": ["ms-gen-classes"]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "A static constructor runs once per closed constructed type: Marker<int>.Id is 1 and Marker<string>.Id is 2 (the global counter advanced twice), and re-touching Marker<int> does not rerun its ctor so Inits stays 1, printing 1 2 1",
+      "code": "using System; var _ = Marker<int>.Id; var __ = Marker<string>.Id; var ___ = Marker<int>.Id; Console.WriteLine($\"{Marker<int>.Id} {Marker<string>.Id} {Marker<int>.Inits}\"); class Marker<T> { public static readonly int Id; public static int Inits; static Marker(){ Id = ++GlobalCtorCount.N; Inits++; } } static class GlobalCtorCount { public static int N; }",
+      "expectedOutput": "1 2 1",
+      "verify": "execute",
+      "sourceRefs": ["ms-gen-classes"]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Instances of the same closed constructed type share the static field: two Box<int> instances a and b share Box<int>.Total (2), and the Box<string> instance c incremented twice fills its own Box<string>.Total (2), printing 2 2",
+      "code": "using System; var a = new Box<int>(); var b = new Box<int>(); var c = new Box<string>(); a.Inc(); b.Inc(); c.Inc(); c.Inc(); Console.WriteLine($\"{Box<int>.Total} {Box<string>.Total}\"); class Box<T> { public static int Total; public void Inc() => Total++; }",
+      "expectedOutput": "2 2",
+      "verify": "execute",
+      "sourceRefs": ["ms-gen-classes"]
+    }
+  ]
+}
