@@ -75,7 +75,7 @@ export const tapContract: LessonData = {
   ],
 
   spec: [
-    { text: "«A method that supports TAP returns a task that represents the ongoing work.» — TAP-метод возвращает уже начатую (hot) задачу, представляющую выполняющуюся работу.", source: "ms-tap-ov" },
+    { text: "«A method that supports TAP returns a task that represents the ongoing work.» <span class=\"ru-tr\">«Метод, поддерживающий TAP, возвращает задачу, представляющую выполняющуюся работу.»</span> — TAP-метод возвращает уже начатую (hot) задачу, представляющую выполняющуюся работу.", source: "ms-tap-ov" },
   ],
   edgeCases: [
     { text: "Задача из <b>публичного конструктора</b> <code>Task</code> — «cold» (стартует в <code>Created</code>, нужен <code>Start</code>). Задача из TAP-метода — «hot», уже запущена; звать <code>Start</code> на активной задаче — <code>InvalidOperationException</code>.", source: "ms-tap-ov" },
@@ -86,7 +86,7 @@ export const tapContract: LessonData = {
   misconceptions: [
     {
       wrong: "задачу из FooAsync надо стартовать; async ⇒ метод исполняется асинхронно; отменённая операция бросает из самого метода",
-      hook: 'Три ошибки о контракте задачи. «<span class="wrong">надо стартовать</span>» — нет: задача из TAP-метода <span class="hl">уже hot</span> (запущена), <code>Start()</code> на ней — <code>InvalidOperationException</code>. «<span class="wrong">async ⇒ асинхронно</span>» — нет: async-метод «<span class="hl">runs synchronously</span> until it reaches its first <code>await</code>» — код до первого <code>await</code> выполняется в потоке вызвавшего (замер: <b>ABC</b>). «<span class="wrong">отмена бросает из метода</span>» — нет: отмена → статус <code>Canceled</code>, метод не бросает; исключение получает тот, кто <code>await</code>-ит. Ниже <b>пять разборов</b>: контракт, hot/cold, sync-до-await, три статуса, и <b>машинная панель</b> — реальный автомат, в который компилятор переписывает async.',
+      hook: 'Три ошибки о контракте задачи. «<span class="wrong">надо стартовать</span>» — нет: задача из TAP-метода <span class="hl">уже hot</span> (запущена), <code>Start()</code> на ней — <code>InvalidOperationException</code>. «<span class="wrong">async ⇒ асинхронно</span>» — нет: async-метод «<span class="hl">runs synchronously</span> until it reaches its first <code>await</code>» <span class="ru-tr">«выполняется синхронно, пока не дойдёт до первого <code>await</code>»</span> — код до первого <code>await</code> выполняется в потоке вызвавшего (замер: <b>ABC</b>). «<span class="wrong">отмена бросает из метода</span>» — нет: отмена → статус <code>Canceled</code>, метод не бросает; исключение получает тот, кто <code>await</code>-ит. Ниже <b>пять разборов</b>: контракт, hot/cold, sync-до-await, три статуса, и <b>машинная панель</b> — реальный автомат, в который компилятор переписывает async.',
       source: "ms-tap-ov",
     },
   ],
@@ -101,7 +101,7 @@ export const tapContract: LessonData = {
         { codeLine: 1, caption: 'Метод возвращается <b>быстро</b>: синхронно — минимум (валидация + запуск). Usage-ошибка (<code>ArgumentException</code>) — бросается <span class="hl">синхронно</span>.', nodes: [{ id: "m", kind: "chip", at: { zone: "tap", row: 0, col: 0 }, value: "ComputeAsync" }, { id: "v", kind: "gate", at: { zone: "tap", row: 1, col: 0 }, state: "fail", label: "usage-error", detail: "синхронно", accent: true }], edges: [] },
         { codeLine: 2, caption: 'Дальше — возврат уже <span class="hl">начатой (hot)</span> задачи; остальные ошибки уйдут в неё, не синхронно.', nodes: [{ id: "m", kind: "chip", at: { zone: "tap", row: 0, col: 0 }, value: "ComputeAsync" }, { id: "t", kind: "gate", at: { zone: "tap", row: 1, col: 1 }, state: "ok", label: "return Task", detail: "hot", accent: true }], edges: [] },
       ],
-      explain: 'TAP-контракт (verbatim + GT str:F3/F4/F6): «A method that supports TAP returns a task that represents the ongoing work». Один метод инкапсулирует и запуск, и завершение; имя оканчивается на <code>Async</code>; возврат — <code>Task</code> (для <code>void</code>-аналога) или <code>Task&lt;TResult&gt;</code>. Метод обязан вернуться <b>быстро</b>: синхронно делает лишь минимум — валидацию аргументов и старт. <span class="hl">Usage-ошибки</span> (неверные аргументы, <code>ArgumentNullException</code>) бросаются <b>синхронно</b> на месте вызова; все прочие ошибки — складываются в задачу. Возвращаемая задача уже <b>hot</b> — работает (разбор 02).',
+      explain: 'TAP-контракт (verbatim + GT str:F3/F4/F6): «A method that supports TAP returns a task that represents the ongoing work» <span class="ru-tr">«Метод, поддерживающий TAP, возвращает задачу, представляющую выполняющуюся работу»</span>. Один метод инкапсулирует и запуск, и завершение; имя оканчивается на <code>Async</code>; возврат — <code>Task</code> (для <code>void</code>-аналога) или <code>Task&lt;TResult&gt;</code>. Метод обязан вернуться <b>быстро</b>: синхронно делает лишь минимум — валидацию аргументов и старт. <span class="hl">Usage-ошибки</span> (неверные аргументы, <code>ArgumentNullException</code>) бросаются <b>синхронно</b> на месте вызова; все прочие ошибки — складываются в задачу. Возвращаемая задача уже <b>hot</b> — работает (разбор 02).',
       sources: ["ms-tap-ov"],
     },
     {
@@ -127,7 +127,7 @@ export const tapContract: LessonData = {
         { codeLine: 1, out: "", caption: 'На <code>await</code> метод <span class="hl">возвращает управление</span> вызвавшему — тот печатает <b>B</b>. Метод ещё не закончил.', nodes: [{ id: "a", kind: "gate", at: { zone: "sync", row: 0 }, state: "ok", label: "A", detail: "sync" }, { id: "b", kind: "gate", at: { zone: "sync", row: 1 }, state: "ok", label: "B", detail: "вызвавший", accent: true }], edges: [] },
         { codeLine: 2, out: "ABC", caption: 'После <code>Delay</code> метод <span class="hl">возобновляется</span> и печатает <b>C</b>. Итог: <b>ABC</b> (реальный прогон) — async ≠ «сразу асинхронно/в другом потоке».', nodes: [{ id: "ab", kind: "gate", at: { zone: "sync", row: 0 }, state: "ok", label: "A · B", detail: "sync" }, { id: "c", kind: "gate", at: { zone: "resume", row: 0 }, state: "ok", label: "C", detail: "resume", accent: true }], edges: [] },
       ],
-      explain: 'Ключевой факт (verbatim, async ref + GT str:F4, M-async-9): «An async method runs <span class="hl">synchronously</span> until it reaches its first <code>await</code> expression, at which point the method is suspended until the awaited task is complete». То есть <code>async</code> НЕ означает «метод сразу уходит в другой поток». Прогон: <code>Work()</code> печатает <b>A</b> синхронно, на <code>await Task.Delay</code> отдаёт управление — вызвавший печатает <b>B</b>, — затем метод возобновляется и печатает <b>C</b>: итог <b>ABC</b>. Отсюда: «параллельность» и «поток» — не про <code>async</code> сам по себе (это S2.1/S2.3); <code>async</code> — про приостановку/возобновление без блокировки потока.',
+      explain: 'Ключевой факт (verbatim, async ref + GT str:F4, M-async-9): «An async method runs <span class="hl">synchronously</span> until it reaches its first <code>await</code> expression, at which point the method is suspended until the awaited task is complete» <span class="ru-tr">«async-метод выполняется синхронно, пока не дойдёт до первого выражения <code>await</code>, после чего метод приостанавливается, пока ожидаемая задача не завершится»</span>. То есть <code>async</code> НЕ означает «метод сразу уходит в другой поток». Прогон: <code>Work()</code> печатает <b>A</b> синхронно, на <code>await Task.Delay</code> отдаёт управление — вызвавший печатает <b>B</b>, — затем метод возобновляется и печатает <b>C</b>: итог <b>ABC</b>. Отсюда: «параллельность» и «поток» — не про <code>async</code> сам по себе (это S2.1/S2.3); <code>async</code> — про приостановку/возобновление без блокировки потока.',
       sources: ["ms-async"],
     },
     {
@@ -172,7 +172,7 @@ export const tapContract: LessonData = {
       question: '<code>async Task Work(){ Console.Write("A"); await Task.Delay(10); Console.Write("C"); } var t = Work(); Console.Write("B"); await t;</code> — что напечатает?',
       options: ["ABC", "BAC", "ACB", "BCA"], correctIndex: 0, xp: 10,
       okText: 'async-метод <span class="hl">синхронен до первого <code>await</code></span>: печатает <b>A</b>, на <code>await</code> отдаёт управление вызвавшему (<b>B</b>), затем возобновляется (<b>C</b>). Итог: <b>ABC</b> — async ≠ «сразу в другом потоке».',
-      noText: '«runs synchronously until its first await»: A (sync) → B (вызвавший) → C (resume). Реальный вывод: <b>ABC</b>.',
+      noText: '«runs synchronously until its first await» <span class="ru-tr">«выполняется синхронно до первого await»</span>: A (sync) → B (вызвавший) → C (resume). Реальный вывод: <b>ABC</b>.',
       verify: { kind: "exec", run: "dotnet run", expect: "ABC" }, sourceRefs: ["ms-async"],
     },
     {
@@ -187,7 +187,7 @@ export const tapContract: LessonData = {
 
   takeaways: [
     { icon: "why", k: "Контракт TAP", v: 'Один метод <code>FooAsync</code> возвращает <b>hot</b> (уже начатую) задачу; usage-ошибки — синхронно, прочие — в задачу. Потребитель <span class="hl">не стартует</span> задачу: <code>Start()</code> на ней — <code>InvalidOperationException</code> (замер: hot=True).' },
-    { icon: "avoid", k: "sync до await", v: 'async-метод «<span class="hl">runs synchronously until its first await</span>» — код до <code>await</code> в потоке вызвавшего (замер: <b>ABC</b>). <code>async</code> ≠ «сразу асинхронно/другой поток».' },
+    { icon: "avoid", k: "sync до await", v: 'async-метод «<span class="hl">runs synchronously until its first await</span>» <span class="ru-tr">«выполняется синхронно до первого await»</span> — код до <code>await</code> в потоке вызвавшего (замер: <b>ABC</b>). <code>async</code> ≠ «сразу асинхронно/другой поток».' },
     { icon: "cost", k: "статусы + автомат", v: 'Три completed-статуса: <code>RanToCompletion/Faulted/Canceled</code> (замер). Под капотом компилятор переписывает <code>async</code> в <b>структуру-автомат</b> <code>IAsyncStateMachine</code>: <code>MoveNext()</code> на <code>await</code> делает <code>return</code> (стек не разматывается) и возобновляется позже.' },
   ],
 
