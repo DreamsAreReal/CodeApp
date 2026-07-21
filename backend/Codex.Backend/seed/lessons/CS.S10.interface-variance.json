@@ -1,0 +1,45 @@
+{
+  "id": "CS.S10.interface-variance",
+  "track": "CS",
+  "section": "CS.S10",
+  "module": "S10.4",
+  "title": "Ковариантность интерфейсов: out T / in T",
+  "status": "published",
+  "order": 90,
+  "sources": [
+    { "id": "ms-var-cs", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/", "date": "2015-07-20" },
+    { "id": "ms-var-std", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/standard/generics/covariance-and-contravariance", "date": "2026-03-09" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "IEnumerable<out T> is covariant, so IEnumerable<string> assigns to IEnumerable<object> (unlike the invariant List<T>); the elements are unchanged, so Count() is 3 and First() is a",
+      "code": "using System; using System.Collections.Generic; using System.Linq; IEnumerable<string> strings = new List<string>{\"a\",\"bb\",\"ccc\"}; IEnumerable<object> objects = strings; Console.WriteLine($\"{objects.Count()} {objects.First()}\");",
+      "expectedOutput": "3 a",
+      "verify": "execute",
+      "sourceRefs": ["ms-var-std"]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "A custom covariant interface IProducer<out T> (T only in return position) lets IProducer<Dog> assign to IProducer<Animal>; the factory still builds a real Dog, so Produce().Sound is woof and is Dog is True",
+      "code": "using System; interface IProducer<out T> { T Produce(); } class Animal { public virtual string Sound => \"...\"; } class Dog : Animal { public override string Sound => \"woof\"; } class DogFarm : IProducer<Dog> { public Dog Produce() => new Dog(); } IProducer<Dog> pd = new DogFarm(); IProducer<Animal> pa = pd; Console.WriteLine($\"{pa.Produce().Sound} {pa.Produce() is Dog}\");",
+      "expectedOutput": "woof True",
+      "verify": "execute",
+      "sourceRefs": ["ms-var-std"]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "A custom contravariant interface IConsumer<in T> (T only in parameter position) lets IConsumer<Animal> assign to IConsumer<Dog>; the method takes an Animal and reads the base field, printing consumed: animal",
+      "code": "using System; interface IConsumer<in T> { void Consume(T item); } class Animal { public string Kind = \"animal\"; } class Dog : Animal { } class AnimalPrinter : IConsumer<Animal> { public void Consume(Animal a) => Console.WriteLine(\"consumed: \" + a.Kind); } IConsumer<Animal> ca = new AnimalPrinter(); IConsumer<Dog> cd = ca; cd.Consume(new Dog());",
+      "expectedOutput": "consumed: animal",
+      "verify": "execute",
+      "sourceRefs": ["ms-var-std"]
+    }
+  ]
+}
