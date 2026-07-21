@@ -840,6 +840,10 @@ const CS_S9: Section = {
       { id: "CS.S9.try-catch-finally", track: "CS", section: "CS.S9", title: "try / catch / finally: формы и гарантии", kicker: "C# вглубь · S9 · операторы обработки", icon: "types", subtitle: "три формы try, порядок catch, гарантия finally", estMinutes: 10, cards: 3 },
       () => import("./cs/try-catch-finally.ts").then((m) => m.tryCatchFinally),
     ),
+    entry(
+      { id: "CS.S9.exception-filters", track: "CS", section: "CS.S9", title: "Фильтры исключений: when без раскрутки стека", kicker: "C# вглубь · S9 · when-фильтр", icon: "types", subtitle: "when (bool), оценка до раскрутки, false → поиск дальше", estMinutes: 10, cards: 3 },
+      () => import("./cs/exception-filters.ts").then((m) => m.exceptionFilters),
+    ),
   ],
 };
 

@@ -1,0 +1,45 @@
+{
+  "id": "CS.S9.exception-filters",
+  "track": "CS",
+  "section": "CS.S9",
+  "module": "S9.3",
+  "title": "Фильтры исключений: when без раскрутки стека",
+  "status": "published",
+  "order": 82,
+  "sources": [
+    { "id": "ms-stmts", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/exception-handling-statements", "date": "2026-01-16" },
+    { "id": "ms-howto", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/standard/exceptions/how-to-use-the-try-catch-block-to-catch-exceptions", "date": "2019-02-06" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Two catch clauses of the same type distinguished by exception filters; the first when (==fatal) is false, the second when (==retry) is true, so the retry-branch runs",
+      "code": "using System; string s; try { throw new InvalidOperationException(\"retry\"); } catch (InvalidOperationException e) when (e.Message == \"fatal\") { s=\"fatal-branch\"; } catch (InvalidOperationException e) when (e.Message == \"retry\") { s=\"retry-branch\"; } Console.WriteLine(s);",
+      "expectedOutput": "retry-branch",
+      "verify": "execute",
+      "sourceRefs": ["ms-stmts"]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "The when filter expression is evaluated before the stack is unwound and before the catch body: order is throw then filter then catch, printing throw;filter;catch;",
+      "code": "using System; string log=\"\"; bool Filter(){ log+=\"filter;\"; return true; } try { log+=\"throw;\"; throw new Exception(); } catch when (Filter()) { log+=\"catch;\"; } Console.WriteLine(log);",
+      "expectedOutput": "throw;filter;catch;",
+      "verify": "execute",
+      "sourceRefs": ["ms-stmts"]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "The inner filter is false (message x != nomatch), so that catch does not handle the exception; since a false when filter does not swallow it, the exception continues to the outer catch, printing outer",
+      "code": "using System; string s; try { try { throw new InvalidOperationException(\"x\"); } catch (Exception e) when (e.Message == \"nomatch\") { s=\"inner\"; } } catch (Exception) { s=\"outer\"; } Console.WriteLine(s);",
+      "expectedOutput": "outer",
+      "verify": "execute",
+      "sourceRefs": ["ms-stmts"]
+    }
+  ]
+}
