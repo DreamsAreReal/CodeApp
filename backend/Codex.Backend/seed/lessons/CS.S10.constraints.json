@@ -1,0 +1,44 @@
+{
+  "id": "CS.S10.constraints",
+  "track": "CS",
+  "section": "CS.S10",
+  "module": "S10.2",
+  "title": "where-ограничения: полный словарь",
+  "status": "published",
+  "order": 88,
+  "sources": [
+    { "id": "ms-constraints", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/constraints-on-type-parameters", "date": "2025-11-25" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "A base-class constraint where T : Employee unlocks e.Name (without it the compiler can only assume System.Object members, CS1061); Manager derives from Employee and passes the gate, so NameOf(new Manager(\"Ann\")) prints Ann",
+      "code": "using System; static string NameOf<T>(T e) where T : Employee => e.Name; Console.WriteLine(NameOf(new Manager(\"Ann\"))); class Employee { public string Name; public Employee(string n){Name=n;} } class Manager : Employee { public Manager(string n):base(n){} }",
+      "expectedOutput": "Ann",
+      "verify": "execute",
+      "sourceRefs": ["ms-constraints"]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "The unmanaged constraint lets sizeof(T) work in an unsafe context (types manipulated as blocks of memory); int is 4, double is 8, Guid is 16 bytes",
+      "code": "using System; unsafe static int Size<T>() where T : unmanaged => sizeof(T); Console.WriteLine($\"{Size<int>()} {Size<double>()} {Size<Guid>()}\");",
+      "expectedOutput": "4 8 16",
+      "verify": "execute",
+      "sourceRefs": ["ms-constraints"]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "An interface constraint where T : IComparable<T> unlocks a.CompareTo(b); int and string both implement it, so Max(3,9) is 9 and Max(\"apple\",\"pear\") is pear (lexicographically greater)",
+      "code": "using System; static T Max<T>(T a, T b) where T : IComparable<T> => a.CompareTo(b) >= 0 ? a : b; Console.WriteLine($\"{Max(3, 9)} {Max(\"apple\", \"pear\")}\");",
+      "expectedOutput": "9 pear",
+      "verify": "execute",
+      "sourceRefs": ["ms-constraints"]
+    }
+  ]
+}

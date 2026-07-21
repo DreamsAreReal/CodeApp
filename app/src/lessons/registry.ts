@@ -880,6 +880,10 @@ const CS_S10: Section = {
       { id: "CS.S10.generics-runtime", track: "CS", section: "CS.S10", title: "Generics в рантайме: специализация и код-шаринг", kicker: "C# вглубь · S10 · представление в рантайме", icon: "types", subtitle: "Реификация, ref-код-шаринг, специализация value-типов, замер", estMinutes: 10, cards: 3 },
       () => import("./cs/generics-runtime.ts").then((m) => m.genericsRuntime),
     ),
+    entry(
+      { id: "CS.S10.constraints", track: "CS", section: "CS.S10", title: "where-ограничения: полный словарь", kicker: "C# вглубь · S10 · гейты типа", icon: "types", subtitle: "class/struct/notnull/unmanaged/new()/база/интерфейс/T:U/default/allows ref struct", estMinutes: 11, cards: 3 },
+      () => import("./cs/constraints.ts").then((m) => m.constraints),
+    ),
   ],
 };
 
