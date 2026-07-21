@@ -1,0 +1,44 @@
+{
+  "id": "CS.S8.volatile-memory-model",
+  "track": "CS",
+  "section": "CS.S8",
+  "module": "S8.6",
+  "title": "Volatile, модель памяти, reordering",
+  "status": "published",
+  "order": 76,
+  "sources": [
+    { "id": "ms-volatile", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/api/system.threading.volatile", "date": "2026-01-20" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "A Volatile.Read loop observes a Volatile.Write of the stop flag and exits; after Join the worker is dead (stopped=True, flag=1)",
+      "code": "using System; using System.Threading; int stop = 0; var t = new Thread(() => { while (Volatile.Read(ref stop) == 0) { } }); t.Start(); Thread.Sleep(50); Volatile.Write(ref stop, 1); t.Join(); Console.WriteLine($\"stopped={t.IsAlive == false} sawStop={Volatile.Read(ref stop)}\");",
+      "expectedOutput": "stopped=True sawStop=1",
+      "verify": "execute",
+      "sourceRefs": ["ms-volatile"]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Volatile changes barrier/memory semantics, not the value: writing 42 then reading round-trips to 42",
+      "code": "using System; using System.Threading; int x = 0; Volatile.Write(ref x, 42); int r = Volatile.Read(ref x); Console.WriteLine($\"r={r}\");",
+      "expectedOutput": "r=42",
+      "verify": "execute",
+      "sourceRefs": ["ms-volatile"]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "A volatile write of the ready flag after data=99 publishes the data; a reader that observes the flag then reads data sees 99 (write barrier + read barrier)",
+      "code": "using System; using System.Threading; int data = 0; int ready = 0; int seen = -1; var writer = new Thread(() => { data = 99; Volatile.Write(ref ready, 1); }); var reader = new Thread(() => { while (Volatile.Read(ref ready) == 0) {} seen = data; }); reader.Start(); writer.Start(); writer.Join(); reader.Join(); Console.WriteLine($\"seen={seen}\");",
+      "expectedOutput": "seen=99",
+      "verify": "execute",
+      "sourceRefs": ["ms-volatile"]
+    }
+  ]
+}

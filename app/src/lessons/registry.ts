@@ -803,6 +803,10 @@ const CS_S8: Section = {
       { id: "CS.S8.threading-objects", track: "CS", section: "CS.S8", title: "Mutex / Semaphore(Slim) / EventWaitHandle", kicker: "C# вглубь · S8 · три WaitHandle-объекта", icon: "async", subtitle: "Mutex (affinity), Semaphore (N), EventWaitHandle (сигнал)", estMinutes: 10, cards: 3 },
       () => import("./cs/threading-objects.ts").then((m) => m.threadingObjects),
     ),
+    entry(
+      { id: "CS.S8.volatile-memory-model", track: "CS", section: "CS.S8", title: "Volatile, модель памяти, reordering", kicker: "C# вглубь · S8 · барьеры памяти", icon: "async", subtitle: "reordering, Volatile.Read/Write, барьеры, публикация", estMinutes: 10, cards: 3 },
+      () => import("./cs/volatile-memory-model.ts").then((m) => m.volatileMemoryModel),
+    ),
   ],
 };
 
