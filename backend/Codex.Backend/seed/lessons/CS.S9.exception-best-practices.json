@@ -1,0 +1,44 @@
+{
+  "id": "CS.S9.exception-best-practices",
+  "track": "CS",
+  "section": "CS.S9",
+  "module": "S9.6",
+  "title": "Практики исключений: что бросать и ловить",
+  "status": "published",
+  "order": 85,
+  "sources": [
+    { "id": "ms-best", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/standard/exceptions/best-practices-for-exceptions", "date": "2025-10-22" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "TryParse is the Try* pattern: it doesn't throw, it returns a Boolean and an out parameter; an overflowing value yields false and 0 (default), printing ok=False v=0",
+      "code": "using System; bool ok = int.TryParse(\"999999999999999\", out int v); Console.WriteLine($\"ok={ok} v={v}\");",
+      "expectedOutput": "ok=False v=0",
+      "verify": "execute",
+      "sourceRefs": ["ms-best"]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Restore state: the withdrawal (100->50) is rolled back when the deposit throws, then rethrown; there are no side effects, printing rolledback from=100 to=0",
+      "code": "using System; int from=100, to=0; string outcome; void Withdraw(){ from-=50; } void Deposit(){ throw new InvalidOperationException(\"deposit failed\"); } try { Withdraw(); try { Deposit(); } catch { from+=50; throw; } outcome=\"committed\"; } catch (Exception) { outcome=\"rolledback\"; } Console.WriteLine($\"{outcome} from={from} to={to}\");",
+      "expectedOutput": "rolledback from=100 to=0",
+      "verify": "execute",
+      "sourceRefs": ["ms-best"]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "The static throw helper ArgumentNullException.ThrowIfNull is called instead of constructing and throwing; it throws ArgumentNullException with ParamName equal to the argument name arg",
+      "code": "using System; string r; void M(object arg){ ArgumentNullException.ThrowIfNull(arg); } try { M(null!); r=\"nothrow\"; } catch (ArgumentNullException e) { r = e.GetType().Name + \":\" + e.ParamName; } Console.WriteLine(r);",
+      "expectedOutput": "ArgumentNullException:arg",
+      "verify": "execute",
+      "sourceRefs": ["ms-best"]
+    }
+  ]
+}

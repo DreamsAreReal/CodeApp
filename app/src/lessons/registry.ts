@@ -852,6 +852,10 @@ const CS_S9: Section = {
       { id: "CS.S9.custom-exceptions", track: "CS", section: "CS.S9", title: "Пользовательские исключения: свой класс : Exception", kicker: "C# вглубь · S9 · свой тип исключения", icon: "types", subtitle: "derive from Exception, три конструктора, когда бросать, wrap", estMinutes: 10, cards: 3 },
       () => import("./cs/custom-exceptions.ts").then((m) => m.customExceptions),
     ),
+    entry(
+      { id: "CS.S9.exception-best-practices", track: "CS", section: "CS.S9", title: "Практики исключений: что бросать и ловить", kicker: "C# вглубь · S9 · дисциплина ошибок", icon: "types", subtitle: "что ловить, Try* вместо throw, восстановление состояния, builder-хелперы", estMinutes: 10, cards: 3 },
+      () => import("./cs/exception-best-practices.ts").then((m) => m.exceptionBestPractices),
+    ),
   ],
 };
 
