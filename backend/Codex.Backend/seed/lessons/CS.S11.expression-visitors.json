@@ -1,0 +1,45 @@
+{
+  "id": "CS.S11.expression-visitors",
+  "track": "CS",
+  "section": "CS.S11",
+  "module": "S11.4",
+  "title": "ExpressionVisitor: обход и трансформация",
+  "status": "published",
+  "order": 98,
+  "sources": [
+    { "id": "ms-interp", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/csharp/advanced-topics/expression-trees/expression-trees-interpreting", "date": "2023-03-06" },
+    { "id": "ms-et", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/csharp/advanced-topics/expression-trees/", "date": "2025-10-13" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Decomposing num => num < 5 by node properties: parameter num, BinaryExpression body with NodeType=LessThan, left leaf num, right leaf 5, so the output is Decomposed expression: num => num LessThan 5",
+      "code": "using System; using System.Linq.Expressions; Expression<Func<int,bool>> exprTree = num => num < 5; var param=(ParameterExpression)exprTree.Parameters[0]; var operation=(BinaryExpression)exprTree.Body; var left=(ParameterExpression)operation.Left; var right=(ConstantExpression)operation.Right; Console.WriteLine($\"Decomposed expression: {param.Name} => {left.Name} {operation.NodeType} {right.Value}\");",
+      "expectedOutput": "Decomposed expression: num => num LessThan 5",
+      "verify": "execute",
+      "sourceRefs": ["ms-interp"]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "An ExpressionVisitor that rewrites Add into Multiply builds a NEW immutable tree: original x + x compiles to 10 at x=5, the rewritten x * x compiles to 25, so the output is 10 25",
+      "code": "using System; using System.Linq.Expressions; class ToMul : ExpressionVisitor { protected override Expression VisitBinary(BinaryExpression n){ if(n.NodeType==ExpressionType.Add) return Expression.Multiply(Visit(n.Left), Visit(n.Right)); return base.VisitBinary(n);} } Expression<Func<int,int>> e = x => x + x; var e2 = (Expression<Func<int,int>>)new ToMul().Visit(e); Console.WriteLine($\"{e.Compile()(5)} {e2.Compile()(5)}\");",
+      "expectedOutput": "10 25",
+      "verify": "execute",
+      "sourceRefs": ["ms-et", "ms-interp"]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "A Counter ExpressionVisitor overriding Visit counts every node of a => a + 3: Lambda, Add, Parameter a in body, Constant 3, and Parameter a in the lambda parameter list, so the count is 5",
+      "code": "using System; using System.Linq.Expressions; class Counter : ExpressionVisitor { public int N; public override Expression Visit(Expression n){ if(n!=null) N++; return base.Visit(n);} } Expression<Func<int,int>> e = a => a + 3; var c = new Counter(); c.Visit(e); Console.WriteLine(c.N);",
+      "expectedOutput": "5",
+      "verify": "execute",
+      "sourceRefs": ["ms-interp"]
+    }
+  ]
+}
