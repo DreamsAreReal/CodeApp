@@ -1,0 +1,62 @@
+{
+  "id": "CS.S4.async-event-handlers",
+  "track": "CS",
+  "section": "CS.S4",
+  "module": "S4.7",
+  "title": "Async event handlers: async void и его ловушки",
+  "status": "published",
+  "order": 70,
+  "sources": [
+    {
+      "id": "ms-async-void",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/async-scenarios",
+      "date": "2024-11-20"
+    },
+    {
+      "id": "ms-async",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/",
+      "date": "2023-03-14"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "async Task Boom бросает после await; try { await Boom(); } catch — обе строки?",
+      "code": "using System; using System.Threading.Tasks; async Task Boom() { await Task.Yield(); throw new InvalidOperationException(\"boom\"); } try { await Boom(); } catch (InvalidOperationException ex) { Console.WriteLine(\"caught: \" + ex.Message); } Console.WriteLine(\"after\");",
+      "expectedOutput": "caught: boom\nafter",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-async",
+        "ms-async-void"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "async void OnClick с try/catch ВНУТРИ ловит своё исключение; вызов + Delay + done — обе строки?",
+      "code": "using System; using System.Threading.Tasks; async void OnClick() { try { await Task.Yield(); throw new InvalidOperationException(\"boom\"); } catch (Exception ex) { Console.WriteLine(\"handler caught: \" + ex.Message); } } OnClick(); await Task.Delay(100); Console.WriteLine(\"done\");",
+      "expectedOutput": "handler caught: boom\ndone",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-async-void"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Async-обработчик события с await Task.Delay; порядок Click returned / async handler ran / handler finished?",
+      "code": "using System; using System.Threading.Tasks; class Button { public event EventHandler Clicked; public void Click() => Clicked?.Invoke(this, EventArgs.Empty); } var b = new Button(); var tcs = new TaskCompletionSource(); b.Clicked += async (s, e) => { await Task.Delay(10); Console.WriteLine(\"async handler ran\"); tcs.SetResult(); }; b.Click(); Console.WriteLine(\"Click returned\"); await tcs.Task; Console.WriteLine(\"handler finished\");",
+      "expectedOutput": "Click returned\nasync handler ran\nhandler finished",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-async-void"
+      ]
+    }
+  ]
+}

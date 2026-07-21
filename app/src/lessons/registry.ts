@@ -647,6 +647,10 @@ const CS_S4: Section = {
       () => import("./cs/delegate-variance.ts").then((m) => m.delegateVariance),
     ),
     entry(
+      { id: "CS.S4.async-event-handlers", track: "CS", section: "CS.S4", title: "Async event handlers: async void и его ловушки", kicker: "C# вглубь · S4 · async void", icon: "async", subtitle: "async void только для обработчиков, исключения, fire-and-forget, async-λ в LINQ", estMinutes: 11, cards: 3 },
+      () => import("./cs/async-event-handlers.ts").then((m) => m.asyncEventHandlers),
+    ),
+    entry(
       { id: "CS.S4.closures-capture", track: "CS", section: "CS.S4", title: "Лямбды и замыкания: захват переменной", kicker: "C# вглубь · S4 · display-класс", icon: "types", subtitle: "Захват переменной, ловушка цикла, аллокация замыкания", estMinutes: 11, cards: 3 },
       () => import("./cs/closures-capture.ts").then((m) => m.closuresCapture),
     ),

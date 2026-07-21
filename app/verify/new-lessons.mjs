@@ -62,6 +62,7 @@ const EXPECT = [
   { id: "CS.S4.func-action-predicate", segs: 6, ev: "CS-FUNCACT" },
   { id: "CS.S4.events", segs: 6, ev: "CS-EVENTS" },
   { id: "CS.S4.delegate-variance", segs: 6, ev: "CS-DELVAR" },
+  { id: "CS.S4.async-event-handlers", segs: 6, ev: "CS-ASYNCEV" },
   { id: "CS.S3.linq-query-syntax", segs: 5, ev: "CS-LINQQS" },
   { id: "CS.S3.linq-execution", segs: 5, ev: "CS-LINQEX" },
   { id: "CS.S3.standard-operators", segs: 5, ev: "CS-STDOPS" },
