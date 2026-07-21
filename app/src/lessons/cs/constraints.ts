@@ -74,6 +74,7 @@ export const constraints: LessonData = {
 
   sources: [
     { id: "ms-constraints", kind: "doc", org: "Microsoft Learn", title: "Constraints on type parameters (C#)", url: "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/constraints-on-type-parameters", date: "2025-11-25" },
+    { id: "ms-gen-classes", kind: "doc", org: "Microsoft Learn", title: "Generic Classes (C#)", url: "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/generic-classes", date: "2015-07-20" },
   ],
 
   spec: [
@@ -166,7 +167,7 @@ export const constraints: LessonData = {
         { codeLine: 2, out: "Ann", caption: 'Панель: <code>Name(new Manager("Ann"))</code> → <span class="hl">Ann</span> (реальный прогон). <code>Manager</code> — наследник <code>Employee</code>, поэтому проходит гейт и <code>e.Name</code> работает.', nodes: [{ id: "o", kind: "gate", at: { zone: "openz", row: 0 }, state: "ok", label: "Manager : Employee", detail: "проходит" }, { id: "r", kind: "gate", at: { zone: "locked", row: 0 }, state: "ok", label: "e.Name", detail: "Ann", accent: true }], edges: [] },
       ],
       explain: 'Это машинная панель урока — constraint как <b>ключ к члену</b>, снятый прогоном. Без <code>where T : Employee</code> тело <code>e.Name</code> не компилируется: компилятор «can only assume the members of <code>System.Object</code>», а у <code>object</code> нет <code>Name</code> (CS1061). С constraint появляется гарантия: «the base class constraint tells the compiler that only objects of this type or derived from this type can replace that type argument. <span class="hl">Once the compiler has this guarantee, it can allow methods of that type to be called</span> in the generic class». Реальный прогон: <code>Manager : Employee</code> проходит гейт, <code>e.Name</code> возвращает <code>Ann</code>. Практический вывод из доки: «apply the maximum constraints possible that will still let you handle the types you must handle» — чем точнее гейт, тем больше операций разблокировано.',
-      sources: ["ms-constraints"],
+      sources: ["ms-constraints", "ms-gen-classes"],
     },
   ],
 

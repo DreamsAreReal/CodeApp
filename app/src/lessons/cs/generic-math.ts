@@ -86,7 +86,7 @@ export const genericMath: LessonData = {
     {
       wrong: "чтобы написать обобщённый Sum/Add, приходится делать отдельную перегрузку на каждый числовой тип — по-другому никак",
       hook: 'Так было <b>до C# 11</b>. Раньше: «previously you had to add an overload of the method <span class="hl">for each type</span> (for example, <code>static int Add(int first, int second)</code> and <code>static float Add(float first, float second)</code>)». Теперь интерфейс умеет объявлять <code>static abstract</code>-члены (в т.ч. операторы), а тип-параметр можно ограничить <code>INumber&lt;T&gt;</code> — и «Now you can write a <span class="hl">single, generic method</span>». Ключ — <code>static abstract</code>: «An interface can declare <code>static abstract</code> and <code>static virtual</code> members… an interface can <b>require that implementing types define operators</b> or other static members». Дальше <b>шесть разборов</b>: проблема перегрузок, что такое static abstract, self-constraint <code>T : INumber&lt;T&gt;</code>, compile-time диспетчер, иерархия числовых интерфейсов, и <b>машинная панель</b> — один <code>Add&lt;T&gt;</code> на int/double/long (реальный прогон: 7 4 30).',
-      source: "ms-math",
+      source: ["ms-math", "ms-iface"],
     },
   ],
 

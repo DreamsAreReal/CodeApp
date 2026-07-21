@@ -128,7 +128,7 @@ export const interfaceVariance: LessonData = {
         { codeLine: 2, out: "", caption: 'Безопасно: тот, кто сравнивает любые Shape, <span class="hl">тем более</span> сравнит Circle (Circle — это Shape). «Assignment compatibility is reversed».', nodes: [{ id: "d", kind: "gate", at: { zone: "cmpd", row: 0 }, state: "ok", label: "Shape ⊇ Circle", detail: "контравариантно", accent: true }], edges: [] },
       ],
       explain: 'Контравариантность включается модификатором <code>in</code>. Дословно: «<i>Contravariant</i> type parameters let you substitute a base type for a derived type argument instead of the original. For example, you can assign an instance of <code>Action&lt;Base&gt;</code> to a variable of type <code>Action&lt;Derived&gt;</code>». Для интерфейсов пример из доки — сортировка: «The example can pass a comparer of a less derived type (<code>Shape</code>) when the code calls for a comparer of a more derived type (<code>Circle</code>), because the type parameter of the <code>IComparer&lt;T&gt;</code> generic interface is <span class="hl">contravariant</span>». Почему безопасно: контравариантные параметры «are used only as parameter types in the members of the interfaces» — интерфейс только <b>принимает</b> <code>T</code>, поэтому сужение <code>Shape</code>→<code>Circle</code> при вызове всегда корректно (Circle можно передать как Shape). Контравариантные интерфейсы BCL: <code>IComparer&lt;T&gt;</code>, <code>IComparable&lt;T&gt;</code>, <code>IEqualityComparer&lt;T&gt;</code>.',
-      sources: ["ms-var-std"],
+      sources: ["ms-var-std", "ms-var-cs"],
     },
     {
       id: "s4", num: "04", kicker: "Правило позиций", title: "out — только в возврате, in — только в параметре",
@@ -153,7 +153,7 @@ export const interfaceVariance: LessonData = {
         { codeLine: 3, out: "woof True", caption: 'Панель: <code>Produce().Sound</code>=<span class="hl">woof</span>, <code>is Dog</code>=<b>True</b> (реальный прогон). В куче — реальный <code>Dog</code>; вариантность сменила лишь статический тип.', nodes: [{ id: "a", kind: "obj", at: { zone: "proda", row: 0 }, typeTag: "в куче", value: "Dog", accent: true }, { id: "r", kind: "gate", at: { zone: "prod", row: 0 }, state: "ok", label: "результат", detail: "woof / True" }], edges: [] },
       ],
       explain: 'Это машинная панель урока — <b>своя</b> вариантность, снятая прогоном. Вариантность — не только у BCL: «C# enables you to <span class="hl">create your own variant interfaces</span> and delegates». Правило простое: если <code>T</code> в интерфейсе стоит <b>только в возврате</b>, помечай его <code>out</code> — интерфейс станет ковариантным. <code>IProducer&lt;out T&gt; { T Produce(); }</code> удовлетворяет условию, поэтому <code>IProducer&lt;Dog&gt;</code> присваивается к <code>IProducer&lt;Animal&gt;</code>. Реальный прогон: <code>pa.Produce().Sound</code> = <code>woof</code>, <code>pa.Produce() is Dog</code> = <code>True</code> — фабрика по-прежнему создаёт настоящих <code>Dog</code>, вариантность изменила только тип ссылки <code>pa</code>. Это ровно тот же механизм, что делает <code>IEnumerable&lt;out T&gt;</code> ковариантным в стандартной библиотеке.',
-      sources: ["ms-var-std"],
+      sources: ["ms-var-std", "ms-var-cs"],
     },
     {
       id: "s6", num: "06", kicker: "Контраст · массивы не safe", title: "Вариантность интерфейса безопасна; ковариантность массива — нет",

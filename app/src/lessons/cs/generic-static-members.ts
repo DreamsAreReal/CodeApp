@@ -8,7 +8,7 @@
  * own measurements that prove the per-closed-type isolation.
  *
  * SIGNATURE machine panel (s5): Counter<int> and Counter<string> keep independent Count — three
- * bumps to int + one to string yields Count = 2 and 1. REAL run-csharp measurement (this file's
+ * bumps to int + one to string yields Count = 3 and 1. REAL run-csharp measurement (this file's
  * exec cards): c1 "1 2 1\n2 1" · c2 "1 2 1" (static ctor per closed type) · c3 "2 2" (same closed
  * type shares).
  *
@@ -145,9 +145,9 @@ export const genericStaticMembers: LessonData = {
       scenes: [
         { codeLine: 1, out: "", caption: 'Три <code>Bump()</code> на <code>Counter&lt;int&gt;</code>: его <code>Count</code> растёт до <b>3</b>. Это <span class="hl">изолированная</span> ячейка int-типа.', nodes: [{ id: "i", kind: "gate", at: { zone: "cint", row: 0 }, state: "ok", label: "Counter<int>.Count", detail: "3", accent: true }], edges: [] },
         { codeLine: 2, out: "", caption: 'Один <code>Bump()</code> на <code>Counter&lt;string&gt;</code>: его <code>Count</code> = <b>1</b>, независимо от int. Не 4, не 3+1 в общем счётчике.', nodes: [{ id: "i", kind: "gate", at: { zone: "cint", row: 0 }, state: "ok", label: "Counter<int>.Count", detail: "3" }, { id: "s", kind: "gate", at: { zone: "cstr", row: 0 }, state: "ok", label: "Counter<string>.Count", detail: "1", accent: true }], edges: [] },
-        { codeLine: 3, out: "2 1", caption: 'Панель (порядок вычисления интерполяции): int-Bump выполнен ещё раз в самой строке → <span class="hl">2 1</span> для конкретного сниппета урока (реальный прогон). Счётчики строго <b>раздельны</b>.', nodes: [{ id: "i", kind: "gate", at: { zone: "cint", row: 0 }, state: "ok", label: "int", detail: "свой Count" }, { id: "s", kind: "gate", at: { zone: "cstr", row: 0 }, state: "ok", label: "string", detail: "свой Count", accent: true }], edges: [] },
+        { codeLine: 3, out: "3 1", caption: 'Панель: <span class="hl">3 1</span> (реальный прогон) — <code>Counter&lt;int&gt;.Count</code>=3 (три Bump), <code>Counter&lt;string&gt;.Count</code>=1 (один Bump). Счётчики строго <b>раздельны</b>.', nodes: [{ id: "i", kind: "gate", at: { zone: "cint", row: 0 }, state: "ok", label: "int", detail: "свой Count" }, { id: "s", kind: "gate", at: { zone: "cstr", row: 0 }, state: "ok", label: "string", detail: "свой Count", accent: true }], edges: [] },
       ],
-      explain: 'Это машинная панель урока — расхождение static-счётчиков, снятое прогоном. <code>Counter&lt;int&gt;</code> и <code>Counter&lt;string&gt;</code> — разные закрытые типы, поэтому <code>Count</code> у каждого свой. В карточке урока порядок такой: <code>Bump()</code> вызывается сначала в интерполяции первой строки (int дважды, string один раз), затем печатается <code>Count</code> — реальный вывод сниппета карточки <code>1 2 1</code> (по вызовам) и <code>2 1</code> (по итоговым счётчикам): <b>раздельные</b> ячейки, ни разу не смешавшиеся. Общий вывод: static generic-типа = «одно на <b>закрытый</b> тип». Это надёжный, детерминированный способ держать состояние per-<code>T</code>; но если ждёшь единый счётчик на все <code>T</code> — получишь сюрприз, потому что реификация делает каждый <code>Counter&lt;T&gt;</code> отдельным типом со своей статикой.',
+      explain: 'Это машинная панель урока — расхождение static-счётчиков, снятое прогоном. <code>Counter&lt;int&gt;</code> и <code>Counter&lt;string&gt;</code> — разные закрытые типы, поэтому <code>Count</code> у каждого свой. Три <code>Bump()</code> на <code>Counter&lt;int&gt;</code> и один на <code>Counter&lt;string&gt;</code>, затем <code>WriteLine</code> читает оба <code>Count</code> — реальный вывод сниппета <code>3 1</code>: <b>раздельные</b> ячейки, ни разу не смешавшиеся (не 4 в общем счётчике). Общий вывод: static generic-типа = «одно на <b>закрытый</b> тип». Это надёжный, детерминированный способ держать состояние per-<code>T</code>; но если ждёшь единый счётчик на все <code>T</code> — получишь сюрприз, потому что реификация делает каждый <code>Counter&lt;T&gt;</code> отдельным типом со своей статикой.',
       sources: ["ms-gen-classes"],
     },
   ],

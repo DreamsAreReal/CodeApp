@@ -182,7 +182,7 @@ export const genericMethods: LessonData = {
   takeaways: [
     { icon: "why", k: "Свой <T> = generic", v: '«A generic method is a method that is <span class="hl">declared with type parameters</span>» — обобщённость от собственного списка <code>&lt;T&gt;</code>, не от класса. Одинаковое имя с параметром класса → <b>CS0693</b>.' },
     { icon: "cost", k: "Вывод из аргументов", v: '«compiler will infer it» из аргументов: <code>Echo(42)</code>→int, <code>Pair(1,"x")</code>→(int,string). Явный <code>&lt;T&gt;</code> обычно не нужен. Замер: <code>42:Int32 hi:String 3.5:Double</code>.' },
-    { icon: "avoid", k: "Границы вывода", v: 'Вывод только из аргументов — «not… only from a constraint or return value», значит без параметров <b>CS0411</b> (нужен явный <code>&lt;T&gt;</code>). Идёт <b>до</b> резолва перегрузок; точная перегрузка бьёт generic (замер: <code>int generic</code>).' },
+    { icon: "avoid", k: "Границы вывода", v: 'Вывод только из аргументов — «cannot infer the type parameters only from a constraint or return value», значит без параметров <b>CS0411</b> (нужен явный <code>&lt;T&gt;</code>). Идёт <b>до</b> резолва перегрузок; точная перегрузка бьёт generic (замер: <code>int generic</code>).' },
   ],
 
   foot: 'урок · <b>generic-методы и вывод типов</b> · 5 анимир. разборов · inference из аргументов · панель Echo × 3 · дизайн <b>mid</b>',
