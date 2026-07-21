@@ -1,0 +1,61 @@
+{
+  "id": "CS.S17.concurrent-collections",
+  "track": "CS",
+  "section": "CS.S17",
+  "module": "S17.6",
+  "title": "Concurrent-коллекции: fine-grained, lock-free",
+  "status": "published",
+  "order": 35,
+  "sources": [
+    {
+      "id": "ms-threadsafe",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/standard/collections/thread-safe/",
+      "date": "2026-03-30"
+    },
+    {
+      "id": "ms-getoradd",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/api/system.collections.concurrent.concurrentdictionary-2.getoradd",
+      "date": "2026-07-01"
+    },
+    {
+      "id": "ms-queue-enum",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/api/system.collections.concurrent.concurrentqueue-1.getenumerator",
+      "date": "2026-07-01"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "GetOrAdd(2, k=>100) затем GetOrAdd(2, k=>999) в один поток: v1, v2, factoryRuns?",
+      "code": "using System.Collections.Concurrent; var cd = new ConcurrentDictionary<int, int>(); int f = 0; int v1 = cd.GetOrAdd(2, k => { f++; return 100; }); int v2 = cd.GetOrAdd(2, k => { f++; return 999; }); System.Console.WriteLine($\"{v1} {v2} factoryRuns={f}\");",
+      "expectedOutput": "100 100 factoryRuns=1",
+      "verify": "execute",
+      "sourceRefs": ["ms-getoradd"]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "ConcurrentQueue: GetEnumerator, потом Enqueue(4); snapshot-count vs live-count?",
+      "code": "using System.Collections.Concurrent; var q = new ConcurrentQueue<int>(); q.Enqueue(1); q.Enqueue(2); q.Enqueue(3); var e = q.GetEnumerator(); q.Enqueue(4); int c = 0; while (e.MoveNext()) c++; System.Console.WriteLine($\"snapshot-count={c} live-count={q.Count}\");",
+      "expectedOutput": "snapshot-count=3 live-count=4",
+      "verify": "execute",
+      "sourceRefs": ["ms-queue-enum"]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "IsSynchronized у ConcurrentDictionary и ConcurrentQueue?",
+      "code": "using System.Collections; using System.Collections.Concurrent; var cd = new ConcurrentDictionary<int, int>(); var q = new ConcurrentQueue<int>(); System.Console.WriteLine($\"dict.IsSynchronized={((ICollection)cd).IsSynchronized} queue.IsSynchronized={((ICollection)q).IsSynchronized}\");",
+      "expectedOutput": "dict.IsSynchronized=False queue.IsSynchronized=False",
+      "verify": "execute",
+      "sourceRefs": ["ms-threadsafe"]
+    }
+  ]
+}

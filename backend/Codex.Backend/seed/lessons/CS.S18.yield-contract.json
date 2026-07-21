@@ -1,0 +1,61 @@
+{
+  "id": "CS.S18.yield-contract",
+  "track": "CS",
+  "section": "CS.S18",
+  "module": "S18.2",
+  "title": "Контракт yield: return, break, где нельзя",
+  "status": "published",
+  "order": 38,
+  "sources": [
+    {
+      "id": "ms-yield",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/yield",
+      "date": "2026-03-30"
+    },
+    {
+      "id": "ms-iter-pg",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/iterators",
+      "date": "2026-03-30"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "yield break explicitly ends iteration at the first non-positive element, so the tail after -1 is not yielded.",
+      "code": "using System; using System.Collections.Generic; IEnumerable<int> TakeWhilePositive(IEnumerable<int> nums){ foreach(int n in nums){ if(n>0) yield return n; else yield break; } } Console.WriteLine(string.Join(\" \", TakeWhilePositive(new int[]{2,3,4,5,-1,3,4})));",
+      "expectedOutput": "2 3 4 5",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-yield"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "IEnumerator<T> is a valid iterator return type, iterated by hand via MoveNext/Current.",
+      "code": "using System; using System.Collections.Generic; using System.Text; IEnumerator<int> Ector(){ yield return 7; yield return 8; } var e = Ector(); var sb = new StringBuilder(); while(e.MoveNext()) sb.Append(e.Current).Append(\" \"); Console.WriteLine($\"IEnumerator<int> as return: {sb.ToString().Trim()}\");",
+      "expectedOutput": "IEnumerator<int> as return: 7 8",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-iter-pg"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "using inside an iterator compiles to try/finally, so Dispose runs even on an early break.",
+      "code": "using System; using System.Collections.Generic; class Res : IDisposable { public void Dispose()=>Console.WriteLine(\"disposed\"); } IEnumerable<int> Read(){ using var r = new Res(); yield return 1; yield return 2; yield return 3; } foreach(var x in Read()){ Console.WriteLine($\"got {x}\"); if(x==1) break; }",
+      "expectedOutput": "got 1\ndisposed",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-yield"
+      ]
+    }
+  ]
+}

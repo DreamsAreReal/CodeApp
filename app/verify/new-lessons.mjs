@@ -45,6 +45,18 @@ const EXPECT = [
   { id: "CS.S7.span-memory", segs: 5, ev: "CS-SPANMEM" },
   { id: "CS.S7.memory-guidelines", segs: 5, ev: "CS-MEMGUIDE" },
   { id: "CS.S7.stackalloc-refstruct", segs: 5, ev: "CS-STACKALLOC" },
+  { id: "CS.S17.collections-overview", segs: 5, ev: "CS-COLLOVR" },
+  { id: "CS.S17.choosing-collection", segs: 4, ev: "CS-CHOOSE" },
+  { id: "CS.S17.dictionary-internals", segs: 5, ev: "CS-DICTINT" },
+  { id: "CS.S17.list-internals", segs: 5, ev: "CS-LISTINT" },
+  { id: "CS.S17.hashset", segs: 4, ev: "CS-HASHSET" },
+  { id: "CS.S17.concurrent-collections", segs: 4, ev: "CS-CONCURR" },
+  { id: "CS.S17.immutable-collections", segs: 4, ev: "CS-IMMUT" },
+  { id: "CS.S18.iterators-overview", segs: 5, ev: "CS-ITEROVR" },
+  { id: "CS.S18.yield-contract", segs: 5, ev: "CS-YIELDC" },
+  { id: "CS.S18.iterator-state-machine", segs: 5, ev: "CS-ITERSM" },
+  { id: "CS.S18.async-iterator-statemachine", segs: 5, ev: "CS-AITERSM" },
+  { id: "CS.S4.closures-capture", segs: 6, ev: "CS-CLOSURES" },
   { id: "PY.M1.names-objects", segs: 8, ev: "PY-NAMES" },
   { id: "PY.M2.collections-hash", segs: 5, ev: "PY-COLL" },
   { id: "PY.M3.args-unpacking", segs: 4, ev: "PY-ARGS" },
@@ -155,10 +167,23 @@ async function main() {
     // segment 1 autoplays on view -> index advances beyond 0. Autoplay is gated by an
     // IntersectionObserver, so put s1 in the viewport first (a real user scrolls to it);
     // otherwise a taller intro block can leave s1 below the fold and autoplay never fires.
+    // EXCEPTION: a lesson may place its predict gate ON s1 (predictAt===1) — autoplay then
+    // plays scene 0 and legitimately HOLDS at index 0 until the learner predicts, so the
+    // "advanced past 0" expectation does not apply. In that case we instead require the
+    // gate to actually be armed on s1 (predictAt===1) and the first frame to have played.
     await page.evaluate(() => document.querySelector('section[data-seg="s1"]')?.scrollIntoView({ block: "center" }));
-    await page.waitForFunction(() => { const s = window.__viz.segments["s1"]; return s && s.index > 0; }, { timeout: 8000 }).catch(() => {});
-    const s1i = await page.evaluate(() => window.__viz.segments["s1"].index);
-    assert(s1i > 0, `${e.id} segment s1 advanced by autoplay (index=${s1i})`);
+    const s1gate = await page.evaluate(() => window.__viz.segments["s1"].predictAt);
+    if (s1gate === 1) {
+      // gate on s1: autoplay plays frame 0 then HOLDS at the gate. Wait for autoplay to
+      // arm (played=true) the same way the ungated branch waits for index>0.
+      await page.waitForFunction(() => window.__viz.segments["s1"].played === true, { timeout: 8000 }).catch(() => {});
+      const played = await page.evaluate(() => window.__viz.segments["s1"].played === true);
+      assert(played, `${e.id} segment s1 autoplayed to its predict gate (predictAt=1, played=${played})`);
+    } else {
+      await page.waitForFunction(() => { const s = window.__viz.segments["s1"]; return s && s.index > 0; }, { timeout: 8000 }).catch(() => {});
+      const s1i = await page.evaluate(() => window.__viz.segments["s1"].index);
+      assert(s1i > 0, `${e.id} segment s1 advanced by autoplay (index=${s1i})`);
+    }
     await page.screenshot({ path: join(evDirFor(e), "390-autoplay.png"), fullPage: false });
     await page.evaluate(() => window.__viz.forcePlayAll());
     await sleep(400);

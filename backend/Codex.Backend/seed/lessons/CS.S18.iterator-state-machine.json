@@ -1,0 +1,68 @@
+{
+  "id": "CS.S18.iterator-state-machine",
+  "track": "CS",
+  "section": "CS.S18",
+  "module": "S18.3",
+  "title": "Стейт-машина итератора: во что компилятор превращает yield",
+  "status": "published",
+  "order": 39,
+  "sources": [
+    {
+      "id": "ms-iter-pg",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/iterators",
+      "date": "2026-03-30"
+    },
+    {
+      "id": "ms-ienumerator",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.ienumerator-1",
+      "date": "2025-07-01"
+    },
+    {
+      "id": "roslyn-sm",
+      "kind": "artifact",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/iterators",
+      "date": "2026-07-21"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "The iterator method returns a compiler-generated state machine <G>d__0 with a <>1__state field; Reset() throws NotSupportedException.",
+      "code": "using System; using System.Collections; using System.Collections.Generic; using System.Reflection; static class D { public static IEnumerable<int> G(){ yield return 1; yield return 2; } } var seq = D.G(); bool hasState = seq.GetType().GetField(\"<>1__state\", BindingFlags.NonPublic|BindingFlags.Instance) != null; bool resetThrows=false; try { D.G().GetEnumerator().Reset(); } catch(NotSupportedException){ resetThrows=true; } Console.WriteLine($\"stateMachine={seq.GetType().Name} hasStateField={hasState} resetThrows={resetThrows}\");",
+      "expectedOutput": "stateMachine=<G>d__0 hasStateField=True resetThrows=True",
+      "verify": "execute",
+      "sourceRefs": [
+        "roslyn-sm",
+        "ms-iter-pg"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "IEnumerator<T> contract: MoveNext advances Current; the third MoveNext past the end returns false.",
+      "code": "using System; using System.Collections.Generic; using System.Text; IEnumerable<int> Nums(){ yield return 10; yield return 20; } var e = Nums().GetEnumerator(); var log = new StringBuilder(); log.Append($\"m1={e.MoveNext()}:{e.Current} \"); log.Append($\"m2={e.MoveNext()}:{e.Current} \"); log.Append($\"m3={e.MoveNext()}\"); Console.WriteLine(log.ToString());",
+      "expectedOutput": "m1=True:10 m2=True:20 m3=False",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-ienumerator"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "The <>1__state field of a freshly-returned iterator (before iteration) is -2 on .NET 10 (Roslyn-generated).",
+      "code": "using System; using System.Collections.Generic; using System.Reflection; static class D { public static IEnumerable<int> G(){ yield return 1; yield return 2; } } var seq = D.G(); var f = seq.GetType().GetField(\"<>1__state\", BindingFlags.NonPublic|BindingFlags.Instance); Console.WriteLine($\"state before iteration: {f.GetValue(seq)}\");",
+      "expectedOutput": "state before iteration: -2",
+      "verify": "execute",
+      "sourceRefs": [
+        "roslyn-sm"
+      ]
+    }
+  ]
+}
