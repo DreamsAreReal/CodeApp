@@ -844,6 +844,10 @@ const CS_S9: Section = {
       { id: "CS.S9.exception-filters", track: "CS", section: "CS.S9", title: "Фильтры исключений: when без раскрутки стека", kicker: "C# вглубь · S9 · when-фильтр", icon: "types", subtitle: "when (bool), оценка до раскрутки, false → поиск дальше", estMinutes: 10, cards: 3 },
       () => import("./cs/exception-filters.ts").then((m) => m.exceptionFilters),
     ),
+    entry(
+      { id: "CS.S9.throw-vs-rethrow", track: "CS", section: "CS.S9", title: "throw; vs throw ex; — сохранение стека", kicker: "C# вглубь · S9 · переброс исключения", icon: "types", subtitle: "throw; сохраняет стек, throw e; сбрасывает, обёртка через inner", estMinutes: 10, cards: 3 },
+      () => import("./cs/throw-vs-rethrow.ts").then((m) => m.throwVsRethrow),
+    ),
   ],
 };
 

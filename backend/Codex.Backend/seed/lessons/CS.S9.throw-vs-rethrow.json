@@ -1,0 +1,45 @@
+{
+  "id": "CS.S9.throw-vs-rethrow",
+  "track": "CS",
+  "section": "CS.S9",
+  "module": "S9.4",
+  "title": "throw; vs throw ex; — сохранение стека",
+  "status": "published",
+  "order": 83,
+  "sources": [
+    { "id": "ms-stmts", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/exception-handling-statements", "date": "2026-01-16" },
+    { "id": "ms-rethrow", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/standard/exceptions/how-to-explicitly-throw-exceptions", "date": "2017-03-30" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "throw; preserves the original stack trace, so the originating method name Origin still appears in ex.StackTrace; Contains(Origin) is True",
+      "code": "using System; string r; void Origin(){ throw new InvalidOperationException(\"x\"); } void Middle(){ try { Origin(); } catch (Exception) { throw; } } try { Middle(); } catch (Exception e) { r = e.StackTrace!.Contains(\"Origin\").ToString(); } Console.WriteLine(r);",
+      "expectedOutput": "True",
+      "verify": "execute",
+      "sourceRefs": ["ms-stmts"]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "throw e; updates (resets) the StackTrace property to the rethrow line, so the originating method Origin is lost; Contains(Origin) is False",
+      "code": "using System; string r; void Origin(){ throw new InvalidOperationException(\"x\"); } void Middle(){ try { Origin(); } catch (Exception e) { throw e; } } try { Middle(); } catch (Exception e) { r = e.StackTrace!.Contains(\"Origin\").ToString(); } Console.WriteLine(r);",
+      "expectedOutput": "False",
+      "verify": "execute",
+      "sourceRefs": ["ms-stmts"]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Same origin rethrown two ways: throw; keeps the Origin frame (True), throw e; loses it (False); the deterministic marker Contains(Origin) distinguishes them",
+      "code": "using System; string Test(bool useThrowSemicolon){ void Origin(){ throw new InvalidOperationException(\"x\"); } try { try { Origin(); } catch (Exception e) { if (useThrowSemicolon) throw; else throw e; } } catch (Exception e) { return e.StackTrace!.Contains(\"Origin\").ToString(); } return \"n/a\"; } Console.WriteLine($\"rethrow={Test(true)} throwEx={Test(false)}\");",
+      "expectedOutput": "rethrow=True throwEx=False",
+      "verify": "execute",
+      "sourceRefs": ["ms-stmts"]
+    }
+  ]
+}
