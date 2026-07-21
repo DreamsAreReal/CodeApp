@@ -1,0 +1,46 @@
+{
+  "id": "CS.S11.expression-trees-overview",
+  "track": "CS",
+  "section": "CS.S11",
+  "module": "S11.1",
+  "title": "Деревья выражений: код как данные",
+  "status": "published",
+  "order": 95,
+  "sources": [
+    { "id": "ms-et", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/csharp/advanced-topics/expression-trees/", "date": "2025-10-13" },
+    { "id": "ms-linq", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/csharp/linq/", "date": "2025-12-01" },
+    { "id": "ms-interpreting", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/csharp/advanced-topics/expression-trees/expression-trees-interpreting", "date": "2023-03-06" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "One and the same lambda: assigned to Func it is an executable delegate (del(4)=True), assigned to Expression<Func<>> it is a tree (root NodeType=Lambda, Body=LessThan), so the output is del=True exp.NodeType=Lambda exp.Body=LessThan",
+      "code": "using System; using System.Linq.Expressions; Func<int,bool> del = num => num < 5; Expression<Func<int,bool>> exp = num => num < 5; Console.WriteLine($\"del={del(4)} exp.NodeType={exp.NodeType} exp.Body={exp.Body.NodeType}\");",
+      "expectedOutput": "del=True exp.NodeType=Lambda exp.Body=LessThan",
+      "verify": "execute",
+      "sourceRefs": ["ms-et"]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "An expression tree can be executed by compiling it into a delegate: exp.Compile() yields Func<int,bool>, f(4) is 4<5 True and f(9) is False, so the output is True False",
+      "code": "using System; using System.Linq.Expressions; Expression<Func<int,bool>> exp = num => num < 5; Func<int,bool> f = exp.Compile(); Console.WriteLine($\"{f(4)} {f(9)}\");",
+      "expectedOutput": "True False",
+      "verify": "execute",
+      "sourceRefs": ["ms-et"]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "The tree is decomposed by properties: parameter num, body is a BinaryExpression with NodeType=LessThan, left leaf is parameter num, right leaf is constant 5, so the output is num => num LessThan 5",
+      "code": "using System; using System.Linq.Expressions; Expression<Func<int,bool>> exprTree = num => num < 5; var param=(ParameterExpression)exprTree.Parameters[0]; var op=(BinaryExpression)exprTree.Body; var left=(ParameterExpression)op.Left; var right=(ConstantExpression)op.Right; Console.WriteLine($\"{param.Name} => {left.Name} {op.NodeType} {right.Value}\");",
+      "expectedOutput": "num => num LessThan 5",
+      "verify": "execute",
+      "sourceRefs": ["ms-et", "ms-interpreting"]
+    }
+  ]
+}

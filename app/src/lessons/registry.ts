@@ -911,12 +911,30 @@ const CS_S10: Section = {
   ],
 };
 
+// Section S11 «Deep dive into expression trees» (RS-03 §2 · 6 lessons). Prereq CS.S3 (LINQ) + CS.S1.
+// Goes DEEPER than CS.S3.ienumerable-iqueryable (which named the delegate-vs-tree split): here the
+// tree ITSELF is the subject — code-as-data, programmatic building, Compile() to a delegate,
+// ExpressionVisitor traversal/transformation, DebugView inspection, and how IQueryable providers
+// translate the tree (EF Core -> SQL). Read CS.S3.ienumerable-iqueryable first; zero duplication.
+const CS_S11: Section = {
+  id: "CS.S11",
+  title: "Деревья выражений",
+  order: 11,
+  prereqs: ["CS.S3"],
+  lessons: [
+    entry(
+      { id: "CS.S11.expression-trees-overview", track: "CS", section: "CS.S11", title: "Деревья выражений: код как данные", kicker: "C# вглубь · S11 · code as data", icon: "types", subtitle: "Expression<Func<>> vs Func<>, узел = выражение, зачем провайдерам", estMinutes: 9, cards: 3 },
+      () => import("./cs/expression-trees-overview.ts").then((m) => m.expressionTreesOverview),
+    ),
+  ],
+};
+
 const CS_TRACK: Track = {
   id: "CS",
   title: S.trackCsDeepLabel,
   sub: S.trackCsDeepSub,
   badge: S.trackNewBadge,
-  sections: [CS_S1, CS_S2, CS_S3, CS_S5, CS_S7, CS_S8, CS_S9, CS_S10, CS_S17, CS_S18, CS_S4, CS_S6],
+  sections: [CS_S1, CS_S2, CS_S3, CS_S5, CS_S7, CS_S8, CS_S9, CS_S10, CS_S11, CS_S17, CS_S18, CS_S4, CS_S6],
 };
 
 // The legacy flat C# track and its 6 old lessons were removed in the F2 migration (their
