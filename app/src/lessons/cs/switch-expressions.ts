@@ -9,13 +9,13 @@
  *
  * SIGNATURE machine panel (s5): the case-guard router — one `var (a, b)` pattern, three
  * `when` guards (a<b / a>b / else) route (1,2)/(5,2)/(3,3) to three different arms. REAL
- * run-csharp measurements (:5102): a<b / a>b / equal.
+ * run-csharp measurement (this file's exec cards, app backend :5080): a<b / a>b / equal.
  *
  * Accuracy contract (G4/G7/G8):
  *   - every English quote is VERBATIM from the cited Learn switch-expression page
  *     (fetch-verified 2026-07-21, ms.date 2026-03-20);
- *   - every card's verify.expect is REAL stdout from the backend run-csharp endpoint
- *     (:5102): "East" / "a<b\na>b\nequal" / "summer\nwinter".
+ *   - every card's verify.expect is REAL stdout from the run-csharp exec cards in this
+ *     file (app backend :5080): "East" / "a<b\na>b\nequal" / "summer\nwinter".
  *
  * Loop: cards c1..c3 map to backend review items `CS.S5.switch-expressions/c{1..3}`.
  */
@@ -130,7 +130,7 @@ export const switchExpressions: LessonData = {
         { codeLine: 2, caption: 'На непокрытом входе рантайм <span class="hl">бросает</span> <code>SwitchExpressionException</code> — тихая мина в проде.', nodes: [{ id: "w", kind: "gate", at: { zone: "no", row: 0 }, state: "fail", label: "нет _", detail: "warning" }, { id: "t", kind: "chip", at: { zone: "no", row: 1 }, value: "throw в рантайме", accent: true }], edges: [] },
         { codeLine: 3, caption: 'Discard <code>_</code>-рукав делает switch <b>exhaustive</b>: компилятор из полноты строит <span class="hl">гарантию</span>, throw невозможен.', nodes: [{ id: "w", kind: "gate", at: { zone: "no", row: 0 }, state: "fail", label: "нет _", detail: "мина" }, { id: "y", kind: "gate", at: { zone: "yes", row: 0 }, state: "ok", label: "_ => ...", detail: "покрыто всё" }], edges: [] },
       ],
-      explain: 'Exhaustiveness — обещание, которое проверяет компилятор и охраняет рантайм: «If none of a <code>switch</code> expression\'s patterns matches an input value, the runtime <b>throws an exception</b>. In .NET Core 3.0 and later versions, the exception is a <code>System.Runtime.CompilerServices.SwitchExpressionException</code>. In most cases, the compiler generates a <span class="hl">warning</span> if a switch expression doesn\'t handle all possible input values». Исключение: «List patterns don\'t generate a warning». Совет доки прямой: «To guarantee that a switch expression handles all possible input values, provide a switch expression arm with a <b>discard pattern</b>». <code>_</code> закрывает дыру.',
+      explain: 'Exhaustiveness — обещание, которое проверяет компилятор и охраняет рантайм: «If none of a <code>switch</code> expression\'s patterns matches an input value, the runtime <b>throws an exception</b>. In .NET Core 3.0 and later versions, the exception is a <code>System.Runtime.CompilerServices.SwitchExpressionException</code>. … In most cases, the compiler generates a <span class="hl">warning</span> if a switch expression doesn\'t handle all possible input values». Исключение: «List patterns don\'t generate a warning». Совет доки прямой: «To guarantee that a switch expression handles all possible input values, provide a switch expression arm with a <b>discard pattern</b>». <code>_</code> закрывает дыру.',
       sources: ["ms-switch-expr"],
     },
     {

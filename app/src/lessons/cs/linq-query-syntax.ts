@@ -8,13 +8,12 @@
  *
  * SIGNATURE machine panel (s5): the Release IL of `from x in n where x>3 select x*10` — it
  * lowers to `Enumerable.Where<int>(...)` then `Enumerable.Select<int,int>(...)`, the exact
- * method-syntax calls. A REAL Release-optimised decompilation (ilspycmd 10.x). See
- * docs/evidence/S3/L1-linq-query-syntax.txt.
+ * method-syntax calls. A REAL Release-optimised decompilation (ilspycmd 10.x).
  *
  * Accuracy contract (G4/G7/G8):
  *   - every English quote is VERBATIM from learn.microsoft.com/.../csharp/linq/ (fetch 2026-07-21);
- *   - every card's verify.expect is the REAL stdout of the backend run-csharp endpoint on :5101
- *     (evidence/S3/L1-linq-query-syntax.txt: "97 92 81"; "50,80,90"; "3");
+ *   - every card's verify.expect is the REAL run-csharp measurement (this file's exec cards on the
+ *     app backend :5080): c1 "97 92 81"; c2 "50,80,90"; c3 "10";
  *   - the s5 IL (Enumerable::Where/Select) is a REAL Release compilation (ilspycmd).
  *
  * Loop: cards c1..c3 map to backend review items `CS.S3.linq-query-syntax/c{1..3}`.
@@ -97,7 +96,7 @@ export const linqQuerySyntax: LessonData = {
       scenes: [
         { codeLine: 1, caption: 'Слева — то, что пишет разработчик: <code>from…where…orderby…select</code> в <b>query-форме</b>.', nodes: [{ id: "q", kind: "gate", at: { zone: "qs", row: 0 }, state: "ok", label: "from…select", detail: "как пишем", accent: true }], edges: [] },
         { codeLine: 3, caption: 'Компилятор <span class="hl">переписывает</span> каждую клаузу в вызов метода: <code>where→Where</code>, <code>orderby→OrderBy</code>, <code>select→Select</code>.', nodes: [{ id: "q", kind: "gate", at: { zone: "qs", row: 0 }, state: "ok", label: "from…select", detail: "как пишем" }, { id: "m", kind: "gate", at: { zone: "ms", row: 0 }, state: "ok", label: "Where·OrderBy·Select", detail: "во что компилит", accent: true }], edges: [{ id: "e", from: "q", to: "m", accent: true }] },
-        { codeLine: 3, caption: 'Итог: две формы дают <b>идентичный</b> результат — <code>SequenceEqual → True</code> (реальный прогон). «No semantic or performance difference».', nodes: [{ id: "q", kind: "gate", at: { zone: "qs", row: 0 }, state: "ok", label: "query", detail: "50,80,90" }, { id: "m", kind: "gate", at: { zone: "ms", row: 0 }, state: "ok", label: "method", detail: "50,80,90", accent: true }], edges: [{ id: "e", from: "q", to: "m" }] },
+        { codeLine: 3, caption: 'Итог: две формы дают <b>идентичный</b> результат — <code>SequenceEqual → True</code> (реальный прогон). «There\'s no semantic or performance difference between the two different forms».', nodes: [{ id: "q", kind: "gate", at: { zone: "qs", row: 0 }, state: "ok", label: "query", detail: "50,80,90" }, { id: "m", kind: "gate", at: { zone: "ms", row: 0 }, state: "ok", label: "method", detail: "50,80,90", accent: true }], edges: [{ id: "e", from: "q", to: "m" }] },
       ],
       explain: 'Ключевой факт: query-синтаксис — это <b>синтаксический сахар</b> над вызовами методов. Дословно: «At compile time, the compiler <span class="hl">converts query expressions to standard query operator method calls</span> according to the rules defined in the C# specification. You can express any query that uses query syntax by using method syntax. In some cases, query syntax is more readable and concise. In others, method syntax is more readable. <b>There\'s no semantic or performance difference between the two different forms</b>». Проверка: тот же запрос в обеих формах даёт <code>50,80,90</code> и <code>SequenceEqual == True</code> (реальный прогон). Выбор формы — вопрос читаемости, не поведения.',
       sources: ["ms-linq"],
@@ -163,7 +162,7 @@ export const linqQuerySyntax: LessonData = {
       question: '<code>var n = Enumerable.Range(1, 20); var q = from x in n where x % 2 == 0 select x; Console.WriteLine(q.Count());</code> — что напечатает?',
       options: ["10", "20", "11", "9"], correctIndex: 0, xp: 10,
       okText: 'Чётных в <code>Range(1, 20)</code> ровно половина: 2, 4, …, 20 → <code>Count()</code> = <b>10</b>. У <code>Count</code> нет query-клаузы — он всегда метод-вызов поверх query-части.',
-      noText: '«Count … has no equivalent query expression clause and must be expressed as a method call». Чётных в 1..20 — десять → <b>10</b>.',
+      noText: 'Операции вроде <code>Count</code> «have no equivalent query expression clause and must be expressed as a method call». Чётных в 1..20 — десять → <b>10</b>.',
       verify: { kind: "exec", run: "dotnet run", expect: "10" }, sourceRefs: ["ms-linq"],
     },
   ],

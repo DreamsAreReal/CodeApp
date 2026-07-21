@@ -49,6 +49,7 @@
       "expectedOutput": "False",
       "verify": "execute",
       "sourceRefs": [
+        "ms-pm-overview",
         "ms-patterns"
       ]
     },

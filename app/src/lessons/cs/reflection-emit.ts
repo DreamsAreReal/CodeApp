@@ -7,15 +7,16 @@
  *
  * SIGNATURE machine panel (s5): a DynamicMethod hand-built from raw IL (ldarg.0 / ldc.i4.1 / add
  * / ret), turned into a Func<int,int> via CreateDelegate, executed → f(41) = 42. The IL panel
- * shows the REAL opcodes with their REAL byte values (own run-csharp measurements on :5103:
- * ldarg.0=0x02, ldc.i4.1=0x17, add=0x58, ret=0x2A).
+ * shows the REAL opcodes with their REAL byte values (REAL run-csharp measurement, this file's
+ * exec cards: ldarg.0=0x02, ldc.i4.1=0x17, add=0x58, ret=0x2A).
  *
  * Accuracy contract (G4/G7/G8):
  *   - English quotes VERBATIM from
  *     learn.microsoft.com/.../fundamentals/reflection/emitting-dynamic-methods-and-assemblies
  *     (microsoft_docs_fetch-verified 2026-07-21, ms.date 2024-03-27);
- *   - the emitted-IL opcodes AND their byte values are OWN run-csharp measurements (OpCodes.*.Value);
- *   - every card verify.expect is REAL run-csharp stdout on :5103
+ *   - the emitted-IL opcodes AND their byte values are REAL run-csharp measurements (OpCodes.*.Value,
+ *     this file's exec cards);
+ *   - every card verify.expect is REAL run-csharp stdout (this file's exec cards)
  *     (c1: 42 · c2: 42 · c3: 81/Square).
  *
  * Loop: cards c1..c3 map to backend review items `CS.S6.reflection-emit/c{1..3}`.
@@ -74,7 +75,7 @@ export const reflectionEmit: LessonData = {
   ],
   edgeCases: [
     { text: "<code>DynamicMethod</code> — «Define <b>lightweight global methods</b> at runtime… and execute them using <b>delegates</b>» (метод без класса-владельца).", source: "ms-emit" },
-    { text: "<code>OpCodes</code> «Catalogs the <b>CIL instruction codes</b> you can use to build method bodies» — у каждого реальный байт (<code>add</code>=0x58).", source: "ms-opcodes" },
+    { text: "<code>OpCodes</code> «Catalogs the <b>CIL instruction codes</b> you can use to build method bodies» — у каждого реальный байт (<code>add</code>=0x58).", source: "ms-emit" },
     { text: "Managed emit строже unmanaged: «provides stronger <b>semantic error checking</b> and a higher level of abstraction of the metadata than the unmanaged metadata interfaces».", source: "ms-emit" },
   ],
 

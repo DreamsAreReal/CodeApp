@@ -9,13 +9,13 @@
  *
  * SIGNATURE machine panel (s5): the GetSourceLabel dispatch — the same generic method,
  * int[] routes to arm 1 (derives from Array), List<char> routes to arm 2 (implements
- * ICollection<T>). REAL run-csharp measurements (:5102): 1 / 2.
+ * ICollection<T>). REAL run-csharp measurement (this file's exec cards): 1 / 2.
  *
  * Accuracy contract (G4/G7/G8):
  *   - every English quote is VERBATIM from the cited Learn patterns reference page
  *     (fetch-verified 2026-07-21, ms.date 2026-06-05);
  *   - every card's verify.expect is REAL stdout from the backend run-csharp endpoint
- *     (:5102): "1\n2" / "27.0" / "Too high\nUnknown\nAcceptable".
+ *     (this file's exec cards): "1\n2" / "27.0" / "Too high\nUnknown\nAcceptable".
  *
  * Loop: cards c1..c3 map to backend review items `CS.S5.pattern-vocabulary/c{1..3}`.
  */

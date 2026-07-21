@@ -7,7 +7,7 @@
  * nothing.
  *
  * SIGNATURE machine panel (s5): the SAME class at the SAME DeclaredOnly|Instance scope — adding
- * BindingFlags.NonPublic flips the member count 3 → 5 (own run-csharp measurement on :5103).
+ * BindingFlags.NonPublic flips the member count 3 → 5 (REAL run-csharp measurement, this file's exec cards).
  *
  * Accuracy contract (G4/G7/G8):
  *   - English quotes VERBATIM: the GetMembers intro from
@@ -15,7 +15,7 @@
  *     the BindingFlags field descriptions + Instance/Static note from
  *     learn.microsoft.com/.../api/system.reflection.bindingflags (ms.date 2025-07-01)
  *     (microsoft_docs_fetch-verified 2026-07-21);
- *   - every card verify.expect is REAL run-csharp stdout on :5103
+ *   - every card verify.expect is REAL run-csharp stdout (this file's exec cards)
  *     (c1: Int32/System · c2: 3/5 · c3: 0/2).
  *
  * Loop: cards c1..c3 map to backend review items `CS.S6.type-metadata/c{1..3}`.
@@ -81,7 +81,7 @@ export const typeMetadata: LessonData = {
   misconceptions: [
     {
       wrong: "GetMembers() возвращает все члены типа — публичные и приватные",
-      hook: 'Нет: <code>GetMembers()</code> без аргументов даёт только <b>public</b> члены (и с учётом наследования от <code>object</code>). Приватные, статические, declared-only — это <span class="hl">параметры запроса</span>, а не поведение по умолчанию. «<b>BindingFlags</b> specifies flags that control binding and the way in which the search for members and types is conducted by reflection». А главная ловушка прямо в доке: «You must specify <b>Instance</b> or <b>Static</b> along with <b>Public</b> or <b>NonPublic</b> or <span class="hl">no members will be returned</span>». Дальше <b>пять разборов</b>: Type как ручка к метаданным, <code>MemberInfo[]</code> и <code>MemberType</code>, оси фильтра, и <b>машинная панель</b> — как один флаг <code>NonPublic</code> меняет счётчик членов (реальный прогон: 3 → 5).',
+      hook: 'Нет: <code>GetMembers()</code> без аргументов даёт только <b>public</b> члены (и с учётом наследования от <code>object</code>). Приватные, статические, declared-only — это <span class="hl">параметры запроса</span>, а не поведение по умолчанию. <code>BindingFlags</code>: «Specifies flags that control binding and the way in which the search for members and types is conducted by reflection». А главная ловушка прямо в доке: «You must specify <b>Instance</b> or <b>Static</b> along with <b>Public</b> or <b>NonPublic</b> or <span class="hl">no members will be returned</span>». Дальше <b>пять разборов</b>: Type как ручка к метаданным, <code>MemberInfo[]</code> и <code>MemberType</code>, оси фильтра, и <b>машинная панель</b> — как один флаг <code>NonPublic</code> меняет счётчик членов (реальный прогон: 3 → 5).',
       source: "ms-bindingflags",
     },
   ],

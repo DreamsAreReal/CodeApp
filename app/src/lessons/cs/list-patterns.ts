@@ -7,13 +7,15 @@
  *
  * SIGNATURE machine panel (s5): the slice capture — ['a' or 'A', .. var s, 'a' or 'A']
  * matches "aBBA" and binds the middle to s == "BB", while "apron" fails the shape. REAL
- * run-csharp measurement (:5102): Message aBBA matches; inner part is BB. / ...doesn't match.
+ * run-csharp measurement (this file's exec cards): Message aBBA matches; inner part is BB.
+ * / ...doesn't match.
  *
  * Accuracy contract (G4/G7/G8):
  *   - every English quote is VERBATIM from the cited Learn patterns + is-operator pages
  *     (fetch-verified 2026-07-21);
  *   - every card's verify.expect is REAL stdout from the backend run-csharp endpoint
- *     (:5102): "True\nFalse\nFalse\nTrue" / "True\nTrue\nTrue\nTrue" / the slice-capture text.
+ *     (this file's exec cards): "True\nFalse\nFalse\nTrue" / "True\nTrue\nTrue\nTrue" /
+ *     the slice-capture text.
  *
  * Loop: cards c1..c3 map to backend review items `CS.S5.list-patterns/c{1..3}`.
  */

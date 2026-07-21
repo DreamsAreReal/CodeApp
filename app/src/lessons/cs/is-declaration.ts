@@ -7,13 +7,14 @@
  * boxed object AND a nullable value type — to the same underlying int.
  *
  * SIGNATURE machine panel (s5): the two-form unwrap — object iBoxed = 34 and int? j = 42
- * both match `is int` in one && chain and sum to 76. REAL run-csharp measurement (:5102): 76.
+ * both match `is int` in one && chain and sum to 76. REAL run-csharp measurement
+ * (this file's exec cards): 76.
  *
  * Accuracy contract (G4/G7/G8):
  *   - every English quote is VERBATIM from the cited Learn `is` operator page
  *     (fetch-verified 2026-07-21, ms.date 2026-01-20) + patterns page for scope rule;
- *   - every card's verify.expect is REAL stdout from the backend run-csharp endpoint
- *     (:5102): "76" / "False" / "True".
+ *   - every card's verify.expect is REAL stdout from the backend run-csharp exec cards
+ *     (this file's exec cards): "76" / "False" / "True".
  *
  * Loop: cards c1..c3 map to backend review items `CS.S5.is-declaration/c{1..3}`.
  */
@@ -166,7 +167,7 @@ export const isDeclaration: LessonData = {
       options: ["False", "True", "null", "\"\""], correctIndex: 0, xp: 10,
       okText: 'Declaration/type pattern требует <span class="hl">non-null</span> результат. <code>o == null</code> не совпадает ни с каким declaration pattern → <b>False</b>. <code>is T v</code> само-охраняет от null.',
       noText: '«The declaration pattern doesn\'t match a null value, regardless of the compile-time type». <code>null is string s</code> ⇒ <b>False</b>. Именно поэтому вход в <code>if (x is T v)</code> гарантирует не-null.',
-      verify: { kind: "exec", run: "dotnet run", expect: "False" }, sourceRefs: ["ms-patterns"],
+      verify: { kind: "exec", run: "dotnet run", expect: "False" }, sourceRefs: ["ms-pm-overview", "ms-patterns"],
     },
     {
       id: "c3", type: "predict-output", engagementLevel: "responding",

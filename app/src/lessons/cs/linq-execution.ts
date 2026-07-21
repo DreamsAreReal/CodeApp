@@ -7,14 +7,13 @@
  *
  * SIGNATURE machine panel (s5): the query variable holds NO data — proven by mutating the
  * SOURCE after the query is created and observing the count change between two executions of
- * the SAME query variable (2 -> 4). A REAL run-csharp measurement on :5101.
- * See docs/evidence/S3/L2-linq-execution.txt.
+ * the SAME query variable (2 -> 4). A REAL run-csharp measurement (this file's exec cards).
  *
  * Accuracy contract (G4/G7/G8):
- *   - every English quote is VERBATIM from
- *     learn.microsoft.com/.../csharp/linq/get-started/introduction-to-linq-queries (fetch 2026-07-21);
- *   - every card's verify.expect is the REAL stdout of run-csharp on :5101
- *     (evidence/S3/L2-linq-execution.txt: "0 2 4 6"; "2,5,9"; "2 4").
+ *   - every English quote is VERBATIM from its cited Microsoft Learn page in sources[]
+ *     (introduction-to-linq-queries; the LINQ overview; standard-query-operators; fetch 2026-07-21);
+ *   - every card's verify.expect is the REAL stdout of run-csharp via this file's exec cards
+ *     ("0 2 4 6"; "2,5,9"; "2 4").
  *
  * Loop: cards c1..c3 map to backend review items `CS.S3.linq-execution/c{1..3}`.
  */
@@ -56,6 +55,7 @@ export const linqExecution: LessonData = {
   sources: [
     { id: "ms-intro", kind: "doc", org: "Microsoft Learn", title: "Introduction to LINQ Queries — C#", url: "https://learn.microsoft.com/en-us/dotnet/csharp/linq/get-started/introduction-to-linq-queries", date: "2024-04-22" },
     { id: "ms-linq", kind: "doc", org: "Microsoft Learn", title: "Language Integrated Query (LINQ) — C#", url: "https://learn.microsoft.com/en-us/dotnet/csharp/linq/", date: "2025-12-01" },
+    { id: "ms-sqo", kind: "doc", org: "Microsoft Learn", title: "Standard query operators overview — C#", url: "https://learn.microsoft.com/en-us/dotnet/csharp/linq/standard-query-operators/", date: "2025-12-01" },
   ],
 
   spec: [
@@ -109,8 +109,8 @@ export const linqExecution: LessonData = {
         { codeLine: 2, caption: 'В query-выражении <b>реальной итерации не происходит</b>: range-переменная — лишь ссылка на «каждый следующий элемент» при будущем исполнении.', nodes: [{ id: "r", kind: "chip", at: { zone: "qvar", row: 0 }, value: "range var: ссылка" }, { id: "s", kind: "obj", at: { zone: "src", row: 0 }, typeTag: "students", value: "источник", accent: true }], edges: [{ id: "e", from: "r", to: "s", accent: true }] },
         { codeLine: 3, caption: 'Тип <code>student</code> компилятор <span class="hl">выводит сам</span> из источника — явно указывать не нужно (кроме non-generic источников вроде ArrayList).', nodes: [{ id: "r", kind: "chip", at: { zone: "qvar", row: 0 }, value: "тип выведен", accent: true }, { id: "s", kind: "obj", at: { zone: "src", row: 0 }, typeTag: "students", value: "источник" }], edges: [{ id: "e", from: "r", to: "s" }] },
       ],
-      explain: 'Range-переменная — это НЕ переменная цикла в привычном смысле. Дословно (standard-query-operators): «The <b>range variable</b> is like the iteration variable in a <code>foreach</code> loop except that <span class="hl">no actual iteration occurs in a query expression</span>. When the query is executed, the range variable serves as a reference to each successive element». И тип выводится: «Because the compiler can infer the type of <code>student</code>, you don\'t have to specify it explicitly». Смысл: <code>from x in src</code> объявляет «имя для каждого элемента», а перебор элементов случится позже, при исполнении — снова граница «объявить ≠ исполнить».',
-      sources: ["ms-intro"],
+      explain: 'Range-переменная — это НЕ переменная цикла в привычном смысле. Дословно (standard query operators overview): «The <b>range variable</b> is like the iteration variable in a <code>foreach</code> loop except that <span class="hl">no actual iteration occurs in a query expression</span>. When the query is executed, the range variable serves as a reference to each successive element». И тип выводится: «Because the compiler can infer the type of <code>student</code>, you don\'t have to specify it explicitly». Смысл: <code>from x in src</code> объявляет «имя для каждого элемента», а перебор элементов случится позже, при исполнении — снова граница «объявить ≠ исполнить».',
+      sources: ["ms-sqo"],
     },
     {
       id: "s4", num: "04", kicker: "Момент исполнения", title: "Запрос бежит в foreach, а не в строке объявления",
@@ -122,7 +122,7 @@ export const linqExecution: LessonData = {
         { codeLine: 3, caption: 'Именно <code>foreach</code> «is also where the query results are retrieved»: <code>x</code> держит каждое значение по одному за раз.', nodes: [{ id: "f", kind: "gate", at: { zone: "tl", row: 0 }, state: "ok", label: "foreach", detail: "retrieves results" }, { id: "x", kind: "gate", at: { zone: "tl", row: 1 }, state: "ok", label: "x", detail: "по одному элементу", accent: true }], edges: [] },
       ],
       explain: 'Где именно исполняется — дословно: «A query isn\'t executed until you <span class="hl">iterate over the query variable</span>, for example in a <code>foreach</code> statement». И далее: «The <code>foreach</code> statement is also where the query results are retrieved. For example, in the previous query, the iteration variable <code>num</code> holds each value (one at a time) in the returned sequence». То есть строка объявления запроса не трогает источник вовсе; чтение начинается на <code>foreach</code> (или на <code>ToList/Count</code> — они тоже итерируют внутри). Практическое следствие: тяжёлый запрос, объявленный, но не итерированный, ничего не стоит — цена появляется на перечислении.',
-      sources: ["ms-intro"],
+      sources: ["ms-linq", "ms-intro"],
     },
     {
       id: "s5", num: "05", kicker: "Машинная панель · реальный замер", title: "Один запрос, два исполнения вокруг мутации: 2 → 4",

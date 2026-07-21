@@ -1,6 +1,6 @@
 /**
  * Lesson: IEnumerable<T> vs IQueryable<T> — delegates vs expression trees
- * (CS.S3.ienumerable-iqueryable) — expert density, 5 animated deep-dives + a machine panel.
+ * (CS.S3.ienumerable-iqueryable) — expert density, 4 animated deep-dives + a machine panel (5 segments).
  * The distinction that decides WHERE a query runs: for IEnumerable<T> the compiler turns each
  * lambda into a DELEGATE and the query executes in-process (LINQ to Objects); for IQueryable<T>
  * the compiler turns the SAME lambda into an EXPRESSION TREE, which a provider (EF Core) can
@@ -9,7 +9,7 @@
  * SIGNATURE machine panel (s5): the SAME lambda `x => x > 2` compiled two ways —
  *   Enumerable.Where<int>(IEnumerable<int>, Func<int,bool>)          // delegate
  *   Queryable.Where<int>(IQueryable<int>, Expression<Func<int,bool>>) // expression tree
- * A REAL Release-optimised decompilation (ilspycmd). See docs/evidence/S3/L5-ienumerable-iqueryable.txt.
+ * A REAL Release-optimised decompilation (ilspycmd) of the same Where call over IEnumerable vs IQueryable.
  *
  * NOTE on exec cards: the backend run-csharp scripting host references only System.Private.CoreLib
  * + System.Linq (Enumerable) + Console — it does NOT reference System.Linq.Queryable or
@@ -19,7 +19,7 @@
  * Accuracy contract (G4/G7/G8):
  *   - every English quote is VERBATIM from learn.microsoft.com/.../csharp/linq/ and the
  *     IQueryable<T> API page (fetch 2026-07-21);
- *   - every card's verify.expect is the REAL stdout of run-csharp on :5101 ("7"; "hits=2"; "count=3");
+ *   - every card's verify.expect is the REAL stdout of run-csharp via this file's exec cards on the app backend (:5080) ("7"; "hits=2"; "count=3");
  *   - the s5 IL (Enumerable::Where Func vs Queryable::Where Expression) is a REAL Release compilation.
  *
  * Loop: cards c1..c3 map to backend review items `CS.S3.ienumerable-iqueryable/c{1..3}`.
@@ -83,7 +83,7 @@ export const ienumerableIqueryable: LessonData = {
   misconceptions: [
     {
       wrong: "IEnumerable и IQueryable — одно и то же, разница только в имени интерфейса",
-      hook: 'Дорогое заблуждение: <span class="wrong"><code>IEnumerable</code> и <code>IQueryable</code> взаимозаменяемы</span>. На деле от типа зависит, <b>во что компилятор превращает лямбду</b> и <b>где исполнится запрос</b>. Дословно: «The compiler compiles <span class="hl">IEnumerable&lt;T&gt; queries to delegates</span>. The compiler compiles IQueryable and IQueryable&lt;T&gt; queries to <span class="hl">expression trees</span>». <code>IEnumerable</code> = делегат, бежит в процессе; <code>IQueryable</code> = дерево выражения, которое EF Core транслирует в SQL и гоняет в БД. Ниже <b>пять разборов</b> и <b>машинная панель</b> — реальный IL: одна лямбда <code>x =&gt; x &gt; 2</code> компилируется в <code>Func&lt;&gt;</code> для <code>Enumerable.Where</code> и в <code>Expression&lt;Func&lt;&gt;&gt;</code> для <code>Queryable.Where</code>.',
+      hook: 'Дорогое заблуждение: <span class="wrong"><code>IEnumerable</code> и <code>IQueryable</code> взаимозаменяемы</span>. На деле от типа зависит, <b>во что компилятор превращает лямбду</b> и <b>где исполнится запрос</b>. Дословно: «The compiler compiles <span class="hl">IEnumerable&lt;T&gt; queries to delegates</span>. The compiler compiles IQueryable and IQueryable&lt;T&gt; queries to <span class="hl">expression trees</span>». <code>IEnumerable</code> = делегат, бежит в процессе; <code>IQueryable</code> = дерево выражения, которое EF Core транслирует в SQL и гоняет в БД. Ниже <b>четыре разбора</b> и <b>машинная панель</b> — реальный IL: одна лямбда <code>x =&gt; x &gt; 2</code> компилируется в <code>Func&lt;&gt;</code> для <code>Enumerable.Where</code> и в <code>Expression&lt;Func&lt;&gt;&gt;</code> для <code>Queryable.Where</code>.',
       source: "ms-linq",
     },
   ],
@@ -147,7 +147,7 @@ export const ienumerableIqueryable: LessonData = {
         { codeLine: 2, out: "Enumerable::Where(Func)", caption: 'Над <code>IEnumerable&lt;int&gt;</code> IL зовёт <span class="hl">Enumerable::Where(…, Func&lt;int,bool&gt;)</span> — аргумент <b>делегат</b> (реальный IL).', nodes: [{ id: "s", kind: "gate", at: { zone: "src2", row: 0 }, state: "ok", label: "лямбда", detail: "источник" }, { id: "f", kind: "gate", at: { zone: "func", row: 0 }, state: "ok", label: "Func<int,bool>", detail: "делегат", accent: true }], edges: [{ id: "e1", from: "s", to: "f", accent: true }] },
         { codeLine: 4, out: "Queryable::Where(Expression)", caption: 'Над <code>IQueryable&lt;int&gt;</code> IL зовёт <span class="hl">Queryable::Where(…, Expression&lt;Func&lt;&gt;&gt;)</span> — аргумент <b>дерево выражения</b> (реальный IL).', nodes: [{ id: "f", kind: "gate", at: { zone: "func", row: 0 }, state: "ok", label: "Func", detail: "делегат" }, { id: "x", kind: "gate", at: { zone: "expr", row: 0 }, state: "ok", label: "Expression<Func>", detail: "дерево", accent: true }], edges: [] },
       ],
-      explain: 'Машинная панель — прямое доказательство из Release-IL (ilspycmd). Один и тот же метод <code>n.Where(x =&gt; x &gt; 2)</code> компилируется в <b>два разных вызова</b> в зависимости от типа <code>n</code>: над <code>IEnumerable&lt;int&gt;</code> — <code>call …Enumerable::Where&lt;int32&gt;(IEnumerable&lt;int&gt;, <span class="hl">Func&lt;int,bool&gt;</span>)</code> (делегат); над <code>IQueryable&lt;int&gt;</code> — <code>call …Queryable::Where&lt;int32&gt;(IQueryable&lt;int&gt;, <span class="hl">Expression&lt;Func&lt;int,bool&gt;&gt;</span>)</code> (дерево). В первом случае компилятор кеширует делегат в статическом поле; во втором — генерирует код, СТРОЯЩИЙ дерево (<code>Expression.Parameter</code>, <code>Expression.Constant</code>, <code>Expression.GreaterThan</code>). Это буквально фраза доки «compiles IEnumerable&lt;T&gt; queries to delegates… IQueryable queries to expression trees», видимая в байткоде. (Exec-карты урока гоняют исполнимую <code>IEnumerable</code>-сторону; <code>IQueryable</code>/деревья доказаны этим IL, т.к. scripting-хост не референсит их сборки.)',
+      explain: 'Машинная панель — прямое доказательство из Release-IL (ilspycmd). Один и тот же метод <code>n.Where(x =&gt; x &gt; 2)</code> компилируется в <b>два разных вызова</b> в зависимости от типа <code>n</code>: над <code>IEnumerable&lt;int&gt;</code> — <code>call …Enumerable::Where&lt;int32&gt;(IEnumerable&lt;int&gt;, <span class="hl">Func&lt;int,bool&gt;</span>)</code> (делегат); над <code>IQueryable&lt;int&gt;</code> — <code>call …Queryable::Where&lt;int32&gt;(IQueryable&lt;int&gt;, <span class="hl">Expression&lt;Func&lt;int,bool&gt;&gt;</span>)</code> (дерево). В первом случае компилятор кеширует делегат в статическом поле; во втором — генерирует код, СТРОЯЩИЙ дерево (<code>Expression.Parameter</code>, <code>Expression.Constant</code>, <code>Expression.GreaterThan</code>). Это буквально фраза доки «The compiler compiles IEnumerable&lt;T&gt; queries to delegates. The compiler compiles IQueryable and IQueryable&lt;T&gt; queries to expression trees», видимая в байткоде. (Exec-карты урока гоняют исполнимую <code>IEnumerable</code>-сторону; <code>IQueryable</code>/деревья доказаны этим IL, т.к. scripting-хост не референсит их сборки.)',
       sources: ["ms-linq"],
     },
   ],
@@ -180,10 +180,10 @@ export const ienumerableIqueryable: LessonData = {
   ],
 
   takeaways: [
-    { icon: "why", k: "делегат vs дерево", v: '«compiles IEnumerable&lt;T&gt; queries to delegates… IQueryable queries to expression trees». Замер (IL): одна лямбда → <code>Func&lt;&gt;</code> для <code>Enumerable.Where</code>, <code>Expression&lt;Func&lt;&gt;&gt;</code> для <code>Queryable.Where</code>.' },
+    { icon: "why", k: "делегат vs дерево", v: '«compiles IEnumerable&lt;T&gt; queries to delegates… compiles IQueryable and IQueryable&lt;T&gt; queries to expression trees». Замер (IL): одна лямбда → <code>Func&lt;&gt;</code> для <code>Enumerable.Where</code>, <code>Expression&lt;Func&lt;&gt;&gt;</code> для <code>Queryable.Where</code>.' },
     { icon: "cost", k: "где исполняется", v: '<code>IEnumerable</code> — делегат в вашем процессе (LINQ to Objects). <code>IQueryable</code> — дерево транслируется провайдером «into native SQL queries that execute at the database». Тип «determines how the query is executed at runtime».' },
     { icon: "avoid", k: "не материализуй рано", v: 'Ранний <code>AsEnumerable()</code>/<code>ToList()</code> уводит фильтр из SQL в клиента → тянешь всю таблицу. В <code>IQueryable</code>-лямбду нельзя произвольный C# — только переводимое в дерево подмножество.' },
   ],
 
-  foot: 'урок · <b>IEnumerable vs IQueryable</b> · 5 анимир. разборов · IL-панель Func vs Expression · дизайн <b>mid</b>',
+  foot: 'урок · <b>IEnumerable vs IQueryable</b> · 4 анимир. разбора + IL-панель Func vs Expression · дизайн <b>mid</b>',
 };

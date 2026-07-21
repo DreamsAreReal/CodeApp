@@ -10,17 +10,17 @@
  * static-class extension operator. Called with instance syntax, `Range(1,10).EveryOther()`
  * compiles to a PLAIN STATIC CALL `MyOperators::EveryOther<int32>(IEnumerable<int>)` — "compiled
  * to the same IL" — and `new Widget().Tag()` binds to `Widget::Tag()` (instance), NOT the
- * extension. See docs/evidence/S3/L8-custom-operators.txt.
+ * extension. Measurements reproduce via this file's run-csharp exec cards.
  *
  * NOTE: run-csharp (CSharpScript) cannot host a TOP-LEVEL static class (it nests the class →
  * CS1109), so the extension-method DEFINITION is proven by the compiled IL + run; the exec cards
- * on :5101 run the SAME operator body as a local iterator (identical yield/deferred mechanics).
+ * in this file run the SAME operator body as a local iterator (identical yield/deferred mechanics).
  *
  * Accuracy contract (G4/G7/G8):
  *   - every English quote is VERBATIM from
  *     learn.microsoft.com/.../csharp/programming-guide/classes-and-structs/extension-methods
  *     ("Extension members" page) and the LINQ landing page (fetch 2026-07-21);
- *   - every card's verify.expect is the REAL stdout of run-csharp on :5101 ("1,3,5,7,9";
+ *   - every card's verify.expect is the REAL stdout of run-csharp (this file's exec cards) ("1,3,5,7,9";
  *     "before=0 after=5"; "21").
  *
  * Loop: cards c1..c3 map to backend review items `CS.S3.custom-operators/c{1..3}`.
@@ -131,7 +131,7 @@ export const customOperators: LessonData = {
       code: ["static class Ext { public static string Tag(this object o) => \"ext\"; }", "class Widget { public string Tag() => \"instance\"; }", "new Widget().Tag();   // → \"instance\", extension НЕ вызван"],
       scenes: [
         { codeLine: 2, caption: 'Компилятор сначала ищет <span class="hl">instance-метод</span> нужной сигнатуры в самом типе. Нашёл <code>Widget.Tag()</code> — берёт его.', nodes: [{ id: "i", kind: "gate", at: { zone: "inst", row: 0 }, state: "ok", label: "Widget.Tag()", detail: "instance найден", accent: true }], edges: [] },
-        { codeLine: 2, caption: 'Extension <code>Tag(this object)</code> <b>не вызывается</b>: «extension members always have <span class="hl">lower priority</span> than instance members».', nodes: [{ id: "i", kind: "gate", at: { zone: "inst", row: 0 }, state: "ok", label: "instance", detail: "выбран" }, { id: "e", kind: "gate", at: { zone: "extm", row: 0 }, state: "fail", label: "Ext.Tag(this object)", detail: "проигнорирован", accent: true }], edges: [] },
+        { codeLine: 2, caption: 'Extension <code>Tag(this object)</code> <b>не вызывается</b>: «extension members always have <span class="hl">lower priority</span> than instance (or static) members».', nodes: [{ id: "i", kind: "gate", at: { zone: "inst", row: 0 }, state: "ok", label: "instance", detail: "выбран" }, { id: "e", kind: "gate", at: { zone: "extm", row: 0 }, state: "fail", label: "Ext.Tag(this object)", detail: "проигнорирован", accent: true }], edges: [] },
         { codeLine: 2, caption: 'Extension вызовется <span class="hl">только если instance-метода нет</span>. Отсюда риск: добавили метод в тип — твой extension тихо «отвалился».', nodes: [{ id: "e", kind: "gate", at: { zone: "inst", row: 0 }, state: "ok", label: "нет instance", detail: "тогда extension" }, { id: "f", kind: "gate", at: { zone: "extm", row: 0 }, state: "ok", label: "fallback", detail: "extension сработает", accent: true }], edges: [] },
       ],
       explain: 'Связывание extension-методов — <b>compile-time</b>, с чёткой приоритезацией. Дословно: «You can use extension members to extend a class or interface, but <b>not to override behavior</b> defined in a class. An extension member with the same name and signature as an interface or class members are never called. At compile time, extension members always have <span class="hl">lower priority than instance (or static) members</span> defined in the type itself… When the compiler encounters a member invocation, it first looks for a match in the type\'s members. If no match is found, it searches for any extension members». Практический риск: если в тип позже добавят instance-метод с той же сигнатурой, вызовы «молча» переключатся на него — твой extension перестанет вызываться без единой ошибки компиляции.',
@@ -147,7 +147,7 @@ export const customOperators: LessonData = {
         { codeLine: 3, out: "call MyOperators::EveryOther", caption: 'В IL это <span class="hl">обычный статический вызов</span> <code>call MyOperators::EveryOther&lt;int32&gt;(IEnumerable&lt;int&gt;)</code> — seq передан <b>первым аргументом</b> (реальный IL).', nodes: [{ id: "c", kind: "gate", at: { zone: "call", row: 0 }, state: "ok", label: "seq.EveryOther()", detail: "синтаксис" }, { id: "il", kind: "gate", at: { zone: "ilz", row: 0 }, state: "ok", label: "call static", detail: "EveryOther(seq)", accent: true }], edges: [{ id: "e", from: "c", to: "il", accent: true }] },
         { codeLine: 4, out: "call instance Widget::Tag", caption: 'А <code>new Widget().Tag()</code> в IL — <span class="hl">call instance Widget::Tag()</span>: extension проигнорирован, instance выиграл (реальный IL).', nodes: [{ id: "il", kind: "gate", at: { zone: "call", row: 0 }, state: "ok", label: "EveryOther", detail: "static call" }, { id: "w", kind: "gate", at: { zone: "ilz", row: 0 }, state: "ok", label: "Widget::Tag", detail: "instance call", accent: true }], edges: [] },
       ],
-      explain: 'Машинная панель — реальный Release-IL (ilspycmd), доказывающий два факта. (1) <b>Instance-синтаксис — иллюзия</b>: <code>Enumerable.Range(1,10).EveryOther()</code> компилируется в <code>call …MyOperators::EveryOther&lt;int32&gt;(IEnumerable&lt;int&gt;)</code> — обычный статический вызов, где приёмник <code>seq</code> стал <b>первым аргументом</b>. Дословно: «Extension methods are static methods, but they\'re called as if they were instance methods… Both forms of extension methods are <span class="hl">compiled to the same IL</span>». (2) <b>Приоритет instance</b>: <code>new Widget().Tag()</code> компилируется в <code>call instance string Widget::Tag()</code> — extension <code>MyOperators::Tag</code> в IL <b>не вызывается</b>, что подтверждает «lower priority than instance members». (Реальный оператор снят компиляцией; exec-карты урока гоняют тело оператора локальным итератором, т.к. scripting-хост не хостит top-level static class.)',
+      explain: 'Машинная панель — реальный Release-IL (ilspycmd), доказывающий два факта. (1) <b>Instance-синтаксис — иллюзия</b>: <code>Enumerable.Range(1,10).EveryOther()</code> компилируется в <code>call …MyOperators::EveryOther&lt;int32&gt;(IEnumerable&lt;int&gt;)</code> — обычный статический вызов, где приёмник <code>seq</code> стал <b>первым аргументом</b>. Дословно: «Extension methods are static methods, but they\'re called as if they were instance methods… Both forms of extension methods are <span class="hl">compiled to the same IL</span>». (2) <b>Приоритет instance</b>: <code>new Widget().Tag()</code> компилируется в <code>call instance string Widget::Tag()</code> — extension <code>MyOperators::Tag</code> в IL <b>не вызывается</b>, что подтверждает «lower priority than instance (or static) members». (Реальный оператор снят компиляцией; exec-карты урока гоняют тело оператора локальным итератором, т.к. scripting-хост не хостит top-level static class.)',
       sources: ["ms-ext", "ms-il-ldloc"],
     },
   ],
@@ -165,7 +165,7 @@ export const customOperators: LessonData = {
       id: "c2", type: "predict-output", engagementLevel: "responding",
       question: '<code>IEnumerable&lt;int&gt; Track(IEnumerable&lt;int&gt; src, Action onEach){ foreach(var x in src){ onEach(); yield return x; } } int calls=0; var q = Track(Enumerable.Range(1,5), () =&gt; calls++); Console.Write($"before={calls} "); var list = q.ToList(); Console.Write($"after={calls}");</code> — что напечатает?',
       options: ["before=0 after=5", "before=5 after=5", "before=0 after=0", "before=1 after=5"], correctIndex: 0, xp: 10,
-      okText: 'Кастомный оператор на <code>yield return</code> — <b>deferred</b>: до <code>ToList</code> счётчик 0 (before=0); перечисление вызывает <code>onEach</code> 5 раз (after=5). Именно поэтому «custom implementations… should use deferred execution».',
+      okText: 'Кастомный оператор на <code>yield return</code> — <b>deferred</b>: до <code>ToList</code> счётчик 0 (before=0); перечисление вызывает <code>onEach</code> 5 раз (after=5). Именно поэтому «Custom implementations … should use deferred execution».',
       noText: '<code>yield return</code> делает оператор ленивым: объявление не исполняет тело → before=0; <code>ToList</code> прогоняет 5 элементов → after=5. Реальный вывод: <b>before=0 after=5</b>.',
       verify: { kind: "exec", run: "dotnet run", expect: "before=0 after=5" }, sourceRefs: ["ms-linq"],
     },
@@ -180,9 +180,9 @@ export const customOperators: LessonData = {
   ],
 
   takeaways: [
-    { icon: "why", k: "свой оператор = extension", v: 'LINQ-операторы сами extension-методы; свой пишется так же: top-level <code>static class</code>, <code>static</code> метод, первый параметр <code>this IEnumerable&lt;T&gt;</code>, <code>using</code>. «add methods to existing types without… modifying the original type».' },
-    { icon: "cost", k: "обязательно deferred", v: '«Custom implementations… should use deferred execution» — реализуй через <code>yield return</code> (замер: before=0 after=5). Так оператор ленив, streaming, композируется с <code>Where/Select</code> и работает с бесконечными источниками.' },
-    { icon: "avoid", k: "instance бьёт extension", v: 'Связывание compile-time: «extension members always have lower priority than instance members» (замер IL: <code>widget.Tag()</code> → instance-вызов). Добавили instance-метод той же сигнатуры — extension молча перестал вызываться.' },
+    { icon: "why", k: "свой оператор = extension", v: 'LINQ-операторы сами extension-методы; свой пишется так же: top-level <code>static class</code>, <code>static</code> метод, первый параметр <code>this IEnumerable&lt;T&gt;</code>, <code>using</code>. «"add" methods to existing types without … modifying the original type».' },
+    { icon: "cost", k: "обязательно deferred", v: '«Custom implementations … should use deferred execution» — реализуй через <code>yield return</code> (замер: before=0 after=5). Так оператор ленив, streaming, композируется с <code>Where/Select</code> и работает с бесконечными источниками.' },
+    { icon: "avoid", k: "instance бьёт extension", v: 'Связывание compile-time: «extension members always have lower priority than instance (or static) members» (замер IL: <code>widget.Tag()</code> → instance-вызов). Добавили instance-метод той же сигнатуры — extension молча перестал вызываться.' },
   ],
 
   foot: 'урок · <b>кастомные операторы LINQ</b> · 5 анимир. разборов · IL-панель: extension → статический вызов · дизайн <b>mid</b>',

@@ -8,7 +8,7 @@
  * SIGNATURE machine panel (s5): the default Binder's ChangeType — an Int32 argument is coerced
  * to the method's Int64 parameter (a documented WIDENING coercion) and the call succeeds; a
  * String→Double argument (NOT a widening coercion) throws MissingMethodException under the
- * default binder (own run-csharp measurements on :5103).
+ * default binder (REAL run-csharp measurement — this file's exec cards).
  *
  * Accuracy contract (G4/G7/G8):
  *   - English quotes VERBATIM from
@@ -16,7 +16,7 @@
  *     (microsoft_docs_fetch-verified 2026-07-21, ms.date 2017-03-30);
  *   - the "default binder widens Int32→Int64 but not String→Double" behaviour is an OWN
  *     measured finding matching the page's widening-coercion table (string→double is absent);
- *   - every card verify.expect is REAL run-csharp stdout on :5103
+ *   - every card verify.expect is REAL run-csharp stdout (this file's exec cards)
  *     (c1: 42 · c2: late/System.Text.StringBuilder · c3: long:42/str:hi).
  *
  * Loop: cards c1..c3 map to backend review items `CS.S6.dynamic-loading/c{1..3}`.
@@ -170,7 +170,7 @@ export const dynamicLoading: LessonData = {
       id: "c3", type: "predict-output", engagementLevel: "responding",
       question: '<code>public class D { public string PrintValue(long v)=>$"long:{v}"; public string PrintValue(string v)=>$"str:{v}"; }</code><br/><code>WriteLine(t.InvokeMember("PrintValue", InvokeMethod, null, d, new object[]{42L}));</code><br/><code>WriteLine(t.InvokeMember("PrintValue", InvokeMethod, null, d, new object[]{"hi"}));</code> — обе строки?',
       options: ["long:42\\nstr:hi", "str:42\\nstr:hi", "long:42\\nlong:hi", "str:hi\\nlong:42"], correctIndex: 0, xp: 10,
-      okText: 'Binder выбирает перегрузку по <span class="hl">типу аргумента</span>: <code>42L</code> (long) → <code>PrintValue(long)</code> → <b>long:42</b>; <code>"hi"</code> (string) → <b>str:hi</b>. «BindToMethod selects the appropriate method».',
+      okText: 'Binder выбирает перегрузку по <span class="hl">типу аргумента</span>: <code>42L</code> (long) → <code>PrintValue(long)</code> → <b>long:42</b>; <code>"hi"</code> (string) → <b>str:hi</b>. «The appropriate method is selected by the call to <code>BindToMethod</code>».',
       noText: 'Разрешение перегрузок в late binding живёт: тип фактического аргумента решает. <code>long</code> → <code>long:42</code>, <code>string</code> → <code>str:hi</code>.',
       verify: { kind: "exec", run: "dotnet run", expect: "long:42\nstr:hi" }, sourceRefs: ["ms-dynload", "ms-invokemember"],
     },
@@ -178,7 +178,7 @@ export const dynamicLoading: LessonData = {
 
   takeaways: [
     { icon: "why", k: "Момент, не скорость", v: 'Late binding — связывание в <b>рантайме</b>, а не на компиляции. Reflection — «infrastructure… to implement implicit late binding». Тип может прийти из конфига/ввода.' },
-    { icon: "cost", k: "Протокол", v: 'Загрузить сборку → <code>asm.GetType("имя")</code> → <code>Activator.CreateInstance</code> → <code>InvokeMember("метод", args)</code>. <code>CreateInstance</code> — «specialized form of InvokeMember».' },
+    { icon: "cost", k: "Протокол", v: 'Загрузить сборку → <code>asm.GetType("имя")</code> → <code>Activator.CreateInstance</code> → <code>InvokeMember("метод", args)</code>. <code>CreateInstance</code> — одна из «specialized forms of <code>InvokeMember</code>».' },
     { icon: "avoid", k: "Binder строг", v: '<code>Binder</code> выбирает член (<code>BindToMethod</code>) и <b>коэрцит</b> аргументы (<code>ChangeType</code>). Дефолт делает <span class="hl">только widening</span>: <code>Int32→Int64</code> — да, <code>String→Double</code> — бросает.' },
   ],
 

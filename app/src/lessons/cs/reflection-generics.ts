@@ -8,13 +8,13 @@
  * SIGNATURE machine panel (s5): the open definition List<> (IsGenericTypeDefinition=True,
  * ContainsGenericParameters=True → NOT instantiable) is closed with MakeGenericType(int) into
  * List`1 (ContainsGenericParameters=False → instantiable). The flags flip and the type name
- * grows its `1 arity suffix — own run-csharp measurements on :5103.
+ * grows its `1 arity suffix — REAL run-csharp measurement (this file's exec cards, app backend :5080).
  *
  * Accuracy contract (G4/G7/G8):
  *   - English quotes VERBATIM from
  *     learn.microsoft.com/.../fundamentals/reflection/reflection-and-generic-types
  *     (microsoft_docs_fetch-verified 2026-07-21, ms.date 2017-03-30);
- *   - every card verify.expect is REAL run-csharp stdout on :5103
+ *   - every card verify.expect is REAL run-csharp stdout (this file's exec cards, app backend :5080)
  *     (c1: True/False · c2: open def:True instantiable:False / closed:List`1 instantiable:True ·
  *      c3: Int32/String); the ArgumentException on open-type CreateInstance is an own measurement.
  *
@@ -119,7 +119,7 @@ export const reflectionGenerics: LessonData = {
         { codeLine: 1, out: "", caption: '<code>GetGenericTypeDefinition()</code> <span class="hl">снимает аргументы</span> → шаблон <code>Dictionary&lt;,&gt;</code>. Возвращаемся к определению.', nodes: [{ id: "c1", kind: "obj", at: { zone: "made", row: 0 }, typeTag: "Dictionary<int,string>", value: "закрыт" }, { id: "def", kind: "obj", at: { zone: "def", row: 0 }, typeTag: "Dictionary<,>", value: "шаблон", accent: true }], edges: [{ id: "e1", from: "c1", to: "def", accent: true }] },
         { codeLine: 2, out: "", caption: '<code>MakeGenericType(int, MyClass)</code> <span class="hl">подставляет</span> новые аргументы → <code>Dictionary&lt;int,MyClass&gt;</code>. Новый закрытый тип.', nodes: [{ id: "def", kind: "obj", at: { zone: "def", row: 0 }, typeTag: "Dictionary<,>", value: "шаблон" }, { id: "c2", kind: "obj", at: { zone: "made", row: 0 }, typeTag: "Dictionary<int,MyClass>", value: "новый", accent: true }], edges: [{ id: "e2", from: "def", to: "c2", accent: true }] },
       ],
-      explain: 'Между шаблоном и закрытым типом — round-trip. Из закрытого к определению: «Use the <code>GetGenericTypeDefinition</code> method to obtain the generic type definition». Из определения к закрытому: «use the <code>MakeGenericType</code> method to create a <b>closed</b> generic type». Доковый пример дословно: «if you have a <code>Type</code> representing <code>Dictionary&lt;int, string&gt;</code> and you want to create <code>Dictionary&lt;string, MyClass&gt;</code>, you can use <code>GetGenericTypeDefinition</code> to get <code>Dictionary&lt;TKey, TValue&gt;</code> and then use <code>MakeGenericType</code>». Важно: только имея <b>определение</b>, можно подставить аргументы — «You must have a generic type or method definition».',
+      explain: 'Между шаблоном и закрытым типом — round-trip. Из закрытого к определению: «Use the <code>GetGenericTypeDefinition</code> method to obtain the generic type definition». Из определения к закрытому: «use the <code>MakeGenericType</code> method to create a <b>closed</b> generic type». Доковый пример дословно: «if you have a <code>Type</code> object representing <code>Dictionary&lt;int, string&gt;</code> and you want to create the type <code>Dictionary&lt;string, MyClass&gt;</code>, you can use the <code>GetGenericTypeDefinition</code> method to get a <code>Type</code> representing <code>Dictionary&lt;TKey, TValue&gt;</code> and then use the <code>MakeGenericType</code> method to produce a <code>Type</code> representing <code>Dictionary&lt;int, MyClass&gt;</code>». Важно: только имея <b>определение</b>, можно подставить аргументы — «You must have a generic type or method definition».',
       sources: ["ms-refgen", "ms-makegen"],
     },
     {
@@ -131,7 +131,7 @@ export const reflectionGenerics: LessonData = {
         { codeLine: 2, out: "", caption: 'У <b>открытого</b> тот же метод даёт <span class="hl">параметры</span>: <code>[TKey, TValue]</code> — это тоже <code>Type</code>-объекты.', nodes: [{ id: "t", kind: "obj", at: { zone: "type", row: 0 }, typeTag: "Dictionary<,>", value: "open" }, { id: "a0", kind: "chip", at: { zone: "args", row: 0 }, value: "TKey", accent: true }, { id: "a1", kind: "chip", at: { zone: "args", row: 1 }, value: "TValue" }], edges: [] },
         { codeLine: 3, out: "", caption: 'Различить их — <code>IsGenericParameter</code>: <code>True</code> для <code>TKey</code>/<code>TValue</code>, <code>False</code> для <code>Int32</code>/<code>String</code>.', nodes: [{ id: "t", kind: "obj", at: { zone: "type", row: 0 }, typeTag: "Dictionary<,>", value: "open" }, { id: "a0", kind: "gate", at: { zone: "args", row: 0 }, state: "ok", label: "TKey", detail: "IsGenericParameter=T", accent: true }, { id: "a1", kind: "gate", at: { zone: "args", row: 1 }, state: "fail", label: "Int32", detail: "IsGenericParameter=F" }], edges: [] },
       ],
-      explain: 'Список спутников читается одним методом: «Use the <code>Type.GetGenericArguments</code> method to obtain an <b>array of <code>Type</code> objects</b> that represent the type parameters or type arguments of a generic type». У закрытого это аргументы (<code>Int32</code>, <code>String</code>), у открытого — параметры (<code>TKey</code>, <code>TValue</code>). Отличить элемент помогает <code>IsGenericParameter</code>: «The <code>IsGenericParameter</code> property is <b>true</b> if the element is a <span class="hl">type parameter</span>». Про параметр reflection знает больше: «its <b>source</b>, its <b>position</b> (<code>GenericParameterPosition</code>), and its <b>constraints</b> (<code>GetGenericParameterConstraints</code>)» — вплоть до вариантности через <code>GenericParameterAttributes</code>.',
+      explain: 'Список спутников читается одним методом: «Use the <code>Type.GetGenericArguments</code> method to obtain an <b>array of <code>Type</code> objects</b> that represent the type parameters or type arguments of a generic type». У закрытого это аргументы (<code>Int32</code>, <code>String</code>), у открытого — параметры (<code>TKey</code>, <code>TValue</code>). Отличить элемент помогает <code>IsGenericParameter</code>: «The <code>IsGenericParameter</code> property is <b>true</b> if the element is a <span class="hl">type parameter</span>». Про параметр reflection знает больше: «You can determine the type parameter\'s <b>source</b>, its <b>position</b>, and its <b>constraints</b>» — позицию читает <code>GenericParameterPosition</code>, ограничения — <code>GetGenericParameterConstraints</code>, вплоть до вариантности через <code>GenericParameterAttributes</code>.',
       sources: ["ms-refgen"],
     },
     {

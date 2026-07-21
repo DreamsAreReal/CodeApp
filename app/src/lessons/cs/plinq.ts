@@ -8,19 +8,20 @@
  *
  * SIGNATURE machine panel (s6): a REAL PLINQ run (compiled net10.0 Release console app) shows
  * AsParallel actually spreading work across >=2 worker threads (evens=100000 threadsUsed>=2:True),
- * while AsOrdered preserves source order (20,40,...,200). See docs/evidence/S3/L7-plinq.txt.
+ * while AsOrdered preserves source order (20,40,...,200).
  *
  * NOTE on exec cards: the run-csharp scripting host references System.Linq (Enumerable) but NOT
  * System.Linq.Parallel, so `AsParallel` cannot run there. The parallel behaviour is proven by the
- * compiled-app evidence above; the exec cards on :5101 run the SEQUENTIAL form, whose result PLINQ
- * with AsOrdered()/Count()/Sum() is DEFINED to reproduce exactly (result-equivalence is PLINQ's
- * core guarantee) — the measured parallel outputs (A/B/C) match the card outputs 1:1.
+ * compiled-app measurement above; the exec cards (this file's cards, run-csharp on the app backend
+ * :5080) run the SEQUENTIAL form, whose result PLINQ with AsOrdered()/Count()/Sum() is DEFINED to
+ * reproduce exactly (result-equivalence is PLINQ's core guarantee) — the measured parallel outputs
+ * (A/B/C) match the card outputs 1:1.
  *
  * Accuracy contract (G4/G7/G8):
  *   - every English quote is VERBATIM from
  *     learn.microsoft.com/.../standard/parallel-programming/introduction-to-plinq (fetch 2026-07-21);
- *   - every card's verify.expect is the REAL stdout of run-csharp on :5101 and equals the measured
- *     PLINQ output ("20,40,...,200"; "100000"; "dopSum=5050").
+ *   - every card's verify.expect is the REAL stdout of run-csharp (this file's exec cards on the app
+ *     backend :5080) and equals the measured PLINQ output ("20,40,...,200"; "100000"; "dopSum=5050").
  *
  * Loop: cards c1..c3 map to backend review items `CS.S3.plinq/c{1..3}`.
  */
@@ -85,7 +86,7 @@ export const plinq: LessonData = {
   misconceptions: [
     {
       wrong: "добавил AsParallel() — и любой LINQ-запрос автоматически стал быстрее",
-      hook: 'Наивная надежда: <span class="wrong">«прицепил <code>AsParallel()</code> — запрос ускорился»</span>. Не всегда: «parallelism can introduce its own complexities, and <b>not all query operations run faster in PLINQ. In fact, parallelization actually slows down certain queries</b>». PLINQ — это параллельная реализация LINQ: «Parallel LINQ (PLINQ) is a <span class="hl">parallel implementation of the LINQ pattern</span>». Он <b>партиционирует</b> источник на потоки, но по умолчанию <b>консервативен</b> и порядок не хранит. Ниже <b>шесть разборов</b> и <b>машинная панель</b> — реальный прогон PLINQ: <code>AsParallel</code> раскидал работу на <span class="hl">≥2 потока</span> (threadsUsed≥2), а <code>AsOrdered</code> сохранил порядок (20,40,…,200).',
+      hook: 'Наивная надежда: <span class="wrong">«прицепил <code>AsParallel()</code> — запрос ускорился»</span>. Не всегда: «parallelism can introduce its own complexities, and <b>not all query operations run faster in PLINQ. In fact, parallelization actually slows down certain queries</b>». PLINQ — это параллельная реализация LINQ: «Parallel LINQ (PLINQ) is a <span class="hl">parallel implementation of the Language-Integrated Query (LINQ) pattern</span>». Он <b>партиционирует</b> источник на потоки, но по умолчанию <b>консервативен</b> и порядок не хранит. Ниже <b>шесть разборов</b> и <b>машинная панель</b> — реальный прогон PLINQ: <code>AsParallel</code> раскидал работу на <span class="hl">≥2 потока</span> (threadsUsed≥2), а <code>AsOrdered</code> сохранил порядок (20,40,…,200).',
       source: "ms-plinq",
     },
   ],
@@ -112,7 +113,7 @@ export const plinq: LessonData = {
         { codeLine: 2, caption: 'Каждый сегмент считает <b>отдельный worker-поток</b> — параллельно на нескольких процессорах.', nodes: [{ id: "s", kind: "gate", at: { zone: "part", row: 0 }, state: "ok", label: "сегменты", detail: "partitioning" }, { id: "t", kind: "gate", at: { zone: "part", row: 1 }, state: "ok", label: "worker-потоки", detail: "по сегменту на поток", accent: true }], edges: [] },
         { codeLine: 2, caption: 'Число партиций <span class="hl">фиксировано</span>, но данные могут переназначаться между ними в рантайме для балансировки нагрузки.', nodes: [{ id: "t", kind: "gate", at: { zone: "part", row: 0 }, state: "ok", label: "фикс. число партиций", detail: "load balancing внутри", accent: true }], edges: [] },
       ],
-      explain: 'Как PLINQ достигает параллелизма — дословно: «The primary difference is that <b>PLINQ attempts to make full use of all the processors on the system</b>. It does this by <span class="hl">partitioning the data source into segments, and then executing the query on each segment on separate worker threads in parallel</span> on multiple processors. In many cases, parallel execution means that the query runs significantly faster». По умолчанию «PLINQ uses <b>all of the processors on the host computer</b>». Про партиции: «PLINQ supports a <b>fixed number of partitions</b> (although data may be dynamically reassigned to those partitions during runtime for load balancing)». Машинная панель докажет партиционирование, посчитав реальное число задействованных потоков (≥2).',
+      explain: 'Как PLINQ достигает параллелизма — дословно: «The primary difference is that <b>PLINQ attempts to make full use of all the processors on the system</b>. It does this by <span class="hl">partitioning the data source into segments, and then executing the query on each segment on separate worker threads in parallel</span> on multiple processors. In many cases, parallel execution means that the query runs significantly faster». По умолчанию «PLINQ uses <b>all of the processors on the host computer</b>». Про партиции: «PLINQ supports a <b>fixed number of partitions</b> (although data may be dynamically reassigned to those partitions during runtime for load balancing.)». Машинная панель докажет партиционирование, посчитав реальное число задействованных потоков (≥2).',
       sources: ["ms-plinq"],
     },
     {
@@ -162,7 +163,7 @@ export const plinq: LessonData = {
         { codeLine: 2, out: "threadsUsed>=2: True", caption: 'Реальный прогон: <span class="hl">threadsUsed ≥ 2 = True</span>, evens=100000. Партиционирование раздало сегменты на несколько worker-потоков.', nodes: [{ id: "t", kind: "gate", at: { zone: "threads", row: 0 }, state: "ok", label: "threadsUsed≥2", detail: "True · параллельно", accent: true }], edges: [] },
         { codeLine: 4, out: "20,40,60,80,100,120,140,160,180,200", caption: '<b>(B)</b> <code>AsOrdered()</code> при параллельном счёте сохранил <span class="hl">исходный порядок</span>: <b>20,40,…,200</b> (реальный прогон). Тот же результат, что у последовательного LINQ.', nodes: [{ id: "t", kind: "gate", at: { zone: "threads", row: 0 }, state: "ok", label: "≥2 потока", detail: "True" }, { id: "o", kind: "gate", at: { zone: "ordered", row: 0 }, state: "ok", label: "AsOrdered", detail: "20,40,…,200", accent: true }], edges: [] },
       ],
-      explain: 'Машинная панель — <b>реальный</b> прогон PLINQ (скомпилированное net10.0-приложение; <code>AsParallel</code> недоступен в scripting-хосте урока, поэтому замер снят отдельным бинарём). (A) <code>Range(1,200000).AsParallel().Where(…)</code> с подсчётом уникальных <code>ManagedThreadId</code> внутри предиката дал <b>threadsUsed≥2: True</b> и evens=100000 — партиционирование действительно раскидало работу на несколько потоков. (B) <code>Range(1,20).AsParallel().AsOrdered().Where(even).Select(x*10)</code> вернул <b>20,40,60,80,100,120,140,160,180,200</b> — параллельный счёт, но порядок источника восстановлен. (C) <code>WithDegreeOfParallelism(2).Sum(1..100)</code> = 5050 — ограничение числа процессоров не теряет элементы. Три числа — три гарантии PLINQ: параллелит (потоки≥2), умеет сохранять порядок, и результат равен последовательному. Exec-карты урока гоняют последовательную форму на :5101 — её вывод PLINQ с <code>AsOrdered/Count/Sum</code> по определению повторяет 1:1.',
+      explain: 'Машинная панель — <b>реальный</b> прогон PLINQ (скомпилированное net10.0-приложение; <code>AsParallel</code> недоступен в scripting-хосте урока, поэтому замер снят отдельным бинарём). (A) <code>Range(1,200000).AsParallel().Where(…)</code> с подсчётом уникальных <code>ManagedThreadId</code> внутри предиката дал <b>threadsUsed≥2: True</b> и evens=100000 — партиционирование действительно раскидало работу на несколько потоков. (B) <code>Range(1,20).AsParallel().AsOrdered().Where(even).Select(x*10)</code> вернул <b>20,40,60,80,100,120,140,160,180,200</b> — параллельный счёт, но порядок источника восстановлен. (C) <code>WithDegreeOfParallelism(2).Sum(1..100)</code> = 5050 — ограничение числа процессоров не теряет элементы. Три числа — три гарантии PLINQ: параллелит (потоки≥2), умеет сохранять порядок, и результат равен последовательному. Exec-карты урока (run-csharp на бэкенде приложения :5080) гоняют последовательную форму — её вывод PLINQ с <code>AsOrdered/Count/Sum</code> по определению повторяет 1:1.',
       sources: ["ms-plinq"],
     },
   ],
@@ -195,7 +196,7 @@ export const plinq: LessonData = {
   ],
 
   takeaways: [
-    { icon: "why", k: "PLINQ = параллельный LINQ", v: '«a parallel implementation of the LINQ pattern». <code>AsParallel()</code> партиционирует источник «into segments… on separate worker threads» (замер: threadsUsed≥2). Deferred, как обычный LINQ.' },
+    { icon: "why", k: "PLINQ = параллельный LINQ", v: '«a parallel implementation of the Language-Integrated Query (LINQ) pattern». <code>AsParallel()</code> партиционирует источник «into segments… on separate worker threads» (замер: threadsUsed≥2). Deferred, как обычный LINQ.' },
     { icon: "cost", k: "порядок и консервативность", v: 'По умолчанию порядок НЕ сохранён; <code>AsOrdered</code> «buffered and sorted» — медленнее (замер: 20,40,…,200). PLINQ «conservative»: небезопасно/невыгодно → sequential. «not all query operations run faster».' },
     { icon: "avoid", k: "меряй, не гадай", v: 'Result-эквивалентность гарантирована (замер: count=100000, sum=5050 == sequential). Но ускорение — нет: «parallelization actually slows down certain queries». <code>ForAll</code> без merge, но приёмник — <code>ConcurrentBag</code>.' },
   ],

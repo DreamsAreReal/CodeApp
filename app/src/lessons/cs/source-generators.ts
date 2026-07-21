@@ -9,7 +9,7 @@
  * SIGNATURE machine panel (s5): the same "describe an object's fields" result computed two ways —
  * the reflection path makes N runtime GetValue calls (measured: 2), the generated-code path makes
  * 0. Both print the same string; only the mechanism (and its runtime cost) differs. Own run-csharp
- * measurements on :5103.
+ * measurements (this file's exec cards).
  *
  * NOTE (honesty): the run-csharp sandbox (Roslyn CSharpScript) cannot HOST a generator, so the
  * exec cards run (a) the runtime-reflection alternative and (b) the ORDINARY C# a generator emits
@@ -21,7 +21,7 @@
  *     learn.microsoft.com/.../csharp/roslyn-sdk/ (the /source-generators-overview URL resolves to
  *     this same page) (microsoft_docs_fetch-verified 2026-07-21, ms.date 2024-10-25);
  *   - the additive-only property is stated as a paraphrase (NOT a quote — it is not on that page);
- *   - every card verify.expect is REAL run-csharp stdout on :5103
+ *   - every card verify.expect is REAL run-csharp stdout (this file's exec cards)
  *     (c1: Name=Ada, Age=36 · c2: Name=Ada, Age=36 · c3: (1, 2)/(9, 9)); the panel counter
  *     (reflection GetValue calls: 2 / generated path: 0) is an own measurement.
  *
@@ -81,7 +81,7 @@ export const sourceGenerators: LessonData = {
   edgeCases: [
     { text: "Генератор <b>интроспектит компиляцию</b>: «Source generators are able to read the contents of the compilation before running… introspect both user C# code and generator-specific files».", source: "ms-roslyn" },
     { text: "Генератор <b>только добавляет</b> код (additive-only): он эмитит новые <code>.cs</code>, но не переписывает твой исходник — то же, что делал бы reflection, но на компиляции.", source: "ms-roslyn" },
-    { text: "Reflection делает то же в рантайме: «You can use reflection to dynamically create an instance… invoke its methods» — но платит на каждом вызове; генератор платит один раз при билде.", source: "ms-reflection" },
+    { text: "Reflection делает то же в рантайме: «You can use reflection to dynamically create an instance of a type… invoke the type's methods» — но платит на каждом вызове; генератор платит один раз при билде.", source: "ms-reflection" },
   ],
 
   misconceptions: [
@@ -101,7 +101,7 @@ export const sourceGenerators: LessonData = {
         { codeLine: 1, out: "", caption: '<b>Reflection</b> читает метаданные и вызывает <span class="hl">в рантайме</span> — на каждом запуске программы, снова и снова.', nodes: [{ id: "r", kind: "gate", at: { zone: "runtime", row: 0 }, state: "ok", label: "GetValue(obj)", detail: "каждый вызов", accent: true }], edges: [] },
         { codeLine: 3, out: "", caption: '<b>Source generator</b> делает работу <span class="hl">на компиляции</span>: анализирует код и эмитит готовый <code>.cs</code>. В рантайме — обычный вызов.', nodes: [{ id: "r", kind: "gate", at: { zone: "runtime", row: 0 }, state: "ok", label: "GetValue(obj)", detail: "каждый вызов" }, { id: "g", kind: "gate", at: { zone: "compile", row: 0 }, state: "ok", label: "emit .cs", detail: "один раз при билде", accent: true }], edges: [] },
       ],
-      explain: 'Оба решают одну задачу — «код, который знает о других типах» — но в <b>разные моменты</b>. Reflection — рантайм-интроспекция: «You can use reflection to dynamically create an instance of a type… invoke its methods or access its fields and properties», и это происходит на каждом вызове. Source generator — <b>compile-time</b>: «Source generators aim to enable <span class="hl">compile time metaprogramming</span>, that is, code that can be created at compile time and added to the compilation». Он анализирует программу до её запуска и дописывает готовый исходник. В рантайме этот код — обычный, без reflection-накладных. Так работают <code>[LoggerMessage]</code>, <code>[GeneratedRegex]</code>, System.Text.Json — генерируют то, что раньше делал reflection.',
+      explain: 'Оба решают одну задачу — «код, который знает о других типах» — но в <b>разные моменты</b>. Reflection — рантайм-интроспекция: «You can use reflection to dynamically create an instance of a type… invoke the type\'s methods or access its fields and properties», и это происходит на каждом вызове. Source generator — <b>compile-time</b>: «Source generators aim to enable <span class="hl">compile time metaprogramming</span>, that is, code that can be created at compile time and added to the compilation». Он анализирует программу до её запуска и дописывает готовый исходник. В рантайме этот код — обычный, без reflection-накладных. Так работают <code>[LoggerMessage]</code>, <code>[GeneratedRegex]</code>, System.Text.Json — генерируют то, что раньше делал reflection.',
       sources: ["ms-roslyn", "ms-reflection"],
     },
     {

@@ -7,13 +7,13 @@
  * create an instance and invoke a method with nothing but its metadata.
  *
  * SIGNATURE machine panel (s5): the "level below" — typeof(int).GetType().Name is the REAL
- * internal CLR class you actually hold: RuntimeType (own run-csharp measurement on :5103,
- * evidence in the header of each card's verify).
+ * internal CLR class you actually hold: RuntimeType (REAL run-csharp measurement via this
+ * file's exec cards on the app backend, evidence in each card's verify).
  *
  * Accuracy contract (G4/G7/G8):
  *   - every English quote is VERBATIM from learn.microsoft.com/.../fundamentals/reflection/overview
  *     (microsoft_docs_fetch-verified 2026-07-21, canonical URL ms.date 2024-03-27);
- *   - every card's verify.expect is the REAL stdout of the backend run-csharp endpoint on :5103
+ *   - every card's verify.expect is the REAL stdout of the run-csharp exec cards on the app backend
  *     (c1: RuntimeType · c2: System.Private.Uri / System.Private.Uri.dll · c3: hi / StringBuilder);
  *   - the s5 machine-panel number (a Type is really a RuntimeType) is an OWN measurement.
  *

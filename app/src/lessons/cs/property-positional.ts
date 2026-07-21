@@ -8,13 +8,15 @@
  *
  * SIGNATURE machine panel (s5): the Deconstruct call — a readonly struct Point with
  * Deconstruct(out x, out y) feeds (0,0)/(1,0)/(3,4) into positional arms by position. REAL
- * run-csharp measurement (:5102): Origin / positive X basis end / Just a point.
+ * run-csharp measurement (this file's exec cards, app backend :5080): Origin / positive X
+ * basis end / Just a point.
  *
  * Accuracy contract (G4/G7/G8):
  *   - every English quote is VERBATIM from the cited Learn patterns + deconstruct pages
  *     (fetch-verified 2026-07-21);
  *   - every card's verify.expect is REAL stdout from the backend run-csharp endpoint
- *     (:5102): "0.10\n0.05\n0.02" / "Origin\npositive X basis end\nJust a point" / "True\nFalse".
+ *     (this file's exec cards, app backend :5080): "0.10\n0.05\n0.02" / "Origin\npositive X
+ *     basis end\nJust a point" / "True\nFalse".
  *
  * Loop: cards c1..c3 map to backend review items `CS.S5.property-positional/c{1..3}`.
  */
