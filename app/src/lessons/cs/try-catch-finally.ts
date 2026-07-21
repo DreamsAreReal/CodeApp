@@ -22,9 +22,10 @@
 import type { Zone } from "../../engine/index.ts";
 import type { LessonData } from "../types.ts";
 
-// s1: the three try forms.
+// s1: the three try forms. Tall zone (h=234 → inner 218u) so three stacked gate rows
+// (measured 212u total) fit with PAD≥8 (viz-fit AUTHORING-PROOF).
 const Z_FORMS: Zone[] = [
-  { id: "forms", x: 14, y: 34, w: 312, h: 168, cls: "vz-zone", label: "ТРИ ФОРМЫ try", labelCls: "vz-zlabel", lx: 170, ly: 22, sub: "try-catch · try-finally · try-catch-finally", subCls: "vz-zsub", subY: 40 },
+  { id: "forms", x: 14, y: 34, w: 312, h: 234, cls: "vz-zone", label: "ТРИ ФОРМЫ try", labelCls: "vz-zlabel", lx: 170, ly: 22, sub: "try-catch · try-finally · try-catch-finally", subCls: "vz-zsub", subY: 40 },
 ];
 
 // s2: catch clause names a base type, matches derived.
@@ -86,7 +87,7 @@ export const tryCatchFinally: LessonData = {
   segments: [
     {
       id: "s1", num: "01", kicker: "Три формы", title: "try-catch · try-finally · try-catch-finally",
-      viewBox: "0 0 340 210", zones: Z_FORMS,
+      viewBox: "0 0 340 276", zones: Z_FORMS,
       code: ["try { … } catch (E e) { … }              // обработать ошибку", "try { … } finally { … }                  // гарантировать очистку", "try { … } catch (E e) { … } finally { … } // и то, и другое"],
       scenes: [
         { codeLine: 0, out: "", caption: '<code>try-catch</code> — «to handle exceptions that might occur during execution of the code inside a <code>try</code> block». <span class="hl">Ловим</span> и обрабатываем.', nodes: [{ id: "tc", kind: "gate", at: { zone: "forms", row: 0 }, state: "ok", label: "try-catch", detail: "обработка", accent: true }], edges: [] },
