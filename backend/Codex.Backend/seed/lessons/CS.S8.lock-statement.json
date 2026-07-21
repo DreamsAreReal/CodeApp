@@ -1,0 +1,46 @@
+{
+  "id": "CS.S8.lock-statement",
+  "track": "CS",
+  "section": "CS.S8",
+  "module": "S8.3",
+  "title": "lock и System.Threading.Lock (.NET 9+)",
+  "status": "published",
+  "order": 73,
+  "sources": [
+    { "id": "ms-lock", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/lock", "date": "2026-01-20" },
+    { "id": "ms-locktype", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/api/system.threading.lock", "date": "2026-01-20" },
+    { "id": "ms-basics", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/standard/threading/managed-threading-basics", "date": "2026-07-07" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "100 tasks each Credit 10 under lock; the critical section prevents lost updates and WaitAll makes the total deterministic: 1000 + 100*10 = 2000",
+      "code": "using System; using System.Threading; using System.Threading.Tasks; object gate = new object(); decimal balance = 1000; void Credit(decimal a){ lock(gate){ balance += a; } } var tasks = new Task[100]; for (int i=0;i<100;i++) tasks[i]=Task.Run(()=>{ Credit(10); }); Task.WaitAll(tasks); Console.WriteLine($\"balance={balance}\");",
+      "expectedOutput": "balance=2000",
+      "verify": "execute",
+      "sourceRefs": ["ms-lock"]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "A System.Threading.Lock reports IsHeldByCurrentThread False before the lock body, True inside it, False after",
+      "code": "using System; using System.Threading; var l = new Lock(); bool outside = l.IsHeldByCurrentThread; bool inside; lock(l){ inside = l.IsHeldByCurrentThread; } bool afterr = l.IsHeldByCurrentThread; Console.WriteLine($\"{outside} {inside} {afterr}\");",
+      "expectedOutput": "False True False",
+      "verify": "execute",
+      "sourceRefs": ["ms-locktype"]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "A Lock is reentrant: the same thread can enter it recursively (depth reaches 3) without self-deadlock; after fully exiting it is not held",
+      "code": "using System; using System.Threading; var l = new Lock(); int depth = 0; lock(l){ depth++; lock(l){ depth++; lock(l){ depth++; } } } Console.WriteLine($\"depth={depth} held={l.IsHeldByCurrentThread}\");",
+      "expectedOutput": "depth=3 held=False",
+      "verify": "execute",
+      "sourceRefs": ["ms-locktype"]
+    }
+  ]
+}

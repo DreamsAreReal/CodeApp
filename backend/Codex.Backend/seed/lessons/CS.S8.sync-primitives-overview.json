@@ -1,0 +1,44 @@
+{
+  "id": "CS.S8.sync-primitives-overview",
+  "track": "CS",
+  "section": "CS.S8",
+  "module": "S8.4",
+  "title": "Обзор примитивов синхронизации",
+  "status": "published",
+  "order": 74,
+  "sources": [
+    { "id": "ms-sync", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/standard/threading/overview-of-synchronization-primitives", "date": "2022-09-01" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "A SemaphoreSlim(2) caps concurrent access at 2 regardless of how many tasks start; the max observed concurrency is 2",
+      "code": "using System; using System.Threading; using System.Threading.Tasks; var sem = new SemaphoreSlim(2); int cur = 0, max = 0; object m = new object(); var tasks = new Task[8]; for (int i=0;i<8;i++) tasks[i]=Task.Run(async ()=>{ await sem.WaitAsync(); lock(m){ cur++; if(cur>max) max=cur; } await Task.Delay(20); lock(m){ cur--; } sem.Release(); }); Task.WaitAll(tasks); Console.WriteLine($\"maxConcurrent={max}\");",
+      "expectedOutput": "maxConcurrent=2",
+      "verify": "execute",
+      "sourceRefs": ["ms-sync"]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Mutex and Semaphore derive from WaitHandle (native OS handle); SemaphoreSlim is the lightweight alternative and does not",
+      "code": "using System; using System.Threading; bool mutexWH = typeof(Mutex).IsSubclassOf(typeof(WaitHandle)); bool semWH = typeof(Semaphore).IsSubclassOf(typeof(WaitHandle)); bool slimWH = typeof(SemaphoreSlim).IsSubclassOf(typeof(WaitHandle)); Console.WriteLine($\"{mutexWH} {semWH} {slimWH}\");",
+      "expectedOutput": "True True False",
+      "verify": "execute",
+      "sourceRefs": ["ms-sync"]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "AutoResetEvent is a turnstile: one Set releases exactly one waiting thread, so one Set lets one through and three Sets let all three through",
+      "code": "using System; using System.Threading; var are = new AutoResetEvent(false); int passed = 0; var done = new CountdownEvent(3); for(int i=0;i<3;i++){ var t = new Thread(()=>{ are.WaitOne(); Interlocked.Increment(ref passed); done.Signal(); }); t.Start(); } Thread.Sleep(50); int afterOneSet = 0; are.Set(); Thread.Sleep(50); afterOneSet = passed; are.Set(); are.Set(); done.Wait(); Console.WriteLine($\"afterOneSet={afterOneSet} total={passed}\");",
+      "expectedOutput": "afterOneSet=1 total=3",
+      "verify": "execute",
+      "sourceRefs": ["ms-sync"]
+    }
+  ]
+}

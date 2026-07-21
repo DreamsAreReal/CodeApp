@@ -776,12 +776,58 @@ const CS_S6: Section = {
   ],
 };
 
+// Section S8 «Threading и синхронизация» (RS-03 §2 раздел 8 · 9 уроков). Prereq CS.S2 (async) + CS.S1.
+const CS_S8: Section = {
+  id: "CS.S8",
+  title: "Threading и синхронизация",
+  order: 8,
+  prereqs: ["CS.S2"],
+  lessons: [
+    entry(
+      { id: "CS.S8.managed-threading-basics", track: "CS", section: "CS.S8", title: "Managed threading: что даёт CLR", kicker: "C# вглубь · S8 · поток как единица планирования", icon: "async", subtitle: "Thread над ОС-потоком, общая память, гонки, примитивы", estMinutes: 9, cards: 3 },
+      () => import("./cs/managed-threading-basics.ts").then((m) => m.managedThreadingBasics),
+    ),
+    entry(
+      { id: "CS.S8.threads-and-threading", track: "CS", section: "CS.S8", title: "Thread, foreground/background, ThreadPool", kicker: "C# вглубь · S8 · три уровня запуска", icon: "async", subtitle: "primary/worker, TPL→ThreadPool→Thread, fg/bg, пул", estMinutes: 10, cards: 3 },
+      () => import("./cs/threads-and-threading.ts").then((m) => m.threadsAndThreading),
+    ),
+    entry(
+      { id: "CS.S8.lock-statement", track: "CS", section: "CS.S8", title: "lock и System.Threading.Lock (.NET 9+)", kicker: "C# вглубь · S8 · взаимное исключение", icon: "async", subtitle: "lock → Monitor/EnterScope, реентерабельность, что не лочить", estMinutes: 10, cards: 3 },
+      () => import("./cs/lock-statement.ts").then((m) => m.lockStatement),
+    ),
+    entry(
+      { id: "CS.S8.sync-primitives-overview", track: "CS", section: "CS.S8", title: "Обзор примитивов синхронизации", kicker: "C# вглубь · S8 · карта примитивов", icon: "async", subtitle: "WaitHandle vs lightweight, доступ к ресурсу, сигналинг", estMinutes: 10, cards: 3 },
+      () => import("./cs/sync-primitives-overview.ts").then((m) => m.syncPrimitivesOverview),
+    ),
+    entry(
+      { id: "CS.S8.threading-objects", track: "CS", section: "CS.S8", title: "Mutex / Semaphore(Slim) / EventWaitHandle", kicker: "C# вглубь · S8 · три WaitHandle-объекта", icon: "async", subtitle: "Mutex (affinity), Semaphore (N), EventWaitHandle (сигнал)", estMinutes: 10, cards: 3 },
+      () => import("./cs/threading-objects.ts").then((m) => m.threadingObjects),
+    ),
+    entry(
+      { id: "CS.S8.volatile-memory-model", track: "CS", section: "CS.S8", title: "Volatile, модель памяти, reordering", kicker: "C# вглубь · S8 · барьеры памяти", icon: "async", subtitle: "reordering, Volatile.Read/Write, барьеры, публикация", estMinutes: 10, cards: 3 },
+      () => import("./cs/volatile-memory-model.ts").then((m) => m.volatileMemoryModel),
+    ),
+    entry(
+      { id: "CS.S8.interlocked", track: "CS", section: "CS.S8", title: "Interlocked: lock-free инкремент и CAS", kicker: "C# вглубь · S8 · атомарные операции", icon: "async", subtitle: "атомарный ++, Exchange, CompareExchange (CAS)", estMinutes: 10, cards: 3 },
+      () => import("./cs/interlocked.ts").then((m) => m.interlocked),
+    ),
+    entry(
+      { id: "CS.S8.tpl-parallel", track: "CS", section: "CS.S8", title: "TPL: Parallel.For/ForEach и degree of parallelism", kicker: "C# вглубь · S8 · data parallelism", icon: "async", subtitle: "Parallel.For/ForEach, партиции, MaxDegreeOfParallelism, overhead", estMinutes: 10, cards: 3 },
+      () => import("./cs/tpl-parallel.ts").then((m) => m.tplParallel),
+    ),
+    entry(
+      { id: "CS.S8.thread-async-local", track: "CS", section: "CS.S8", title: "ThreadLocal<T> / AsyncLocal<T>: контекст в async", kicker: "C# вглубь · S8 · амбиентное состояние", icon: "async", subtitle: "per-thread vs per-async-flow, фабрика, поток управления", estMinutes: 10, cards: 3 },
+      () => import("./cs/thread-async-local.ts").then((m) => m.threadAsyncLocal),
+    ),
+  ],
+};
+
 const CS_TRACK: Track = {
   id: "CS",
   title: S.trackCsDeepLabel,
   sub: S.trackCsDeepSub,
   badge: S.trackNewBadge,
-  sections: [CS_S1, CS_S2, CS_S3, CS_S5, CS_S7, CS_S17, CS_S18, CS_S4, CS_S6],
+  sections: [CS_S1, CS_S2, CS_S3, CS_S5, CS_S7, CS_S8, CS_S17, CS_S18, CS_S4, CS_S6],
 };
 
 // The legacy flat C# track and its 6 old lessons were removed in the F2 migration (their

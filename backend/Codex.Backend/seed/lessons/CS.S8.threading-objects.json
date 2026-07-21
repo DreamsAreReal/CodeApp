@@ -1,0 +1,47 @@
+{
+  "id": "CS.S8.threading-objects",
+  "track": "CS",
+  "section": "CS.S8",
+  "module": "S8.5",
+  "title": "Mutex / Semaphore(Slim) / EventWaitHandle",
+  "status": "published",
+  "order": 75,
+  "sources": [
+    { "id": "ms-mutex", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/standard/threading/mutexes", "date": "2022-03-11" },
+    { "id": "ms-sem", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/standard/threading/semaphore-and-semaphoreslim", "date": "2026-03-16" },
+    { "id": "ms-ewh", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/standard/threading/eventwaithandle", "date": "2021-09-15" },
+    { "id": "ms-sync", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/standard/threading/overview-of-synchronization-primitives", "date": "2022-09-01" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "A Mutex has thread affinity: ReleaseMutex from a thread that does not own it throws ApplicationException, while the owner releases fine",
+      "code": "using System; using System.Threading; var mtx = new Mutex(); mtx.WaitOne(); bool nonOwnerThrew = false; var t = new Thread(() => { try { mtx.ReleaseMutex(); } catch (ApplicationException) { nonOwnerThrew = true; } }); t.Start(); t.Join(); mtx.ReleaseMutex(); Console.WriteLine($\"nonOwnerThrew={nonOwnerThrew}\");",
+      "expectedOutput": "nonOwnerThrew=True",
+      "verify": "execute",
+      "sourceRefs": ["ms-mutex"]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "A SemaphoreSlim(0,3) starts at count 0; Release returns the previous count (0) and increments CurrentCount to 1",
+      "code": "using System; using System.Threading; var s = new SemaphoreSlim(0, 3); s.Wait(0); int c1 = s.CurrentCount; int prev = s.Release(); int c2 = s.CurrentCount; Console.WriteLine($\"c1={c1} prev={prev} c2={c2}\");",
+      "expectedOutput": "c1=0 prev=0 c2=1",
+      "verify": "execute",
+      "sourceRefs": ["ms-sem"]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "A ManualResetEventSlim acts like a gate: one Set releases ALL four waiting threads and stays signaled (IsSet True) until Reset",
+      "code": "using System; using System.Threading; var mre = new ManualResetEventSlim(false); int passed = 0; var done = new CountdownEvent(4); for(int i=0;i<4;i++){ var t = new Thread(()=>{ mre.Wait(); Interlocked.Increment(ref passed); done.Signal(); }); t.Start(); } Thread.Sleep(50); mre.Set(); done.Wait(); Console.WriteLine($\"passed={passed} signaled={mre.IsSet}\");",
+      "expectedOutput": "passed=4 signaled=True",
+      "verify": "execute",
+      "sourceRefs": ["ms-ewh"]
+    }
+  ]
+}
