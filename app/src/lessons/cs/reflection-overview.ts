@@ -74,7 +74,7 @@ export const reflectionOverview: LessonData = {
   misconceptions: [
     {
       wrong: "reflection — это медленная магия, которая «как-то» читает мои классы",
-      hook: 'Никакой магии: reflection — это <span class="hl">чтение метаданных</span>, которые компилятор уже запёк в сборку. «The classes in the <b>System.Reflection</b> namespace, together with <b>System.Type</b>, enable you to obtain information about loaded assemblies and the types defined within them». И это не плоский набор строк, а <b>граф объектов</b>: «Assemblies contain modules, modules contain types, and types contain members». Дальше <b>пять разборов</b>: два входных namespace, лестница <code>assembly → module → type → member</code>, динамическое создание экземпляра по одному <code>Type</code>, и <b>машинная панель</b> — что за класс на самом деле стоит за <code>typeof</code> (реальный прогон: <code>RuntimeType</code>).',
+      hook: 'Никакой магии: reflection — это <span class="hl">чтение метаданных</span>, которые компилятор уже запёк в сборку. «The classes in the <b>System.Reflection</b> namespace, together with <b>System.Type</b>, enable you to obtain information about loaded assemblies and the types defined within them». И это не плоский набор строк, а <b>граф объектов</b>: «Assemblies contain modules, modules contain types, and types contain members». Дальше <b>пять разборов</b>: два входных namespace, лестница <code>assembly → module → type → member</code>, свой Info-класс на каждый род члена, динамическое создание экземпляра по одному <code>Type</code>, и <b>машинная панель</b> — что за класс на самом деле стоит за <code>typeof</code> (реальный прогон: <code>RuntimeType</code>).',
       source: "ms-reflection",
     },
   ],

@@ -79,7 +79,7 @@ export const isDeclaration: LessonData = {
   misconceptions: [
     {
       wrong: "is TypeName v — это просто короткая запись каста (T)x с проверкой на null",
-      hook: 'Каст бросает на несовпадении; <code>is</code> — <span class="hl">возвращает bool</span> и связывает уже <b>converted</b> переменную. Дословно: «The <code>is</code> operator checks if the result of an expression is <b>compatible with a given type</b>». А declaration pattern: «it assigns the variable to the <span class="hl">converted expression result</span>» — <code>message</code> уже <code>string</code>, без второго каста. И ключевое отличие от <code>as</code>/каста: declaration/type pattern <b>никогда не матчит null</b>. Дальше <b>пять разборов</b> — is→bool, связывание, null→false, область видимости и <b>машинная панель</b>: один <code>is int</code> распаковывает и boxed object, и nullable.',
+      hook: 'Каст бросает на несовпадении; <code>is</code> — <span class="hl">возвращает bool</span> и связывает уже <b>converted</b> переменную. Дословно: «The <code>is</code> operator checks if the result of an expression is <b>compatible with a given type</b>». А declaration pattern связывает переменную уже с <span class="hl">приведённым (converted) результатом</span> — <code>message</code> уже <code>string</code>, без второго каста. И ключевое отличие от <code>as</code>/каста: declaration/type pattern <b>никогда не матчит null</b>. Дальше <b>пять разборов</b> — is→bool, связывание, null→false, область видимости и <b>машинная панель</b>: один <code>is int</code> распаковывает и boxed object, и nullable.',
       source: "ms-is",
     },
   ],

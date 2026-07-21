@@ -1,6 +1,6 @@
 /**
  * Lesson: How a LINQ query executes — the three parts (CS.S3.linq-execution) — expert density,
- * 5 animated deep-dives + a machine panel. The mental model a senior must internalise: every
+ * 5 animated deep-dives (the last, s5, is a machine panel). The mental model a senior must internalise: every
  * LINQ query operation is THREE distinct actions — obtain the data source, create the query,
  * execute the query — and creating the query retrieves NOTHING. The query variable stores the
  * recipe, not the results; execution happens later, at iteration.
