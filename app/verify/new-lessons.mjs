@@ -85,6 +85,7 @@ const EXPECT = [
   { id: "CS.S6.reflection-emit", segs: 5, ev: "CS-REFLEMIT" },
   { id: "CS.S6.reflection-generics", segs: 5, ev: "CS-REFLGEN" },
   { id: "CS.S6.source-generators", segs: 5, ev: "CS-SRCGEN" },
+  { id: "CS.S8.managed-threading-basics", segs: 5, ev: "CS-MGDTHREAD" },
   { id: "PY.M1.names-objects", segs: 8, ev: "PY-NAMES" },
   { id: "PY.M2.collections-hash", segs: 5, ev: "PY-COLL" },
   { id: "PY.M3.args-unpacking", segs: 4, ev: "PY-ARGS" },

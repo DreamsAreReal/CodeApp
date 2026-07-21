@@ -1,0 +1,48 @@
+{
+  "id": "CS.S8.managed-threading-basics",
+  "track": "CS",
+  "section": "CS.S8",
+  "module": "S8.1",
+  "title": "Managed threading: что даёт CLR",
+  "status": "published",
+  "order": 71,
+  "sources": [
+    { "id": "ms-basics", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/standard/threading/managed-threading-basics", "date": "2026-07-07" },
+    { "id": "ms-threads", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/standard/threading/threads-and-threading", "date": "2022-03-11" },
+    { "id": "ms-best", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/standard/threading/managed-threading-best-practices", "date": "2026-03-13" },
+    { "id": "ms-fgbg", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/standard/threading/foreground-and-background-threads", "date": "2021-09-15" },
+    { "id": "ms-pool", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/standard/threading/the-managed-thread-pool", "date": "2026-03-19" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "A worker thread's write to a shared field is visible after Join; a new Thread is a foreground thread by default (IsBackground False)",
+      "code": "using System; using System.Threading; int result = 0; var t = new Thread(() => { result = 40 + 2; }); bool bg = t.IsBackground; t.Start(); t.Join(); Console.WriteLine($\"result={result} background={bg}\");",
+      "expectedOutput": "result=42 background=False",
+      "verify": "execute",
+      "sourceRefs": ["ms-fgbg", "ms-threads"]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "A dedicated new Thread is not a thread-pool thread (False); a ThreadPool.QueueUserWorkItem callback runs on a pool thread (True)",
+      "code": "using System; using System.Threading; bool a=false, b=false; var t=new Thread(()=>{ a = Thread.CurrentThread.IsThreadPoolThread; }); t.Start(); t.Join(); var done=new ManualResetEventSlim(false); ThreadPool.QueueUserWorkItem(_=>{ b = Thread.CurrentThread.IsThreadPoolThread; done.Set(); }); done.Wait(); Console.WriteLine($\"dedicated_pool={a} poolthread_pool={b}\");",
+      "expectedOutput": "dedicated_pool=False poolthread_pool=True",
+      "verify": "execute",
+      "sourceRefs": ["ms-fgbg", "ms-pool"]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "lock makes each increment a critical section; joining all 8 threads before printing makes the total deterministic: 8 * 1000 = 8000",
+      "code": "using System; using System.Threading; long total = 0; object gate = new object(); var ts = new Thread[8]; for (int i = 0; i < 8; i++) ts[i] = new Thread(() => { for (int j = 0; j < 1000; j++) lock (gate) total += 1; }); foreach (var t in ts) t.Start(); foreach (var t in ts) t.Join(); Console.WriteLine($\"total={total}\");",
+      "expectedOutput": "total=8000",
+      "verify": "execute",
+      "sourceRefs": ["ms-threads", "ms-best"]
+    }
+  ]
+}

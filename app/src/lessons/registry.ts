@@ -776,12 +776,26 @@ const CS_S6: Section = {
   ],
 };
 
+// Section S8 «Threading и синхронизация» (RS-03 §2 раздел 8 · 9 уроков). Prereq CS.S2 (async) + CS.S1.
+const CS_S8: Section = {
+  id: "CS.S8",
+  title: "Threading и синхронизация",
+  order: 8,
+  prereqs: ["CS.S2"],
+  lessons: [
+    entry(
+      { id: "CS.S8.managed-threading-basics", track: "CS", section: "CS.S8", title: "Managed threading: что даёт CLR", kicker: "C# вглубь · S8 · поток как единица планирования", icon: "async", subtitle: "Thread над ОС-потоком, общая память, гонки, примитивы", estMinutes: 9, cards: 3 },
+      () => import("./cs/managed-threading-basics.ts").then((m) => m.managedThreadingBasics),
+    ),
+  ],
+};
+
 const CS_TRACK: Track = {
   id: "CS",
   title: S.trackCsDeepLabel,
   sub: S.trackCsDeepSub,
   badge: S.trackNewBadge,
-  sections: [CS_S1, CS_S2, CS_S3, CS_S5, CS_S7, CS_S17, CS_S18, CS_S4, CS_S6],
+  sections: [CS_S1, CS_S2, CS_S3, CS_S5, CS_S7, CS_S8, CS_S17, CS_S18, CS_S4, CS_S6],
 };
 
 // The legacy flat C# track and its 6 old lessons were removed in the F2 migration (their
