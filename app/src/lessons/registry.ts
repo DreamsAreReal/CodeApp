@@ -791,6 +791,10 @@ const CS_S8: Section = {
       { id: "CS.S8.threads-and-threading", track: "CS", section: "CS.S8", title: "Thread, foreground/background, ThreadPool", kicker: "C# вглубь · S8 · три уровня запуска", icon: "async", subtitle: "primary/worker, TPL→ThreadPool→Thread, fg/bg, пул", estMinutes: 10, cards: 3 },
       () => import("./cs/threads-and-threading.ts").then((m) => m.threadsAndThreading),
     ),
+    entry(
+      { id: "CS.S8.lock-statement", track: "CS", section: "CS.S8", title: "lock и System.Threading.Lock (.NET 9+)", kicker: "C# вглубь · S8 · взаимное исключение", icon: "async", subtitle: "lock → Monitor/EnterScope, реентерабельность, что не лочить", estMinutes: 10, cards: 3 },
+      () => import("./cs/lock-statement.ts").then((m) => m.lockStatement),
+    ),
   ],
 };
 
