@@ -1,0 +1,45 @@
+{
+  "id": "CS.S8.interlocked",
+  "track": "CS",
+  "section": "CS.S8",
+  "module": "S8.7",
+  "title": "Interlocked: lock-free инкремент и CAS",
+  "status": "published",
+  "order": 77,
+  "sources": [
+    { "id": "ms-interlocked", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/api/system.threading.interlocked", "date": "2026-01-20" },
+    { "id": "ms-best", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/standard/threading/managed-threading-best-practices", "date": "2026-03-13" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "8 threads each Interlocked.Increment 100000 times produce exactly 800000 with no lost updates (atomic, lock-free)",
+      "code": "using System; using System.Threading; long counter = 0; var threads = new Thread[8]; for (int i=0;i<8;i++) threads[i]=new Thread(()=>{ for(int j=0;j<100000;j++) Interlocked.Increment(ref counter); }); foreach(var t in threads) t.Start(); foreach(var t in threads) t.Join(); Console.WriteLine($\"counter={counter}\");",
+      "expectedOutput": "counter=800000",
+      "verify": "execute",
+      "sourceRefs": ["ms-interlocked"]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Interlocked.Exchange atomically sets the new value and returns the original: old=5, new=10",
+      "code": "using System; using System.Threading; int x = 5; int old = Interlocked.Exchange(ref x, 10); Console.WriteLine($\"old={old} new={x}\");",
+      "expectedOutput": "old=5 new=10",
+      "verify": "execute",
+      "sourceRefs": ["ms-interlocked"]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "CompareExchange (CAS) swaps only when the current value equals the comparand and always returns the original; matching then non-matching gives r1=7 afterMatch=100 r2=100 afterMiss=100",
+      "code": "using System; using System.Threading; int x = 7; int r1 = Interlocked.CompareExchange(ref x, 100, 7); int afterMatch = x; int r2 = Interlocked.CompareExchange(ref x, 200, 7); int afterMiss = x; Console.WriteLine($\"r1={r1} afterMatch={afterMatch} r2={r2} afterMiss={afterMiss}\");",
+      "expectedOutput": "r1=7 afterMatch=100 r2=100 afterMiss=100",
+      "verify": "execute",
+      "sourceRefs": ["ms-interlocked"]
+    }
+  ]
+}

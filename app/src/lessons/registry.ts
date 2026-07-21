@@ -807,6 +807,10 @@ const CS_S8: Section = {
       { id: "CS.S8.volatile-memory-model", track: "CS", section: "CS.S8", title: "Volatile, модель памяти, reordering", kicker: "C# вглубь · S8 · барьеры памяти", icon: "async", subtitle: "reordering, Volatile.Read/Write, барьеры, публикация", estMinutes: 10, cards: 3 },
       () => import("./cs/volatile-memory-model.ts").then((m) => m.volatileMemoryModel),
     ),
+    entry(
+      { id: "CS.S8.interlocked", track: "CS", section: "CS.S8", title: "Interlocked: lock-free инкремент и CAS", kicker: "C# вглубь · S8 · атомарные операции", icon: "async", subtitle: "атомарный ++, Exchange, CompareExchange (CAS)", estMinutes: 10, cards: 3 },
+      () => import("./cs/interlocked.ts").then((m) => m.interlocked),
+    ),
   ],
 };
 
