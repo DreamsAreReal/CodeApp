@@ -1,0 +1,68 @@
+{
+  "id": "CS.S4.delegate-multicast",
+  "track": "CS",
+  "section": "CS.S4",
+  "module": "S4.3",
+  "title": "Multicast: invocation list, +=/-=",
+  "status": "published",
+  "order": 66,
+  "sources": [
+    {
+      "id": "ms-combine",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/delegates/how-to-combine-delegates-multicast-delegates",
+      "date": "2021-09-15"
+    },
+    {
+      "id": "ms-using",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/delegates/using-delegates",
+      "date": "2023-02-13"
+    },
+    {
+      "id": "ms-delegates",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/delegates/",
+      "date": "2025-03-11"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Action a с тремя += (Append A/B/C), затем a(); печать sb и длины invocation list?",
+      "code": "using System; using System.Text; var sb = new StringBuilder(); Action a = () => sb.Append(\"A\"); a += () => sb.Append(\"B\"); a += () => sb.Append(\"C\"); a(); Console.WriteLine(sb); Console.WriteLine(a.GetInvocationList().Length);",
+      "expectedOutput": "ABC\n3",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-using",
+        "ms-combine"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Func<int> combo = one+two+three; combo(); combo -= two; combo(); длина списка — три строки?",
+      "code": "using System; Func<int> one = () => 1; Func<int> two = () => 2; Func<int> three = () => 3; Func<int> combo = one + two + three; Console.WriteLine(combo()); combo -= two; Console.WriteLine(combo()); Console.WriteLine(combo.GetInvocationList().Length);",
+      "expectedOutput": "3\n3\n2",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-using"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Action combo = m+m+m; combo -= m; combo(); печать sb и длины списка (удаление дубликата)?",
+      "code": "using System; using System.Text; var sb = new StringBuilder(); Action m = () => sb.Append(\"X\"); Action combo = m + m + m; combo -= m; combo(); Console.WriteLine(sb); Console.WriteLine(combo.GetInvocationList().Length);",
+      "expectedOutput": "XX\n2",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-combine"
+      ]
+    }
+  ]
+}
