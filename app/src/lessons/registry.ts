@@ -822,12 +822,29 @@ const CS_S8: Section = {
   ],
 };
 
+// Section S9 «Исключения» (RS-03 §2 раздел 9 · 7 уроков). Prereq CS.S2 + CS.S1. A DEDICATED,
+// deeper synchronous exception treatment that complements CS.S2.exceptions (async-only: await
+// vs .Wait, WhenAll, Flatten) — zero overlap: S9 covers the exception object/unwinding, filters,
+// throw-vs-rethrow, custom exceptions, best practices, and AggregateException/TPL.
+const CS_S9: Section = {
+  id: "CS.S9",
+  title: "Исключения",
+  order: 9,
+  prereqs: ["CS.S2"],
+  lessons: [
+    entry(
+      { id: "CS.S9.exceptions-overview", track: "CS", section: "CS.S9", title: "Исключения: объект, раскрутка стека, first-chance", kicker: "C# вглубь · S9 · модель исключения", icon: "types", subtitle: "Объект : System.Exception, раскрутка вверх, first-chance", estMinutes: 9, cards: 3 },
+      () => import("./cs/exceptions-overview.ts").then((m) => m.exceptionsOverview),
+    ),
+  ],
+};
+
 const CS_TRACK: Track = {
   id: "CS",
   title: S.trackCsDeepLabel,
   sub: S.trackCsDeepSub,
   badge: S.trackNewBadge,
-  sections: [CS_S1, CS_S2, CS_S3, CS_S5, CS_S7, CS_S8, CS_S17, CS_S18, CS_S4, CS_S6],
+  sections: [CS_S1, CS_S2, CS_S3, CS_S5, CS_S7, CS_S8, CS_S9, CS_S17, CS_S18, CS_S4, CS_S6],
 };
 
 // The legacy flat C# track and its 6 old lessons were removed in the F2 migration (their

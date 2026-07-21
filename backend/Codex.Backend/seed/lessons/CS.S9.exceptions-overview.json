@@ -1,0 +1,45 @@
+{
+  "id": "CS.S9.exceptions-overview",
+  "track": "CS",
+  "section": "CS.S9",
+  "module": "S9.1",
+  "title": "Исключения: объект, раскрутка стека, first-chance",
+  "status": "published",
+  "order": 80,
+  "sources": [
+    { "id": "ms-csexc", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/", "date": "2021-05-14" },
+    { "id": "ms-stdexc", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/standard/exceptions/", "date": "2018-06-19" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "A throw in C (3 frames down) unwinds the stack through B (no catch) and is caught in A; the CLR executes the first catch block it finds, and e.Message is preserved as boom",
+      "code": "using System; string log = \"\"; void C(){ throw new InvalidOperationException(\"boom\"); } void B(){ C(); } void A(){ B(); } try { A(); } catch (InvalidOperationException e) { log = e.Message; } Console.WriteLine(log);",
+      "expectedOutput": "boom",
+      "verify": "execute",
+      "sourceRefs": ["ms-csexc"]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "The inner exception (inner) is wrapped in an outer one (outer) via the second constructor argument, which stores the cause in InnerException; e.Message is outer and e.InnerException.Message is inner",
+      "code": "using System; try { try { throw new InvalidOperationException(\"inner\"); } catch (Exception ex) { throw new ApplicationException(\"outer\", ex); } } catch (Exception e) { Console.WriteLine($\"{e.Message}|{e.InnerException?.Message}\"); }",
+      "expectedOutput": "outer|inner",
+      "verify": "execute",
+      "sourceRefs": ["ms-csexc"]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Indexing out of range throws IndexOutOfRangeException; a base catch (SystemException) still catches it because all exceptions derive from System.Exception, but GetType().Name returns the real derived type",
+      "code": "using System; string r; try { int[] a = new int[2]; Console.WriteLine(a[5]); r=\"none\"; } catch (SystemException e) { r = e.GetType().Name; } Console.WriteLine(r);",
+      "expectedOutput": "IndexOutOfRangeException",
+      "verify": "execute",
+      "sourceRefs": ["ms-csexc", "ms-stdexc"]
+    }
+  ]
+}
