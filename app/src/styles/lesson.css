@@ -1662,3 +1662,11 @@
 .next-home:active {
   color: var(--ink);
 }
+
+/* Russian translation gloss shown right after a verbatim English quote — dimmed italic
+   so the English stays the primary, auditable source while the RU rendering aids reading
+   (added for accessibility: the learner reads Russian). */
+.ru-tr {
+  color: var(--muted);
+  font-style: italic;
+}
