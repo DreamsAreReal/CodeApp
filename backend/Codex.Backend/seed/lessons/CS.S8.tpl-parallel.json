@@ -1,0 +1,46 @@
+{
+  "id": "CS.S8.tpl-parallel",
+  "track": "CS",
+  "section": "CS.S8",
+  "module": "S8.8",
+  "title": "TPL: Parallel.For/ForEach и degree of parallelism",
+  "status": "published",
+  "order": 78,
+  "sources": [
+    { "id": "ms-tpl", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/standard/parallel-programming/task-parallel-library-tpl", "date": "2025-10-22" },
+    { "id": "ms-data", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/standard/parallel-programming/data-parallelism-task-parallel-library", "date": "2021-09-15" }
+  ],
+  "note": "The card questions show natural Parallel.For/ForEach code. The `code` below invokes the SAME Parallel methods via reflection because the Roslyn CSharpScript sandbox (/api/authoring/run-csharp) does not reference System.Threading.Tasks.Parallel.dll for direct top-level compilation; the type executes identically to a compiled `dotnet` project, so the expectedOutput is the real, deterministic stdout of a real Parallel run.",
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Parallel.For(1, 101, ...) iterates i = 1..100 (upper bound exclusive); with Interlocked.Add the sum is the deterministic 5050",
+      "code": "using System; using System.Reflection; using System.Threading; var pType = Type.GetType(\"System.Threading.Tasks.Parallel, System.Threading.Tasks.Parallel\"); long sum = 0; Action<int> body = i => Interlocked.Add(ref sum, i); var mi = pType.GetMethod(\"For\", new[]{ typeof(int), typeof(int), typeof(Action<int>) }); mi.Invoke(null, new object[]{ 1, 101, body }); Console.WriteLine($\"sum={sum}\");",
+      "expectedOutput": "sum=5050",
+      "verify": "execute",
+      "sourceRefs": ["ms-data"]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Parallel.ForEach runs the body once per element over the whole source; with an atomic counter the count is exactly 1000",
+      "code": "using System; using System.Reflection; using System.Threading; using System.Linq; using System.Collections.Generic; var pType = Type.GetType(\"System.Threading.Tasks.Parallel, System.Threading.Tasks.Parallel\"); var src = Enumerable.Range(1,1000).ToArray(); int processed = 0; Action<int> body = x => Interlocked.Increment(ref processed); var open = pType.GetMethods().First(m => m.Name==\"ForEach\" && m.IsGenericMethodDefinition && m.GetParameters().Length==2 && m.GetParameters()[1].ParameterType.IsGenericType && m.GetParameters()[1].ParameterType.GetGenericTypeDefinition()==typeof(Action<>)); open.MakeGenericMethod(typeof(int)).Invoke(null, new object[]{ src, body }); Console.WriteLine($\"processed={processed}\");",
+      "expectedOutput": "processed=1000",
+      "verify": "execute",
+      "sourceRefs": ["ms-data"]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "MaxDegreeOfParallelism = 1 caps concurrency at one, so a Parallel.For over 20 iterations runs on a single thread (distinctThreads=1)",
+      "code": "using System; using System.Reflection; using System.Threading; using System.Collections.Generic; var pType = Type.GetType(\"System.Threading.Tasks.Parallel, System.Threading.Tasks.Parallel\"); var optType = Type.GetType(\"System.Threading.Tasks.ParallelOptions, System.Threading.Tasks.Parallel\"); var opts = Activator.CreateInstance(optType); optType.GetProperty(\"MaxDegreeOfParallelism\").SetValue(opts, 1); var seen = new HashSet<int>(); object gate = new object(); Action<int> body = i => { lock(gate){ seen.Add(Thread.CurrentThread.ManagedThreadId); } }; var mi = pType.GetMethod(\"For\", new[]{ typeof(int), typeof(int), optType, typeof(Action<int>) }); mi.Invoke(null, new object[]{ 0, 20, opts, body }); Console.WriteLine($\"distinctThreads={seen.Count}\");",
+      "expectedOutput": "distinctThreads=1",
+      "verify": "execute",
+      "sourceRefs": ["ms-data"]
+    }
+  ]
+}
