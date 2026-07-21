@@ -27,8 +27,9 @@ const Z_PRIM: Zone = { id: "prim", x: 14, y: 34, w: 150, h: 168, cls: "vz-zone g
 const Z_WORK: Zone = { id: "work", x: 176, y: 34, w: 150, h: 168, cls: "vz-zone heap", label: "WORKER THREADS", labelCls: "vz-zlabel heap sm", lx: 251, ly: 24, sub: "созданы дополнительно", subCls: "vz-zsub heap", subY: 47 };
 const PRIM_ZONES: Zone[] = [Z_PRIM, Z_WORK];
 
-// s2: three levels of the API — TPL/PLINQ, ThreadPool, Thread.
-const Z_LADDER: Zone = { id: "ladder", x: 14, y: 34, w: 312, h: 168, cls: "vz-zone", label: "КАК ЗАПУСТИТЬ КОД ПАРАЛЛЕЛЬНО · три уровня", labelCls: "vz-zlabel sm", lx: 170, ly: 22, sub: "от рекомендованного к низкоуровневому", subCls: "vz-zsub", subY: 40 };
+// s2: three levels of the API — TPL/PLINQ, ThreadPool, Thread. Tall zone (h=234 → inner 218u)
+// so three stacked gate rows (measured ~212u total) fit with PAD≥8.
+const Z_LADDER: Zone = { id: "ladder", x: 14, y: 34, w: 312, h: 234, cls: "vz-zone", label: "КАК ЗАПУСТИТЬ КОД ПАРАЛЛЕЛЬНО · три уровня", labelCls: "vz-zlabel sm", lx: 170, ly: 22, sub: "от рекомендованного к низкоуровневому", subCls: "vz-zsub", subY: 40 };
 const LADDER_ZONES: Zone[] = [Z_LADDER];
 
 // s3: foreground vs background — keeping the process alive.
@@ -99,7 +100,7 @@ export const threadsAndThreading: LessonData = {
     },
     {
       id: "s2", num: "02", kicker: "Три уровня · предпочтение", title: "TPL/PLINQ → ThreadPool → Thread (сверху вниз)",
-      viewBox: "0 0 340 210", zones: LADDER_ZONES,
+      viewBox: "0 0 340 276", zones: LADDER_ZONES,
       code: ["Parallel.ForEach(items, Process);   // 1) TPL — рекомендовано", "ThreadPool.QueueUserWorkItem(Work);  // 2) пул worker-потоков", "new Thread(Work).Start();            // 3) сырой Thread — низкий уровень"],
       scenes: [
         { codeLine: 0, out: "", caption: 'Верх лестницы — <b>TPL/PLINQ</b>: «the recommended way to utilize multithreading is to use <span class="hl">Task Parallel Library (TPL) and Parallel LINQ (PLINQ)</span>».', nodes: [{ id: "tpl", kind: "gate", at: { zone: "ladder", row: 0 }, state: "ok", label: "TPL / PLINQ", detail: "рекомендовано", accent: true }], edges: [] },
