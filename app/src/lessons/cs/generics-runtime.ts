@@ -51,7 +51,7 @@ const Z_VAL: Zone = { id: "val", x: 176, y: 34, w: 150, h: 168, cls: "vz-zone go
 const SPEC_ZONES: Zone[] = [Z_REF, Z_VAL];
 
 // s4: CIL — generic opcodes carry the element type (Stelem/Ldelem), the runtime is generic-aware.
-const Z_IL: Zone = { id: "il", x: 14, y: 34, w: 312, h: 168, cls: "vz-zone", label: "CIL ЗНАЕТ О GENERICS", labelCls: "vz-zlabel", lx: 170, ly: 24, sub: "Stelem · Ldelem · Constrained · Unbox_Any", subCls: "vz-zsub", subY: 47 };
+const Z_IL: Zone = { id: "il", x: 14, y: 34, w: 312, h: 234, cls: "vz-zone", label: "CIL ЗНАЕТ О GENERICS", labelCls: "vz-zlabel", lx: 170, ly: 22, sub: "Stelem · Ldelem · Constrained · Unbox_Any", subCls: "vz-zsub", subY: 40 };
 const IL_ZONES: Zone[] = [Z_IL];
 
 // s5 (SIGNATURE): value-type inline vs reference-type boxing — measured allocation.
@@ -134,7 +134,7 @@ export const genericsRuntime: LessonData = {
     },
     {
       id: "s4", num: "04", kicker: "CIL знает о generics", title: "У рантайма есть опкоды под generic-типы",
-      viewBox: "0 0 340 210", zones: IL_ZONES,
+      viewBox: "0 0 340 276", zones: IL_ZONES,
       code: ["// generic-типы — не трюк компилятора над object:", "// CLR добавил СВОИ опкоды CIL под дженерики", "//   Stelem / Ldelem — запись/чтение элемента типизированного массива", "//   Constrained / Unbox_Any / Readonly"],
       scenes: [
         { codeLine: 1, out: "", caption: 'Дженерики поддержаны <b>на уровне CIL</b>, а не эмулированы над <code>object</code>: рантайм получил <span class="hl">новые опкоды</span> под generic-типы.', nodes: [{ id: "op", kind: "obj", at: { zone: "il", row: 0 }, typeTag: "CIL", value: "новые опкоды", accent: true }], edges: [] },

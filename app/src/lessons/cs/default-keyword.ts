@@ -39,7 +39,7 @@ const Z_NUL: Zone = { id: "nul", x: 176, y: 34, w: 150, h: 168, cls: "vz-zone he
 const REF_ZONES: Zone[] = [Z_REF, Z_NUL];
 
 // s4: the default literal — inferred contexts.
-const Z_LIT: Zone = { id: "lit", x: 14, y: 34, w: 312, h: 210, cls: "vz-zone", label: "default-ЛИТЕРАЛ · тип выводится компилятором", labelCls: "vz-zlabel", lx: 170, ly: 24, sub: "init · optional param · return", subCls: "vz-zsub", subY: 47 };
+const Z_LIT: Zone = { id: "lit", x: 14, y: 34, w: 312, h: 234, cls: "vz-zone", label: "default-ЛИТЕРАЛ · тип выводится компилятором", labelCls: "vz-zlabel", lx: 170, ly: 22, sub: "init · optional param · return", subCls: "vz-zsub", subY: 40 };
 const LIT_ZONES: Zone[] = [Z_LIT];
 
 // s5 (SIGNATURE): one default(T), four correct zeros — measured.
@@ -123,7 +123,7 @@ export const defaultKeyword: LessonData = {
     },
     {
       id: "s4", num: "04", kicker: "default-литерал · вывод типа", title: "default без (T): тип выводит компилятор",
-      viewBox: "0 0 340 252", zones: LIT_ZONES,
+      viewBox: "0 0 340 276", zones: LIT_ZONES,
       code: ["T[] Init<T>(int n, T fill = default) { ... }   // 1) optional-параметр", "T Empty<T>() { return default; }               // 2) return", "int x = default;  Complex c = default;         // 3) init переменной"],
       scenes: [
         { codeLine: 0, out: "", caption: '<code>default</code>-<b>литерал</b> (без <code>(T)</code>) годится, где тип <span class="hl">выводим</span>. В optional-параметре <code>T fill = default</code> тип берётся из <code>T</code>.', nodes: [{ id: "p", kind: "gate", at: { zone: "lit", row: 0 }, state: "ok", label: "T fill = default", detail: "тип = T", accent: true }], edges: [] },
