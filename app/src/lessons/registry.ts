@@ -938,6 +938,10 @@ const CS_S11: Section = {
       { id: "CS.S11.expression-visitors", track: "CS", section: "CS.S11", title: "ExpressionVisitor: обход и трансформация", kicker: "C# вглубь · S11 · обход дерева", icon: "types", subtitle: "рекурсивный обход, override VisitBinary, immutable → новое дерево", estMinutes: 10, cards: 3 },
       () => import("./cs/expression-visitors.ts").then((m) => m.expressionVisitors),
     ),
+    entry(
+      { id: "CS.S11.debugview", track: "CS", section: "CS.S11", title: "DebugView: синтаксис инспекции дерева", kicker: "C# вглубь · S11 · чтение дерева", icon: "types", subtitle: "$-параметры, суффиксы констант, .Lambda #, #-checked, реальный DebugView", estMinutes: 9, cards: 3 },
+      () => import("./cs/debugview.ts").then((m) => m.debugview),
+    ),
   ],
 };
 

@@ -1,0 +1,44 @@
+{
+  "id": "CS.S11.debugview",
+  "track": "CS",
+  "section": "CS.S11",
+  "module": "S11.5",
+  "title": "DebugView: синтаксис инспекции дерева",
+  "status": "published",
+  "order": 99,
+  "sources": [
+    { "id": "ms-dv", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/csharp/advanced-topics/expression-trees/debugview-syntax", "date": "2023-03-06" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "DebugView (read via reflection, a debugger-only property) shows a ParameterExpression name with a $ prefix, so a named parameter num prints $num",
+      "code": "using System; using System.Linq.Expressions; using System.Reflection; static string DV(Expression e)=>(string)typeof(Expression).GetProperty(\"DebugView\",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(e); var numParam = Expression.Parameter(typeof(int), \"num\"); Console.WriteLine(DV(numParam));",
+      "expectedOutput": "$num",
+      "verify": "execute",
+      "sourceRefs": ["ms-dv"]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "DebugView adds the C#-literal suffix to a numeric ConstantExpression; a double 10 prints with the D suffix as 10D",
+      "code": "using System; using System.Linq.Expressions; using System.Reflection; static string DV(Expression e)=>(string)typeof(Expression).GetProperty(\"DebugView\",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(e); double num=10; ConstantExpression expr = Expression.Constant(num); Console.WriteLine(DV(expr));",
+      "expectedOutput": "10D",
+      "verify": "execute",
+      "sourceRefs": ["ms-dv"]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Three DebugView rules on one line: parameter $-prefix ($num), double D-suffix (10D), and checked operator #-prefix (AddChecked shown as 1 #+ 2), so the output is $num | 10D | 1 #+ 2",
+      "code": "using System; using System.Linq.Expressions; using System.Reflection; static string DV(Expression e)=>(string)typeof(Expression).GetProperty(\"DebugView\",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(e); Console.WriteLine($\"{DV(Expression.Parameter(typeof(int),\"num\"))} | {DV(Expression.Constant(10.0))} | {DV(Expression.AddChecked(Expression.Constant(1),Expression.Constant(2)))}\");",
+      "expectedOutput": "$num | 10D | 1 #+ 2",
+      "verify": "execute",
+      "sourceRefs": ["ms-dv"]
+    }
+  ]
+}
