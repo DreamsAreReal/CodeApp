@@ -884,6 +884,10 @@ const CS_S10: Section = {
       { id: "CS.S10.constraints", track: "CS", section: "CS.S10", title: "where-ограничения: полный словарь", kicker: "C# вглубь · S10 · гейты типа", icon: "types", subtitle: "class/struct/notnull/unmanaged/new()/база/интерфейс/T:U/default/allows ref struct", estMinutes: 11, cards: 3 },
       () => import("./cs/constraints.ts").then((m) => m.constraints),
     ),
+    entry(
+      { id: "CS.S10.default-keyword", track: "CS", section: "CS.S10", title: "default(T) и default-литерал для параметра типа", kicker: "C# вглубь · S10 · нейтральное значение T", icon: "types", subtitle: "default(T): null для ref, ноль по полям для value; default-литерал", estMinutes: 9, cards: 3 },
+      () => import("./cs/default-keyword.ts").then((m) => m.defaultKeyword),
+    ),
   ],
 };
 

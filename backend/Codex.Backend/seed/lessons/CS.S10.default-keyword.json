@@ -1,0 +1,45 @@
+{
+  "id": "CS.S10.default-keyword",
+  "track": "CS",
+  "section": "CS.S10",
+  "module": "S10.3",
+  "title": "default(T) и default-литерал для параметра типа",
+  "status": "published",
+  "order": 89,
+  "sources": [
+    { "id": "ms-default-op", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/default", "date": "2026-01-20" },
+    { "id": "ms-default-kw", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/default", "date": "2026-01-21" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "default(T) is polymorphic over T: value types give a zero (int 0, bool False), reference types give null, and int? (Nullable<int>) gives null (not 0), so the chain prints 0|False|null|null",
+      "code": "using System; static string D<T>() { var v = default(T); return v == null ? \"null\" : v.ToString(); } Console.WriteLine($\"{D<int>()}|{D<bool>()}|{D<string>()}|{D<int?>()}\");",
+      "expectedOutput": "0|False|null|null",
+      "verify": "execute",
+      "sourceRefs": ["ms-default-op"]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "The default literal in an optional parameter T fill = default equals default(T); filling arrays gives 0 for int and False for bool, so the output is 0,0,0 | False,False",
+      "code": "using System; static T[] Init<T>(int n, T fill = default) { var a = new T[n]; for(int i=0;i<n;i++) a[i]=fill; return a; } Console.WriteLine($\"{string.Join(\",\", Init<int>(3))} | {string.Join(\",\", Init<bool>(2))}\");",
+      "expectedOutput": "0,0,0 | False,False",
+      "verify": "execute",
+      "sourceRefs": ["ms-default-op"]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "typeof(T).Name yields the CLR name (Int32, Double) via reification, and default(T) yields their zero; double's ToString prints 0 (not 0.0), so the output is Int32=0 Double=0",
+      "code": "using System; static string DD<T>() { var v = default(T); return $\"{typeof(T).Name}={(v==null?\"null\":v.ToString())}\"; } Console.WriteLine($\"{DD<int>()} {DD<double>()}\");",
+      "expectedOutput": "Int32=0 Double=0",
+      "verify": "execute",
+      "sourceRefs": ["ms-default-op"]
+    }
+  ]
+}
