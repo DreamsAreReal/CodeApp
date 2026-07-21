@@ -848,6 +848,10 @@ const CS_S9: Section = {
       { id: "CS.S9.throw-vs-rethrow", track: "CS", section: "CS.S9", title: "throw; vs throw ex; — сохранение стека", kicker: "C# вглубь · S9 · переброс исключения", icon: "types", subtitle: "throw; сохраняет стек, throw e; сбрасывает, обёртка через inner", estMinutes: 10, cards: 3 },
       () => import("./cs/throw-vs-rethrow.ts").then((m) => m.throwVsRethrow),
     ),
+    entry(
+      { id: "CS.S9.custom-exceptions", track: "CS", section: "CS.S9", title: "Пользовательские исключения: свой класс : Exception", kicker: "C# вглубь · S9 · свой тип исключения", icon: "types", subtitle: "derive from Exception, три конструктора, когда бросать, wrap", estMinutes: 10, cards: 3 },
+      () => import("./cs/custom-exceptions.ts").then((m) => m.customExceptions),
+    ),
   ],
 };
 
