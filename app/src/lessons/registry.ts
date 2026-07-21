@@ -900,6 +900,10 @@ const CS_S10: Section = {
       { id: "CS.S10.generic-static-members", track: "CS", section: "CS.S10", title: "Статика в generic-типе: своя на каждый закрытый тип", kicker: "C# вглубь · S10 · static per closed type", icon: "types", subtitle: "Counter<int> ≠ Counter<string>, static ctor per closed type, замер", estMinutes: 9, cards: 3 },
       () => import("./cs/generic-static-members.ts").then((m) => m.genericStaticMembers),
     ),
+    entry(
+      { id: "CS.S10.boxing-and-generics", track: "CS", section: "CS.S10", title: "Generics убирают боксинг: List<int> vs ArrayList", kicker: "C# вглубь · S10 · цена боксинга", icon: "gc", subtitle: "почему ArrayList боксит, цена бокса (24 B), List<int> inline, замер", estMinutes: 9, cards: 3 },
+      () => import("./cs/boxing-and-generics.ts").then((m) => m.boxingAndGenerics),
+    ),
   ],
 };
 

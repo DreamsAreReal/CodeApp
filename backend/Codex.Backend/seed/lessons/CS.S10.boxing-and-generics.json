@@ -1,0 +1,44 @@
+{
+  "id": "CS.S10.boxing-and-generics",
+  "track": "CS",
+  "section": "CS.S10",
+  "module": "S10.7",
+  "title": "Generics убирают боксинг: List<int> vs ArrayList",
+  "status": "published",
+  "order": 93,
+  "sources": [
+    { "id": "ms-generics-std", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/standard/generics/", "date": "2022-07-26" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "The non-generic ArrayList boxes every int (its slot is object) for 32056 bytes, while the value-specialized List<int> stores ints inline for 4056 bytes (~8x cheaper); pre-sized and warmed for a deterministic GC.GetAllocatedBytesForCurrentThread delta",
+      "code": "using System; using System.Collections; using System.Collections.Generic; const int N=1000; var w1=new ArrayList(N); for(int i=0;i<N;i++)w1.Add(i); var w2=new List<int>(N); for(int i=0;i<N;i++)w2.Add(i); long a0=GC.GetAllocatedBytesForCurrentThread(); var al=new ArrayList(N); for(int i=0;i<N;i++)al.Add(i); long a1=GC.GetAllocatedBytesForCurrentThread(); var gl=new List<int>(N); for(int i=0;i<N;i++)gl.Add(i); long a2=GC.GetAllocatedBytesForCurrentThread(); Console.WriteLine($\"ArrayList: {a1-a0} List<int>: {a2-a1}\");",
+      "expectedOutput": "ArrayList: 32056 List<int>: 4056",
+      "verify": "execute",
+      "sourceRefs": ["ms-generics-std"]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Boxing allocates a new object each time: two (object)42 are distinct heap objects (ReferenceEquals False) with equal values (Equals True), and (int)b1 unboxes to 42, printing False True 42",
+      "code": "using System; int x = 42; object b1 = x; object b2 = x; Console.WriteLine($\"{object.ReferenceEquals(b1, b2)} {b1.Equals(b2)} {(int)b1}\");",
+      "expectedOutput": "False True 42",
+      "verify": "execute",
+      "sourceRefs": ["ms-generics-std"]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Each boxed int is a managed heap object (header + value + padding) costing 24 bytes; 1000 boxes allocate 24000 bytes, 24 per box, measured with a deterministic GC.GetAllocatedBytesForCurrentThread delta",
+      "code": "using System; const int N=1000; object sink=null; for(int i=0;i<N;i++) sink=(object)i; long a0=GC.GetAllocatedBytesForCurrentThread(); for(int i=0;i<N;i++) sink=(object)i; long a1=GC.GetAllocatedBytesForCurrentThread(); Console.WriteLine($\"boxes bytes: {a1-a0} per-box: {(a1-a0)/N}\");",
+      "expectedOutput": "boxes bytes: 24000 per-box: 24",
+      "verify": "execute",
+      "sourceRefs": ["ms-generics-std"]
+    }
+  ]
+}
