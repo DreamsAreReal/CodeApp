@@ -94,7 +94,7 @@ export const events: LessonData = {
     {
       wrong: "событие — это отдельная сущность, а публичный делегат-поле сделал бы то же самое",
       hook: 'Событие <b>построено на делегате</b>, но добавляет ключевое — <span class="hl">инкапсуляцию</span>. «An <b>event</b> is a member that enables an object to trigger notifications… The <code>event</code> keyword declares an <b>event</b>. The event is of a <b>delegate type</b>. While an object triggers an event, the event invokes all supplied event handlers». Публичный делегат-поле кто угодно мог бы обнулить или вызвать; событие — нет: «Events are multicast delegates that you can <span class="hl">only invoke from within the class</span> (or derived classes) or struct where you declare them (the <b>publisher class</b>)». Это паттерн «наблюдатель»: «The delegate model follows the <b>observer design pattern</b>, which enables a <b>subscriber</b> to register with and receive notifications from a <b>provider</b>». Дальше <b>шесть разборов</b>: event поверх делегата, publisher/subscriber, raise → все обработчики, стандартная сигнатура <code>EventHandler</code>, <code>EventHandler&lt;T&gt;</code> с данными, и <b>машинная панель</b> — ограда компилятора (реальный прогон: <code>CS0070</code> снаружи).',
-      source: "ms-event-kw",
+      source: ["ms-event-kw", "ms-events"],
     },
   ],
 

@@ -50,7 +50,13 @@ export interface Misconception {
   wrong: string;
   /** HTML for the hook section (section 1 of the lesson). */
   hook: string;
-  source: string;
+  /**
+   * Source id(s) the hook's verbatim quotes come from. A single id when the hook
+   * quotes one page; an array when the hook legitimately weaves quotes from several
+   * of the lesson's `sources[]` pages (each quote must be verbatim on one of them).
+   * Metadata for provenance/accuracy review only — not read by the engine or render.
+   */
+  source: string | string[];
 }
 
 /** One animated deep-dive: its own mini-animation + mechanism explanation. */

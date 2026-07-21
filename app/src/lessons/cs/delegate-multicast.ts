@@ -98,7 +98,7 @@ export const delegateMulticast: LessonData = {
     {
       wrong: "делегат держит ровно один метод, а += — это как обычное сложение чисел",
       hook: 'На деле один делегат может держать <b>список</b> методов. «A useful property of <b>delegate</b> objects is that you can assign <span class="hl">multiple methods to one delegate instance</span> by using the <code>+</code> operator. The multicast delegate contains a list of the assigned delegates. When you call the multicast delegate, it <b>invokes the delegates in the list, in order</b>». Этот список зовётся <i>invocation list</i>: «To add an extra method to the delegate\'s list of methods—the <b>invocation list</b>—simply requires adding two delegates using the addition or addition assignment operators (\'+\' or \'+=\')». Дальше <b>шесть разборов</b>: объявление+instantiation, рост invocation list через <code>+=</code>, иммутабельность (новый объект, а не мутация), удаление самого правого через <code>-=</code>, <b>машинная панель</b> — что вернёт multicast-<code>Func</code> (реальный прогон: <code>3</code> — только последний), и обрыв списка исключением.',
-      source: "ms-combine",
+      source: ["ms-combine", "ms-using"],
     },
   ],
 

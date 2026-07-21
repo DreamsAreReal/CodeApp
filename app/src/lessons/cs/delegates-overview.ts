@@ -85,7 +85,7 @@ export const delegatesOverview: LessonData = {
     {
       wrong: "делегат — это просто указатель на функцию, как в C, и он так же небезопасен",
       hook: 'Делегат и правда похож на указатель на функцию — но с решающим отличием: он <span class="hl">типобезопасен</span>. «The C# language delegate concept provides first class language support, and <b>type safety</b> around the concept», и «The compiler ensures that the types match for arguments and return types». Формально это <b>тип</b>, а не адрес: «A delegate is a type that represents references to methods with a particular parameter list and return type». Зачем он вообще нужен — это <i>позднее связывание</i>: «Delegates provide a <b>late binding</b> mechanism in .NET. Late Binding means that you create an algorithm where the caller also supplies at least one method that implements part of the algorithm». Дальше <b>пять разборов</b>: затычка-метод в алгоритм, делегат как ссылка на метод, гейт типобезопасности, переприсваивание (позднее связывание) и <b>машинная панель</b> — какой класс на самом деле стоит за <code>Func</code> (реальный прогон: <code>MulticastDelegate</code>).',
-      source: "ms-overview",
+      source: ["ms-overview", "ms-delegates"],
     },
   ],
 
