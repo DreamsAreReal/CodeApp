@@ -799,6 +799,10 @@ const CS_S8: Section = {
       { id: "CS.S8.sync-primitives-overview", track: "CS", section: "CS.S8", title: "Обзор примитивов синхронизации", kicker: "C# вглубь · S8 · карта примитивов", icon: "async", subtitle: "WaitHandle vs lightweight, доступ к ресурсу, сигналинг", estMinutes: 10, cards: 3 },
       () => import("./cs/sync-primitives-overview.ts").then((m) => m.syncPrimitivesOverview),
     ),
+    entry(
+      { id: "CS.S8.threading-objects", track: "CS", section: "CS.S8", title: "Mutex / Semaphore(Slim) / EventWaitHandle", kicker: "C# вглубь · S8 · три WaitHandle-объекта", icon: "async", subtitle: "Mutex (affinity), Semaphore (N), EventWaitHandle (сигнал)", estMinutes: 10, cards: 3 },
+      () => import("./cs/threading-objects.ts").then((m) => m.threadingObjects),
+    ),
   ],
 };
 
