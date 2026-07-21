@@ -67,6 +67,7 @@ export const exceptionsOverview: LessonData = {
   sources: [
     { id: "ms-csexc", kind: "doc", org: "Microsoft Learn", title: "Exceptions and Exception Handling - C#", url: "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/", date: "2021-05-14" },
     { id: "ms-stdexc", kind: "doc", org: "Microsoft Learn", title: "Handling and throwing exceptions in .NET", url: "https://learn.microsoft.com/en-us/dotnet/standard/exceptions/", date: "2018-06-19" },
+    { id: "ms-stmts", kind: "doc", org: "Microsoft Learn", title: "Exception-handling statements - throw, try-catch, try-finally, try-catch-finally", url: "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/exception-handling-statements", date: "2026-01-16" },
   ],
 
   spec: [
@@ -110,7 +111,7 @@ export const exceptionsOverview: LessonData = {
         { codeLine: 0, out: "", caption: 'У <code>A</code> есть подходящий <code>catch</code> — <span class="hl">первый найденный</span> обработчик выполняется. Бросок из <code>C</code>, поимка в <code>A</code>: два кадра вверх.', nodes: [{ id: "c", kind: "gate", at: { zone: "stack", row: 0, col: 0 }, state: "fail", label: "C бросает", detail: "нет catch" }, { id: "b", kind: "gate", at: { zone: "stack", row: 1, col: 0 }, state: "fail", label: "B", detail: "нет catch" }, { id: "a", kind: "gate", at: { zone: "stack", row: 2, col: 0 }, state: "ok", label: "A() ловит", detail: "первый catch", accent: true }], edges: [{ id: "e1", from: "c", to: "b" }, { id: "e2", from: "b", to: "a", accent: true }] },
       ],
       explain: 'Ключевая механика: исключение не обязано ловиться там, где брошено. «In many cases, an exception may be thrown <span class="hl">not by a method that your code has called directly, but by another method further down in the call stack</span>». Что делает рантайм: «When an exception is thrown, the CLR will <span class="hl">unwind the stack, looking for a method with a catch block for the specific exception type</span>, and it will execute the <span class="hl">first such catch block that it finds</span>». Пошагово из reference: «the CLR looks at the method that called the current method, and so on up the call stack. If there\'s no compatible <code>catch</code> block, the CLR terminates the executing thread». Отсюда: бросок из <code>C</code> ловится в <code>A</code> через промежуточный <code>B</code> без единого <code>catch</code> в <code>B</code>. «If it finds no appropriate catch block anywhere in the call stack, it will <span class="hl">terminate the process</span>».',
-      sources: ["ms-csexc"],
+      sources: ["ms-csexc", "ms-stmts"],
     },
     {
       id: "s3", num: "03", kicker: "Ловля по типу", title: "catch (BaseType) ловит конкретный наследник",
@@ -123,7 +124,7 @@ export const exceptionsOverview: LessonData = {
         { codeLine: 2, out: "IndexOutOfRangeException", caption: 'Пойман базовым <code>catch</code>, но <b>динамический тип не меняется</b>: <code>e.GetType().Name</code> = <span class="hl">IndexOutOfRangeException</span> (реальный прогон). Ловля базой ≠ приведение к базе.', nodes: [{ id: "t", kind: "obj", at: { zone: "thrown", row: 0 }, typeTag: "brошено", value: "IndexOutOfRange" }, { id: "h", kind: "gate", at: { zone: "hand", row: 0 }, state: "ok", label: "e.GetType()", detail: "IndexOutOfRange", accent: true }], edges: [{ id: "e1", from: "t", to: "h" }] },
       ],
       explain: 'Матч <code>catch</code> — по <b>совместимости типа</b>, а не по точному равенству. «Use a <i>catch clause</i> to specify the <span class="hl">base type of exceptions you want to handle</span> in the corresponding <code>catch</code> block». Так как «Exceptions are types that all ultimately <span class="hl">derive from System.Exception</span>», <code>catch (SystemException)</code> — и тем более <code>catch (Exception)</code> — ловит любой производный тип. Но пойманный объект остаётся собой: его <code>GetType()</code> возвращает <b>реальный</b> брошенный тип (<code>IndexOutOfRangeException</code>), а не тип из <code>catch</code>. Практика: лови <b>конкретный</b> тип, который умеешь обработать; широкий <code>catch (Exception)</code> — только если реально можешь оставить приложение в известном состоянии («Don\'t catch an exception unless you can handle it and leave the application in a known state»).',
-      sources: ["ms-csexc", "ms-stdexc"],
+      sources: ["ms-csexc", "ms-stdexc", "ms-stmts"],
     },
     {
       id: "s4", num: "04", kicker: "Состояние объекта", title: "Объект несёт Message, стек и InnerException",

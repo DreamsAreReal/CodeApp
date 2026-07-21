@@ -155,7 +155,7 @@ export const exceptionFilters: LessonData = {
       id: "c1", type: "predict-output", engagementLevel: "responding",
       question: '<code>string s; try { throw new InvalidOperationException("retry"); } catch (InvalidOperationException e) when (e.Message == "fatal") { s="fatal-branch"; } catch (InvalidOperationException e) when (e.Message == "retry") { s="retry-branch"; } Console.WriteLine(s);</code> — что напечатает?',
       options: ["retry-branch", "fatal-branch", "(исключение не поймано)", "InvalidOperationException"], correctIndex: 0, xp: 10,
-      okText: 'Два <code>catch</code> одного типа, «distinguished by exception filters». Первый <code>when</code> (== "fatal") — <code>false</code>, второй (== "retry") — <code>true</code>. Сработала вторая ветка. Печать: <b>retry-branch</b>.',
+      okText: 'Два <code>catch</code> одного типа, «distinguish by exception filters». Первый <code>when</code> (== "fatal") — <code>false</code>, второй (== "retry") — <code>true</code>. Сработала вторая ветка. Печать: <b>retry-branch</b>.',
       noText: 'Фильтр отбирает нужную ветку из нескольких <code>catch</code> одного типа. Сообщение «retry» матчит второй <code>when</code>. Реальный вывод: <b>retry-branch</b>.',
       verify: { kind: "exec", run: "dotnet run", expect: "retry-branch" }, sourceRefs: ["ms-stmts"],
     },

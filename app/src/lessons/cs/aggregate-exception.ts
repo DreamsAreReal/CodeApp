@@ -75,8 +75,8 @@ export const aggregateException: LessonData = {
     { text: "«To propagate all the exceptions back to the calling thread, the Task infrastructure wraps them in an AggregateException instance.» — «Even if only one exception is thrown, it is still wrapped in an AggregateException».", source: "ms-tplexc" },
   ],
   edgeCases: [
-    { text: "<code>InnerExceptions</code> — «a <b>read-only collection</b> of the <code>Exception</code> instances that caused the current exception»; его «can be enumerated to examine all the original exceptions that were thrown».", source: "ms-aggapi" },
-    { text: "Вложенность от attached child: «the <code>InnerExceptions</code> property… contains <b>one or more <code>AggregateException</code> instances, not the original exceptions</b>»; <code>Flatten</code> «Flattens an <code>AggregateException</code> instances into a single, new instance».", source: "ms-tplexc" },
+    { text: "<code>InnerExceptions</code> — «a <b>read-only collection</b> of the <code>Exception</code> instances that caused the current exception»; его «can be enumerated to examine all the original exceptions that were thrown».", source: ["ms-aggapi", "ms-tplexc"] },
+    { text: "Вложенность от attached child: «the <code>InnerExceptions</code> property… contains <b>one or more <code>AggregateException</code> instances, not the original exceptions</b>»; <code>Flatten</code> «Flattens an <code>AggregateException</code> instances into a single, new instance».", source: ["ms-tplexc", "ms-aggapi"] },
     { text: "Не глотай агрегат целиком: «To catch an exception without taking specific actions to recover from it can <b>leave your program in an indeterminate state</b>».", source: "ms-tplexc" },
     { text: "Не наблюдено → эскалация: «If you do not wait on a task that propagates an exception, or access its <code>Exception</code> property, the exception is <b>escalated</b>… when the task is garbage-collected».", source: "ms-tplexc" },
   ],
