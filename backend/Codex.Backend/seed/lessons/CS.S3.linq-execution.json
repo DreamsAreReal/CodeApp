@@ -1,0 +1,55 @@
+{
+  "id": "CS.S3.linq-execution",
+  "track": "CS",
+  "section": "CS.S3",
+  "module": "S3.2",
+  "title": "Как выполняется LINQ-запрос: три части",
+  "status": "published",
+  "order": 31,
+  "sources": [
+    {
+      "id": "ms-intro",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/linq/get-started/introduction-to-linq-queries",
+      "date": "2024-04-22"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Three parts: source, query, execution — where filter keeps even numbers (0 included)",
+      "code": "using System; using System.Linq; int[] numbers = [0,1,2,3,4,5,6]; var numQuery = from num in numbers where (num % 2) == 0 select num; Console.WriteLine(string.Join(\" \", numQuery));",
+      "expectedOutput": "0 2 4 6",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-intro"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Query variable holds no data: source mutated before iteration, new items appear",
+      "code": "using System; using System.Linq; using System.Collections.Generic; var list = new List<int>{1,2}; var q = from x in list where x > 1 select x; list.Add(5); list.Add(9); Console.WriteLine(string.Join(\",\", q));",
+      "expectedOutput": "2,5,9",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-intro"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Same query executed twice around a source mutation reflects the change (2 then 4)",
+      "code": "using System; using System.Linq; using System.Collections.Generic; var src = new List<int>{2,4}; var q = from x in src where x % 2 == 0 select x; int a = q.Count(); src.Add(6); src.Add(8); int b = q.Count(); Console.WriteLine($\"{a} {b}\");",
+      "expectedOutput": "2 4",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-intro"
+      ]
+    }
+  ]
+}

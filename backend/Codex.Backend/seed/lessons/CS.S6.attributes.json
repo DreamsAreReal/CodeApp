@@ -1,0 +1,61 @@
+{
+  "id": "CS.S6.attributes",
+  "track": "CS",
+  "section": "CS.S6",
+  "module": "S6.4",
+  "title": "Атрибуты: создание и чтение",
+  "status": "published",
+  "order": 4,
+  "sources": [
+    {
+      "id": "ms-attr",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/advanced-topics/reflection-and-attributes/",
+      "date": "2025-03-14"
+    },
+    {
+      "id": "ms-attr-retrieve",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/standard/attributes/retrieving-information-stored-in-attributes",
+      "date": "2022-08-05"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "custom InfoAttribute(Author ctor, Version named): GetCustomAttribute печатает Author и Version?",
+      "code": "using System; using System.Reflection; [AttributeUsage(AttributeTargets.Class)] class InfoAttribute : Attribute { public string Author; public int Version; public InfoAttribute(string a){Author=a;} } [Info(\"ada\", Version=2)] class Widget {} var a = typeof(Widget).GetCustomAttribute<InfoAttribute>(); Console.WriteLine(a.Author); Console.WriteLine(a.Version);",
+      "expectedOutput": "ada\n2",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-attr-retrieve"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "[Tag(\"api\", Cached=true)]: positional Name vs named Cached восстановленные reflection-ом?",
+      "code": "using System; using System.Reflection; class TagAttribute : Attribute { public string Name; public bool Cached; public TagAttribute(string name){Name=name;} } [Tag(\"api\", Cached=true)] class Svc {} var a = typeof(Svc).GetCustomAttribute<TagAttribute>(); Console.WriteLine($\"positional Name={a.Name}\"); Console.WriteLine($\"named Cached={a.Cached}\");",
+      "expectedOutput": "positional Name=api\nnamed Cached=True",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-attr"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Тип без атрибута: GetCustomAttribute == null? GetCustomAttributes(false).Length?",
+      "code": "using System; using System.Reflection; class MarkAttribute : Attribute {} class Plain {} Console.WriteLine(typeof(Plain).GetCustomAttribute<MarkAttribute>() == null); Console.WriteLine(typeof(Plain).GetCustomAttributes(false).Length);",
+      "expectedOutput": "True\n0",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-attr-retrieve"
+      ]
+    }
+  ]
+}

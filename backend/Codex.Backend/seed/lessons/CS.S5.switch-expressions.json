@@ -1,0 +1,61 @@
+{
+  "id": "CS.S5.switch-expressions",
+  "track": "CS",
+  "section": "CS.S5",
+  "module": "S5.3",
+  "title": "Switch expressions и exhaustiveness",
+  "status": "published",
+  "order": 53,
+  "sources": [
+    {
+      "id": "ms-switch-expr",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/switch-expression",
+      "date": "2026-03-20"
+    },
+    {
+      "id": "ms-patterns",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/patterns",
+      "date": "2026-06-05"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "ToOrientation(Direction.Right) — первый совпавший рукав?",
+      "code": "enum Direction { Up, Down, Right, Left } enum Orientation { North, South, East, West } static Orientation ToOrientation(Direction d) => d switch { Direction.Up => Orientation.North, Direction.Right => Orientation.East, Direction.Down => Orientation.South, Direction.Left => Orientation.West, _ => throw new System.ArgumentOutOfRangeException() }; System.Console.WriteLine(ToOrientation(Direction.Right));",
+      "expectedOutput": "East",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-switch-expr"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Один паттерн var (a,b), три when-guard: T(1,2)/T(5,2)/T(3,3)?",
+      "code": "static string T(int x, int y) => (x, y) switch { (0, 0) => \"origin\", var (a, b) when a < b => \"a<b\", var (a, b) when a > b => \"a>b\", _ => \"equal\" }; System.Console.WriteLine(T(1, 2)); System.Console.WriteLine(T(5, 2)); System.Console.WriteLine(T(3, 3));",
+      "expectedOutput": "a<b\na>b\nequal",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-switch-expr"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "or/and диапазоны: Season(7)/Season(1)?",
+      "code": "static string Season(int m) => m switch { >= 3 and < 6 => \"spring\", >= 6 and < 9 => \"summer\", >= 9 and < 12 => \"autumn\", 12 or (>= 1 and < 3) => \"winter\", _ => \"?\" }; System.Console.WriteLine(Season(7)); System.Console.WriteLine(Season(1));",
+      "expectedOutput": "summer\nwinter",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-patterns"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "id": "CS.S6.reflection-overview",
+  "track": "CS",
+  "section": "CS.S6",
+  "module": "S6.1",
+  "title": "Reflection: обзор и граф метаданных",
+  "status": "published",
+  "order": 1,
+  "sources": [
+    {
+      "id": "ms-reflection",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/fundamentals/reflection/overview",
+      "date": "2024-03-27"
+    },
+    {
+      "id": "ms-activator",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/api/system.activator.createinstance",
+      "date": "2025-07-01"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Type t = typeof(int); печатает t.GetType().Name — какой класс реально стоит за t?",
+      "code": "using System; Type t = typeof(int); Console.WriteLine(t.GetType().Name);",
+      "expectedOutput": "RuntimeType",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-reflection"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "typeof(Uri): печать имени сборки и модуля через reflection?",
+      "code": "using System; using System.Reflection; Type t = typeof(Uri); Console.WriteLine(t.Assembly.GetName().Name); Console.WriteLine(t.Module.Name);",
+      "expectedOutput": "System.Private.Uri\nSystem.Private.Uri.dll",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-reflection"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Activator.CreateInstance + MethodInfo.Invoke на StringBuilder — печать ToString и типа?",
+      "code": "using System; using System.Reflection; using System.Text; Type t = typeof(StringBuilder); object sb = Activator.CreateInstance(t); t.GetMethod(\"Append\", new[]{typeof(string)}).Invoke(sb, new object[]{\"hi\"}); Console.WriteLine(sb); Console.WriteLine(sb.GetType().Name);",
+      "expectedOutput": "hi\nStringBuilder",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-reflection",
+        "ms-activator"
+      ]
+    }
+  ]
+}

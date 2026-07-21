@@ -1,0 +1,61 @@
+{
+  "id": "CS.S6.source-generators",
+  "track": "CS",
+  "section": "CS.S6",
+  "module": "S6.7",
+  "title": "Source generators: compile-time вместо reflection",
+  "status": "published",
+  "order": 7,
+  "sources": [
+    {
+      "id": "ms-roslyn",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/roslyn-sdk/source-generators-overview",
+      "date": "2024-10-25"
+    },
+    {
+      "id": "ms-reflection",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/fundamentals/reflection/overview",
+      "date": "2024-03-27"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Reflection в рантайме: GetFields+GetValue строит описание Person?",
+      "code": "using System; using System.Reflection; using System.Linq; class Person { public string Name=\"Ada\"; public int Age=36; } var s = string.Join(\", \", typeof(Person).GetFields().Select(f => $\"{f.Name}={f.GetValue(new Person())}\")); Console.WriteLine(s);",
+      "expectedOutput": "Name=Ada, Age=36",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-reflection"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Эмитированный-эквивалент: Describe() прямым кодом печатает то же?",
+      "code": "using System; class Person { public string Name=\"Ada\"; public int Age=36; public string Describe() => $\"Name={Name}, Age={Age}\"; } Console.WriteLine(new Person().Describe());",
+      "expectedOutput": "Name=Ada, Age=36",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-roslyn"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Сгенерированный Describe() для Point на двух экземплярах?",
+      "code": "using System; class Point { public int X, Y; public string Describe() => $\"({X}, {Y})\"; } Console.WriteLine(new Point{X=1,Y=2}.Describe()); Console.WriteLine(new Point{X=9,Y=9}.Describe());",
+      "expectedOutput": "(1, 2)\n(9, 9)",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-roslyn"
+      ]
+    }
+  ]
+}

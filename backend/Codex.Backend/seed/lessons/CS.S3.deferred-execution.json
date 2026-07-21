@@ -1,0 +1,55 @@
+{
+  "id": "CS.S3.deferred-execution",
+  "track": "CS",
+  "section": "CS.S3",
+  "module": "S3.4",
+  "title": "Отложенное выполнение: streaming vs buffering",
+  "status": "published",
+  "order": 33,
+  "sources": [
+    {
+      "id": "ms-intro",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/linq/get-started/introduction-to-linq-queries",
+      "date": "2024-04-22"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Deferred: side-effecting Select does not run until ToList (before=0 after=3)",
+      "code": "using System; using System.Linq; using System.Collections.Generic; int calls = 0; var src = new List<int>{1,2,3}; var q = src.Select(x => { calls++; return x*2; }); Console.Write($\"before={calls} \"); var list = q.ToList(); Console.Write($\"after={calls}\");",
+      "expectedOutput": "before=0 after=3",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-intro"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Streaming: Where(...).First() over Range(1,100) reads only 7 elements",
+      "code": "using System; using System.Linq; int seen = 0; var src = Enumerable.Range(1, 100); var first = src.Where(x => { seen++; return x % 7 == 0; }).First(); Console.WriteLine($\"first={first} seen={seen}\");",
+      "expectedOutput": "first=7 seen=7",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-intro"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Nonstreaming: OrderByDescending over Range(1,10) reads all 10 before first yield",
+      "code": "using System; using System.Linq; int seen = 0; var src = Enumerable.Range(1, 10); var q = src.OrderByDescending(x => { seen++; return x; }); int firstOut = q.First(); Console.WriteLine($\"first={firstOut} seen={seen}\");",
+      "expectedOutput": "first=10 seen=10",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-intro"
+      ]
+    }
+  ]
+}

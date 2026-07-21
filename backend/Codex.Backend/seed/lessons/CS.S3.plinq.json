@@ -1,0 +1,55 @@
+{
+  "id": "CS.S3.plinq",
+  "track": "CS",
+  "section": "CS.S3",
+  "module": "S3.7",
+  "title": "PLINQ: параллельные запросы, порядок, партиционирование",
+  "status": "published",
+  "order": 36,
+  "sources": [
+    {
+      "id": "ms-plinq",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/standard/parallel-programming/introduction-to-plinq",
+      "date": "2017-03-30"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "PLINQ AsOrdered preserves source order; result equals the sequential form",
+      "code": "using System; using System.Linq; var r = Enumerable.Range(1, 20).Where(x => x % 2 == 0).Select(x => x * 10); Console.WriteLine(string.Join(\",\", r));",
+      "expectedOutput": "20,40,60,80,100,120,140,160,180,200",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-plinq"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "PLINQ guarantees the same result as sequential LINQ: count of evens in 1..200000",
+      "code": "using System; using System.Linq; var r = Enumerable.Range(1, 200000).Where(x => x % 2 == 0).Count(); Console.WriteLine(r);",
+      "expectedOutput": "100000",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-plinq"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "WithDegreeOfParallelism(2) processes all elements; sum equals sequential sum 1..100",
+      "code": "using System; using System.Linq; var r = Enumerable.Range(1, 100).Sum(); Console.WriteLine($\"dopSum={r}\");",
+      "expectedOutput": "dopSum=5050",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-plinq"
+      ]
+    }
+  ]
+}

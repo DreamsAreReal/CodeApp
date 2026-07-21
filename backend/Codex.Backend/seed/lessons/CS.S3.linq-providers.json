@@ -1,0 +1,61 @@
+{
+  "id": "CS.S3.linq-providers",
+  "track": "CS",
+  "section": "CS.S3",
+  "module": "S3.6",
+  "title": "LINQ-провайдеры: in-memory и удалённые",
+  "status": "published",
+  "order": 35,
+  "sources": [
+    {
+      "id": "ms-linq",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/linq/",
+      "date": "2025-12-01"
+    },
+    {
+      "id": "ms-intro",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/linq/get-started/introduction-to-linq-queries",
+      "date": "2024-04-22"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "LINQ to Objects: a custom yield iterator gets all standard operators for free",
+      "code": "using System; using System.Linq; using System.Collections.Generic; IEnumerable<int> Gen(){ yield return 3; yield return 1; yield return 4; yield return 1; yield return 5; } var r = Gen().Where(x => x > 1).Distinct().OrderBy(x => x); Console.WriteLine(string.Join(\",\", r));",
+      "expectedOutput": "3,4,5",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-linq"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "In-memory provider streams a lazy infinite source: Where + Take(4) pulls only 4",
+      "code": "using System; using System.Linq; using System.Collections.Generic; IEnumerable<int> Naturals(){ int i = 1; while(true) yield return i++; } var r = Naturals().Where(x => x % 3 == 0).Take(4); Console.WriteLine(string.Join(\",\", r));",
+      "expectedOutput": "3,6,9,12",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-linq"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "In-memory provider projects then aggregates immediately: sum of squares 1..5",
+      "code": "using System; using System.Linq; var r = Enumerable.Range(1, 5).Select(x => x * x).Sum(); Console.WriteLine(r);",
+      "expectedOutput": "55",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-linq"
+      ]
+    }
+  ]
+}

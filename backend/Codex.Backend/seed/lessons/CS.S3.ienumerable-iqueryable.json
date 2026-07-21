@@ -1,0 +1,61 @@
+{
+  "id": "CS.S3.ienumerable-iqueryable",
+  "track": "CS",
+  "section": "CS.S3",
+  "module": "S3.5",
+  "title": "IEnumerable<T> vs IQueryable<T>: делегаты и деревья выражений",
+  "status": "published",
+  "order": 34,
+  "sources": [
+    {
+      "id": "ms-linq",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/linq/",
+      "date": "2025-12-01"
+    },
+    {
+      "id": "ms-iqueryable",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/api/system.linq.iqueryable-1",
+      "date": "2025-07-01"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "IEnumerable Where executes the delegate locally (LINQ to Objects), then Sum",
+      "code": "using System; using System.Linq; using System.Collections.Generic; IEnumerable<int> src = new List<int>{1,2,3,4}; var q = src.Where(x => x > 2); Console.WriteLine(q.Sum());",
+      "expectedOutput": "7",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-linq"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "The Where predicate over IEnumerable IS a Func<int,bool> delegate invoked per element",
+      "code": "using System; using System.Collections.Generic; Func<int,bool> pred = x => x > 2; var src = new List<int>{1,2,3,4}; int hits = 0; foreach (var x in src) if (pred(x)) hits++; Console.WriteLine($\"hits={hits}\");",
+      "expectedOutput": "hits=2",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-linq"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "IEnumerable delegate is in-process C# code: the closure sees the mutated local at enumeration",
+      "code": "using System; using System.Linq; using System.Collections.Generic; int threshold = 2; IEnumerable<int> src = Enumerable.Range(1, 9); var q = src.Where(x => x > threshold); threshold = 6; Console.WriteLine($\"count={q.Count()}\");",
+      "expectedOutput": "count=3",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-linq"
+      ]
+    }
+  ]
+}

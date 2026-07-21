@@ -1,0 +1,62 @@
+{
+  "id": "CS.S6.reflection-generics",
+  "track": "CS",
+  "section": "CS.S6",
+  "module": "S6.6",
+  "title": "Reflection и generics: открытые и закрытые типы",
+  "status": "published",
+  "order": 6,
+  "sources": [
+    {
+      "id": "ms-refgen",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/fundamentals/reflection/reflection-and-generic-types",
+      "date": "2017-03-30"
+    },
+    {
+      "id": "ms-makegen",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/api/system.type.makegenerictype",
+      "date": "2025-07-01"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "IsGenericTypeDefinition для Dictionary<,> vs Dictionary<int,string>?",
+      "code": "using System; using System.Collections.Generic; Type open = typeof(Dictionary<,>); Type closed = typeof(Dictionary<int,string>); Console.WriteLine(open.IsGenericTypeDefinition); Console.WriteLine(closed.IsGenericTypeDefinition);",
+      "expectedOutput": "True\nFalse",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-refgen"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "List<> open, MakeGenericType(int) -> имя и instantiable до/после?",
+      "code": "using System; using System.Collections.Generic; Type open = typeof(List<>); Console.WriteLine($\"open def: {open.IsGenericTypeDefinition}, instantiable: {!open.ContainsGenericParameters}\"); Type closed = open.MakeGenericType(typeof(int)); Console.WriteLine($\"closed: {closed.Name}, instantiable: {!closed.ContainsGenericParameters}\");",
+      "expectedOutput": "open def: True, instantiable: False\nclosed: List`1, instantiable: True",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-refgen",
+        "ms-makegen"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "GetGenericArguments у Dictionary<int,string> — имена аргументов?",
+      "code": "using System; using System.Collections.Generic; var args = typeof(Dictionary<int,string>).GetGenericArguments(); Console.WriteLine(args[0].Name); Console.WriteLine(args[1].Name);",
+      "expectedOutput": "Int32\nString",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-refgen"
+      ]
+    }
+  ]
+}

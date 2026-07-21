@@ -1,0 +1,61 @@
+{
+  "id": "CS.S3.linq-query-syntax",
+  "track": "CS",
+  "section": "CS.S3",
+  "module": "S3.1",
+  "title": "LINQ: query-синтаксис и method-синтаксис",
+  "status": "published",
+  "order": 30,
+  "sources": [
+    {
+      "id": "ms-linq",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/linq/",
+      "date": "2025-12-01"
+    },
+    {
+      "id": "ms-sqo",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/linq/standard-query-operators/",
+      "date": "2025-12-01"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Query syntax where+select: filter scores > 80, keep source order",
+      "code": "using System; using System.Linq; int[] scores = [97, 92, 81, 60]; var q = from s in scores where s > 80 select s; Console.WriteLine(string.Join(\" \", q));",
+      "expectedOutput": "97 92 81",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-linq"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Query syntax where+orderby+select equals the Where().OrderBy().Select() chain",
+      "code": "using System; using System.Linq; int[] n = [5,3,8,1,9,2]; var q = from x in n where x > 3 orderby x select x*10; Console.WriteLine(string.Join(\",\", q));",
+      "expectedOutput": "50,80,90",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-linq"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Count has no query clause; called as a method on the query part",
+      "code": "using System; using System.Linq; var n = Enumerable.Range(1, 20); var q = from x in n where x % 2 == 0 select x; Console.WriteLine(q.Count());",
+      "expectedOutput": "10",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-linq"
+      ]
+    }
+  ]
+}

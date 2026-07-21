@@ -1,0 +1,55 @@
+{
+  "id": "CS.S5.relational-logical",
+  "track": "CS",
+  "section": "CS.S5",
+  "module": "S5.5",
+  "title": "Relational и logical patterns",
+  "status": "published",
+  "order": 55,
+  "sources": [
+    {
+      "id": "ms-patterns",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/patterns",
+      "date": "2026-06-05"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "and-диапазоны: Classify(13)/Classify(-100)/Classify(5.7)?",
+      "code": "static string Classify(double m) => m switch { < -40.0 => \"Too low\", >= -40.0 and < 0 => \"Low\", >= 0 and < 10.0 => \"Acceptable\", >= 10.0 and < 20.0 => \"High\", >= 20.0 => \"Too high\", double.NaN => \"Unknown\" }; System.Console.WriteLine(Classify(13)); System.Console.WriteLine(Classify(-100)); System.Console.WriteLine(Classify(5.7));",
+      "expectedOutput": "High\nToo low\nAcceptable",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-patterns"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "IsLetter через (and) or (and): IsLetter('Q')/IsLetter('7')?",
+      "code": "static bool IsLetter(char c) => c is (>= 'a' and <= 'z') or (>= 'A' and <= 'Z'); System.Console.WriteLine(IsLetter('Q')); System.Console.WriteLine(IsLetter('7'));",
+      "expectedOutput": "True\nFalse",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-patterns"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Ловушка приоритета not/and: Wrong('{')/Right('{')?",
+      "code": "static bool Wrong(char c) => c is not >= 'a' and <= 'z'; static bool Right(char c) => c is not (>= 'a' and <= 'z'); System.Console.WriteLine(Wrong('{')); System.Console.WriteLine(Right('{'));",
+      "expectedOutput": "False\nTrue",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-patterns"
+      ]
+    }
+  ]
+}
