@@ -643,6 +643,10 @@ const CS_S4: Section = {
       () => import("./cs/events.ts").then((m) => m.events),
     ),
     entry(
+      { id: "CS.S4.delegate-variance", track: "CS", section: "CS.S4", title: "Вариантность делегатов: ковариантность и контравариантность", kicker: "C# вглубь · S4 · in/out", icon: "types", subtitle: "Ковариантность возврата, контравариантность параметра, out/in, type safety", estMinutes: 10, cards: 3 },
+      () => import("./cs/delegate-variance.ts").then((m) => m.delegateVariance),
+    ),
+    entry(
       { id: "CS.S4.closures-capture", track: "CS", section: "CS.S4", title: "Лямбды и замыкания: захват переменной", kicker: "C# вглубь · S4 · display-класс", icon: "types", subtitle: "Захват переменной, ловушка цикла, аллокация замыкания", estMinutes: 11, cards: 3 },
       () => import("./cs/closures-capture.ts").then((m) => m.closuresCapture),
     ),

@@ -1,0 +1,61 @@
+{
+  "id": "CS.S4.delegate-variance",
+  "track": "CS",
+  "section": "CS.S4",
+  "module": "S4.6",
+  "title": "Вариантность делегатов: ковариантность и контравариантность",
+  "status": "published",
+  "order": 69,
+  "sources": [
+    {
+      "id": "ms-variance",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/",
+      "date": "2023-03-14"
+    },
+    {
+      "id": "ms-variance-del",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/using-variance-in-delegates",
+      "date": "2024-06-18"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Ковариантность: Func<Mammal> f = () => new Dog(); печать f().Name и типа — обе строки?",
+      "code": "using System; class Mammal { public virtual string Name => \"mammal\"; } class Dog : Mammal { public override string Name => \"dog\"; } Func<Mammal> f = () => new Dog(); Mammal m = f(); Console.WriteLine(m.Name); Console.WriteLine(m.GetType().Name);",
+      "expectedOutput": "dog\nDog",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-variance-del"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Контравариантность: Action<Cat> = HandleAny(Animal); onCat(new Cat()) — обе строки?",
+      "code": "using System; class Animal { public string Kind = \"animal\"; } class Cat : Animal { } void HandleAny(Animal a) => Console.WriteLine(\"handled: \" + a.Kind); Action<Cat> onCat = HandleAny; onCat(new Cat()); Console.WriteLine(\"contravariance ok\");",
+      "expectedOutput": "handled: animal\ncontravariance ok",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-variance-del"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Generic-ковариантность: Func<Animal> makeAnimal = makeDog (Func<Dog>); печать Sound и is Dog — обе строки?",
+      "code": "using System; class Animal { public virtual string Sound => \"...\"; } class Dog : Animal { public override string Sound => \"woof\"; } Func<Dog> makeDog = () => new Dog(); Func<Animal> makeAnimal = makeDog; Animal a = makeAnimal(); Console.WriteLine(a.Sound); Console.WriteLine(a is Dog);",
+      "expectedOutput": "woof\nTrue",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-variance"
+      ]
+    }
+  ]
+}
