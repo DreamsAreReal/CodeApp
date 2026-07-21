@@ -627,6 +627,10 @@ const CS_S4: Section = {
   prereqs: ["CS.S1"],
   lessons: [
     entry(
+      { id: "CS.S4.delegates-overview", track: "CS", section: "CS.S4", title: "Делегаты: type-safe function pointer", kicker: "C# вглубь · S4 · позднее связывание", icon: "types", subtitle: "Делегат = ссылка на метод, типобезопасность, MulticastDelegate", estMinutes: 9, cards: 3 },
+      () => import("./cs/delegates-overview.ts").then((m) => m.delegatesOverview),
+    ),
+    entry(
       { id: "CS.S4.closures-capture", track: "CS", section: "CS.S4", title: "Лямбды и замыкания: захват переменной", kicker: "C# вглубь · S4 · display-класс", icon: "types", subtitle: "Захват переменной, ловушка цикла, аллокация замыкания", estMinutes: 11, cards: 3 },
       () => import("./cs/closures-capture.ts").then((m) => m.closuresCapture),
     ),

@@ -1,0 +1,62 @@
+{
+  "id": "CS.S4.delegates-overview",
+  "track": "CS",
+  "section": "CS.S4",
+  "module": "S4.2",
+  "title": "Делегаты: type-safe function pointer",
+  "status": "published",
+  "order": 65,
+  "sources": [
+    {
+      "id": "ms-overview",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/delegates-overview",
+      "date": "2022-03-24"
+    },
+    {
+      "id": "ms-delegates",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/delegates/",
+      "date": "2025-03-11"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Func<int,int> op = Twice; печать op(21); op = n => n + 100; печать op(21); — обе строки?",
+      "code": "using System; int Twice(int n) => n * 2; Func<int,int> op = Twice; Console.WriteLine(op(21)); op = n => n + 100; Console.WriteLine(op(21));",
+      "expectedOutput": "42\n121",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-overview",
+        "ms-delegates"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "op.Method.Name и op.GetType().BaseType.Name для Func<int,int> op = Twice — обе строки?",
+      "code": "using System; int Twice(int n) => n * 2; Func<int,int> op = Twice; Console.WriteLine(op.Method.Name); Console.WriteLine(op.GetType().BaseType.Name);",
+      "expectedOutput": "Twice\nMulticastDelegate",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-delegates"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "greet(\"lo\") через Func<string,string> и greet is Delegate — обе строки?",
+      "code": "using System; string Hi(string who) => \"hi \" + who; Func<string,string> greet = Hi; Console.WriteLine(greet(\"lo\")); Console.WriteLine(greet is Delegate);",
+      "expectedOutput": "hi lo\nTrue",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-delegates"
+      ]
+    }
+  ]
+}
