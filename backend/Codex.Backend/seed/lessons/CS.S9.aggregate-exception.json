@@ -1,0 +1,45 @@
+{
+  "id": "CS.S9.aggregate-exception",
+  "track": "CS",
+  "section": "CS.S9",
+  "module": "S9.7",
+  "title": "AggregateException: Flatten, Handle, TPL",
+  "status": "published",
+  "order": 86,
+  "sources": [
+    { "id": "ms-tplexc", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/standard/parallel-programming/exception-handling-task-parallel-library", "date": "2022-06-08" },
+    { "id": "ms-aggapi", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/api/system.aggregateexception", "date": "2025-07-01" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Even a single task exception is still wrapped in an AggregateException by .Wait(): the caught type is AggregateException, InnerExceptions.Count is 1, and InnerExceptions[0] is the real InvalidOperationException",
+      "code": "using System; using System.Threading.Tasks; var task = Task.Run(() => throw new InvalidOperationException(\"boom\")); string r; try { task.Wait(); r=\"none\"; } catch (AggregateException ae) { r = $\"{ae.GetType().Name}|count={ae.InnerExceptions.Count}|inner={ae.InnerExceptions[0].GetType().Name}\"; } Console.WriteLine(r);",
+      "expectedOutput": "AggregateException|count=1|inner=InvalidOperationException",
+      "verify": "execute",
+      "sourceRefs": ["ms-tplexc"]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "AggregateException.Handle invokes the delegate on each inner exception: returning true treats it as handled (C, handled=1), returning false rethrows the rest in a new AggregateException (InvalidOperationException, rethrown=1)",
+      "code": "using System; class C : Exception { public C(string m):base(m){} } var ae = new AggregateException(new C(\"a\"), new InvalidOperationException(\"b\")); int handled=0; string r; try { ae.Handle(ex => { if (ex is C) { handled++; return true; } return false; }); r=\"all-handled\"; } catch (AggregateException rethrown) { r = $\"handled={handled} rethrown={rethrown.InnerExceptions.Count}\"; } Console.WriteLine(r);",
+      "expectedOutput": "handled=1 rethrown=1",
+      "verify": "execute",
+      "sourceRefs": ["ms-tplexc"]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Flatten collapses a nested AggregateException into a single new instance: the outer holds one nested aggregate of (x, y); after Flatten, InnerExceptions has 2 real exceptions and no nested aggregate",
+      "code": "using System; var inner = new AggregateException(new Exception(\"x\"), new Exception(\"y\")); var outer = new AggregateException(inner); var flat = outer.Flatten(); bool anyNested = false; foreach (var e in flat.InnerExceptions) if (e is AggregateException) anyNested = true; Console.WriteLine($\"count={flat.InnerExceptions.Count} anyNested={anyNested}\");",
+      "expectedOutput": "count=2 anyNested=False",
+      "verify": "execute",
+      "sourceRefs": ["ms-tplexc", "ms-aggapi"]
+    }
+  ]
+}

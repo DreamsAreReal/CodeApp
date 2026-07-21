@@ -856,6 +856,10 @@ const CS_S9: Section = {
       { id: "CS.S9.exception-best-practices", track: "CS", section: "CS.S9", title: "Практики исключений: что бросать и ловить", kicker: "C# вглубь · S9 · дисциплина ошибок", icon: "types", subtitle: "что ловить, Try* вместо throw, восстановление состояния, builder-хелперы", estMinutes: 10, cards: 3 },
       () => import("./cs/exception-best-practices.ts").then((m) => m.exceptionBestPractices),
     ),
+    entry(
+      { id: "CS.S9.aggregate-exception", track: "CS", section: "CS.S9", title: "AggregateException: Flatten, Handle, TPL", kicker: "C# вглубь · S9 · агрегат ошибок", icon: "async", subtitle: "consolidate в один объект, .Wait оборачивает, Flatten, Handle", estMinutes: 10, cards: 3 },
+      () => import("./cs/aggregate-exception.ts").then((m) => m.aggregateException),
+    ),
   ],
 };
 
