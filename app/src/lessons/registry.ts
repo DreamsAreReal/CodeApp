@@ -836,6 +836,10 @@ const CS_S9: Section = {
       { id: "CS.S9.exceptions-overview", track: "CS", section: "CS.S9", title: "Исключения: объект, раскрутка стека, first-chance", kicker: "C# вглубь · S9 · модель исключения", icon: "types", subtitle: "Объект : System.Exception, раскрутка вверх, first-chance", estMinutes: 9, cards: 3 },
       () => import("./cs/exceptions-overview.ts").then((m) => m.exceptionsOverview),
     ),
+    entry(
+      { id: "CS.S9.try-catch-finally", track: "CS", section: "CS.S9", title: "try / catch / finally: формы и гарантии", kicker: "C# вглубь · S9 · операторы обработки", icon: "types", subtitle: "три формы try, порядок catch, гарантия finally", estMinutes: 10, cards: 3 },
+      () => import("./cs/try-catch-finally.ts").then((m) => m.tryCatchFinally),
+    ),
   ],
 };
 
