@@ -33,7 +33,11 @@ public sealed class CSharpRunner
             .WithReferences(
                 typeof(object).Assembly,
                 typeof(Enumerable).Assembly,
-                typeof(Console).Assembly);
+                typeof(Console).Assembly,
+                // System.Linq.Expressions: expression trees (Expression<T>, ExpressionVisitor,
+                // LambdaExpression.Compile) live in their own assembly, separate from System.Linq.
+                // Referenced so authoring snippets that build/compile/visit trees compile.
+                typeof(System.Linq.Expressions.Expression).Assembly);
 
         var sw = new Stopwatch();
         await _gate.WaitAsync();
