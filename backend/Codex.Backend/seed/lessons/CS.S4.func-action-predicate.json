@@ -1,0 +1,68 @@
+{
+  "id": "CS.S4.func-action-predicate",
+  "track": "CS",
+  "section": "CS.S4",
+  "module": "S4.4",
+  "title": "Func, Action, Predicate: встроенные делегаты",
+  "status": "published",
+  "order": 67,
+  "sources": [
+    {
+      "id": "ms-func",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/api/system.func-2",
+      "date": "2025-07-01"
+    },
+    {
+      "id": "ms-action",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/api/system.action-1",
+      "date": "2025-07-01"
+    },
+    {
+      "id": "ms-predicate",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/api/system.predicate-1",
+      "date": "2025-07-01"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Func<int,int,int> add и Action<string> log: печать add(2,3) и log(\"hi\") — обе строки?",
+      "code": "using System; Func<int,int,int> add = (a,b) => a + b; Action<string> log = s => Console.WriteLine(\"log: \" + s); Console.WriteLine(add(2,3)); log(\"hi\");",
+      "expectedOutput": "5\nlog: hi",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-func",
+        "ms-action"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Predicate<int> isEven на List 1..6: FindAll и Find — обе строки?",
+      "code": "using System; using System.Collections.Generic; var nums = new List<int>{1,2,3,4,5,6}; Predicate<int> isEven = n => n % 2 == 0; Console.WriteLine(string.Join(\",\", nums.FindAll(isEven))); Console.WriteLine(nums.Find(isEven));",
+      "expectedOutput": "2,4,6\n2",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-predicate"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Func<int,int,int,int> f: f(2,3,4) и число тип-аргументов через GetGenericArguments — обе строки?",
+      "code": "using System; Func<int,int,int,int> f = (a,b,c) => a*b*c; Console.WriteLine(f(2,3,4)); Console.WriteLine(f.GetType().GetGenericArguments().Length);",
+      "expectedOutput": "24\n4",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-func"
+      ]
+    }
+  ]
+}

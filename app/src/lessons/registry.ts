@@ -635,6 +635,10 @@ const CS_S4: Section = {
       () => import("./cs/delegate-multicast.ts").then((m) => m.delegateMulticast),
     ),
     entry(
+      { id: "CS.S4.func-action-predicate", track: "CS", section: "CS.S4", title: "Func, Action, Predicate: встроенные делегаты", kicker: "C# вглубь · S4 · без своего delegate", icon: "types", subtitle: "Func (возврат), Action (void), Predicate (bool), арность, вариантность", estMinutes: 9, cards: 3 },
+      () => import("./cs/func-action-predicate.ts").then((m) => m.funcActionPredicate),
+    ),
+    entry(
       { id: "CS.S4.closures-capture", track: "CS", section: "CS.S4", title: "Лямбды и замыкания: захват переменной", kicker: "C# вглубь · S4 · display-класс", icon: "types", subtitle: "Захват переменной, ловушка цикла, аллокация замыкания", estMinutes: 11, cards: 3 },
       () => import("./cs/closures-capture.ts").then((m) => m.closuresCapture),
     ),

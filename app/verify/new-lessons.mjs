@@ -59,6 +59,7 @@ const EXPECT = [
   { id: "CS.S4.closures-capture", segs: 6, ev: "CS-CLOSURES" },
   { id: "CS.S4.delegates-overview", segs: 5, ev: "CS-DELOVR" },
   { id: "CS.S4.delegate-multicast", segs: 6, ev: "CS-DELMULTI" },
+  { id: "CS.S4.func-action-predicate", segs: 6, ev: "CS-FUNCACT" },
   { id: "CS.S3.linq-query-syntax", segs: 5, ev: "CS-LINQQS" },
   { id: "CS.S3.linq-execution", segs: 5, ev: "CS-LINQEX" },
   { id: "CS.S3.standard-operators", segs: 5, ev: "CS-STDOPS" },
