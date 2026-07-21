@@ -1,0 +1,45 @@
+{
+  "id": "CS.S10.generic-math",
+  "track": "CS",
+  "section": "CS.S10",
+  "module": "S10.8",
+  "title": "Generic math: static abstract члены и INumber<T>",
+  "status": "published",
+  "order": 94,
+  "sources": [
+    { "id": "ms-iface", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/interface", "date": "2026-01-21" },
+    { "id": "ms-math", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/standard/generics/math", "date": "2022-08-12" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "A single generic Add<T> where T : INumber<T> works for every numeric type: int gives 7, double gives 4 (2.5+1.5=4.0 prints 4), long gives 30, so the output is 7 4 30",
+      "code": "using System; using System.Numerics; static T Add<T>(T a, T b) where T : INumber<T> => a + b; Console.WriteLine($\"{Add(3, 4)} {Add(2.5, 1.5)} {Add(10L, 20L)}\");",
+      "expectedOutput": "7 4 30",
+      "verify": "execute",
+      "sourceRefs": ["ms-math"]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "T.Zero is a static abstract member of INumberBase<T>; a generic Sum over an int[] gives 10 and over a double[] gives 7 (1.5+2.5+3.0=7.0 prints 7), so the output is 10 7",
+      "code": "using System; using System.Numerics; static T Sum<T>(T[] xs) where T : INumber<T> { T acc = T.Zero; foreach (var x in xs) acc += x; return acc; } Console.WriteLine($\"{Sum(new[]{1,2,3,4})} {Sum(new[]{1.5,2.5,3.0})}\");",
+      "expectedOutput": "10 7",
+      "verify": "execute",
+      "sourceRefs": ["ms-math", "ms-iface"]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "A custom static abstract interface member IZero<T>.Zero with the self-constraint T : IZero<T>: Money implements it, so Id<Money>() resolves T.Zero to Money.Zero and Cents is 0, printing 0",
+      "code": "using System; interface IZero<T> where T : IZero<T> { static abstract T Zero { get; } } static T Id<T>() where T : IZero<T> => T.Zero; struct Money : IZero<Money> { public int Cents; public static Money Zero => new Money{Cents=0}; } Console.WriteLine($\"{Id<Money>().Cents}\");",
+      "expectedOutput": "0",
+      "verify": "execute",
+      "sourceRefs": ["ms-iface"]
+    }
+  ]
+}

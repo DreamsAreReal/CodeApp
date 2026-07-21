@@ -904,6 +904,10 @@ const CS_S10: Section = {
       { id: "CS.S10.boxing-and-generics", track: "CS", section: "CS.S10", title: "Generics убирают боксинг: List<int> vs ArrayList", kicker: "C# вглубь · S10 · цена боксинга", icon: "gc", subtitle: "почему ArrayList боксит, цена бокса (24 B), List<int> inline, замер", estMinutes: 9, cards: 3 },
       () => import("./cs/boxing-and-generics.ts").then((m) => m.boxingAndGenerics),
     ),
+    entry(
+      { id: "CS.S10.generic-math", track: "CS", section: "CS.S10", title: "Generic math: static abstract члены и INumber<T>", kicker: "C# вглубь · S10 · static abstract (C# 11)", icon: "types", subtitle: "static abstract/virtual в интерфейсе, INumber<T>, один generic на все числа", estMinutes: 11, cards: 3 },
+      () => import("./cs/generic-math.ts").then((m) => m.genericMath),
+    ),
   ],
 };
 
