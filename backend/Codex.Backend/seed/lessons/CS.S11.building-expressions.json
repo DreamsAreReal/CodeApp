@@ -1,0 +1,44 @@
+{
+  "id": "CS.S11.building-expressions",
+  "track": "CS",
+  "section": "CS.S11",
+  "module": "S11.2",
+  "title": "Программное построение деревьев",
+  "status": "published",
+  "order": 96,
+  "sources": [
+    { "id": "ms-build", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/csharp/advanced-topics/expression-trees/expression-trees-building", "date": "2023-03-07" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "The tree is built bottom-up: two Expression.Constant leaves feed Expression.Add, capped by Expression.Lambda<Func<int>>; Compile()() compiles to a delegate and invokes it, so 1+2 prints 3",
+      "code": "using System; using System.Linq.Expressions; var one = Expression.Constant(1, typeof(int)); var two = Expression.Constant(2, typeof(int)); var addition = Expression.Add(one, two); var lambda = Expression.Lambda<Func<int>>(addition); Console.WriteLine(lambda.Compile()());",
+      "expectedOutput": "3",
+      "verify": "execute",
+      "sourceRefs": ["ms-build"]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "The same ParameterExpression x is used in the body Add(x, Constant(1)) and in the Lambda parameter list; ToString() renders the tree as x => (x + 1) and Compile()(41) yields 42, so the output is x => (x + 1) 42",
+      "code": "using System; using System.Linq.Expressions; var x = Expression.Parameter(typeof(int),\"x\"); var body = Expression.Add(x, Expression.Constant(1)); var lambda = Expression.Lambda<Func<int,int>>(body, x); var f = lambda.Compile(); Console.WriteLine($\"{lambda} {f(41)}\");",
+      "expectedOutput": "x => (x + 1) 42",
+      "verify": "execute",
+      "sourceRefs": ["ms-build"]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "The manually built num => num < 5 tree has a BinaryExpression body with NodeType=LessThan, and Compile()(3) evaluates 3<5 to True, so the output is LessThan True",
+      "code": "using System; using System.Linq.Expressions; var numParam = Expression.Parameter(typeof(int), \"num\"); var five = Expression.Constant(5, typeof(int)); var numLessThanFive = Expression.LessThan(numParam, five); var lambda1 = Expression.Lambda<Func<int,bool>>(numLessThanFive, new[]{numParam}); Console.WriteLine($\"{lambda1.Body.NodeType} {lambda1.Compile()(3)}\");",
+      "expectedOutput": "LessThan True",
+      "verify": "execute",
+      "sourceRefs": ["ms-build"]
+    }
+  ]
+}

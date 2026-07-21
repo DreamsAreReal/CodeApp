@@ -926,6 +926,10 @@ const CS_S11: Section = {
       { id: "CS.S11.expression-trees-overview", track: "CS", section: "CS.S11", title: "Деревья выражений: код как данные", kicker: "C# вглубь · S11 · code as data", icon: "types", subtitle: "Expression<Func<>> vs Func<>, узел = выражение, зачем провайдерам", estMinutes: 9, cards: 3 },
       () => import("./cs/expression-trees-overview.ts").then((m) => m.expressionTreesOverview),
     ),
+    entry(
+      { id: "CS.S11.building-expressions", track: "CS", section: "CS.S11", title: "Программное построение деревьев", kicker: "C# вглубь · S11 · снизу вверх", icon: "types", subtitle: "Expression.Parameter/Constant/Add/Lambda, неизменяемость, от листьев к корню", estMinutes: 10, cards: 3 },
+      () => import("./cs/building-expressions.ts").then((m) => m.buildingExpressions),
+    ),
   ],
 };
 
