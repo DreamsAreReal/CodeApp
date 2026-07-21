@@ -93,7 +93,7 @@ export const lockStatement: LessonData = {
         { codeLine: 3, out: "", caption: 'A выходит — блокировка освобождается, входит B. Гарантия: «<span class="hl">at most only one thread executes its body at any moment in time</span>».', nodes: [{ id: "b", kind: "gate", at: { zone: "crit", row: 0 }, state: "ok", label: "поток B", detail: "теперь держит", accent: true }], edges: [] },
       ],
       explain: 'Базовый контракт: «<span class="hl">The lock statement acquires the mutual-exclusion lock for a given object, executes a statement block, and then releases the lock</span>. While a lock is held, the thread that holds the lock can acquire and release the lock multiple times. Any other thread is blocked from acquiring the lock and waits until the lock is released. <span class="hl">The lock statement ensures that at most only one thread executes its body at any moment in time</span>». Это и есть «критическая секция»: код, в котором в любой момент — не более одного потока. Объект блокировки — не данные, а «замок»: все потоки, защищающие один и тот же ресурс, должны брать <b>одну и ту же</b> инстанцию.',
-      sources: ["ms-lock"],
+      sources: ["ms-lock", "ms-locktype"],
     },
     {
       id: "s2", num: "02", kicker: "Лоуэринг · Monitor", title: "lock (object) → Monitor.Enter/Exit в try/finally",
@@ -117,7 +117,7 @@ export const lockStatement: LessonData = {
         { codeLine: 3, out: "", caption: 'Возвращённый <code>Scope</code> — <b>ref struct</b> с <code>Dispose()</code>; сгенерированный <code>using</code> освобождает даже при исключении. Тип надо знать <span class="hl">точно</span>: иначе возьмётся Monitor.', nodes: [{ id: "es", kind: "obj", at: { zone: "tlock", row: 0 }, typeTag: "EnterScope()", value: "ref struct Scope" }, { id: "d", kind: "gate", at: { zone: "tlock", row: 1 }, state: "ok", label: "using → Dispose", detail: "release", accent: true }], edges: [] },
       ],
       explain: 'С .NET 9 / C# 13 появился специализированный тип <code>System.Threading.Lock</code>. «<span class="hl">The variable x is an expression of System.Threading.Lock type, or a reference type</span>… it\'s precisely equivalent to: <code>using (x.EnterScope())</code>». Что возвращает EnterScope: «<span class="hl">The object returned by <code>Lock.EnterScope()</code> is a ref struct that includes a <code>Dispose()</code> method</span>. The generated using statement ensures the scope is released even if an exception is thrown within the body of the lock statement». Тип должен совпадать буквально: «<span class="hl">the type of the expression must be precisely System.Threading.Lock</span>… <span class="hl">If the type of the expression is anything else, such as Object or a generic type like T</span>… <span class="hl">a different implementation that is not interchangeable can be used instead</span>». Отсюда предупреждение компилятора при касте <code>Lock</code> к другому типу.',
-      sources: ["ms-lock"],
+      sources: ["ms-lock", "ms-locktype"],
     },
     {
       id: "s4", num: "04", kicker: "Что НЕ лочить", title: "Не this / typeof / string — только выделенный замок",
