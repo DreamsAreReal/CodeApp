@@ -1,0 +1,46 @@
+{
+  "id": "CS.S8.threads-and-threading",
+  "track": "CS",
+  "section": "CS.S8",
+  "module": "S8.2",
+  "title": "Thread, foreground/background, ThreadPool",
+  "status": "published",
+  "order": 72,
+  "sources": [
+    { "id": "ms-threads", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/standard/threading/threads-and-threading", "date": "2022-03-11" },
+    { "id": "ms-fgbg", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/standard/threading/foreground-and-background-threads", "date": "2021-09-15" },
+    { "id": "ms-pool", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/standard/threading/the-managed-thread-pool", "date": "2026-03-19" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "A dedicated new Thread runs on a different managed thread than the primary one and is not a pool thread",
+      "code": "using System; using System.Threading; int mainId = Thread.CurrentThread.ManagedThreadId; int workerId = 0; bool pool = true; var t = new Thread(() => { workerId = Thread.CurrentThread.ManagedThreadId; pool = Thread.CurrentThread.IsThreadPoolThread; }); t.Start(); t.Join(); Console.WriteLine($\"different={mainId != workerId} worker_is_pool={pool}\");",
+      "expectedOutput": "different=True worker_is_pool=False",
+      "verify": "execute",
+      "sourceRefs": ["ms-threads", "ms-pool"]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "A new Thread is foreground by default (IsBackground False); setting IsBackground=true switches it to background",
+      "code": "using System; using System.Threading; var t = new Thread(() => {}); bool before = t.IsBackground; t.IsBackground = true; bool after = t.IsBackground; Console.WriteLine($\"before={before} after={after}\");",
+      "expectedOutput": "before=False after=True",
+      "verify": "execute",
+      "sourceRefs": ["ms-fgbg"]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Five ThreadPool work items each atomically increment and signal a CountdownEvent(5); waiting on it yields a deterministic done=5",
+      "code": "using System; using System.Threading; int done = 0; var cde = new CountdownEvent(5); for (int i = 0; i < 5; i++) ThreadPool.QueueUserWorkItem(_ => { Interlocked.Increment(ref done); cde.Signal(); }); cde.Wait(); Console.WriteLine($\"done={done}\");",
+      "expectedOutput": "done=5",
+      "verify": "execute",
+      "sourceRefs": ["ms-pool"]
+    }
+  ]
+}

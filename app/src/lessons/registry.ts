@@ -787,6 +787,10 @@ const CS_S8: Section = {
       { id: "CS.S8.managed-threading-basics", track: "CS", section: "CS.S8", title: "Managed threading: что даёт CLR", kicker: "C# вглубь · S8 · поток как единица планирования", icon: "async", subtitle: "Thread над ОС-потоком, общая память, гонки, примитивы", estMinutes: 9, cards: 3 },
       () => import("./cs/managed-threading-basics.ts").then((m) => m.managedThreadingBasics),
     ),
+    entry(
+      { id: "CS.S8.threads-and-threading", track: "CS", section: "CS.S8", title: "Thread, foreground/background, ThreadPool", kicker: "C# вглубь · S8 · три уровня запуска", icon: "async", subtitle: "primary/worker, TPL→ThreadPool→Thread, fg/bg, пул", estMinutes: 10, cards: 3 },
+      () => import("./cs/threads-and-threading.ts").then((m) => m.threadsAndThreading),
+    ),
   ],
 };
 
