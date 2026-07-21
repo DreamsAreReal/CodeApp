@@ -195,3 +195,18 @@ exec re-verify: ВСЕ 36 карт (12×3) через :5080 run-csharp → 36/36
 - new-lessons harness: segs list-internals 6→5, closures-capture 7→6 (были мои оценки recon, реальность иная); + ветка для predict-гейта НА s1 (yield-contract predictAt=1: автоплей играет кадр0 и держит гейт, index остаётся 0 → проверяю played/гейт, не index>0).
 - `npm run verify:all` 7/7 ALL GREEN (0 FAIL, 0 console-errors); `dotnet test` 67/67. Коммит f62a669.
 - Грабли: backend :5080 падал в ходе долгого verify:all → browser-шаги ложно валились на preflight «не подняты»; поднимать `ASPNETCORE_ENVIRONMENT=Development ASPNETCORE_URLS=http://localhost:5080 dotnet run` и повторять. verify:all у меня шёл ~12-15 мин (2 browser-прохода) — ждать pid, а не launcher-notification.
+
+## M6 accuracy-аудит Batch-1 (S17/S18/S4) — исправлено (коммит 7d73774)
+2 факт-бага машинных панелей (перемерены живьём :5080, детерминированно):
+- collections-overview s5: код панели БЕЗ presize → честные числа растущего пути ArrayList 40568 B / List<int> 8392 B (×4.8), не старые presized 32056/4056/×8. Presized-путь (4056/32056/×8) остаётся в predict-карте c3 (она presize-ит явно). Выдуманная GC-цитата → дословный Returns-текст «The total number of bytes allocated to the current thread since the beginning of its lifetime»; «selecting a collection class» (URL-слаг) → видимая проза «When choosing a collection class, it's worth considering potential tradeoffs in performance».
+- closures-capture s5: static-лямбда НЕ бесплатна на первом достижении call-site — 88 B (создание+кэш делегата один раз), потом 0 на повторах (цикл: 88→0→0). s6: захват локали в обычном методе — CS8820 (не CS8821; CS8821 = ссылка на this/base), с реально снятым текстом ошибки.
+Source-mismatch (цитата реальна, страница не та → перенесена на истинную, каждая fetch-подтверждена):
+- «This method is an O(1) operation» → HashSet<T>.Contains (добавил ms-hashset-contains в choosing-collection и list-internals).
+- «automatically reallocating the internal array» → List<T>.Capacity; «set the initial capacity» → collections index (в sourceRefs карты).
+- «a Dictionary<TKey,TValue> collection without values» → HashSet<T> class; «capacity automatically increases…» → полная фраза.
+- concurrent: полная фраза энумератора «…to the collection after GetEnumerator was called».
+- immutable s3: 4 цитаты ImmutableArray → ms-immutablearray (добавил источник), оборванные с … .
+- iterators-overview: восстановлен квалификатор «System.Collections.Generic.» в правиле foreach/await foreach; «traverses a container, particularly lists» дополнено.
+- yield-contract: «can't have both a return…yield return…» → Iterators (C#) (добавил ms-iterators).
+- async-iterator: имя стейт-машины — паттерн <G>d__N (замер: d__0 в статич. классе, d__1 у top-level локал-функции), не литерал d__0 — захеджировано; стабильный факт = интерфейс+builder.
+Доказательство: verify:all 7/7 ALL GREEN; exec 36/36 MATCH; dotnet 67/67. Ни одна карта (код/expect) не менялась — только display/цитаты/источники.
