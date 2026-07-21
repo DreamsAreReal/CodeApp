@@ -5,7 +5,7 @@
   "module": "S3.1",
   "title": "LINQ: query-синтаксис и method-синтаксис",
   "status": "published",
-  "order": 30,
+  "order": 42,
   "sources": [
     {
       "id": "ms-linq",

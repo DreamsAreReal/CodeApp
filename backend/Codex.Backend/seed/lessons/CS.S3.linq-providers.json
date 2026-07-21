@@ -5,7 +5,7 @@
   "module": "S3.6",
   "title": "LINQ-провайдеры: in-memory и удалённые",
   "status": "published",
-  "order": 35,
+  "order": 47,
   "sources": [
     {
       "id": "ms-linq",

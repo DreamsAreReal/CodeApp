@@ -5,7 +5,7 @@
   "module": "S6.3",
   "title": "Динамическая загрузка и late binding",
   "status": "published",
-  "order": 3,
+  "order": 60,
   "sources": [
     {
       "id": "ms-dynload",

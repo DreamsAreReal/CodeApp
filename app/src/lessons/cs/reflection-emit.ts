@@ -31,7 +31,7 @@ const RW_ZONES: Zone[] = [Z_READ, Z_WRITE];
 // s2: the build pipeline — DynamicMethod → ILGenerator → CreateDelegate.
 // Tall zone (h=234 → inner 218u) so three stacked rows (obj + obj + gate, measured 212u)
 // fit with PAD≥8.
-const Z_PIPE: Zone = { id: "pipe", x: 14, y: 34, w: 312, h: 234, cls: "vz-zone", label: "КОНВЕЙЕР DynamicMethod", labelCls: "vz-zlabel", lx: 170, ly: 24, sub: "объявить → эмитить IL → делегат", subCls: "vz-zsub", subY: 47 };
+const Z_PIPE: Zone = { id: "pipe", x: 14, y: 34, w: 312, h: 234, cls: "vz-zone", label: "КОНВЕЙЕР DynamicMethod", labelCls: "vz-zlabel", lx: 170, ly: 22, sub: "объявить → эмитить IL → делегат", subCls: "vz-zsub", subY: 40 };
 const PIPE_ZONES: Zone[] = [Z_PIPE];
 
 // s3: the eval stack as IL executes (ldarg.0 / ldc.i4.1 / add / ret).

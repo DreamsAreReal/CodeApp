@@ -37,7 +37,7 @@ const WHEN_ZONES: Zone[] = [Z_RUNTIME, Z_COMPILE];
 
 // s2: the generator pipeline — inspect compilation → emit source → added to compilation.
 // Tall zone (h=234 → inner 218u) so three stacked gate rows (measured 212u) fit with PAD≥8.
-const Z_GEN: Zone = { id: "gen", x: 14, y: 34, w: 312, h: 234, cls: "vz-zone", label: "SOURCE GENERATOR · КОНВЕЙЕР", labelCls: "vz-zlabel", lx: 170, ly: 24, sub: "читает компиляцию → эмитит .cs", subCls: "vz-zsub", subY: 47 };
+const Z_GEN: Zone = { id: "gen", x: 14, y: 34, w: 312, h: 234, cls: "vz-zone", label: "SOURCE GENERATOR · КОНВЕЙЕР", labelCls: "vz-zlabel", lx: 170, ly: 22, sub: "читает компиляцию → эмитит .cs", subCls: "vz-zsub", subY: 40 };
 const GEN_ZONES: Zone[] = [Z_GEN];
 
 // s3: additive-only — user code untouched, generated file added alongside.

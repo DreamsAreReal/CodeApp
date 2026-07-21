@@ -5,7 +5,7 @@
   "module": "S3.5",
   "title": "IEnumerable<T> vs IQueryable<T>: делегаты и деревья выражений",
   "status": "published",
-  "order": 34,
+  "order": 46,
   "sources": [
     {
       "id": "ms-linq",

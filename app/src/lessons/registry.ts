@@ -633,12 +633,131 @@ const CS_S4: Section = {
   ],
 };
 
+// Section S3 «LINQ» (RS-03 §2 раздел 3 · 8 уроков). Prereq CS.S1. Order 3: LINQ идёт
+// сразу за async/generics (S2) и перед pattern-matching (S5) по curriculum.
+const CS_S3: Section = {
+  id: "CS.S3",
+  title: "LINQ",
+  order: 3,
+  prereqs: ["CS.S1"],
+  lessons: [
+    entry(
+      { id: "CS.S3.linq-query-syntax", track: "CS", section: "CS.S3", title: "LINQ: query-синтаксис и method-синтаксис", kicker: "C# вглубь · S3 · две формы — один запрос", icon: "collections", subtitle: "query expression, лоуэринг в методы, где метод обязателен", estMinutes: 9, cards: 3 },
+      () => import("./cs/linq-query-syntax.ts").then((m) => m.linqQuerySyntax),
+    ),
+    entry(
+      { id: "CS.S3.linq-execution", track: "CS", section: "CS.S3", title: "Как выполняется LINQ-запрос: три части", kicker: "C# вглубь · S3 · объявить ≠ исполнить", icon: "collections", subtitle: "три действия, query-переменная = рецепт, исполнение при итерации", estMinutes: 9, cards: 3 },
+      () => import("./cs/linq-execution.ts").then((m) => m.linqExecution),
+    ),
+    entry(
+      { id: "CS.S3.standard-operators", track: "CS", section: "CS.S3", title: "Стандартные операторы: Where, Select, GroupBy, Join", kicker: "C# вглубь · S3 · семейства операторов", icon: "collections", subtitle: "фильтр/проекция/группировка/join, extension-методы, композиция", estMinutes: 10, cards: 3 },
+      () => import("./cs/standard-operators.ts").then((m) => m.standardOperators),
+    ),
+    entry(
+      { id: "CS.S3.deferred-execution", track: "CS", section: "CS.S3", title: "Отложенное выполнение: streaming vs buffering", kicker: "C# вглубь · S3 · когда РЕАЛЬНО бежит", icon: "collections", subtitle: "deferred, streaming/nonstreaming, immediate, счётчик итераций", estMinutes: 11, cards: 3 },
+      () => import("./cs/deferred-execution.ts").then((m) => m.deferredExecution),
+    ),
+    entry(
+      { id: "CS.S3.ienumerable-iqueryable", track: "CS", section: "CS.S3", title: "IEnumerable<T> vs IQueryable<T>: делегаты и деревья выражений", kicker: "C# вглубь · S3 · где бежит запрос", icon: "collections", subtitle: "делегат vs expression tree, in-memory vs provider, где исполняется", estMinutes: 10, cards: 3 },
+      () => import("./cs/ienumerable-iqueryable.ts").then((m) => m.ienumerableIqueryable),
+    ),
+    entry(
+      { id: "CS.S3.linq-providers", track: "CS", section: "CS.S3", title: "LINQ-провайдеры: in-memory и удалённые", kicker: "C# вглубь · S3 · один синтаксис — разные бэкенды", icon: "collections", subtitle: "LINQ to Objects, IQueryable-провайдеры, спектр сложности, EF Core→SQL", estMinutes: 10, cards: 3 },
+      () => import("./cs/linq-providers.ts").then((m) => m.linqProviders),
+    ),
+    entry(
+      { id: "CS.S3.plinq", track: "CS", section: "CS.S3", title: "PLINQ: параллельные запросы, порядок, партиционирование", kicker: "C# вглубь · S3 · LINQ на всех ядрах", icon: "collections", subtitle: "AsParallel, партиционирование, консервативность, AsOrdered, ForAll", estMinutes: 11, cards: 3 },
+      () => import("./cs/plinq.ts").then((m) => m.plinq),
+    ),
+    entry(
+      { id: "CS.S3.custom-operators", track: "CS", section: "CS.S3", title: "Кастомные операторы LINQ: extension-методы", kicker: "C# вглубь · S3 · расширяем LINQ сами", icon: "collections", subtitle: "extension-метод, this-параметр, deferred через yield, приоритет instance", estMinutes: 10, cards: 3 },
+      () => import("./cs/custom-operators.ts").then((m) => m.customOperators),
+    ),
+  ],
+};
+
+// Section S5 «Pattern Matching» (RS-03 §2 раздел 5 · 7 уроков). Prereq CS.S1.
+const CS_S5: Section = {
+  id: "CS.S5",
+  title: "Сопоставление с образцом",
+  order: 5,
+  prereqs: ["CS.S1"],
+  lessons: [
+    entry(
+      { id: "CS.S5.pattern-overview", track: "CS", section: "CS.S5", title: "Pattern matching: обзор и null-проверки", kicker: "C# вглубь · S5 · тест по признакам", icon: "types", subtitle: "is / switch, null-паттерны, exhaustiveness", estMinutes: 9, cards: 3 },
+      () => import("./cs/pattern-overview.ts").then((m) => m.patternOverview),
+    ),
+    entry(
+      { id: "CS.S5.pattern-vocabulary", track: "CS", section: "CS.S5", title: "Словарь паттернов: полный набор", kicker: "C# вглубь · S5 · карта паттернов", icon: "types", subtitle: "declaration/type/constant/relational/logical/property/positional/list", estMinutes: 10, cards: 3 },
+      () => import("./cs/pattern-vocabulary.ts").then((m) => m.patternVocabulary),
+    ),
+    entry(
+      { id: "CS.S5.switch-expressions", track: "CS", section: "CS.S5", title: "Switch expressions и exhaustiveness", kicker: "C# вглубь · S5 · рукава и полнота", icon: "types", subtitle: "рукава, case guard when, порядок текста, полнота", estMinutes: 10, cards: 3 },
+      () => import("./cs/switch-expressions.ts").then((m) => m.switchExpressions),
+    ),
+    entry(
+      { id: "CS.S5.is-declaration", track: "CS", section: "CS.S5", title: "is-оператор и declaration patterns", kicker: "C# вглубь · S5 · тест типа + bind", icon: "types", subtitle: "is bool, declaration/type pattern, null → false, scope", estMinutes: 9, cards: 3 },
+      () => import("./cs/is-declaration.ts").then((m) => m.isDeclaration),
+    ),
+    entry(
+      { id: "CS.S5.relational-logical", track: "CS", section: "CS.S5", title: "Relational и logical patterns", kicker: "C# вглубь · S5 · диапазоны и комбинаторы", icon: "types", subtitle: "< > <= >=, not/and/or, precedence, скобки", estMinutes: 10, cards: 3 },
+      () => import("./cs/relational-logical.ts").then((m) => m.relationalLogical),
+    ),
+    entry(
+      { id: "CS.S5.property-positional", track: "CS", section: "CS.S5", title: "Property и positional patterns, Deconstruct", kicker: "C# вглубь · S5 · паттерны по форме", icon: "types", subtitle: "property {}, positional (), Deconstruct, extended", estMinutes: 11, cards: 3 },
+      () => import("./cs/property-positional.ts").then((m) => m.propertyPositional),
+    ),
+    entry(
+      { id: "CS.S5.list-patterns", track: "CS", section: "CS.S5", title: "List patterns и slice", kicker: "C# вглубь · S5 · форма последовательности", icon: "types", subtitle: "[..], discard/var в списке, slice .., один slice", estMinutes: 10, cards: 3 },
+      () => import("./cs/list-patterns.ts").then((m) => m.listPatterns),
+    ),
+  ],
+};
+
+// Section S6 «Reflection» (RS-03 §2 раздел 6 · 7 уроков). Prereq CS.S1.
+const CS_S6: Section = {
+  id: "CS.S6",
+  title: "Рефлексия",
+  order: 6,
+  prereqs: ["CS.S1"],
+  lessons: [
+    entry(
+      { id: "CS.S6.reflection-overview", track: "CS", section: "CS.S6", title: "Reflection: обзор и граф метаданных", kicker: "C# вглубь · S6 · самоописание рантайма", icon: "types", subtitle: "System.Reflection, граф assembly→member, RuntimeType", estMinutes: 9, cards: 3 },
+      () => import("./cs/reflection-overview.ts").then((m) => m.reflectionOverview),
+    ),
+    entry(
+      { id: "CS.S6.type-metadata", track: "CS", section: "CS.S6", title: "Type и метаданные членов", kicker: "C# вглубь · S6 · запрос к метаданным", icon: "types", subtitle: "Type-свойства, MemberInfo, MemberType, BindingFlags-фильтр", estMinutes: 10, cards: 3 },
+      () => import("./cs/type-metadata.ts").then((m) => m.typeMetadata),
+    ),
+    entry(
+      { id: "CS.S6.dynamic-loading", track: "CS", section: "CS.S6", title: "Динамическая загрузка и late binding", kicker: "C# вглубь · S6 · связывание в рантайме", icon: "types", subtitle: "early vs late binding, InvokeMember, Binder, ChangeType", estMinutes: 10, cards: 3 },
+      () => import("./cs/dynamic-loading.ts").then((m) => m.dynamicLoading),
+    ),
+    entry(
+      { id: "CS.S6.attributes", track: "CS", section: "CS.S6", title: "Атрибуты: создание и чтение", kicker: "C# вглубь · S6 · метаданные на декларации", icon: "types", subtitle: "custom attribute, AttributeUsage, positional/named, GetCustomAttribute", estMinutes: 10, cards: 3 },
+      () => import("./cs/attributes.ts").then((m) => m.attributes),
+    ),
+    entry(
+      { id: "CS.S6.reflection-emit", track: "CS", section: "CS.S6", title: "Reflection.Emit: генерация IL в рантайме", kicker: "C# вглубь · S6 · reflection, которая пишет код", icon: "types", subtitle: "System.Reflection.Emit, DynamicMethod, ILGenerator, CreateDelegate", estMinutes: 11, cards: 3 },
+      () => import("./cs/reflection-emit.ts").then((m) => m.reflectionEmit),
+    ),
+    entry(
+      { id: "CS.S6.reflection-generics", track: "CS", section: "CS.S6", title: "Reflection и generics: открытые и закрытые типы", kicker: "C# вглубь · S6 · параметры vs аргументы", icon: "types", subtitle: "открытый/закрытый, MakeGenericType, GetGenericArguments, IsGenericParameter", estMinutes: 10, cards: 3 },
+      () => import("./cs/reflection-generics.ts").then((m) => m.reflectionGenerics),
+    ),
+    entry(
+      { id: "CS.S6.source-generators", track: "CS", section: "CS.S6", title: "Source generators: compile-time вместо reflection", kicker: "C# вглубь · S6 · метапрограммирование на компиляции", icon: "types", subtitle: "compile-time metaprogramming, additive-only, reflection vs generated", estMinutes: 10, cards: 3 },
+      () => import("./cs/source-generators.ts").then((m) => m.sourceGenerators),
+    ),
+  ],
+};
+
 const CS_TRACK: Track = {
   id: "CS",
   title: S.trackCsDeepLabel,
   sub: S.trackCsDeepSub,
   badge: S.trackNewBadge,
-  sections: [CS_S1, CS_S2, CS_S7, CS_S17, CS_S18, CS_S4],
+  sections: [CS_S1, CS_S2, CS_S3, CS_S5, CS_S7, CS_S17, CS_S18, CS_S4, CS_S6],
 };
 
 // The legacy flat C# track and its 6 old lessons were removed in the F2 migration (their

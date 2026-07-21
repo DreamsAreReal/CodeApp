@@ -5,7 +5,7 @@
   "module": "S3.2",
   "title": "Как выполняется LINQ-запрос: три части",
   "status": "published",
-  "order": 31,
+  "order": 43,
   "sources": [
     {
       "id": "ms-intro",

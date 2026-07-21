@@ -29,7 +29,7 @@ const API_ZONES: Zone[] = [Z_API, Z_META];
 
 // s2/s3: the containment ladder assembly → module → type → member as one vertical chain.
 // Tall zone (h=234 → inner 218u) so three stacked obj rows (measured 212u total) fit with PAD≥8.
-const Z_CHAIN: Zone = { id: "chain", x: 14, y: 34, w: 312, h: 234, cls: "vz-zone", label: "ГРАФ ОБЪЕКТОВ REFLECTION", labelCls: "vz-zlabel", lx: 170, ly: 24, sub: "assembly → module → type → member", subCls: "vz-zsub", subY: 47 };
+const Z_CHAIN: Zone = { id: "chain", x: 14, y: 34, w: 312, h: 234, cls: "vz-zone", label: "ГРАФ ОБЪЕКТОВ REFLECTION", labelCls: "vz-zlabel", lx: 170, ly: 22, sub: "assembly → module → type → member", subCls: "vz-zsub", subY: 40 };
 const CHAIN_ZONES: Zone[] = [Z_CHAIN];
 
 // s4: dynamic create + invoke — the metadata lane feeds a live instance lane.

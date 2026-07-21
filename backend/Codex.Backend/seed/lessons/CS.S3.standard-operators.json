@@ -5,7 +5,7 @@
   "module": "S3.3",
   "title": "Стандартные операторы: Where, Select, GroupBy, Join",
   "status": "published",
-  "order": 32,
+  "order": 44,
   "sources": [
     {
       "id": "ms-sqo",

@@ -5,7 +5,7 @@
   "module": "S6.6",
   "title": "Reflection и generics: открытые и закрытые типы",
   "status": "published",
-  "order": 6,
+  "order": 63,
   "sources": [
     {
       "id": "ms-refgen",

@@ -5,7 +5,7 @@
   "module": "S3.8",
   "title": "Кастомные операторы LINQ: extension-методы",
   "status": "published",
-  "order": 37,
+  "order": 49,
   "sources": [
     {
       "id": "ms-ext",

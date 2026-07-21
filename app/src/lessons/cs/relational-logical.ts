@@ -38,7 +38,7 @@ const ORNOT_ZONES: Zone[] = [Z_OR, Z_NOT];
 // s4: binding order not -> and -> or. Three stacked gate rows need ~188u of content, so
 // the zone is 216u tall (inner 200) and the viewBox grows to 260 to fit — the engine
 // rejects any tighter frame (viz-fit AUTHORING-PROOF: rows must fit the inner height).
-const Z_BIND: Zone = { id: "bindz", x: 14, y: 34, w: 312, h: 216, cls: "vz-zone", label: "ПОРЯДОК СВЯЗЫВАНИЯ", labelCls: "vz-zlabel sm", lx: 170, ly: 24, sub: "not → and → or", subCls: "vz-zsub", subY: 47 };
+const Z_BIND: Zone = { id: "bindz", x: 14, y: 34, w: 312, h: 216, cls: "vz-zone", label: "ПОРЯДОК СВЯЗЫВАНИЯ", labelCls: "vz-zlabel sm", lx: 170, ly: 22, sub: "not → and → or", subCls: "vz-zsub", subY: 40 };
 const BIND_ORDER_ZONES: Zone[] = [Z_BIND];
 
 // s5 (SIGNATURE): the precedence trap — buggy vs parenthesized for input '{'.

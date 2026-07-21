@@ -31,7 +31,7 @@ const HANDLE_ZONES: Zone[] = [Z_HANDLE, Z_MDTABLE];
 // s2: GetMembers → MemberInfo[] — tall members lane (h=234 → inner 218u) so three stacked
 // obj rows (measured 212u) fit with PAD≥8; the Type handle stays a single centred row.
 const Z_TYPE2: Zone = { id: "type", x: 14, y: 34, w: 130, h: 234, cls: "vz-zone", label: "Type", labelCls: "vz-zlabel sm", lx: 79, ly: 24, sub: "GetMembers()", subCls: "vz-zsub", subY: 47 };
-const Z_MEMBERS2: Zone = { id: "members", x: 156, y: 34, w: 170, h: 234, cls: "vz-zone heap", label: "MemberInfo[]", labelCls: "vz-zlabel heap sm", lx: 241, ly: 24, sub: "по одному на член", subCls: "vz-zsub heap", subY: 47 };
+const Z_MEMBERS2: Zone = { id: "members", x: 156, y: 34, w: 170, h: 234, cls: "vz-zone heap", label: "MemberInfo[]", labelCls: "vz-zlabel heap sm", lx: 241, ly: 22, sub: "по одному на член", subCls: "vz-zsub heap", subY: 40 };
 const MEMBERS2_ZONES: Zone[] = [Z_TYPE2, Z_MEMBERS2];
 
 // s3: MemberType tags — one gate per lane, standard-height zones.

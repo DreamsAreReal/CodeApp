@@ -5,7 +5,7 @@
   "module": "S6.2",
   "title": "Type и метаданные членов",
   "status": "published",
-  "order": 2,
+  "order": 59,
   "sources": [
     {
       "id": "ms-getmembers",

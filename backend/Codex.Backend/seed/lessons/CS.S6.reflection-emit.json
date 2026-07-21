@@ -5,7 +5,7 @@
   "module": "S6.5",
   "title": "Reflection.Emit: генерация IL в рантайме",
   "status": "published",
-  "order": 5,
+  "order": 62,
   "sources": [
     {
       "id": "ms-emit",

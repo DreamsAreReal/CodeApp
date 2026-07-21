@@ -5,7 +5,7 @@
   "module": "S3.4",
   "title": "Отложенное выполнение: streaming vs buffering",
   "status": "published",
-  "order": 33,
+  "order": 45,
   "sources": [
     {
       "id": "ms-intro",

@@ -30,7 +30,7 @@ const PA_ZONES: Zone[] = [Z_OPEN, Z_CLOSED];
 
 // s2: the flags that classify a Type (IsGenericType / IsGenericTypeDefinition / Contains).
 // Tall zone (h=234 → inner 218u) so three stacked gate rows (measured 212u) fit with PAD≥8.
-const Z_FLAGS: Zone = { id: "flags", x: 14, y: 34, w: 312, h: 234, cls: "vz-zone", label: "ФЛАГИ КЛАССИФИКАЦИИ Type", labelCls: "vz-zlabel", lx: 170, ly: 24, sub: "IsGenericType · …Definition · Contains", subCls: "vz-zsub", subY: 47 };
+const Z_FLAGS: Zone = { id: "flags", x: 14, y: 34, w: 312, h: 234, cls: "vz-zone", label: "ФЛАГИ КЛАССИФИКАЦИИ Type", labelCls: "vz-zlabel", lx: 170, ly: 22, sub: "IsGenericType · …Definition · Contains", subCls: "vz-zsub", subY: 40 };
 const FLAGS_ZONES: Zone[] = [Z_FLAGS];
 
 // s3: definition ↔ closed round-trip (GetGenericTypeDefinition / MakeGenericType).

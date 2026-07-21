@@ -5,7 +5,7 @@
   "module": "S6.7",
   "title": "Source generators: compile-time вместо reflection",
   "status": "published",
-  "order": 7,
+  "order": 64,
   "sources": [
     {
       "id": "ms-roslyn",
