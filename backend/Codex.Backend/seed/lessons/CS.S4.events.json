@@ -1,0 +1,62 @@
+{
+  "id": "CS.S4.events",
+  "track": "CS",
+  "section": "CS.S4",
+  "module": "S4.5",
+  "title": "События: event, EventHandler, publish/subscribe",
+  "status": "published",
+  "order": 68,
+  "sources": [
+    {
+      "id": "ms-event-kw",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/event",
+      "date": "2023-03-14"
+    },
+    {
+      "id": "ms-events",
+      "kind": "microsoft-learn",
+      "url": "https://learn.microsoft.com/en-us/dotnet/standard/events/",
+      "date": "2023-05-04"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Button с event EventHandler Clicked, два обработчика += A/B, b.Click() — что напечатает?",
+      "code": "using System; class Button { public event EventHandler Clicked; public void Click() => Clicked?.Invoke(this, EventArgs.Empty); } var b = new Button(); b.Clicked += (s, e) => Console.WriteLine(\"handler A\"); b.Clicked += (s, e) => Console.WriteLine(\"handler B\"); b.Click();",
+      "expectedOutput": "handler A\nhandler B",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-event-kw",
+        "ms-events"
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Bell.Ring печатает null/не-null событие и делает ?.Invoke; до и после подписки — обе строки?",
+      "code": "using System; class Bell { public event EventHandler Rang; public void Ring() { Console.WriteLine(Rang is null ? \"no subscribers\" : \"has subscribers\"); Rang?.Invoke(this, EventArgs.Empty); } } var bell = new Bell(); bell.Ring(); bell.Rang += (s,e) => {}; bell.Ring();",
+      "expectedOutput": "no subscribers\nhas subscribers",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-event-kw"
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "EventHandler<TempArgs> с e.Value, s.Set(42) — что напечатает обработчик?",
+      "code": "using System; class TempArgs : EventArgs { public int Value; } class Sensor { public event EventHandler<TempArgs> Changed; public void Set(int v) => Changed?.Invoke(this, new TempArgs { Value = v }); } var s = new Sensor(); s.Changed += (sender, e) => Console.WriteLine(\"temp = \" + e.Value); s.Set(42);",
+      "expectedOutput": "temp = 42",
+      "verify": "execute",
+      "sourceRefs": [
+        "ms-events"
+      ]
+    }
+  ]
+}
