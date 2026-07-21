@@ -1,0 +1,45 @@
+{
+  "id": "CS.S9.custom-exceptions",
+  "track": "CS",
+  "section": "CS.S9",
+  "module": "S9.5",
+  "title": "Пользовательские исключения: свой класс : Exception",
+  "status": "published",
+  "order": 84,
+  "sources": [
+    { "id": "ms-userdef", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/standard/exceptions/how-to-create-user-defined-exceptions", "date": "2022-08-10" },
+    { "id": "ms-create", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/creating-and-throwing-exceptions", "date": "2023-10-31" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "A user-defined exception derived from Exception is caught as Exception (is Exception is True), base(message) fills Message, and GetType().Name is the real derived type",
+      "code": "using System; class EmployeeListNotFoundException : Exception { public EmployeeListNotFoundException() {} public EmployeeListNotFoundException(string message) : base(message) {} public EmployeeListNotFoundException(string message, Exception inner) : base(message, inner) {} } try { throw new EmployeeListNotFoundException(\"no list\"); } catch (Exception e) { Console.WriteLine($\"{e.GetType().Name}|{e.Message}|{e is Exception}\"); }",
+      "expectedOutput": "EmployeeListNotFoundException|no list|True",
+      "verify": "execute",
+      "sourceRefs": ["ms-userdef", "ms-create"]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "A user-defined hierarchy NotFoundException : DomainException : Exception behaves like the built-in one: a catch on the custom base catches the derived custom type, and GetType().Name is the real derived type",
+      "code": "using System; class DomainException : Exception { public DomainException(string m) : base(m) {} } class NotFoundException : DomainException { public NotFoundException(string m) : base(m) {} } string r; try { throw new NotFoundException(\"x\"); } catch (DomainException e) { r = e.GetType().Name; } Console.WriteLine(r);",
+      "expectedOutput": "NotFoundException",
+      "verify": "execute",
+      "sourceRefs": ["ms-userdef"]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "The (message, inner) constructor sets both Message and InnerException: the outer custom exception keeps its own message load failed and the wrapped cause message disk",
+      "code": "using System; class ConfigException : Exception { public ConfigException(string m, Exception inner) : base(m, inner) {} } string r; try { try { throw new InvalidOperationException(\"disk\"); } catch (Exception e) { throw new ConfigException(\"load failed\", e); } } catch (ConfigException e) { r = $\"{e.Message}|{e.InnerException?.Message}\"; } Console.WriteLine(r);",
+      "expectedOutput": "load failed|disk",
+      "verify": "execute",
+      "sourceRefs": ["ms-create"]
+    }
+  ]
+}

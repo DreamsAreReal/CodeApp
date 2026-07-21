@@ -1,0 +1,44 @@
+{
+  "id": "CS.S9.try-catch-finally",
+  "track": "CS",
+  "section": "CS.S9",
+  "module": "S9.2",
+  "title": "try / catch / finally: формы и гарантии",
+  "status": "published",
+  "order": 81,
+  "sources": [
+    { "id": "ms-stmts", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/exception-handling-statements", "date": "2026-01-16" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "try adds T and throws, catch adds C, finally runs when control leaves the try block and adds F; the order is TCF",
+      "code": "using System; string s=\"\"; try { s+=\"T\"; throw new InvalidOperationException(); } catch (Exception) { s+=\"C\"; } finally { s+=\"F\"; } Console.WriteLine(s);",
+      "expectedOutput": "TCF",
+      "verify": "execute",
+      "sourceRefs": ["ms-stmts"]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "return is a jump statement, so finally runs when control leaves the try block before the value is handed back; then 1 is returned, printing try;finally;r=1",
+      "code": "using System; string log=\"\"; int M(){ try { log+=\"try;\"; return 1; } finally { log+=\"finally;\"; } } int r=M(); Console.WriteLine(log+\"r=\"+r);",
+      "expectedOutput": "try;finally;r=1",
+      "verify": "execute",
+      "sourceRefs": ["ms-stmts"]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "catch clauses are checked top to bottom and at most one runs; ArgumentNullException matches first, so s is argnull even though ArgumentException and Exception would also match",
+      "code": "using System; string s=\"\"; try { throw new ArgumentNullException(\"p\"); } catch (ArgumentNullException) { s=\"argnull\"; } catch (ArgumentException) { s=\"arg\"; } catch (Exception) { s=\"exc\"; } Console.WriteLine(s);",
+      "expectedOutput": "argnull",
+      "verify": "execute",
+      "sourceRefs": ["ms-stmts"]
+    }
+  ]
+}

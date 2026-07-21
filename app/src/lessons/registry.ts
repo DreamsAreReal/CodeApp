@@ -822,12 +822,53 @@ const CS_S8: Section = {
   ],
 };
 
+// Section S9 «Исключения» (RS-03 §2 раздел 9 · 7 уроков). Prereq CS.S2 + CS.S1. A DEDICATED,
+// deeper synchronous exception treatment that complements CS.S2.exceptions (async-only: await
+// vs .Wait, WhenAll, Flatten) — zero overlap: S9 covers the exception object/unwinding, filters,
+// throw-vs-rethrow, custom exceptions, best practices, and AggregateException/TPL.
+const CS_S9: Section = {
+  id: "CS.S9",
+  title: "Исключения",
+  order: 9,
+  prereqs: ["CS.S2"],
+  lessons: [
+    entry(
+      { id: "CS.S9.exceptions-overview", track: "CS", section: "CS.S9", title: "Исключения: объект, раскрутка стека, first-chance", kicker: "C# вглубь · S9 · модель исключения", icon: "types", subtitle: "Объект : System.Exception, раскрутка вверх, first-chance", estMinutes: 9, cards: 3 },
+      () => import("./cs/exceptions-overview.ts").then((m) => m.exceptionsOverview),
+    ),
+    entry(
+      { id: "CS.S9.try-catch-finally", track: "CS", section: "CS.S9", title: "try / catch / finally: формы и гарантии", kicker: "C# вглубь · S9 · операторы обработки", icon: "types", subtitle: "три формы try, порядок catch, гарантия finally", estMinutes: 10, cards: 3 },
+      () => import("./cs/try-catch-finally.ts").then((m) => m.tryCatchFinally),
+    ),
+    entry(
+      { id: "CS.S9.exception-filters", track: "CS", section: "CS.S9", title: "Фильтры исключений: when без раскрутки стека", kicker: "C# вглубь · S9 · when-фильтр", icon: "types", subtitle: "when (bool), оценка до раскрутки, false → поиск дальше", estMinutes: 10, cards: 3 },
+      () => import("./cs/exception-filters.ts").then((m) => m.exceptionFilters),
+    ),
+    entry(
+      { id: "CS.S9.throw-vs-rethrow", track: "CS", section: "CS.S9", title: "throw; vs throw ex; — сохранение стека", kicker: "C# вглубь · S9 · переброс исключения", icon: "types", subtitle: "throw; сохраняет стек, throw e; сбрасывает, обёртка через inner", estMinutes: 10, cards: 3 },
+      () => import("./cs/throw-vs-rethrow.ts").then((m) => m.throwVsRethrow),
+    ),
+    entry(
+      { id: "CS.S9.custom-exceptions", track: "CS", section: "CS.S9", title: "Пользовательские исключения: свой класс : Exception", kicker: "C# вглубь · S9 · свой тип исключения", icon: "types", subtitle: "derive from Exception, три конструктора, когда бросать, wrap", estMinutes: 10, cards: 3 },
+      () => import("./cs/custom-exceptions.ts").then((m) => m.customExceptions),
+    ),
+    entry(
+      { id: "CS.S9.exception-best-practices", track: "CS", section: "CS.S9", title: "Практики исключений: что бросать и ловить", kicker: "C# вглубь · S9 · дисциплина ошибок", icon: "types", subtitle: "что ловить, Try* вместо throw, восстановление состояния, builder-хелперы", estMinutes: 10, cards: 3 },
+      () => import("./cs/exception-best-practices.ts").then((m) => m.exceptionBestPractices),
+    ),
+    entry(
+      { id: "CS.S9.aggregate-exception", track: "CS", section: "CS.S9", title: "AggregateException: Flatten, Handle, TPL", kicker: "C# вглубь · S9 · агрегат ошибок", icon: "async", subtitle: "consolidate в один объект, .Wait оборачивает, Flatten, Handle", estMinutes: 10, cards: 3 },
+      () => import("./cs/aggregate-exception.ts").then((m) => m.aggregateException),
+    ),
+  ],
+};
+
 const CS_TRACK: Track = {
   id: "CS",
   title: S.trackCsDeepLabel,
   sub: S.trackCsDeepSub,
   badge: S.trackNewBadge,
-  sections: [CS_S1, CS_S2, CS_S3, CS_S5, CS_S7, CS_S8, CS_S17, CS_S18, CS_S4, CS_S6],
+  sections: [CS_S1, CS_S2, CS_S3, CS_S5, CS_S7, CS_S8, CS_S9, CS_S17, CS_S18, CS_S4, CS_S6],
 };
 
 // The legacy flat C# track and its 6 old lessons were removed in the F2 migration (their

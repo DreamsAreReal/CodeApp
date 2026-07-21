@@ -43,7 +43,13 @@ export interface IlLine {
 
 export interface Claim {
   text: string;
-  source: string;
+  /**
+   * Source id(s) the claim's verbatim quotes come from. A single id when it quotes one
+   * page; an array when an edgeCase legitimately weaves quotes from several sources[]
+   * pages (each quote verbatim on one of them). Only `spec[0].source` is rendered (as the
+   * spec label) and is always a single id; edgeCases[].source is provenance metadata only.
+   */
+  source: string | string[];
 }
 
 export interface Misconception {

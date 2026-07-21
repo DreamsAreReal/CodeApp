@@ -974,7 +974,7 @@ function reconstruct(lesson: LessonData): string {
         `<div class="rc-row"><span class="rc-ic ${x.icon}">${ICON[x.icon]}</span><div><div class="rc-k">${esc(x.k)}</div><div class="rc-v">${x.v}</div></div></div>`,
     )
     .join("");
-  const specSrc = srcById(lesson, lesson.spec[0].source);
+  const specSrc = srcById(lesson, Array.isArray(lesson.spec[0].source) ? lesson.spec[0].source[0] : lesson.spec[0].source);
   const spec = `<div class="rc-spec">${lesson.spec[0].text} <span class="rc-specsrc">— ${S.specLabel}, ${esc(specSrc?.title ?? "")}</span></div>`;
   const edges =
     `<div class="rc-edges"><div class="rc-edgeh">${S.edgeHead}</div>` +
