@@ -60,6 +60,7 @@ export const choosingCollection: LessonData = {
   sources: [
     { id: "ms-selecting", kind: "doc", org: "Microsoft Learn", title: "Selecting a Collection Class", url: "https://learn.microsoft.com/en-us/dotnet/standard/collections/selecting-a-collection-class", date: "2026-03-30" },
     { id: "ms-collections", kind: "doc", org: "Microsoft Learn", title: "Collections and Data Structures", url: "https://learn.microsoft.com/en-us/dotnet/standard/collections/", date: "2026-03-30" },
+    { id: "ms-hashset-contains", kind: "doc", org: "Microsoft Learn", title: "HashSet<T>.Contains(T) Method", url: "https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.hashset-1.contains", date: "2025-07-01" },
   ],
 
   spec: [
@@ -114,8 +115,8 @@ export const choosingCollection: LessonData = {
         { codeLine: 0, caption: 'Так до конца: если <code>x</code> нет, <code>List</code> сравнил со <span class="wrong">всеми n</span> элементами. Линейная работа на каждый промах.', nodes: [{ id: "l0", kind: "slot", at: { zone: "walk", row: 0 }, name: "[0]", value: "≠" }, { id: "l1", kind: "slot", at: { zone: "walk", row: 1 }, name: "[1]", value: "≠", accent: true }, { id: "h", kind: "obj", at: { zone: "jump", row: 0 }, typeTag: "hash(x)", value: "→ бакет" }], edges: [] },
         { codeLine: 1, caption: '<code>set.Contains(x)</code>: считает <code>hash(x)</code>, идёт <span class="hl">сразу в бакет</span>. Пустой бакет — ответ «нет» без единого сравнения (O(1)).', nodes: [{ id: "l0", kind: "slot", at: { zone: "walk", row: 0 }, name: "[0..n]", value: "n сравн." }, { id: "h", kind: "obj", at: { zone: "jump", row: 0 }, typeTag: "hash(x)", value: "→ бакет" }, { id: "b", kind: "gate", at: { zone: "jump", row: 1 }, state: "ok", label: "бакет пуст", detail: "нет · O(1)", accent: true }], edges: [{ id: "e1", from: "h", to: "b", accent: true }] },
       ],
-      explain: 'Разница между <code>List</code> и <code>HashSet</code> для членства — не в API, а в алгоритме. <code>List&lt;T&gt;.Contains</code> — линейный перебор: сравнивает искомое с <code>[0]</code>, <code>[1]</code>, … пока не найдёт или не дойдёт до конца (O(n)). <code>HashSet&lt;T&gt;.Contains</code> считает хеш, находит бакет и сравнивает только его содержимое — «This method is an O(1) operation». Если бакет пуст, ответ «нет» приходит без единого сравнения элементов. Именно поэтому для «часто проверяю принадлежность» дока ведёт к хеш-типам, а не к <code>List</code>.',
-      sources: ["ms-collections"],
+      explain: 'Разница между <code>List</code> и <code>HashSet</code> для членства — не в API, а в алгоритме. <code>List&lt;T&gt;.Contains</code> — линейный перебор: сравнивает искомое с <code>[0]</code>, <code>[1]</code>, … пока не найдёт или не дойдёт до конца (O(n)). <code>HashSet&lt;T&gt;.Contains</code> считает хеш, находит бакет и сравнивает только его содержимое — «This method is an O(1) operation» (страница <code>HashSet&lt;T&gt;.Contains</code>). Если бакет пуст, ответ «нет» приходит без единого сравнения элементов. Именно поэтому для «часто проверяю принадлежность» дока ведёт к хеш-типам, а не к <code>List</code>.',
+      sources: ["ms-collections", "ms-hashset-contains"],
     },
     {
       id: "s4", num: "04", kicker: "Машинная панель · реальный замер", title: "Счётчик сравнений: 1000 у List против 0 у HashSet",

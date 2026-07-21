@@ -68,6 +68,7 @@ export const yieldContract: LessonData = {
   sources: [
     { id: "ms-yield", kind: "doc", org: "Microsoft Learn", title: "yield statement (C# reference)", url: "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/yield", date: "2026-03-30" },
     { id: "ms-iter-pg", kind: "doc", org: "Microsoft Learn", title: "Iterate through collections (C#)", url: "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/iterators", date: "2026-03-30" },
+    { id: "ms-iterators", kind: "doc", org: "Microsoft Learn", title: "Iterators (C#)", url: "https://learn.microsoft.com/en-us/dotnet/csharp/iterators", date: "2026-03-30" },
   ],
 
   spec: [
@@ -82,8 +83,8 @@ export const yieldContract: LessonData = {
   misconceptions: [
     {
       wrong: "yield return можно ставить в любом try/catch; в одном методе можно свободно мешать return и yield return",
-      hook: 'Два мифа о правилах <code>yield</code>. «<span class="wrong">yield в любом try/catch</span>» — нет: <code>yield return</code>/<code>yield break</code> запрещены в <code>catch</code>/<code>finally</code> и в <code>try</code> <b>с</b> <code>catch</code>; разрешены только в <code>try</code> без <code>catch</code> (с <code>finally</code>) — вот почему <code>using</code> в итераторе работает (он компилируется в <code>try/finally</code>). «<span class="wrong">свободно мешать return и yield return</span>» — нет: «you can\'t have both a <code>return</code> statement and a <code>yield return</code> statement in the same method» — компилятор бросает <b>CS1622</b>. Ниже <b>пять разборов</b>: две формы <code>yield</code>, типы возврата, <code>return</code> vs <code>yield return</code> (и обход), где <code>yield</code> запрещён, и <b>машинная панель</b> — реальные диагностики Roslyn (CS1622 / CS1623), которые прибивают нарушения контракта.',
-      source: "ms-yield",
+      hook: 'Два мифа о правилах <code>yield</code>. «<span class="wrong">yield в любом try/catch</span>» — нет: <code>yield return</code>/<code>yield break</code> запрещены в <code>catch</code>/<code>finally</code> и в <code>try</code> <b>с</b> <code>catch</code>; разрешены только в <code>try</code> без <code>catch</code> (с <code>finally</code>) — вот почему <code>using</code> в итераторе работает (он компилируется в <code>try/finally</code>). «<span class="wrong">свободно мешать return и yield return</span>» — нет: «you can\'t have both a <code>return</code> statement and a <code>yield return</code> statement in the same method» (страница Iterators, C#) — компилятор бросает <b>CS1622</b>. Ниже <b>пять разборов</b>: две формы <code>yield</code>, типы возврата, <code>return</code> vs <code>yield return</code> (и обход), где <code>yield</code> запрещён, и <b>машинная панель</b> — реальные диагностики Roslyn (CS1622 / CS1623), которые прибивают нарушения контракта.',
+      source: "ms-iterators",
     },
   ],
 
@@ -125,7 +126,7 @@ export const yieldContract: LessonData = {
         { codeLine: 4, out: "empty=[] full=[1,2]", caption: 'Внутренний <code>Iter()</code> — чистый итератор с <code>yield return</code>. Вывод: <b>empty=[] full=[1,2]</b> (реальный прогон).', nodes: [{ id: "outer", kind: "gate", at: { zone: "split", row: 0 }, state: "ok", label: "Get() · return", detail: "выбор" }, { id: "inner", kind: "gate", at: { zone: "split", row: 1 }, state: "ok", label: "Iter() · yield", detail: "1, 2", accent: true }], edges: [{ id: "e1", from: "outer", to: "inner" }] },
       ],
       explain: 'Жёсткое ограничение: «There\'s one important restriction on iterator methods: you can\'t have both a <code>return</code> statement and a <code>yield return</code> statement in the same method». Нарушение — реальная ошибка компилятора <b>CS1622</b> (машинная панель, разбор 05). Штатный обход — разбить на два метода: внешний использует обычный <code>return</code> (может отдать пустую коллекцию <b>или</b> итератор), а внутренний — только <code>yield return</code>. Реальный прогон: <code>Get(true)</code> → пусто, <code>Get(false)</code> → <code>[1, 2]</code>. Это частый паттерн «eager-проверка аргументов + ленивое тело»: аргументы валидируются в <code>return</code>-методе <b>сразу</b>, а не отложенно на первом <code>MoveNext</code>.',
-      sources: ["ms-iter-pg"],
+      sources: ["ms-iterators"],
     },
     {
       id: "s4", num: "04", kicker: "Где yield запрещён", title: "in/ref/out, lambda, unsafe, catch — и почему using работает",

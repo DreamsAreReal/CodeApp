@@ -64,6 +64,7 @@ export const immutableCollections: LessonData = {
     { id: "ms-immutable", kind: "doc", org: "Microsoft Learn", title: "System.Collections.Immutable Namespace", url: "https://learn.microsoft.com/en-us/dotnet/api/system.collections.immutable", date: "2026-05-27" },
     { id: "ms-immutablelist", kind: "doc", org: "Microsoft Learn", title: "ImmutableList<T> Class", url: "https://learn.microsoft.com/en-us/dotnet/api/system.collections.immutable.immutablelist-1", date: "2026-07-01" },
     { id: "ms-collections", kind: "doc", org: "Microsoft Learn", title: "Collections and Data Structures", url: "https://learn.microsoft.com/en-us/dotnet/standard/collections/", date: "2026-03-30" },
+    { id: "ms-immutablearray", kind: "doc", org: "Microsoft Learn", title: "ImmutableArray<T> Struct", url: "https://learn.microsoft.com/en-us/dotnet/api/system.collections.immutable.immutablearray-1", date: "2026-07-01" },
   ],
 
   spec: [
@@ -118,8 +119,8 @@ export const immutableCollections: LessonData = {
         { codeLine: 0, caption: 'Но <code>Add</code> у массива — <span class="wrong">O(n)</span>: «Requires creating a new array» — копируется весь массив целиком, разделения нет.', nodes: [{ id: "ai", kind: "gate", at: { zone: "arr", row: 0 }, state: "ok", label: "Item", detail: "O(1)" }, { id: "aa", kind: "gate", at: { zone: "arr", row: 1 }, state: "fail", label: "Add", detail: "O(n) копия", accent: true }], edges: [] },
         { codeLine: 1, caption: '<code>ImmutableList</code> — дерево: <b>O(log n)</b> и чтение, и запись. Правило: <span class="hl">частые чтения + редкие правки → Array</span>; частые правки → List.', nodes: [{ id: "li", kind: "gate", at: { zone: "tree", row: 0 }, state: "ok", label: "Item", detail: "O(log n)" }, { id: "la", kind: "gate", at: { zone: "tree", row: 1 }, state: "ok", label: "Add", detail: "O(log n)", accent: true }], edges: [] },
       ],
-      explain: '«Immutable = дорого» — это про <b>тип</b>, а не про идею. <code>ImmutableArray&lt;T&gt;</code> — это массив: чтение по индексу O(1), но любое изменение «Requires creating a new array» — полная копия O(n), структурного разделения нет. <code>ImmutableList&lt;T&gt;</code> — дерево: и <code>Item</code>, и <code>Add</code> — O(log n) (таблица сложности). Отсюда выбор по доминирующей операции: <code>ImmutableArray</code> — когда «Updating the data is rare or the number of elements is quite small» и нужны быстрые итерации/чтения; <code>ImmutableList</code> — когда «Updating the data is common». Один — за чтение платит копией на запись, другой — за дешёвую запись платит логарифмом на чтение.',
-      sources: ["ms-collections"],
+      explain: '«Immutable = дорого» — это про <b>тип</b>, а не про идею. <code>ImmutableArray&lt;T&gt;</code> — это массив: чтение по индексу O(1), но любое изменение «Requires creating a new array» — полная копия O(n), структурного разделения нет (таблица сложности на странице <code>ImmutableArray&lt;T&gt;</code>: <code>Item</code> O(1), <code>Add()</code> O(n)). <code>ImmutableList&lt;T&gt;</code> — дерево: и <code>Item</code>, и <code>Add</code> — O(log n). Отсюда выбор по доминирующей операции: <code>ImmutableArray</code> — когда «Updating the data is rare or the number of elements is quite small…» и нужны быстрые итерации/чтения; <code>ImmutableList</code> — когда «Updating the data is common…». Один — за чтение платит копией на запись, другой — за дешёвую запись платит логарифмом на чтение.',
+      sources: ["ms-immutablearray"],
     },
     {
       id: "s4", num: "04", kicker: "Машинная панель · реальный замер", title: "b = a.Add(4): a.Count=3, b.Count=4, ReferenceEquals=False",

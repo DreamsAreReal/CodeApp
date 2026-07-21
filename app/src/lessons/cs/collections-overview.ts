@@ -6,16 +6,19 @@
  * going out. Same 1000 ints, two very different heap footprints.
  *
  * SIGNATURE machine panel (s5): a live GC.GetAllocatedBytesForCurrentThread() delta —
- * filling ArrayList with 1000 ints allocates 32056 bytes (1000 boxes) vs 4056 bytes for
- * List<int> (one int[]). REAL measurement, deterministic across runs
- * (evidence: scratchpad l1panel.cs, backend run-csharp, 2026-07-21).
+ * filling a NON-presized ArrayList with 1000 ints allocates 40568 bytes (1000 boxes +
+ * growing object[]) vs 8392 bytes for a NON-presized List<int> (growing int[]), ratio
+ * ~4.8x. REAL measurement, deterministic across runs on the SAME growing path the panel
+ * code shows (evidence: scratchpad coll_measure.py, backend run-csharp :5080, 2026-07-21,
+ * 3/3 identical). A presized `new List<int>(1000)` is a different path (4056 bytes) — that
+ * is the predict card's code, not the panel's.
  *
  * Accuracy contract (G4/G7/G8):
  *   - every English quote is VERBATIM from learn.microsoft.com/.../standard/collections/
- *     (fetch-verified 2026-07-21) — GT-M6-collections-core F1/F2/F3/F4/F8.
+ *     and .../api/system.gc.getallocatedbytesforcurrentthread (fetch-verified 2026-07-21).
  *   - every card's `verify.expect` is REAL stdout of the backend run-csharp endpoint.
- *   - the panel numbers (32056 / 4056 bytes) are OWN GC.GetAllocatedBytesForCurrentThread
- *     measurements, not memorised.
+ *   - the panel numbers (40568 / 8392 bytes, growing path) are OWN
+ *     GC.GetAllocatedBytesForCurrentThread measurements, not memorised.
  *   - 0 myths: List=array (not linked list, M2) stated with source; the boxing tax of
  *     non-generic value-type storage is framed as GT F14, not invented.
  *
@@ -76,7 +79,7 @@ export const collectionsOverview: LessonData = {
   misconceptions: [
     {
       wrong: "generic и non-generic коллекции — одно и то же, разница только в синтаксисе",
-      hook: 'Non-generic <code>ArrayList</code> и generic <code>List&lt;int&gt;</code> дают одинаковый API, но платят по-разному. Дока проводит границу прямо: «There are two main types of collections; generic collections and non-generic collections. <span class="hl">Generic collections are type-safe at compile time</span>». Non-generic хранят элемент как <code>object</code> — каждый <code>int</code> <span class="wrong">упаковывается в кучу</span>. Дальше <b>пять разборов</b>: две дорожки хранения, контракт <code>IEnumerable&lt;T&gt;</code>, карта выбора и <b>машинная панель</b> — реально снятый счётчик: 1000 <code>int</code> в <code>ArrayList</code> = <b>32056 байт</b> кучи против <b>4056</b> у <code>List&lt;int&gt;</code>.',
+      hook: 'Non-generic <code>ArrayList</code> и generic <code>List&lt;int&gt;</code> дают одинаковый API, но платят по-разному. Дока проводит границу прямо: «There are two main types of collections; generic collections and non-generic collections. <span class="hl">Generic collections are type-safe at compile time</span>». Non-generic хранят элемент как <code>object</code> — каждый <code>int</code> <span class="wrong">упаковывается в кучу</span>. Дальше <b>пять разборов</b>: две дорожки хранения, контракт <code>IEnumerable&lt;T&gt;</code>, карта выбора и <b>машинная панель</b> — реально снятый счётчик: 1000 <code>int</code> в <code>ArrayList</code> = <b>40568 байт</b> кучи против <b>8392</b> у <code>List&lt;int&gt;</code> (тот же путь без presize).',
       source: "ms-collections",
     },
   ],
@@ -128,20 +131,20 @@ export const collectionsOverview: LessonData = {
         { codeLine: 1, caption: '«Access items by index» → <code>List&lt;T&gt;</code> (non-generic аналог — <code>Array</code>/<code>ArrayList</code>). Массив под капотом, индекс O(1).', nodes: [{ id: "kv", kind: "chip", at: { zone: "map", row: 0, col: 0 }, value: "key/value" }, { id: "dict", kind: "obj", at: { zone: "map", row: 0, col: 1 }, typeTag: "Dictionary", value: "K,V" }, { id: "idx", kind: "chip", at: { zone: "map", row: 1, col: 0 }, value: "по индексу" }, { id: "list", kind: "obj", at: { zone: "map", row: 1, col: 1 }, typeTag: "List<T>", value: "index O(1)", accent: true }], edges: [{ id: "e1", from: "kv", to: "dict" }, { id: "e2", from: "idx", to: "list", accent: true }] },
         { codeLine: 3, caption: '«A set for mathematical functions» → <code>HashSet&lt;T&gt;</code>; FIFO → <code>Queue&lt;T&gt;</code>, LIFO → <code>Stack&lt;T&gt;</code>. Общее правило: «you should use <b>generic</b> collections».', nodes: [{ id: "idx", kind: "chip", at: { zone: "map", row: 0, col: 0 }, value: "по индексу" }, { id: "list", kind: "obj", at: { zone: "map", row: 0, col: 1 }, typeTag: "List<T>", value: "index O(1)" }, { id: "set", kind: "chip", at: { zone: "map", row: 1, col: 0 }, value: "множество" }, { id: "hs", kind: "obj", at: { zone: "map", row: 1, col: 1 }, typeTag: "HashSet<T>", value: "без дублей", accent: true }], edges: [{ id: "e3", from: "set", to: "hs", accent: true }] },
       ],
-      explain: 'Учебник выбора коллекции идёт от задачи к типу: «you should use generic collections… The following table describes some common collection scenarios». Ключевые строки: «Store items as key/value pairs for quick look-up by key» → <code>Dictionary&lt;TKey,TValue&gt;</code> (non-generic <code>Hashtable</code>); «Access items by index» → <code>List&lt;T&gt;</code> (<code>Array</code>/<code>ArrayList</code>); «A set for mathematical functions» → <code>HashSet&lt;T&gt;</code>/<code>SortedSet&lt;T&gt;</code>. Отдельная страница «selecting a collection class» добавляет ось алгоритмической сложности — но дефолт всегда generic.',
+      explain: 'Учебник выбора коллекции идёт от задачи к типу: «you should use generic collections… The following table describes some common collection scenarios». Ключевые строки: «Store items as key/value pairs for quick look-up by key» → <code>Dictionary&lt;TKey,TValue&gt;</code> (non-generic <code>Hashtable</code>); «Access items by index» → <code>List&lt;T&gt;</code> (<code>Array</code>/<code>ArrayList</code>); «A set for mathematical functions» → <code>HashSet&lt;T&gt;</code>/<code>SortedSet&lt;T&gt;</code>. Та же страница в разделе сложности прямо говорит: «When choosing a collection class, it\'s worth considering potential tradeoffs in performance» — ось алгоритмической сложности поверх выбора по задаче, но дефолт всегда generic.',
       sources: ["ms-collections"],
     },
     {
-      id: "s5", num: "05", kicker: "Машинная панель · реальный замер", title: "Цена боксинга: 32056 байт против 4056 на 1000 int",
+      id: "s5", num: "05", kicker: "Машинная панель · реальный замер", title: "Цена боксинга: 40568 байт против 8392 на 1000 int",
       viewBox: "0 0 340 214", zones: BOX_ZONES,
       code: ["b0 = GC.GetAllocatedBytesForCurrentThread();", "for (int i=0;i<1000;i++) al.Add(i);   // ArrayList", "b1 = GC.GetAllocatedBytesForCurrentThread();", "for (int i=0;i<1000;i++) list.Add(i); // List<int>", "b2 = GC.GetAllocatedBytesForCurrentThread();"],
       predictAt: 2, predictQ: 'Сколько байт кучи стоит залить <b>1000 int</b> в <code>List&lt;int&gt;</code> (один <code>int[]</code>)?', console: true,
       scenes: [
         { codeLine: 1, out: "", caption: 'Заливаем 1000 <code>int</code> в <code>ArrayList</code> и меряем прирост живым счётчиком <code>GC.GetAllocatedBytesForCurrentThread()</code>.', nodes: [{ id: "al", kind: "gate", at: { zone: "boxNon", row: 0 }, state: "fail", label: "ArrayList.Add ×1000", detail: "замер…" }], edges: [] },
-        { codeLine: 2, out: "ArrayList<obj>: 32056 bytes", caption: '<code>ArrayList</code> — <span class="wrong">32056 байт</span>: 1000 <code>int</code> упакованы в 1000 отдельных boxed-объектов в куче плюс массив ссылок.', nodes: [{ id: "al", kind: "gate", at: { zone: "boxNon", row: 0 }, state: "fail", label: "ArrayList", detail: "32056 байт" }, { id: "b1", kind: "chip", at: { zone: "boxNon", row: 1 }, value: "1000 box", accent: true }], edges: [] },
-        { codeLine: 3, out: "List<int>: 4056 bytes", caption: '<code>List&lt;int&gt;</code> — <span class="hl">4056 байт</span>: значения лежат inline в одном <code>int[]</code>, ни одного box. Разница ×8 на ровном месте.', nodes: [{ id: "al", kind: "gate", at: { zone: "boxNon", row: 0 }, state: "fail", label: "ArrayList", detail: "32056 байт" }, { id: "li", kind: "gate", at: { zone: "boxGen", row: 0 }, state: "ok", label: "List<int>", detail: "4056 байт" }, { id: "b2", kind: "chip", at: { zone: "boxGen", row: 1 }, value: "один int[]", accent: true }], edges: [] },
+        { codeLine: 2, out: "ArrayList<obj>: 40568 bytes", caption: '<code>ArrayList</code> — <span class="wrong">40568 байт</span>: 1000 <code>int</code> упакованы в 1000 отдельных boxed-объектов в куче плюс растущий массив ссылок.', nodes: [{ id: "al", kind: "gate", at: { zone: "boxNon", row: 0 }, state: "fail", label: "ArrayList", detail: "40568 байт" }, { id: "b1", kind: "chip", at: { zone: "boxNon", row: 1 }, value: "1000 box", accent: true }], edges: [] },
+        { codeLine: 3, out: "List<int>: 8392 bytes", caption: '<code>List&lt;int&gt;</code> — <span class="hl">8392 байт</span>: значения лежат inline в растущем <code>int[]</code>, ни одного box. Разница ×4.8 на ровном месте.', nodes: [{ id: "al", kind: "gate", at: { zone: "boxNon", row: 0 }, state: "fail", label: "ArrayList", detail: "40568 байт" }, { id: "li", kind: "gate", at: { zone: "boxGen", row: 0 }, state: "ok", label: "List<int>", detail: "8392 байт" }, { id: "b2", kind: "chip", at: { zone: "boxGen", row: 1 }, value: "один int[]", accent: true }], edges: [] },
       ],
-      explain: 'Машинная панель урока — реально снятое число. <code>GC.GetAllocatedBytesForCurrentThread()</code> «returns the number of bytes allocated on the current managed thread»; вокруг двух заливок оно даёт <b>ArrayList: 32056 bytes</b> и <b>List&lt;int&gt;: 4056 bytes</b> (собственный прогон). Разница — это boxing: у <code>Hashtable</code>/<code>ArrayList</code> «elements … are of type <code>Object</code>; therefore, boxing and unboxing typically occur when you store or retrieve a value type». Каждый <code>int</code> в <code>ArrayList</code> стал отдельным объектом в куче; в <code>List&lt;int&gt;</code> все 1000 лежат в одном массиве. Вот что стоит за словами «better performance».',
+      explain: 'Машинная панель урока — реально снятое число. <code>GC.GetAllocatedBytesForCurrentThread()</code> даёт «The total number of bytes allocated to the current thread since the beginning of its lifetime»; вокруг двух заливок <b>без presize</b> прирост — <b>ArrayList: 40568 bytes</b> и <b>List&lt;int&gt;: 8392 bytes</b> (собственный прогон, ×4.8). Разница — это boxing: «the elements of <code>Hashtable</code> are of type <code>Object</code>; therefore, boxing and unboxing typically occur when you store or retrieve a value type» — та же природа у <code>ArrayList</code>. Каждый <code>int</code> стал отдельным объектом в куче; в <code>List&lt;int&gt;</code> все 1000 лежат в одном массиве. Вот что стоит за словами «better performance».',
       sources: ["ms-alloc-bytes", "ms-hashtable-dict"],
     },
   ],
@@ -175,9 +178,9 @@ export const collectionsOverview: LessonData = {
 
   takeaways: [
     { icon: "why", k: "Ось семейств", v: '<b>generic</b> (<code>List&lt;T&gt;</code>, <code>Dictionary&lt;K,V&gt;</code>) — «type-safe at compile time», хранят <code>T</code> без приведений; <b>non-generic</b> (<code>ArrayList</code>, <code>Hashtable</code>) — элемент <code>object</code>, cast + boxing. Дефолт — generic.' },
-    { icon: "cost", k: "Цена боксинга", v: '1000 <code>int</code> в <code>ArrayList</code> = <b>32056 байт</b> кучи (1000 box), в <code>List&lt;int&gt;</code> = <b>4056</b> (один <code>int[]</code>) — реальный замер. «Better performance» — это про эту разницу.' },
+    { icon: "cost", k: "Цена боксинга", v: '1000 <code>int</code> в <code>ArrayList</code> = <b>40568 байт</b> кучи (1000 box, растущий путь), в <code>List&lt;int&gt;</code> = <b>8392</b> (один <code>int[]</code>) — реальный замер, ×4.8. «Better performance» — это про эту разницу.' },
     { icon: "avoid", k: "Контракт", v: 'Единый двигатель — <code>IEnumerable&lt;T&gt;</code>: даёт <code>foreach</code> (энумератор — «movable pointer») и делает тип queryable для LINQ. <code>List&lt;T&gt;</code> — <b>массив</b>, не связный список.' },
   ],
 
-  foot: 'урок · <b>обзор коллекций</b> · 5 разборов · generic vs non-generic · панель боксинга 32056 vs 4056 байт · дизайн <b>mid</b>',
+  foot: 'урок · <b>обзор коллекций</b> · 5 разборов · generic vs non-generic · панель боксинга 40568 vs 8392 байт · дизайн <b>mid</b>',
 };

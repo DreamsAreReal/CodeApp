@@ -64,6 +64,7 @@ export const listInternals: LessonData = {
     { id: "ms-list", kind: "doc", org: "Microsoft Learn", title: "List<T> Class", url: "https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.list-1", date: "2026-07-01" },
     { id: "ms-list-capacity", kind: "doc", org: "Microsoft Learn", title: "List<T>.Capacity Property", url: "https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.list-1.capacity", date: "2026-07-01" },
     { id: "ms-collections", kind: "doc", org: "Microsoft Learn", title: "Collections and Data Structures", url: "https://learn.microsoft.com/en-us/dotnet/standard/collections/", date: "2026-03-30" },
+    { id: "ms-hashset-contains", kind: "doc", org: "Microsoft Learn", title: "HashSet<T>.Contains(T) Method", url: "https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.hashset-1.contains", date: "2025-07-01" },
     { id: "runtime-list", kind: "source", org: "dotnet/runtime", title: "List.cs (x2 growth factor)", url: "https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Collections/Generic/List.cs", date: "2026-07-21" },
   ],
 
@@ -80,8 +81,8 @@ export const listInternals: LessonData = {
   misconceptions: [
     {
       wrong: "List<T> — связный список, и его ёмкость растёт на +1 при каждом Add",
-      hook: 'Два разных мифа с одним источником — незнанием, что <code>List&lt;T&gt;</code> внутри. Первый: «связный список» — нет, «Represents a strongly typed list of objects that can be <span class="hl">accessed by index</span>», это <b>массив</b> (связный — отдельный <code>LinkedList&lt;T&gt;</code>). Второй: «ёмкость +1 на каждый Add» — нет, массив растёт <span class="wrong">скачками</span>: «If Count exceeds Capacity… the capacity is increased by <b>automatically reallocating the internal array</b>». Дальше <b>пять разборов</b> — от массива под капотом до <b>машинной панели</b>: реально снятый рост Capacity <b>0 → 4 → 8 → 16 → 32</b>, где 1000 <code>Add</code> дают всего <b>9 реаллокаций</b> (amortized O(1)).',
-      source: "ms-list",
+      hook: 'Два разных мифа с одним источником — незнанием, что <code>List&lt;T&gt;</code> внутри. Первый: «связный список» — нет, «Represents a strongly typed list of objects that can be <span class="hl">accessed by index</span>», это <b>массив</b> (связный — отдельный <code>LinkedList&lt;T&gt;</code>). Второй: «ёмкость +1 на каждый Add» — нет, массив растёт <span class="wrong">скачками</span>: «If <code>Count</code> exceeds <code>Capacity</code> while adding elements, the capacity is increased by <b>automatically reallocating the internal array</b> before copying the old elements and adding the new elements» (страница <code>List&lt;T&gt;.Capacity</code>). Дальше <b>пять разборов</b> — от массива под капотом до <b>машинной панели</b>: реально снятый рост Capacity <b>0 → 4 → 8 → 16 → 32</b>, где 1000 <code>Add</code> дают всего <b>9 реаллокаций</b> (amortized O(1)).',
+      source: "ms-list-capacity",
     },
   ],
 
@@ -132,8 +133,8 @@ export const listInternals: LessonData = {
         { codeLine: 1, caption: '<code>Contains(x)</code> — другое: сравнить с <code>[0]</code>, <code>[1]</code>, … <span class="wrong">O(n)</span>. Массив хорош для индекса, но не для «есть ли такой».', nodes: [{ id: "i", kind: "gate", at: { zone: "idx", row: 0 }, state: "ok", label: "list[500]", detail: "1 шаг" }, { id: "s0", kind: "slot", at: { zone: "scan", row: 0 }, name: "[0]", value: "≠", accent: true }, { id: "s1", kind: "slot", at: { zone: "scan", row: 1 }, name: "[1]", value: "≠" }, { id: "s2", kind: "slot", at: { zone: "scan", row: 2 }, name: "…", value: "n сравн." }], edges: [] },
         { codeLine: 2, caption: 'Итог: <code>List</code> выбирают за <b>индекс</b> и порядок, а частое «членство» — повод взять <code>HashSet</code>. Один массив — две очень разные операции.', nodes: [{ id: "i", kind: "gate", at: { zone: "idx", row: 0 }, state: "ok", label: "индекс", detail: "O(1)", accent: true }, { id: "sc", kind: "gate", at: { zone: "scan", row: 0 }, state: "fail", label: "Contains", detail: "O(n)", accent: true }], edges: [] },
       ],
-      explain: 'Один и тот же массив даёт две разные сложности. Индексатор <code>list[i]</code> — O(1) и amortized, и worst-case (таблица сложности: «<code>List&lt;T&gt;.Item[Int32]</code> — O(1) / O(1)»): адрес считается арифметикой. А <code>Contains</code>/<code>IndexOf</code> — линейный перебор O(n): сравнение с каждым элементом до совпадения. Поэтому <code>List</code> — правильный выбор, когда нужен доступ по индексу или сохранённый порядок вставки, но для частой проверки принадлежности он проигрывает <code>HashSet&lt;T&gt;</code> (O(1) Contains). Выбирать надо под доминирующую операцию, а не «по привычке к списку».',
-      sources: ["ms-collections"],
+      explain: 'Один и тот же массив даёт две разные сложности. Индексатор <code>list[i]</code> — O(1) и amortized, и worst-case (таблица сложности: «<code>List&lt;T&gt;.Item[Int32]</code> — O(1) / O(1)»): адрес считается арифметикой. А <code>Contains</code>/<code>IndexOf</code> — линейный перебор O(n): сравнение с каждым элементом до совпадения. Поэтому <code>List</code> — правильный выбор, когда нужен доступ по индексу или сохранённый порядок вставки, но для частой проверки принадлежности он проигрывает <code>HashSet&lt;T&gt;</code>, у которого «This method is an O(1) operation» (страница <code>HashSet&lt;T&gt;.Contains</code>). Выбирать надо под доминирующую операцию, а не «по привычке к списку».',
+      sources: ["ms-collections", "ms-hashset-contains"],
     },
     {
       id: "s5", num: "05", kicker: "Машинная панель · реальный замер", title: "Capacity: 0 → 4 → 8 → 16 → 32; 1000 Add = 9 реаллокаций",
@@ -173,7 +174,7 @@ export const listInternals: LessonData = {
       options: ["prealloc 1000: 0 реаллокаций", "prealloc 1000: 9 реаллокаций", "prealloc 1000: 1 реаллокаций", "prealloc 1000: 1000 реаллокаций"], correctIndex: 0, xp: 10,
       okText: '<code>new List&lt;int&gt;(1000)</code> выделяет массив сразу — 1000 <code>Add</code> помещаются без роста → <b>0 реаллокаций</b>. Именно это советует дока для горячего пути.',
       noText: 'Начальная Capacity=1000 покрывает все 1000 <code>Add</code>: <code>Count</code> не превышает <code>Capacity</code>, реаллокаций <b>0</b>. Пред-выделение убирает копирования — «set the initial capacity».',
-      verify: { kind: "exec", run: "dotnet run", expect: "prealloc 1000: 0 реаллокаций" }, sourceRefs: ["ms-list-capacity"],
+      verify: { kind: "exec", run: "dotnet run", expect: "prealloc 1000: 0 реаллокаций" }, sourceRefs: ["ms-list-capacity", "ms-collections"],
     },
   ],
 

@@ -6,9 +6,11 @@
  * for/foreach loop trap and the heap cost of a capturing lambda.
  *
  * SIGNATURE machine panel (s5): a live GC.GetAllocatedBytesForCurrentThread() counter —
- * a capturing lambda costs 64 bytes (display-class instance + delegate) vs a static,
- * non-capturing lambda that costs 0 bytes (the compiler caches the delegate). REAL
- * measurement via the run-csharp endpoint (see the accuracy contract below).
+ * a capturing lambda costs 64 bytes (display-class instance + delegate) every time; a
+ * static, non-capturing lambda costs 88 bytes on the FIRST reach of its call-site (the
+ * compiler builds and caches the delegate once) and then 0 bytes on every repeat reach
+ * (verified in a loop: 88 -> 0 -> 0). REAL measurement via the run-csharp endpoint on the
+ * EXACT panel code (scratchpad clos_panel.py / clos_repeat.py, :5080, 2026-07-21, 4/4).
  *
  * Accuracy contract (G4/G7/G8):
  *   - every English quote is VERBATIM from a page fetched directly and confirmed
@@ -40,8 +42,9 @@
  *   - every card's `verify.expect` is the REAL stdout of the run-csharp endpoint
  *     (measured 2026-07-21): c1 "5\n10"; c2 "for: 3,3,3\nforeach: 0,1,2"; c3
  *     "capturing lambda: 64 bytes".
- *   - the s5 machine-panel numbers (64 bytes capturing vs 0 bytes static) are OWN
- *     GC.GetAllocatedBytesForCurrentThread measurements (stable over 3 runs).
+ *   - the s5 machine-panel numbers (64 bytes capturing every time; 88 bytes static on
+ *     first call-site reach, 0 on repeats) are OWN GC.GetAllocatedBytesForCurrentThread
+ *     measurements (stable over 4 runs); the CS8820 vs CS8821 distinction is measured too.
  *
  * Loop: cards c1..c3 map to backend review items `CS.S4.closures-capture/c{1..3}`.
  */
@@ -101,7 +104,7 @@ export const closuresCapture: LessonData = {
     // compiler's own design doc (Roslyn Closure Conversion). The `<>c__DisplayClass…`
     // name is a Roslyn implementation detail (GeneratedNames), not a public API.
     { id: "roslyn-closures", kind: "doc", org: "dotnet/roslyn (compiler design doc)", title: "Closure Conversion", url: "https://github.com/dotnet/roslyn/blob/main/docs/compilers/Design/Closure%20Conversion.md", date: "2026-07-21" },
-    { id: "ms-foreach-migration", kind: "doc", org: "dotnet/docs (migration guide)", title: "foreach iterator variable now scoped within iteration", url: "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/compiler-messages/", date: "2026-07-21" },
+    { id: "ms-foreach-migration", kind: "doc", org: "Microsoft Learn (.NET Framework migration)", title: "Retargeting changes for migration to .NET Framework 4.5.x — Foreach iterator variable is now scoped within the iteration", url: "https://learn.microsoft.com/en-us/dotnet/framework/migration-guide/retargeting/4.5.x", date: "2023-07-31" },
     { id: "ms-iteration", kind: "doc", org: "Microsoft Learn", title: "Iteration statements (C# reference)", url: "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements", date: "2026-01-16" },
     { id: "lippert-loop", kind: "blog", org: "Microsoft Learn (archive · Eric Lippert)", title: "Closing over the loop variable considered harmful", url: "https://learn.microsoft.com/en-us/archive/blogs/ericlippert/closing-over-the-loop-variable-considered-harmful", date: "2009-11-12", archived: "https://docs-archive.visualstudio.com/DefaultCollection/docs-archive-project/_git/blogs-archive-pr/commit/5019655ffa733bb8ab1266cc2a6a7b70a1ecdfa6" },
     { id: "devblogs-tepliakov", kind: "blog", org: "Microsoft DevBlogs (Sergey Tepliakov)", title: "Dissecting the local functions in C# 7", url: "https://devblogs.microsoft.com/premier-developer/dissecting-the-local-functions-in-c-7/", date: "2017-10-03" },
@@ -181,16 +184,16 @@ export const closuresCapture: LessonData = {
       sources: ["ms-foreach-migration", "lippert-loop", "ms-iteration"],
     },
     {
-      id: "s5", num: "05", kicker: "Машинная панель · реальный замер", title: "Счётчик аллокаций: захват 64 байта против 0 у static",
+      id: "s5", num: "05", kicker: "Машинная панель · реальный замер", title: "Счётчик аллокаций: захват 64 байта, static 88 (потом 0 из кэша)",
       viewBox: "0 0 340 214", zones: ALLOC_ZONES,
       code: ["int x = 41;", "b0 = GC.GetAllocatedBytesForCurrentThread();", "Func<int> cap = () => x + 1;   // захват", "b1 = GC.GetAllocatedBytesForCurrentThread();", "Func<int> st  = static () => 42;  // без захвата", "b2 = GC.GetAllocatedBytesForCurrentThread();"],
       predictAt: 2, predictQ: 'Сколько байт кучи стоит захватывающая лямбда <code>() =&gt; x + 1</code>?', console: true,
       scenes: [
         { codeLine: 1, out: "", caption: 'Замеряем аллокации <b>до и после</b> создания лямбды живым счётчиком <code>GC.GetAllocatedBytesForCurrentThread()</code>.', nodes: [{ id: "cap", kind: "gate", at: { zone: "capLane", row: 0 }, state: "ok", label: "() => x + 1", detail: "замер…" }], edges: [] },
         { codeLine: 2, out: "capturing lambda: 64 bytes", caption: 'Захват <code>x</code> → <span class="hl">64 байта</span> в куче: экземпляр display-класса + сам делегат. Замыкание давит на GC.', nodes: [{ id: "cap", kind: "gate", at: { zone: "capLane", row: 0 }, state: "fail", label: "захват", detail: "64 байта" }, { id: "c0", kind: "chip", at: { zone: "capLane", row: 1 }, value: "env + делегат", w: 120, accent: true }], edges: [] },
-        { codeLine: 4, out: "capturing lambda: 64 bytes\nstatic lambda: 0 bytes", caption: '<code>static () =&gt; 42</code> ничего не захватывает → <span class="hl">0 байт</span>: компилятор <b>кэширует</b> делегат. Тот же вызов, две цены.', nodes: [{ id: "cap", kind: "gate", at: { zone: "capLane", row: 0 }, state: "fail", label: "захват", detail: "64 байта" }, { id: "st", kind: "gate", at: { zone: "staticLane", row: 0 }, state: "ok", label: "static", detail: "0 байт" }, { id: "s0", kind: "chip", at: { zone: "staticLane", row: 1 }, value: "делегат кэширован", w: 144, accent: true }], edges: [] },
+        { codeLine: 4, out: "capturing lambda: 64 bytes\nstatic lambda: 88 bytes", caption: '<code>static () =&gt; 42</code> при <b>первом</b> достижении call-site стоит <span class="hl">88 байт</span>: делегат создаётся один раз и <b>кэшируется</b> в static-поле — на повторных проходах уже <b>0</b>. Захват же платит каждый раз.', nodes: [{ id: "cap", kind: "gate", at: { zone: "capLane", row: 0 }, state: "fail", label: "захват", detail: "64 байта" }, { id: "st", kind: "gate", at: { zone: "staticLane", row: 0 }, state: "ok", label: "static (1-й раз)", detail: "88 байт" }, { id: "s0", kind: "chip", at: { zone: "staticLane", row: 1 }, value: "кэш → повтор 0", w: 144, accent: true }], edges: [] },
       ],
-      explain: 'Это машинная панель урока — реально снятое число, не легенда. Табло: <code>GC.GetAllocatedBytesForCurrentThread()</code> вокруг двух лямбд даёт <b>capturing lambda: 64 bytes</b> и <b>static lambda: 0 bytes</b> (собственный прогон, стабильно ×3). Направление подтверждает первичка: авторский разбор компилятора — «<b>2 heap allocations</b> if a lambda captures local variable or argument of enclosing method (one for closure instance and another one for a delegate itself)» и «<b>0 heap allocations</b> only if a lambda does not capture anything or captures a static state» (число «2» — деталь реализации, не контракт доков; здесь оно материализуется как 64 байта: environment + делегат). Не-захватывающую лямбду компилятор кэширует в статическое поле — отсюда ровно <code>0</code>. Практика: в горячем пути захват = скрытая аллокация и работа для сборщика.',
+      explain: 'Это машинная панель урока — реально снятое число, не легенда. Табло: <code>GC.GetAllocatedBytesForCurrentThread()</code> вокруг двух лямбд даёт <b>capturing lambda: 64 bytes</b> и <b>static lambda: 88 bytes при первом достижении call-site</b> (собственный прогон, стабильно ×4). Важная тонкость честного замера: не-захватывающую лямбду компилятор кэширует в статическое поле — но <b>сам кэш инициализируется один раз</b>, и именно этот первый проход стоит 88 байт (делегат + инициализация поля). Повторные достижения того же call-site возвращают кэшированный делегат и стоят <b>ровно 0</b> (проверено в цикле: 88 → 0 → 0). Направление подтверждает первичка: авторский разбор компилятора — «<b>2 heap allocations</b> if a lambda captures local variable or argument of enclosing method (one for closure instance and another one for a delegate itself)» и «<b>0 heap allocations</b> only if a lambda does not capture anything or captures a static state» (число «2» — деталь реализации, не контракт доков; здесь захват материализуется как 64 байта: environment + делегат). Практика: в горячем (повторном) пути static-лямбда = 0 аллокаций, а захват платит на каждом проходе.',
       sources: ["devblogs-tepliakov", "ms-lambda"],
     },
     {
@@ -200,9 +203,9 @@ export const closuresCapture: LessonData = {
       scenes: [
         { codeLine: 0, caption: '<code>static x =&gt; x * x</code> работает только с параметрами и static-членами — <b>захвата нет</b>, аллокации замыкания нет.', nodes: [{ id: "sq", kind: "gate", at: { zone: "guard", row: 0 }, state: "ok", label: "static square", detail: "0 аллокаций" }], edges: [] },
         { codeLine: 2, caption: '<code>static () =&gt; local</code> пытается захватить локаль. <code>static</code> это <span class="hl">запрещает</span> — компилятор рубит на месте.', nodes: [{ id: "sq", kind: "gate", at: { zone: "guard", row: 0 }, state: "ok", label: "static square", detail: "0 аллокаций" }, { id: "bad", kind: "gate", at: { zone: "guard", row: 1 }, state: "fail", label: "static () => local", detail: "хочет захват", accent: true }, { id: "loc", kind: "chip", at: { zone: "outer", row: 0 }, value: "local = 5", w: 96 }], edges: [{ id: "e", from: "bad", to: "loc", accent: true }] },
-        { codeLine: 2, caption: 'Ошибка компиляции — не рантайм-сюрприз: <span class="hl">CS8821</span> (static-лямбда не может ссылаться на внешнее состояние, включая <code>this</code>).', nodes: [{ id: "sq", kind: "gate", at: { zone: "guard", row: 0 }, state: "ok", label: "static square", detail: "0 аллокаций" }, { id: "block", kind: "gate", at: { zone: "guard", row: 1 }, state: "fail", label: "захват local", detail: "CS8821" }, { id: "loc", kind: "chip", at: { zone: "outer", row: 0 }, value: "local = 5", w: 96 }], edges: [] },
+        { codeLine: 2, caption: 'Ошибка компиляции — не рантайм-сюрприз: <span class="hl">CS8820</span> (static-лямбда не может ссылаться на локаль/параметр; захват <code>this</code>/<code>base</code> — это отдельный <code>CS8821</code>).', nodes: [{ id: "sq", kind: "gate", at: { zone: "guard", row: 0 }, state: "ok", label: "static square", detail: "0 аллокаций" }, { id: "block", kind: "gate", at: { zone: "guard", row: 1 }, state: "fail", label: "захват local", detail: "CS8820" }, { id: "loc", kind: "chip", at: { zone: "outer", row: 0 }, value: "local = 5", w: 96 }], edges: [] },
       ],
-      explain: 'С C# 9 у лямбды есть модификатор, управляющий захватом: «To prevent unintentional capture of local variables or instance state by the lambda, apply the <code>static</code> modifier to a lambda expression». Что именно запрещено — тоже дословно: «A static lambda <b>can\'t capture local variables or instance state</b> from enclosing scopes, but it can reference static members and constant definitions». Попытка захватить локаль из static-лямбды — ошибка компиляции (реальный прогон эндпоинта: <code>error CS8821</code>), а не тихая аллокация в рантайме. Практический смысл двойной: в горячем пути <code>static</code> гарантирует <b>0</b> closure-аллокаций (разбор 05), и он же ловит случайный захват <code>this</code> — частую причину неожиданного удержания объекта в памяти. Не забываем границу: даже обычная лямбда «can\'t directly capture an <code>in</code>, <code>ref</code>, or <code>out</code> parameter from the enclosing method».',
+      explain: 'С C# 9 у лямбды есть модификатор, управляющий захватом: «To prevent unintentional capture of local variables or instance state by the lambda, apply the <code>static</code> modifier to a lambda expression». Что именно запрещено — тоже дословно: «A static lambda <b>can\'t capture local variables or instance state</b> from enclosing scopes, but it can reference static members and constant definitions». Попытка захватить локаль из static-лямбды — ошибка компиляции (реальный прогон эндпоинта: <code>error CS8820: A static anonymous function cannot contain a reference to \'local\'</code>), а не тихая аллокация в рантайме. Тонкость: захват локали/параметра — это <code>CS8820</code>, а ссылка на <code>this</code>/<code>base</code> — отдельный <code>CS8821</code>. Практический смысл двойной: в горячем пути <code>static</code> гарантирует <b>0</b> closure-аллокаций на повторных вызовах (разбор 05), и он же ловит случайный захват <code>this</code> — частую причину неожиданного удержания объекта в памяти. Не забываем границу: даже обычная лямбда «can\'t directly capture an <code>in</code>, <code>ref</code>, or <code>out</code> parameter from the enclosing method».',
       sources: ["ms-lambda"],
     },
   ],
@@ -237,8 +240,8 @@ export const closuresCapture: LessonData = {
   takeaways: [
     { icon: "why", k: "Что захватывается", v: 'Лямбда захватывает <span class="hl">переменную</span>, не её значение: читает текущее значение в момент вызова. «Closures close over variables, not over values». Компилятор поднимает локаль в <b>поле</b> общего display-класса — потому делегаты делят хранилище.' },
     { icon: "avoid", k: "Ловушка цикла", v: '<code>for</code> делит одну переменную (<code>3,3,3</code>) — ловушка жива во всех версиях, воркэраунд <code>int copy = i;</code>. С C# 5 <code>foreach</code> даёт свежую копию на итерацию (<code>0,1,2</code>). Одинаковыми они не захватываются.' },
-    { icon: "cost", k: "Цена и static", v: 'Захват локали/аргумента = <span class="hl">heap-аллокация</span> (environment + делегат; замер: 64 байта). <code>static</code>-лямбда запрещает захват → <b>0 байт</b> и защита от случайного захвата <code>this</code>; попытка захвата — ошибка компиляции CS8821.' },
+    { icon: "cost", k: "Цена и static", v: 'Захват локали/аргумента = <span class="hl">heap-аллокация</span> на каждом проходе (environment + делегат; замер: 64 байта). <code>static</code>-лямбда запрещает захват → на повторных проходах <b>0 байт</b> (кэш; первый проход — 88) и защита от случайного захвата <code>this</code>; попытка захвата локали — ошибка компиляции CS8820.' },
   ],
 
-  foot: 'урок · <b>лямбды и замыкания · захват переменной</b> · 6 анимир. разборов · display-класс · for/foreach · панель-счётчик 64 vs 0 байта · дизайн <b>mid</b>',
+  foot: 'урок · <b>лямбды и замыкания · захват переменной</b> · 6 анимир. разборов · display-класс · for/foreach · панель-счётчик 64 (захват) vs 88→0 (static) байта · дизайн <b>mid</b>',
 };

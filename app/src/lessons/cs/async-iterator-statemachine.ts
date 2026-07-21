@@ -9,10 +9,12 @@
  * is — that is the combined machine.
  *
  * SIGNATURE machine panel (s5): the AsyncIteratorMethodBuilder panel — REAL reflection via
- * run-csharp proving the generated `<G>d__0` implements IAsyncStateMachine (async iterator) while
- * a sync iterator does not, and that AsyncIteratorMethodBuilder is a struct with Create/MoveNext/
- * Complete. Stable, deterministic measurements (the generated-field layout itself is NOT stable in
- * the script host, so this lesson deliberately measures interface+builder facts, not field names).
+ * run-csharp proving the generated state machine (name pattern `<G>d__N`) implements
+ * IAsyncStateMachine (async iterator) while a sync iterator does not, and that
+ * AsyncIteratorMethodBuilder is a struct with Create/MoveNext/Complete. Stable, deterministic
+ * measurements (the `d__N` suffix and the generated-field layout are NOT stable — a static-class
+ * method measured `<G>d__0`, a top-level local function `<G>d__1` — so this lesson deliberately
+ * measures interface+builder facts, not the suffix or field names).
  *
  * Accuracy contract (G4/G7/G8):
  *   - Learn quotes VERBATIM from S1 (iterators, await-foreach desugar) + S7 (AsyncIteratorMethodBuilder
@@ -21,7 +23,8 @@
  *     c1 "syncIterator.IAsyncStateMachine=False asyncIterator.IAsyncStateMachine=True";
  *     c2 "isStruct=True Create=True MoveNext=True Complete=True";
  *     c3 "vals=12 asyncStateMachine=True".
- *   - The generated type NAME <G>d__0 is Roslyn-generated (.NET 10, reflection), marked as such.
+ *   - The generated type NAME follows the pattern <G>d__N (N is a Roslyn ordinal that varies by
+ *     declaring context), Roslyn-generated (.NET 10, reflection), marked as such — not a fixed literal.
  *   - NO GT-M6 myths: MИ-9 (async iterator is just an async method, no separate machine) refuted by
  *     s2/s5 (AsyncIteratorMethodBuilder); MИ-8 (await foreach == foreach over Tasks) refuted by s1;
  *     M10/F23: IteratorStateMachineAttribute is VB-only — flagged, not attributed to C#.
@@ -53,7 +56,7 @@ const DESUGAR_ZONES: Zone[] = [Z_DESUGAR];
 
 // s5 (SIGNATURE): the builder+interface reflection panel.
 const Z_SYNC: Zone = { id: "syncz", x: 14, y: 34, w: 150, h: 168, cls: "vz-zone", label: "sync-итератор", labelCls: "vz-zlabel sm", lx: 89, ly: 24, sub: "IEnumerable<T>", subCls: "vz-zsub", subY: 47 };
-const Z_ASYNC: Zone = { id: "asyncz", x: 176, y: 34, w: 150, h: 168, cls: "vz-zone good", label: "async-итератор <G>d__0", labelCls: "vz-zlabel good sm", lx: 251, ly: 24, sub: "IAsyncStateMachine · Roslyn .NET 10", subCls: "vz-zsub good", subY: 47 };
+const Z_ASYNC: Zone = { id: "asyncz", x: 176, y: 34, w: 150, h: 168, cls: "vz-zone good", label: "async-итератор <G>d__N", labelCls: "vz-zlabel good sm", lx: 251, ly: 24, sub: "IAsyncStateMachine · Roslyn .NET 10", subCls: "vz-zsub good", subY: 47 };
 const REFLECT_ZONES: Zone[] = [Z_SYNC, Z_ASYNC];
 
 export const asyncIteratorStatemachine: LessonData = {
@@ -89,7 +92,7 @@ export const asyncIteratorStatemachine: LessonData = {
   misconceptions: [
     {
       wrong: "async-итератор — это просто async-метод, отдельной стейт-машины нет; у C#-итератора есть атрибут IteratorStateMachineAttribute",
-      hook: 'Два мифа о внутренностях async-итератора. «<span class="wrong">просто async-метод, машины нет</span>» — нет: <code>async IAsyncEnumerable&lt;T&gt;</code> компилируется в <b>комбинированную</b> стейт-машину — она реализует <code>IAsyncStateMachine</code> И ведёт себя как итератор; её прогресс гонит <code>AsyncIteratorMethodBuilder</code> — «a builder for asynchronous iterators» (замер: async-итератор <code>IAsyncStateMachine=True</code>, sync — <code>False</code>). «<span class="wrong">у C#-итератора есть IteratorStateMachineAttribute</span>» — нет: этот атрибут <b>VB-only</b>, к C# не применяется. Ниже <b>пять разборов</b>: итератор-машина + async-машина, члены <code>AsyncIteratorMethodBuilder</code>, как <code>MoveNext</code>/<code>AwaitOnCompleted</code> гонят автомат, десугар <code>await foreach</code> и граница VB-атрибута, и <b>машинная панель</b> — реальная рефлексия: <code>&lt;G&gt;d__0 : IAsyncStateMachine</code>. (Использование <code>await foreach</code>/отмена — в S2.9, тут только внутренности.)',
+      hook: 'Два мифа о внутренностях async-итератора. «<span class="wrong">просто async-метод, машины нет</span>» — нет: <code>async IAsyncEnumerable&lt;T&gt;</code> компилируется в <b>комбинированную</b> стейт-машину — она реализует <code>IAsyncStateMachine</code> И ведёт себя как итератор; её прогресс гонит <code>AsyncIteratorMethodBuilder</code> — «a builder for asynchronous iterators» (замер: async-итератор <code>IAsyncStateMachine=True</code>, sync — <code>False</code>). «<span class="wrong">у C#-итератора есть IteratorStateMachineAttribute</span>» — нет: этот атрибут <b>VB-only</b>, к C# не применяется. Ниже <b>пять разборов</b>: итератор-машина + async-машина, члены <code>AsyncIteratorMethodBuilder</code>, как <code>MoveNext</code>/<code>AwaitOnCompleted</code> гонят автомат, десугар <code>await foreach</code> и граница VB-атрибута, и <b>машинная панель</b> — реальная рефлексия: сгенерированный тип вида <code>&lt;G&gt;d__N : IAsyncStateMachine</code> (суффикс <code>d__N</code> — ординал Roslyn, зависит от контекста объявления). (Использование <code>await foreach</code>/отмена — в S2.9, тут только внутренности.)',
       source: "ms-builder",
     },
   ],
@@ -102,9 +105,9 @@ export const asyncIteratorStatemachine: LessonData = {
       scenes: [
         { codeLine: 1, caption: '<code>yield return</code> даёт <span class="hl">итераторную</span> сторону: пауза/возобновление, отдача по одному (как S18.3).', nodes: [{ id: "it", kind: "gate", at: { zone: "iterm", row: 0 }, state: "ok", label: "yield return", detail: "пауза/resume", accent: true }], edges: [] },
         { codeLine: 2, caption: '<code>await</code> даёт <span class="hl">async</span>-сторону: между элементами можно ждать (IAsyncStateMachine).', nodes: [{ id: "it", kind: "gate", at: { zone: "iterm", row: 0 }, state: "ok", label: "yield return", detail: "итератор" }, { id: "as", kind: "gate", at: { zone: "asyncm", row: 0 }, state: "ok", label: "await", detail: "IAsyncStateMachine", accent: true }], edges: [] },
-        { codeLine: 0, caption: 'Компилятор строит <b>одну</b> стейт-машину, объединяющую обе. Это «asynchronous counterpart» синхронного итератора — заменой <code>IEnumerable&lt;T&gt;</code> на <code>IAsyncEnumerable&lt;T&gt;</code>.', nodes: [{ id: "combined", kind: "obj", at: { zone: "iterm", row: 0 }, typeTag: "<G>d__0", value: "итератор + async" }, { id: "sm", kind: "gate", at: { zone: "asyncm", row: 0 }, state: "ok", label: "одна машина", detail: "combine", accent: true }], edges: [{ id: "e1", from: "combined", to: "sm" }] },
+        { codeLine: 0, caption: 'Компилятор строит <b>одну</b> стейт-машину, объединяющую обе. Это «asynchronous counterpart» синхронного итератора — заменой <code>IEnumerable&lt;T&gt;</code> на <code>IAsyncEnumerable&lt;T&gt;</code>.', nodes: [{ id: "combined", kind: "obj", at: { zone: "iterm", row: 0 }, typeTag: "<G>d__N", value: "итератор + async" }, { id: "sm", kind: "gate", at: { zone: "asyncm", row: 0 }, state: "ok", label: "одна машина", detail: "combine", accent: true }], edges: [{ id: "e1", from: "combined", to: "sm" }] },
       ],
-      explain: 'Async-итератор — <b>комбинация</b> двух автоматов, а не «async-метод, который случайно yield-ит». Со стороны итератора он делает пауза/возобновление на <code>yield return</code> (стейт-машина из S18.3); со стороны async — умеет <code>await</code> между элементами (async-стейт-машина из M4). Дока формулирует происхождение прямо: «All of these preceding examples would have an asynchronous counterpart. In each case, you\'d replace the return type of <code>IEnumerable&lt;T&gt;</code> with an <code>IAsyncEnumerable&lt;T&gt;</code>». Компилятор эмитит <b>один</b> nested-тип (<code>&lt;G&gt;d__0</code>, Roslyn .NET 10), который реализует и итераторный контракт (<code>MoveNextAsync</code>/<code>Current</code>), и <code>IAsyncStateMachine</code> — доказательство рефлексией в машинной панели (05). <i>Само использование</i> <code>await foreach</code> и отмена — отдельная тема (S2.9); здесь мы вскрываем внутренности.',
+      explain: 'Async-итератор — <b>комбинация</b> двух автоматов, а не «async-метод, который случайно yield-ит». Со стороны итератора он делает пауза/возобновление на <code>yield return</code> (стейт-машина из S18.3); со стороны async — умеет <code>await</code> между элементами (async-стейт-машина из M4). Дока формулирует происхождение прямо: «All of these preceding examples would have an asynchronous counterpart. In each case, you\'d replace the return type of <code>IEnumerable&lt;T&gt;</code> with an <code>IAsyncEnumerable&lt;T&gt;</code>». Компилятор эмитит <b>один</b> nested-тип (имя вида <code>&lt;G&gt;d__N</code>, где <code>N</code> — ординал Roslyn, зависящий от контекста объявления, .NET 10), который реализует и итераторный контракт (<code>MoveNextAsync</code>/<code>Current</code>), и <code>IAsyncStateMachine</code> — доказательство рефлексией в машинной панели (05). <i>Само использование</i> <code>await foreach</code> и отмена — отдельная тема (S2.9); здесь мы вскрываем внутренности.',
       sources: ["ms-iterators", "ms-builder"],
     },
     {
@@ -151,10 +154,10 @@ export const asyncIteratorStatemachine: LessonData = {
       console: true,
       scenes: [
         { codeLine: 2, out: "", caption: 'Sync-итератор <code>S()</code> — обычная итератор-машина, <span class="hl">не</span> async: <code>IAsyncStateMachine</code> = <b>False</b>.', nodes: [{ id: "s", kind: "gate", at: { zone: "syncz", row: 0 }, state: "fail", label: "sync <S>d__", detail: "IAsyncStateMachine=False", accent: true }], edges: [] },
-        { codeLine: 3, out: "", caption: 'Async-итератор <code>A()</code> — <span class="hl">комбинированная</span> машина: <code>IAsyncStateMachine</code> = <b>True</b>. Вот отличие от простого итератора.', nodes: [{ id: "s", kind: "gate", at: { zone: "syncz", row: 0 }, state: "fail", label: "sync", detail: "False" }, { id: "a", kind: "gate", at: { zone: "asyncz", row: 0 }, state: "ok", label: "async <G>d__0", detail: "IAsyncStateMachine=True", accent: true }], edges: [] },
+        { codeLine: 3, out: "", caption: 'Async-итератор <code>A()</code> — <span class="hl">комбинированная</span> машина: <code>IAsyncStateMachine</code> = <b>True</b>. Вот отличие от простого итератора.', nodes: [{ id: "s", kind: "gate", at: { zone: "syncz", row: 0 }, state: "fail", label: "sync", detail: "False" }, { id: "a", kind: "gate", at: { zone: "asyncz", row: 0 }, state: "ok", label: "async <G>d__N", detail: "IAsyncStateMachine=True", accent: true }], edges: [] },
         { codeLine: 3, out: "syncIterator.IAsyncStateMachine=False asyncIterator.IAsyncStateMachine=True", caption: 'Вывод (реальный прогон): <b>sync=False async=True</b>. Async-итератор действительно несёт async-стейт-машину — миф «просто async-метод» опровергнут.', nodes: [{ id: "s", kind: "gate", at: { zone: "syncz", row: 0 }, state: "fail", label: "sync", detail: "False" }, { id: "a", kind: "gate", at: { zone: "asyncz", row: 0 }, state: "ok", label: "async", detail: "True", accent: true }], edges: [] },
       ],
-      explain: 'Машинная панель — <b>реальная рефлексия</b> (собственный прогон run-csharp, стабильно воспроизводится). Ключевой замер: сгенерированный тип <b>sync</b>-итератора (<code>IEnumerable&lt;int&gt; S()</code>) <b>не</b> реализует <code>IAsyncStateMachine</code>, а <b>async</b>-итератор (<code>async IAsyncEnumerable&lt;int&gt; A()</code>) — реализует. Вывод: <code>syncIterator.IAsyncStateMachine=False asyncIterator.IAsyncStateMachine=True</code>. Это прямое доказательство, что async-итератор — <b>не</b> «просто async-метод» и <b>не</b> «просто итератор»: компилятор эмитит комбинированную машину, реализующую <code>IAsyncStateMachine</code>, прогресс которой ведёт <code>AsyncIteratorMethodBuilder</code>. Имя типа <code>&lt;G&gt;d__0</code> и раскладка полей — Roslyn-generated (.NET 10); стабильный, воспроизводимый факт здесь — именно <b>интерфейс</b> и <b>наличие builder-а</b>, а не имена полей (они могут оптимизироваться компилятором).',
+      explain: 'Машинная панель — <b>реальная рефлексия</b> (собственный прогон run-csharp, стабильно воспроизводится). Ключевой замер: сгенерированный тип <b>sync</b>-итератора (<code>IEnumerable&lt;int&gt; S()</code>) <b>не</b> реализует <code>IAsyncStateMachine</code>, а <b>async</b>-итератор (<code>async IAsyncEnumerable&lt;int&gt; A()</code>) — реализует. Вывод: <code>syncIterator.IAsyncStateMachine=False asyncIterator.IAsyncStateMachine=True</code>. Это прямое доказательство, что async-итератор — <b>не</b> «просто async-метод» и <b>не</b> «просто итератор»: компилятор эмитит комбинированную машину, реализующую <code>IAsyncStateMachine</code>, прогресс которой ведёт <code>AsyncIteratorMethodBuilder</code>. Имя типа вида <code>&lt;G&gt;d__N</code> (суффикс <code>N</code> — ординал Roslyn: у статического метода вышло <code>d__0</code>, у top-level локальной функции — <code>d__1</code>; замер) и раскладка полей — Roslyn-generated (.NET 10); стабильный, воспроизводимый факт здесь — именно <b>интерфейс</b> и <b>наличие builder-а</b>, а не имена полей/суффикс (они могут меняться по контексту и оптимизациям).',
       sources: ["roslyn-async-sm", "ms-builder"],
     },
   ],
