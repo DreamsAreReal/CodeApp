@@ -967,6 +967,10 @@ const CS_S12: Section = {
       { id: "CS.S12.string-interning", track: "CS", section: "CS.S12", title: "Интернирование: пул из одной ссылки на значение", kicker: "C# вглубь · S12 · intern pool", icon: "types", subtitle: "intern pool, литералы = один ref, String.Intern/IsInterned, ReferenceEquals", estMinutes: 10, cards: 3 },
       () => import("./cs/string-interning.ts").then((m) => m.stringInterning),
     ),
+    entry(
+      { id: "CS.S12.stringbuilder", track: "CS", section: "CS.S12", title: "StringBuilder: мутабельная сборка строки в один буфер", kicker: "C# вглубь · S12 · mutable buffer", icon: "types", subtitle: "mutable sequence, Append в один объект, Capacity удваивается, когда брать", estMinutes: 10, cards: 3 },
+      () => import("./cs/stringbuilder.ts").then((m) => m.stringbuilder),
+    ),
   ],
 };
 

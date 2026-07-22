@@ -1,0 +1,44 @@
+{
+  "id": "CS.S12.stringbuilder",
+  "track": "CS",
+  "section": "CS.S12",
+  "module": "S12.3",
+  "title": "StringBuilder: мутабельная сборка строки в один буфер",
+  "status": "published",
+  "order": 103,
+  "sources": [
+    { "id": "ms-sb", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/api/system.text.stringbuilder", "date": "2025-07-01" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "A default StringBuilder starts at Capacity 16; appending a 19-character string overflows it so the capacity doubles to 32 while Length becomes 19, printing 16 then 19 32",
+      "code": "using System; using System.Text; var sb = new StringBuilder(); Console.WriteLine(sb.Capacity); sb.Append(\"This is a sentence.\"); Console.WriteLine($\"{sb.Length} {sb.Capacity}\");",
+      "expectedOutput": "16\n19 32",
+      "verify": "execute",
+      "sourceRefs": ["ms-sb"]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "StringBuilder is mutable: Append writes into a single object and returns the same instance (fluent), so ReferenceEquals(sb, same) is True and the value is abc, printing True then abc",
+      "code": "using System; using System.Text; var sb = new StringBuilder(); var same = sb.Append(\"ab\").Append(\"c\"); Console.WriteLine(object.ReferenceEquals(sb, same)); Console.WriteLine(sb.ToString());",
+      "expectedOutput": "True\nabc",
+      "verify": "execute",
+      "sourceRefs": ["ms-sb"]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Append, Replace and Insert all mutate the one buffer in place: hello + world, l replaced by L, and prefix inserted, yielding >> heLLo worLd with Length 14",
+      "code": "using System; using System.Text; var sb = new StringBuilder(\"hello\"); sb.Append(\" world\"); sb.Replace(\"l\", \"L\"); sb.Insert(0, \">> \"); Console.WriteLine(sb.ToString()); Console.WriteLine(sb.Length);",
+      "expectedOutput": ">> heLLo worLd\n14",
+      "verify": "execute",
+      "sourceRefs": ["ms-sb"]
+    }
+  ]
+}
