@@ -1,0 +1,45 @@
+{
+  "id": "CS.S13.metadata-and-assemblies",
+  "track": "CS",
+  "section": "CS.S13",
+  "module": "S13.3",
+  "title": "Метаданные и сборки: таблицы, токены, манифест",
+  "status": "published",
+  "order": 109,
+  "sources": [
+    { "id": "clr-ch1", "kind": "book", "url": "", "date": "2013" },
+    { "id": "clr-ch2", "kind": "book", "url": "", "date": "2013" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "A metadata token is a 4-byte marker whose high byte is the table id. For a type that table is TypeDef = 0x02, so (MetadataToken >> 24) formatted X2 prints 02",
+      "code": "using System; class C {} int tok = typeof(C).MetadataToken; Console.WriteLine((tok >> 24).ToString(\"X2\"));",
+      "expectedOutput": "02",
+      "verify": "execute",
+      "sourceRefs": ["clr-ch2"]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Each kind of defined entity lives in its own definition table, and the token high byte is that table id: type TypeDef 0x02, method MethodDef 0x06, field FieldDef 0x04, so it prints 02 06 04",
+      "code": "using System; using System.Reflection; class C { public int F; public void M(){} } Console.WriteLine($\"{typeof(C).MetadataToken>>24:X2} {typeof(C).GetMethod(\"M\").MetadataToken>>24:X2} {typeof(C).GetField(\"F\").MetadataToken>>24:X2}\");",
+      "expectedOutput": "02 06 04",
+      "verify": "execute",
+      "sourceRefs": ["clr-ch2"]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "An assembly = manifest + modules + metadata; a single-file assembly has one module and the manifest lives inside it, so ManifestModule.Name is the .dll file. Prints 1 System.Private.CoreLib.dll",
+      "code": "using System; using System.Text; var a = typeof(StringBuilder).Assembly; Console.WriteLine($\"{a.GetModules().Length} {a.ManifestModule.Name}\");",
+      "expectedOutput": "1 System.Private.CoreLib.dll",
+      "verify": "execute",
+      "sourceRefs": ["clr-ch1", "clr-ch2"]
+    }
+  ]
+}

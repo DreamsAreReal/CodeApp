@@ -1012,6 +1012,10 @@ const CS_S13: Section = {
       { id: "CS.S13.il-and-jit", track: "CS", section: "CS.S13", title: "IL и JIT: набор инструкций CLR и компиляция метода при первом вызове", kicker: "CLR внутри · S13 · инструкции и JIT", icon: "types", subtitle: "IL — стековый CPU-независимый язык; JIT метода в native на первом вызове", estMinutes: 10, cards: 3 },
       () => import("./cs/il-and-jit.ts").then((m) => m.ilAndJit),
     ),
+    entry(
+      { id: "CS.S13.metadata-and-assemblies", track: "CS", section: "CS.S13", title: "Метаданные и сборки: таблицы, токены, манифест", kicker: "CLR внутри · S13 · таблицы и токены", icon: "types", subtitle: "Метаданные = таблицы; токен = таблица+строка; сборка = манифест + модули", estMinutes: 10, cards: 3 },
+      () => import("./cs/metadata-and-assemblies.ts").then((m) => m.metadataAndAssemblies),
+    ),
   ],
 };
 
