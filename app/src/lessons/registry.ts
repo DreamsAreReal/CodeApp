@@ -971,6 +971,10 @@ const CS_S12: Section = {
       { id: "CS.S12.stringbuilder", track: "CS", section: "CS.S12", title: "StringBuilder: мутабельная сборка строки в один буфер", kicker: "C# вглубь · S12 · mutable buffer", icon: "types", subtitle: "mutable sequence, Append в один объект, Capacity удваивается, когда брать", estMinutes: 10, cards: 3 },
       () => import("./cs/stringbuilder.ts").then((m) => m.stringbuilder),
     ),
+    entry(
+      { id: "CS.S12.string-comparison", track: "CS", section: "CS.S12", title: "Сравнение строк: ordinal vs culture и StringComparison", kicker: "C# вглубь · S12 · как сравнивать", icon: "types", subtitle: "ordinal = code point, culture = word sort, Turkish-I, всегда StringComparison", estMinutes: 10, cards: 3 },
+      () => import("./cs/string-comparison.ts").then((m) => m.stringComparison),
+    ),
   ],
 };
 

@@ -1,0 +1,45 @@
+{
+  "id": "CS.S12.string-comparison",
+  "track": "CS",
+  "section": "CS.S12",
+  "module": "S12.4",
+  "title": "Сравнение строк: ordinal vs culture и StringComparison",
+  "status": "published",
+  "order": 104,
+  "sources": [
+    { "id": "ms-bps", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/standard/base-types/best-practices-strings", "date": "2025-07-01" },
+    { "id": "ms-sc", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/api/system.stringcomparison", "date": "2025-07-01" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Ordinal comparison is by code point: Compare(\"abc\",\"ABC\",Ordinal) is 'a'-'A' = 32, OrdinalIgnoreCase collapses ASCII case so Compare is 0 and Equals is True, printing 32 0 True",
+      "code": "using System; Console.WriteLine(string.Compare(\"abc\", \"ABC\", StringComparison.Ordinal)); Console.WriteLine(string.Compare(\"abc\", \"ABC\", StringComparison.OrdinalIgnoreCase)); Console.WriteLine(string.Equals(\"abc\", \"ABC\", StringComparison.OrdinalIgnoreCase));",
+      "expectedOutput": "32\n0\nTrue",
+      "verify": "execute",
+      "sourceRefs": ["ms-sc"]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "The Turkish-I: one \"i\"/\"I\" pair, three policies, three verdicts - OrdinalIgnoreCase treats ASCII i/I as equal (True), the tr-TR culture treats them as different letters even ignoring case (Compare 1), and the invariant culture treats them as equal (Compare 0), printing True 1 0",
+      "code": "using System; using System.Globalization; var tr = new CultureInfo(\"tr-TR\"); Console.WriteLine(string.Equals(\"i\", \"I\", StringComparison.OrdinalIgnoreCase)); Console.WriteLine(string.Compare(\"i\", \"I\", tr, CompareOptions.IgnoreCase)); Console.WriteLine(string.Compare(\"i\", \"I\", CultureInfo.InvariantCulture, CompareOptions.IgnoreCase));",
+      "expectedOutput": "True\n1\n0",
+      "verify": "execute",
+      "sourceRefs": ["ms-sc", "ms-bps"]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Ordinal and culture sort disagree on sign: Compare(\"apple\",\"Apple\",Ordinal) is 32 because lowercase 'a' (97) has a higher code point than 'A' (65), but the en-US linguistic word sort places lowercase before uppercase giving -1, printing 32 then -1",
+      "code": "using System; using System.Globalization; var en = new CultureInfo(\"en-US\"); Console.WriteLine(string.Compare(\"apple\", \"Apple\", StringComparison.Ordinal)); Console.WriteLine(string.Compare(\"apple\", \"Apple\", en, CompareOptions.None));",
+      "expectedOutput": "32\n-1",
+      "verify": "execute",
+      "sourceRefs": ["ms-sc", "ms-bps"]
+    }
+  ]
+}
