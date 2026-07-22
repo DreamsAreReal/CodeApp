@@ -1,0 +1,44 @@
+{
+  "id": "CS.S13.il-and-jit",
+  "track": "CS",
+  "section": "CS.S13",
+  "module": "S13.2",
+  "title": "IL и JIT: набор инструкций CLR и компиляция метода при первом вызове",
+  "status": "published",
+  "order": 108,
+  "sources": [
+    { "id": "clr-ch1", "kind": "book", "url": "", "date": "2013" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "IL is a stack-based instruction set: a+b compiles to ldarg.0 (2) ldarg.1 (3) add (88=0x58) ret (42=0x2A) — push a, push b, add pops two & pushes the sum, ret. Expression-bodied gives clean IL with no nop, so GetILAsByteArray prints 2 3 88 42",
+      "code": "using System; using System.Reflection; class C { public static int Add(int a,int b)=>a+b; } var il = typeof(C).GetMethod(\"Add\").GetMethodBody().GetILAsByteArray(); Console.WriteLine(string.Join(\" \", il));",
+      "expectedOutput": "2 3 88 42",
+      "verify": "execute",
+      "sourceRefs": ["clr-ch1"]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Each source operator maps to one IL opcode: a*b compiles to the same stack shape as a+b but with mul (90=0x5A) in place of add (88=0x58), so it prints 2 3 90 42 — one byte differs from Add's 2 3 88 42",
+      "code": "using System; using System.Reflection; class C { public static int Mul(int a,int b)=>a*b; } var il = typeof(C).GetMethod(\"Mul\").GetMethodBody().GetILAsByteArray(); Console.WriteLine(string.Join(\" \", il));",
+      "expectedOutput": "2 3 90 42",
+      "verify": "execute",
+      "sourceRefs": ["clr-ch1"]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "IL is a stack language, so a method body carries a MaxStackSize (evaluation-stack depth), not registers. For Add the body reports maxstack=8 (compiler headroom) and a 4-byte IL body, so it prints maxstack=8 il=4",
+      "code": "using System; using System.Reflection; class C { public static int Add(int a,int b)=>a+b; } var b = typeof(C).GetMethod(\"Add\").GetMethodBody(); Console.WriteLine($\"maxstack={b.MaxStackSize} il={b.GetILAsByteArray().Length}\");",
+      "expectedOutput": "maxstack=8 il=4",
+      "verify": "execute",
+      "sourceRefs": ["clr-ch1"]
+    }
+  ]
+}

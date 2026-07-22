@@ -986,12 +986,41 @@ const CS_S12: Section = {
   ],
 };
 
+// Section S13 «CLR внутри» (BOOK-based, first for this corpus · 5 lessons). Prereq CS.S1.
+// SOURCE = Джеффри Рихтер, «CLR via C#», 4-е изд. (гл. 1 «Модель выполнения кода в среде CLR»,
+// гл. 4 «Основы типов»). This section goes into RUNTIME INTERNALS the doc-based C# corpus never
+// covered — the source→IL+metadata (managed module)→JIT→native pipeline, IL as the CLR instruction
+// set, metadata tables/tokens, assembly = manifest+modules+metadata, the object header layout
+// (sync-block index + type-object pointer, method table), and type loading/dispatch. It COMPLEMENTS
+// (zero overlap) CS.S1.classes-virtual-dispatch (the C# language angle on vtable/override) and
+// CS.S6.reflection-overview (the reflection API): here the subject is the CLR's own execution
+// machinery, taught from the book (quoted verbatim RU) + machine panels, with the OBSERVABLE
+// consequences proven by real run-csharp exec cards. Book is 2013 (.NET 4.5); only the TIMELESS
+// internals still accurate in .NET 10 are taught (dated Framework-only bits — GAC, AppDomains,
+// NGen, MSCorEE bootstrap — are skipped or explicitly marked legacy).
+const CS_S13: Section = {
+  id: "CS.S13",
+  title: "CLR внутри",
+  order: 13,
+  prereqs: ["CS.S1"],
+  lessons: [
+    entry(
+      { id: "CS.S13.clr-execution-model", track: "CS", section: "CS.S13", title: "Модель выполнения CLR: исходник → IL → JIT → машинный код", kicker: "CLR внутри · S13 · пайплайн выполнения", icon: "types", subtitle: "Managed module (PE: IL + метаданные), сборка, JIT на первом вызове", estMinutes: 10, cards: 3 },
+      () => import("./cs/clr-execution-model.ts").then((m) => m.clrExecutionModel),
+    ),
+    entry(
+      { id: "CS.S13.il-and-jit", track: "CS", section: "CS.S13", title: "IL и JIT: набор инструкций CLR и компиляция метода при первом вызове", kicker: "CLR внутри · S13 · инструкции и JIT", icon: "types", subtitle: "IL — стековый CPU-независимый язык; JIT метода в native на первом вызове", estMinutes: 10, cards: 3 },
+      () => import("./cs/il-and-jit.ts").then((m) => m.ilAndJit),
+    ),
+  ],
+};
+
 const CS_TRACK: Track = {
   id: "CS",
   title: S.trackCsDeepLabel,
   sub: S.trackCsDeepSub,
   badge: S.trackNewBadge,
-  sections: [CS_S1, CS_S2, CS_S3, CS_S5, CS_S7, CS_S8, CS_S9, CS_S10, CS_S11, CS_S12, CS_S17, CS_S18, CS_S4, CS_S6],
+  sections: [CS_S1, CS_S2, CS_S3, CS_S5, CS_S7, CS_S8, CS_S9, CS_S10, CS_S11, CS_S12, CS_S13, CS_S17, CS_S18, CS_S4, CS_S6],
 };
 
 // The legacy flat C# track and its 6 old lessons were removed in the F2 migration (their
