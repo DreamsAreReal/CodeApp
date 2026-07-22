@@ -1,0 +1,42 @@
+{
+  "id": "SD.D1.encoding",
+  "track": "SD",
+  "section": "SD.D1",
+  "module": "D1.3",
+  "title": "Кодирование и эволюция схемы: JSON, Protobuf, совместимость",
+  "status": "self-pass",
+  "order": 201,
+  "sources": [
+    { "id": "ddia-ch4", "kind": "book", "url": "", "date": "2017" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "explain",
+      "engagementLevel": "responding",
+      "prompt": "Почему двоичные форматы со схемой (Thrift, Protocol Buffers) компактнее, чем двоичные кодирования JSON вроде MessagePack?",
+      "sourceRefs": ["ddia-ch4"]
+    },
+    {
+      "id": "c2",
+      "type": "explain",
+      "engagementLevel": "responding",
+      "prompt": "В схеме Protobuf/Thrift можно свободно переименовать поле, но нельзя менять его номер тега. Почему?",
+      "sourceRefs": ["ddia-ch4"]
+    },
+    {
+      "id": "c3",
+      "type": "compare",
+      "engagementLevel": "responding",
+      "prompt": "Старый код читает данные, записанные новым кодом, где добавлено поле с новым тегом. Что обеспечивает прямую совместимость?",
+      "sourceRefs": ["ddia-ch4"]
+    },
+    {
+      "id": "c4",
+      "type": "compare",
+      "engagementLevel": "responding",
+      "prompt": "Что означают обратная и прямая совместимость при эволюции схемы?",
+      "sourceRefs": ["ddia-ch4"]
+    }
+  ]
+}

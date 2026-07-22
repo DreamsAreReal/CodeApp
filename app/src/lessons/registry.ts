@@ -1054,10 +1054,20 @@ const SD_D1: Section = {
   title: "Модели данных и хранилища",
   order: 200,
   prereqs: [],
+  // Navigation order: data-models (ch.2) -> storage-engines (ch.3) -> encoding (ch.4),
+  // matching the DDIA reading order. storage-engines was the pilot; it now sits in the middle.
   lessons: [
+    entry(
+      { id: "SD.D1.data-models", track: "SD", section: "SD.D1", title: "Модели данных: реляционная, документная, графовая", kicker: "Системный дизайн · D1 · модели данных", icon: "types", subtitle: "Impedance mismatch, один-ко-многим и многие-ко-многим, схема при чтении/записи, граф", estMinutes: 10, cards: 4 },
+      () => import("./sd/data-models.ts").then((m) => m.dataModels),
+    ),
     entry(
       { id: "SD.D1.storage-engines", track: "SD", section: "SD.D1", title: "Подсистемы хранения: LSM-деревья против B-деревьев", kicker: "Системный дизайн · D1 · хранилища", icon: "collections", subtitle: "SSTable/LSM против B-деревьев: уплотнение, WAL, усиление записи", estMinutes: 10, cards: 4 },
       () => import("./sd/storage-engines.ts").then((m) => m.storageEngines),
+    ),
+    entry(
+      { id: "SD.D1.encoding", track: "SD", section: "SD.D1", title: "Кодирование и эволюция схемы: JSON, Protobuf, совместимость", kicker: "Системный дизайн · D1 · кодирование", icon: "types", subtitle: "Текстовые vs двоичные форматы, теги полей, прямая и обратная совместимость", estMinutes: 10, cards: 4 },
+      () => import("./sd/encoding.ts").then((m) => m.encoding),
     ),
   ],
 };
