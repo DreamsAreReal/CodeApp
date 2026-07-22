@@ -29,7 +29,7 @@ public sealed class CSharpRunner
             return new RunResult(false, "", Strings.EmptyCode, 0);
 
         var options = ScriptOptions.Default
-            .WithImports("System", "System.Collections.Generic", "System.Linq", "System.Text")
+            .WithImports("System", "System.Collections.Generic", "System.Linq", "System.Text", "System.Text.RegularExpressions")
             .WithReferences(
                 typeof(object).Assembly,
                 typeof(Enumerable).Assembly,
@@ -37,7 +37,10 @@ public sealed class CSharpRunner
                 // System.Linq.Expressions: expression trees (Expression<T>, ExpressionVisitor,
                 // LambdaExpression.Compile) live in their own assembly, separate from System.Linq.
                 // Referenced so authoring snippets that build/compile/visit trees compile.
-                typeof(System.Linq.Expressions.Expression).Assembly);
+                typeof(System.Linq.Expressions.Expression).Assembly,
+                // System.Text.RegularExpressions: Regex lives in its own assembly; referenced so
+                // authoring snippets can use `new Regex(...)` / RegexOptions.Compiled naturally.
+                typeof(System.Text.RegularExpressions.Regex).Assembly);
 
         var sw = new Stopwatch();
         await _gate.WaitAsync();
