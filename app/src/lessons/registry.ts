@@ -1016,6 +1016,14 @@ const CS_S13: Section = {
       { id: "CS.S13.metadata-and-assemblies", track: "CS", section: "CS.S13", title: "Метаданные и сборки: таблицы, токены, манифест", kicker: "CLR внутри · S13 · таблицы и токены", icon: "types", subtitle: "Метаданные = таблицы; токен = таблица+строка; сборка = манифест + модули", estMinutes: 10, cards: 3 },
       () => import("./cs/metadata-and-assemblies.ts").then((m) => m.metadataAndAssemblies),
     ),
+    entry(
+      { id: "CS.S13.object-header-layout", track: "CS", section: "CS.S13", title: "Устройство объекта в куче: заголовок, объект-тип, таблица методов", kicker: "CLR внутри · S13 · заголовок объекта", icon: "types", subtitle: "sync-block index + указатель на объект-тип; new; общий объект-тип", estMinutes: 10, cards: 3 },
+      () => import("./cs/object-header-layout.ts").then((m) => m.objectHeaderLayout),
+    ),
+    entry(
+      { id: "CS.S13.type-loading-dispatch", track: "CS", section: "CS.S13", title: "Загрузка типа и диспетчеризация: объект-тип, таблица методов", kicker: "CLR внутри · S13 · загрузка и вызов", icon: "types", subtitle: "CLR строит объект-тип при JIT; static/non-virt/virt через таблицу методов", estMinutes: 10, cards: 3 },
+      () => import("./cs/type-loading-dispatch.ts").then((m) => m.typeLoadingDispatch),
+    ),
   ],
 };
 

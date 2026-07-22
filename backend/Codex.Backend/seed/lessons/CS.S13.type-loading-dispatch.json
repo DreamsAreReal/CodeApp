@@ -1,0 +1,44 @@
+{
+  "id": "CS.S13.type-loading-dispatch",
+  "track": "CS",
+  "section": "CS.S13",
+  "module": "S13.5",
+  "title": "Загрузка типа и диспетчеризация: объект-тип, таблица методов",
+  "status": "published",
+  "order": 111,
+  "sources": [
+    { "id": "clr-ch4", "kind": "book", "url": "", "date": "2013" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "A virtual call resolves through the method table of the instance's real type object (found via the header's type-object pointer), so Employee e = new Manager(); e.R() runs Manager's override and prints Manager",
+      "code": "using System; class Employee{ public virtual string R()=>\"Employee\"; } class Manager:Employee{ public override string R()=>\"Manager\"; } Employee e=new Manager(); Console.WriteLine(e.R());",
+      "expectedOutput": "Manager",
+      "verify": "execute",
+      "sourceRefs": ["clr-ch4"]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "A type object is itself a heap object whose type is System.Type, so t.GetType() is assignable to Type — typeof(Type).IsAssignableFrom(t.GetType()) prints True",
+      "code": "using System; class C{} Type t = typeof(C); Console.WriteLine(typeof(Type).IsAssignableFrom(t.GetType()));",
+      "expectedOutput": "True",
+      "verify": "execute",
+      "sourceRefs": ["clr-ch4"]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "The type-of-a-type recursion terminates at System.Type whose type object references itself, so t.GetType() and t.GetType().GetType() are the same reference — ReferenceEquals prints True",
+      "code": "using System; Type t = typeof(int); Console.WriteLine(object.ReferenceEquals(t.GetType(), t.GetType().GetType()));",
+      "expectedOutput": "True",
+      "verify": "execute",
+      "sourceRefs": ["clr-ch4"]
+    }
+  ]
+}

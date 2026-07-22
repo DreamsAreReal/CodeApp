@@ -1,0 +1,44 @@
+{
+  "id": "CS.S13.object-header-layout",
+  "track": "CS",
+  "section": "CS.S13",
+  "module": "S13.4",
+  "title": "Устройство объекта в куче: заголовок, объект-тип, таблица методов",
+  "status": "published",
+  "order": 110,
+  "sources": [
+    { "id": "clr-ch4", "kind": "book", "url": "", "date": "2013" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "All instances of a type share ONE type object: their type-object pointers point at the same type object and GetType returns that pointer, so ReferenceEquals(a.GetType(), b.GetType()) is True",
+      "code": "using System; var a = new object(); var b = new object(); Console.WriteLine(object.ReferenceEquals(a.GetType(), b.GetType()));",
+      "expectedOutput": "True",
+      "verify": "execute",
+      "sourceRefs": ["clr-ch4"]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "GetType is non-virtual and reads the type-object pointer, so it cannot lie: two Managers share the Manager type object (True) while Manager and Employee are different type objects (False). Prints True False",
+      "code": "using System; class Employee{} class Manager:Employee{} var m1=new Manager(); var m2=new Manager(); var e=new Employee(); Console.WriteLine($\"{object.ReferenceEquals(m1.GetType(),m2.GetType())} {object.ReferenceEquals(m1.GetType(),e.GetType())}\");",
+      "expectedOutput": "True False",
+      "verify": "execute",
+      "sourceRefs": ["clr-ch4"]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "An object header is not free: even a field-less class instance is 24 bytes on 64-bit — 8 (sync-block index) + 8 (type-object pointer) + 8 (minimum size/alignment). The GC-allocation delta around one new Empty() prints 24",
+      "code": "using System; class Empty{} var w=new Empty(); long a=GC.GetAllocatedBytesForCurrentThread(); var x=new Empty(); long b=GC.GetAllocatedBytesForCurrentThread(); Console.WriteLine(b-a);",
+      "expectedOutput": "24",
+      "verify": "execute",
+      "sourceRefs": ["clr-ch4"]
+    }
+  ]
+}
