@@ -6,7 +6,7 @@
   "title": "Regex: движок, RegexOptions.Compiled и GeneratedRegex",
   "status": "published",
   "order": 106,
-  "note": "Sandbox does not reference System.Text.RegularExpressions at compile time, so card code drives the genuine runtime Regex engine via reflection (Type.GetType + InvokeMember). Output is real Regex behavior; expectedOutput matches the natural-API question shown to the learner. [GeneratedRegex] source generators run at project compile time, not in CSharpScript, so they are taught conceptually and the runtime behavior is proven with new Regex / RegexOptions.Compiled.",
+  "note": "The sandbox references + imports System.Text.RegularExpressions, so each card runs the SAME natural new Regex(...) / RegexOptions.Compiled code shown to the learner (no reflection): shown == executed. [GeneratedRegex] source generators run at project compile time, not in CSharpScript, so they are taught conceptually and the runtime behavior is proven with new Regex / RegexOptions.Compiled.",
   "sources": [
     { "id": "ms-regex", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/standard/base-types/regular-expressions", "date": "2026-03-18" },
     { "id": "ms-srcgen", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/standard/base-types/regular-expression-source-generators", "date": "2025-07-01" }
@@ -17,7 +17,7 @@
       "type": "predict-output",
       "engagementLevel": "responding",
       "prompt": "new Regex(@\"\\d{3}-\\d{4}\").IsMatch on \"call 555-1234 now\" is True, and Match(...).Value returns only the matched substring 555-1234, printing True then 555-1234",
-      "code": "using System; using System.Reflection; var rt = Type.GetType(\"System.Text.RegularExpressions.Regex, System.Text.RegularExpressions\"); var re = Activator.CreateInstance(rt, new object[]{@\"\\d{3}-\\d{4}\"}); Console.WriteLine((bool)rt.GetMethod(\"IsMatch\", new[]{typeof(string)}).Invoke(re, new object[]{\"call 555-1234 now\"})); var m = rt.GetMethod(\"Match\", new[]{typeof(string)}).Invoke(re, new object[]{\"call 555-1234 now\"}); Console.WriteLine((string)m.GetType().GetProperty(\"Value\").GetValue(m));",
+      "code": "using System; using System.Text.RegularExpressions; var re = new Regex(@\"\\d{3}-\\d{4}\"); Console.WriteLine(re.IsMatch(\"call 555-1234 now\")); Console.WriteLine(re.Match(\"call 555-1234 now\").Value);",
       "expectedOutput": "True\n555-1234",
       "verify": "execute",
       "sourceRefs": ["ms-regex"]
@@ -27,7 +27,7 @@
       "type": "predict-output",
       "engagementLevel": "responding",
       "prompt": "new Regex(@\"\\w+\", RegexOptions.Compiled).Matches(\"one two three\") finds 3 matches and ms[2].Value is three; RegexOptions.Compiled changes the engine (IL via reflection-emit) not the result, printing 3 then three",
-      "code": "using System; using System.Reflection; var rt = Type.GetType(\"System.Text.RegularExpressions.Regex, System.Text.RegularExpressions\"); var ot = Type.GetType(\"System.Text.RegularExpressions.RegexOptions, System.Text.RegularExpressions\"); var compiled = Enum.Parse(ot, \"Compiled\"); var re = Activator.CreateInstance(rt, new object[]{@\"\\w+\", compiled}); var ms = rt.GetMethod(\"Matches\", new[]{typeof(string)}).Invoke(re, new object[]{\"one two three\"}); var mst = ms.GetType(); Console.WriteLine((int)mst.GetProperty(\"Count\").GetValue(ms)); var item = mst.GetProperty(\"Item\", new[]{typeof(int)}).GetValue(ms, new object[]{2}); Console.WriteLine((string)item.GetType().GetProperty(\"Value\").GetValue(item));",
+      "code": "using System; using System.Text.RegularExpressions; var re = new Regex(@\"\\w+\", RegexOptions.Compiled); var ms = re.Matches(\"one two three\"); Console.WriteLine(ms.Count); Console.WriteLine(ms[2].Value);",
       "expectedOutput": "3\nthree",
       "verify": "execute",
       "sourceRefs": ["ms-regex", "ms-srcgen"]
@@ -37,7 +37,7 @@
       "type": "predict-output",
       "engagementLevel": "responding",
       "prompt": "new Regex(@\"(\\w+)@(\\w+)\", RegexOptions.IgnoreCase) matched against \"USER@Example rest\" captures Groups[1]=USER and Groups[2]=Example, and Replace(\"a@b c@d\", \"X\") replaces each match giving X X, printing USER, Example, X X",
-      "code": "using System; using System.Reflection; var rt = Type.GetType(\"System.Text.RegularExpressions.Regex, System.Text.RegularExpressions\"); var ot = Type.GetType(\"System.Text.RegularExpressions.RegexOptions, System.Text.RegularExpressions\"); var ic = Enum.Parse(ot, \"IgnoreCase\"); var re = Activator.CreateInstance(rt, new object[]{@\"(\\w+)@(\\w+)\", ic}); var m = rt.GetMethod(\"Match\", new[]{typeof(string)}).Invoke(re, new object[]{\"USER@Example rest\"}); var groups = m.GetType().GetProperty(\"Groups\").GetValue(m); var gt = groups.GetType(); var g1 = gt.GetProperty(\"Item\", new[]{typeof(int)}).GetValue(groups, new object[]{1}); var g2 = gt.GetProperty(\"Item\", new[]{typeof(int)}).GetValue(groups, new object[]{2}); Console.WriteLine((string)g1.GetType().GetProperty(\"Value\").GetValue(g1)); Console.WriteLine((string)g2.GetType().GetProperty(\"Value\").GetValue(g2)); var rep = rt.GetMethod(\"Replace\", new[]{typeof(string), typeof(string)}).Invoke(re, new object[]{\"a@b c@d\", \"X\"}); Console.WriteLine((string)rep);",
+      "code": "using System; using System.Text.RegularExpressions; var re = new Regex(@\"(\\w+)@(\\w+)\", RegexOptions.IgnoreCase); var m = re.Match(\"USER@Example rest\"); Console.WriteLine(m.Groups[1].Value); Console.WriteLine(m.Groups[2].Value); Console.WriteLine(re.Replace(\"a@b c@d\", \"X\"));",
       "expectedOutput": "USER\nExample\nX X",
       "verify": "execute",
       "sourceRefs": ["ms-regex"]

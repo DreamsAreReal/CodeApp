@@ -7,12 +7,12 @@
  *
  * SIGNATURE machine panel (s5): the same pattern behaves identically whether interpreted or
  * RegexOptions.Compiled — Compiled changes the HOW (IL vs opcodes), not the match result. REAL
- * run-csharp measurement (this file's exec cards, run via reflection into System.Text.
- * RegularExpressions because the sandbox does not reference that assembly at compile time —
- * behavior is genuine runtime Regex): c1 "True\n555-1234" (IsMatch + Match.Value) · c2 "3\nthree"
- * (RegexOptions.Compiled: Matches.Count + [2].Value) · c3 "USER\nExample\nX X" (IgnoreCase groups
- * + Replace). NOTE: [GeneratedRegex] source generators do NOT run in the CSharpScript sandbox —
- * they are taught CONCEPTUALLY from the docs; the runtime behavior is proven with Compiled/new Regex.
+ * run-csharp measurement (this file's exec cards, natural `new Regex(...)` / RegexOptions.Compiled
+ * code that RUNS directly in the sandbox — System.Text.RegularExpressions is referenced + imported):
+ * c1 "True\n555-1234" (IsMatch + Match.Value) · c2 "3\nthree" (RegexOptions.Compiled: Matches.Count
+ * + [2].Value) · c3 "USER\nExample\nX X" (IgnoreCase groups + Replace). NOTE: [GeneratedRegex] source
+ * generators do NOT run in the CSharpScript sandbox (they are a compile-time source generator) — they
+ * are taught CONCEPTUALLY from the docs; the runtime behavior is proven with Compiled/new Regex.
  *
  * Accuracy contract (G4/G7/G8) — verified against learn.microsoft.com/.../standard/base-types/
  * regular-expressions and .../regular-expression-source-generators (dotnet/docs, substring-checked
