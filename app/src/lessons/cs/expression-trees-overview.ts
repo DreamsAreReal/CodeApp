@@ -27,8 +27,10 @@ import type { Zone } from "../../engine/index.ts";
 import type { LessonData } from "../types.ts";
 
 // s1: what an expression tree is — a tree-like data structure of nodes.
-const Z_CODE: Zone = { id: "code", x: 14, y: 34, w: 150, h: 168, cls: "vz-zone good", label: "КОД", labelCls: "vz-zlabel good sm", lx: 89, ly: 24, sub: "num => num < 5", subCls: "vz-zsub good", subY: 47 };
-const Z_TREE1: Zone = { id: "tree1", x: 176, y: 34, w: 150, h: 168, cls: "vz-zone", label: "ДЕРЕВО-ДАННЫЕ", labelCls: "vz-zlabel sm", lx: 251, ly: 24, sub: "узлы = выражения", subCls: "vz-zsub", subY: 47 };
+// tree1 stacks 3 rows (Lambda -> LessThan -> Parameter/Constant), so it needs a TALL zone
+// (h=234 -> inner 218u) for the three obj/chip rows to fit with PAD>=8; code zone matches height.
+const Z_CODE: Zone = { id: "code", x: 14, y: 34, w: 150, h: 234, cls: "vz-zone good", label: "КОД", labelCls: "vz-zlabel good sm", lx: 89, ly: 24, sub: "num => num < 5", subCls: "vz-zsub good", subY: 47 };
+const Z_TREE1: Zone = { id: "tree1", x: 176, y: 34, w: 150, h: 234, cls: "vz-zone", label: "ДЕРЕВО-ДАННЫЕ", labelCls: "vz-zlabel sm", lx: 251, ly: 24, sub: "узлы = выражения", subCls: "vz-zsub", subY: 47 };
 const CODE_ZONES: Zone[] = [Z_CODE, Z_TREE1];
 
 // s2: Func vs Expression<Func> — the type at assignment decides code vs data.
@@ -90,7 +92,7 @@ export const expressionTreesOverview: LessonData = {
   segments: [
     {
       id: "s1", num: "01", kicker: "Что это", title: "Дерево выражения = код в древовидной структуре данных",
-      viewBox: "0 0 340 210", zones: CODE_ZONES,
+      viewBox: "0 0 340 276", zones: CODE_ZONES,
       code: ["// один и тот же исходник num => num < 5", "// как ДЕРЕВО: каждый узел — выражение", "//   Lambda → LessThan → (num: Parameter, 5: Constant)"],
       scenes: [
         { codeLine: 0, out: "", caption: 'Слева — привычный код <code>num =&gt; num &lt; 5</code>. Справа то же самое компилятор способен представить как <span class="hl">структуру-данные</span>.', nodes: [{ id: "c", kind: "obj", at: { zone: "code", row: 0 }, typeTag: "лямбда", value: "num < 5", accent: true }], edges: [] },
