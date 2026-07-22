@@ -550,7 +550,7 @@ function normOutput(s: string): string {
 
 /** Objective correctness of a typed answer against the card's real expected output. */
 function typedCorrect(card: Card, typed: string): boolean {
-  return normOutput(typed) === normOutput(card.verify.expect);
+  return normOutput(typed) === normOutput(card.verify?.expect ?? "");
 }
 
 const OK_ICON =
@@ -677,7 +677,7 @@ function buildTyped(
     (window as unknown as { __lastAnswer?: unknown }).__lastAnswer = {
       itemId: `${lesson.id}/${card.id}`,
       typed: input.value,
-      expected: card.verify.expect,
+      expected: card.verify?.expect ?? "",
       correct: ok,
       confidence: conf,
     };
@@ -774,7 +774,7 @@ function buildOptions(
  * "yours vs expected" comparison so the user sees exactly where they diverged.
  */
 function typedReveal(card: Card, typed: string, ok: boolean): string {
-  const expected = `<div class="tv-row expected"><span class="tv-k">${esc(S.typedExpected)}</span><pre class="tv-v">${esc(normOutput(card.verify.expect))}</pre></div>`;
+  const expected = `<div class="tv-row expected"><span class="tv-k">${esc(S.typedExpected)}</span><pre class="tv-v">${esc(normOutput(card.verify?.expect ?? ""))}</pre></div>`;
   if (ok) return expected;
   const yours = `<div class="tv-row yours"><span class="tv-k">${esc(S.typedYours)}</span><pre class="tv-v">${esc(normOutput(typed))}</pre></div>`;
   return `<div class="tv-hint">${esc(S.typedRevealHint)}</div>${yours}${expected}`;

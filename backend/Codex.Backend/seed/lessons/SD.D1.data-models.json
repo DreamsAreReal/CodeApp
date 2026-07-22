@@ -1,0 +1,42 @@
+{
+  "id": "SD.D1.data-models",
+  "track": "SD",
+  "section": "SD.D1",
+  "module": "D1.2",
+  "title": "Модели данных: реляционная, документная, графовая",
+  "status": "self-pass",
+  "order": 199,
+  "sources": [
+    { "id": "ddia-ch2", "kind": "book", "url": "", "date": "2017" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "explain",
+      "engagementLevel": "responding",
+      "prompt": "Профиль пользователя с его должностями и образованием (связь «один-ко-многим») сохраняют как JSON-документ. Почему это естественно ложится на документную модель?",
+      "sourceRefs": ["ddia-ch2"]
+    },
+    {
+      "id": "c2",
+      "type": "compare",
+      "engagementLevel": "responding",
+      "prompt": "В данных много связей «многие-к-одному» и «многие-ко-многим» (общие справочники, ссылки на сущности). Что о документной и реляционной модели верно?",
+      "sourceRefs": ["ddia-ch2"]
+    },
+    {
+      "id": "c3",
+      "type": "explain",
+      "engagementLevel": "responding",
+      "prompt": "Чем «схема при чтении» (schema-on-read) документной БД отличается от «схемы при записи» (schema-on-write) реляционной?",
+      "sourceRefs": ["ddia-ch2"]
+    },
+    {
+      "id": "c4",
+      "type": "compare",
+      "engagementLevel": "responding",
+      "prompt": "Когда книга считает моделирование данных в виде графа наиболее естественным?",
+      "sourceRefs": ["ddia-ch2"]
+    }
+  ]
+}

@@ -99,7 +99,12 @@ export interface Card {
   /** HTML feedback. */
   okText: string;
   noText: string;
-  verify: { kind: "exec"; run: string; expect: string };
+  /**
+   * Code cards carry an exec verification (the real stdout, authoring-time ground truth).
+   * OPTIONAL: concept cards (book/tool tracks with `lang:"none"`) have no code to run —
+   * they are pure MCQ graded client-side by `correctIndex`, so they omit `verify`.
+   */
+  verify?: { kind: "exec"; run: string; expect: string };
   sourceRefs: string[];
 }
 
