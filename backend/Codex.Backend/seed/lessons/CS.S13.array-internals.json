@@ -1,0 +1,44 @@
+{
+  "id": "CS.S13.array-internals",
+  "track": "CS",
+  "section": "CS.S13",
+  "module": "S13.7",
+  "title": "Внутренности массива: ковариантность, тип-объект, границы",
+  "status": "published",
+  "order": 113,
+  "sources": [
+    { "id": "clr-ch16", "kind": "book", "url": "", "date": "2013" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Array covariance lets an object[] variable point at a string[], but the CLR type-checks every store at run time. Writing an int (42) into an array whose real element type is string is rejected, so the catch fires and it prints ArrayTypeMismatchException",
+      "code": "using System; object[] a = new string[1]; try { a[0] = 42; Console.WriteLine(\"no throw\"); } catch (ArrayTypeMismatchException) { Console.WriteLine(\"ArrayTypeMismatchException\"); }",
+      "expectedOutput": "ArrayTypeMismatchException",
+      "verify": "execute",
+      "sourceRefs": ["clr-ch16"]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "An array has its own type object distinct from the element type: the CLR auto-manufactures a distinct array type per element type, so new int[3].GetType() prints System.Int32[] (not Int32 or System.Array)",
+      "code": "using System; Console.WriteLine(new int[3].GetType());",
+      "expectedOutput": "System.Int32[]",
+      "verify": "execute",
+      "sourceRefs": ["clr-ch16"]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "The CLR bounds-checks every index. An array of length 3 has valid indices 0..2; index 3 is out of range, so the catch fires and it prints IndexOutOfRangeException",
+      "code": "using System; var a = new int[3]; try { Console.WriteLine(a[3]); } catch (IndexOutOfRangeException) { Console.WriteLine(\"IndexOutOfRangeException\"); }",
+      "expectedOutput": "IndexOutOfRangeException",
+      "verify": "execute",
+      "sourceRefs": ["clr-ch16"]
+    }
+  ]
+}
