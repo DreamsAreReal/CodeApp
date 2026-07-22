@@ -1,0 +1,45 @@
+{
+  "id": "CS.S12.string-interning",
+  "track": "CS",
+  "section": "CS.S12",
+  "module": "S12.2",
+  "title": "Интернирование: пул из одной ссылки на значение",
+  "status": "published",
+  "order": 102,
+  "sources": [
+    { "id": "ms-intern", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/api/system.string.intern", "date": "2025-07-01" },
+    { "id": "ms-isinterned", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/api/system.string.isinterned", "date": "2025-07-01" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "The intern pool holds one reference per unique value: two equal literals share a reference (True), a runtime-built copy is a distinct object (False), and String.Intern returns the pooled reference so it equals the literal (True), printing True False True",
+      "code": "using System; string a = \"hello world\"; string b = \"hello world\"; string c = new string(\"hello world\".ToCharArray()); Console.WriteLine(object.ReferenceEquals(a, b)); Console.WriteLine(object.ReferenceEquals(a, c)); Console.WriteLine(object.ReferenceEquals(a, string.Intern(c)));",
+      "expectedOutput": "True\nFalse\nTrue",
+      "verify": "execute",
+      "sourceRefs": ["ms-intern", "ms-isinterned"]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "String.IsInterned only probes the pool: a literal is found so IsInterned is non-null (True), a value built at runtime is not in the pool so IsInterned is null (True), and built is 1000-runtime, printing True True 1000-runtime",
+      "code": "using System; string lit = \"interned-yes\"; string built = 1000 + \"-runtime\"; Console.WriteLine(string.IsInterned(lit) != null); Console.WriteLine(string.IsInterned(built) == null); Console.WriteLine(built);",
+      "expectedOutput": "True\nTrue\n1000-runtime",
+      "verify": "execute",
+      "sourceRefs": ["ms-isinterned"]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "A runtime-built string with an equal value is a different object (False), but String.Intern returns the pooled reference equal to the literal (True), printing False True",
+      "code": "using System; string x = \"abc123\"; string y = new string(new[]{'a','b','c','1','2','3'}); Console.WriteLine(object.ReferenceEquals(x, y)); string z = string.Intern(y); Console.WriteLine(object.ReferenceEquals(x, z));",
+      "expectedOutput": "False\nTrue",
+      "verify": "execute",
+      "sourceRefs": ["ms-intern"]
+    }
+  ]
+}

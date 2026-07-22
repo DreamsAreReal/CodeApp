@@ -963,6 +963,10 @@ const CS_S12: Section = {
       { id: "CS.S12.string-immutability", track: "CS", section: "CS.S12", title: "String иммутабельна: «изменение» аллоцирует новый объект", kicker: "C# вглубь · S12 · read-only value", icon: "types", subtitle: "value read-only, метод возвращает новый объект, цена += в цикле", estMinutes: 9, cards: 3 },
       () => import("./cs/string-immutability.ts").then((m) => m.stringImmutability),
     ),
+    entry(
+      { id: "CS.S12.string-interning", track: "CS", section: "CS.S12", title: "Интернирование: пул из одной ссылки на значение", kicker: "C# вглубь · S12 · intern pool", icon: "types", subtitle: "intern pool, литералы = один ref, String.Intern/IsInterned, ReferenceEquals", estMinutes: 10, cards: 3 },
+      () => import("./cs/string-interning.ts").then((m) => m.stringInterning),
+    ),
   ],
 };
 
