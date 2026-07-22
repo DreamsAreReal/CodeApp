@@ -1024,6 +1024,18 @@ const CS_S13: Section = {
       { id: "CS.S13.type-loading-dispatch", track: "CS", section: "CS.S13", title: "Загрузка типа и диспетчеризация: объект-тип, таблица методов", kicker: "CLR внутри · S13 · загрузка и вызов", icon: "types", subtitle: "CLR строит объект-тип при JIT; static/non-virt/virt через таблицу методов", estMinutes: 10, cards: 3 },
       () => import("./cs/type-loading-dispatch.ts").then((m) => m.typeLoadingDispatch),
     ),
+    entry(
+      { id: "CS.S13.interface-dispatch", track: "CS", section: "CS.S13", title: "Диспетчеризация интерфейсного вызова: виртуальность, таблица методов, EIMI", kicker: "CLR внутри · S13 · вызов через интерфейс", icon: "types", subtitle: "Интерфейсные методы виртуальны; вызов через переменную интерфейса; явная реализация скрывает член", estMinutes: 10, cards: 3 },
+      () => import("./cs/interface-dispatch.ts").then((m) => m.interfaceDispatch),
+    ),
+    entry(
+      { id: "CS.S13.array-internals", track: "CS", section: "CS.S13", title: "Внутренности массива: ковариантность, тип-объект, границы", kicker: "CLR внутри · S13 · массив в CLR", icon: "types", subtitle: "Ковариантность массивов и её проверка; тип-объект массива; проверка границ", estMinutes: 10, cards: 3 },
+      () => import("./cs/array-internals.ts").then((m) => m.arrayInternals),
+    ),
+    entry(
+      { id: "CS.S13.const-vs-readonly", track: "CS", section: "CS.S13", title: "const и readonly: литерал в IL против чтения поля в рантайме", kicker: "CLR внутри · S13 · вшитый литерал", icon: "types", subtitle: "const вшивается в IL вызывающего (ldc); readonly читается в рантайме (ldsfld)", estMinutes: 10, cards: 3 },
+      () => import("./cs/const-vs-readonly.ts").then((m) => m.constVsReadonly),
+    ),
   ],
 };
 

@@ -1,0 +1,44 @@
+{
+  "id": "CS.S13.interface-dispatch",
+  "track": "CS",
+  "section": "CS.S13",
+  "module": "S13.6",
+  "title": "Диспетчеризация интерфейсного вызова: виртуальность, таблица методов, EIMI",
+  "status": "published",
+  "order": 112,
+  "sources": [
+    { "id": "clr-ch13", "kind": "book", "url": "", "date": "2013" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Both Name() methods are explicit interface implementations (EIMI) and thus private, reachable only via a cast to their own interface: (IArtist)p dispatches to IArtist.Name (\"artist\"), (IChef)p to IChef.Name (\"chef\"). A plain p.Name() would not even compile. So it prints artist chef",
+      "code": "using System; interface IArtist { string Name(); } interface IChef { string Name(); } class Person : IArtist, IChef { string IArtist.Name() => \"artist\"; string IChef.Name() => \"chef\"; } var p = new Person(); Console.WriteLine($\"{((IArtist)p).Name()} {((IChef)p).Name()}\");",
+      "expectedOutput": "artist chef",
+      "verify": "execute",
+      "sourceRefs": ["clr-ch13"]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "A public member and an EIMI are two distinct method-table slots. st.Dispose() calls the public version; ((IDisposable)st).Dispose() calls the private explicit implementation. The compiler marks the EIMI private, so it prints public Dispose IDisposable Dispose",
+      "code": "using System; class SimpleType : IDisposable { public void Dispose() => Console.Write(\"public Dispose \"); void IDisposable.Dispose() => Console.Write(\"IDisposable Dispose\"); } var st = new SimpleType(); st.Dispose(); ((IDisposable)st).Dispose();",
+      "expectedOutput": "public Dispose IDisposable Dispose",
+      "verify": "execute",
+      "sourceRefs": ["clr-ch13"]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "Interface calls are virtual: x.Area() dispatches to the implementation bound to each object's own type. Sq.Area()=4, Ci.Area()=3, so the sum is 7 — polymorphism through the interface, not the variable type",
+      "code": "using System; using System.Collections.Generic; interface IShape { double Area(); } class Sq : IShape { public double Area() => 4; } class Ci : IShape { public double Area() => 3; } var shapes = new List<IShape>{ new Sq(), new Ci() }; double s = 0; foreach (var x in shapes) s += x.Area(); Console.WriteLine(s);",
+      "expectedOutput": "7",
+      "verify": "execute",
+      "sourceRefs": ["clr-ch13"]
+    }
+  ]
+}
