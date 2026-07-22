@@ -1,0 +1,44 @@
+{
+  "id": "CS.S12.string-immutability",
+  "track": "CS",
+  "section": "CS.S12",
+  "module": "S12.1",
+  "title": "String иммутабельна: «изменение» аллоцирует новый объект",
+  "status": "published",
+  "order": 101,
+  "sources": [
+    { "id": "ms-string", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/api/system.string", "date": "2025-07-01" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "String is immutable: s += \"c\" does not mutate the object, it creates a new String and re-points s, so the alias t still holds the original \"ab\" and ReferenceEquals(s, t) is False",
+      "code": "using System; string s = \"ab\"; string t = s; s += \"c\"; Console.WriteLine(object.ReferenceEquals(s, t)); Console.WriteLine(t);",
+      "expectedOutput": "False\nab",
+      "verify": "execute",
+      "sourceRefs": ["ms-string"]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "A method that appears to modify a string returns a new String object: a.Replace(\"l\", \"L\") leaves a as \"hello\" and returns a distinct object b \"heLLo\", so ReferenceEquals(a, b) is False",
+      "code": "using System; string a = \"hello\"; string b = a.Replace(\"l\", \"L\"); Console.WriteLine(a); Console.WriteLine(b); Console.WriteLine(object.ReferenceEquals(a, b));",
+      "expectedOutput": "hello\nheLLo\nFalse",
+      "verify": "execute",
+      "sourceRefs": ["ms-string"]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "ToUpper allocates a new String each call: s stays \"cat\", u is \"CAT\", and two separate ToUpper() calls yield different objects so ReferenceEquals(s, s.ToUpper()) is False, printing cat CAT False",
+      "code": "using System; string s = \"cat\"; string u = s.ToUpper(); Console.WriteLine($\"{s} {u} {object.ReferenceEquals(s, s.ToUpper())}\");",
+      "expectedOutput": "cat CAT False",
+      "verify": "execute",
+      "sourceRefs": ["ms-string"]
+    }
+  ]
+}

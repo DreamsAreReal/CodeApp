@@ -949,12 +949,29 @@ const CS_S11: Section = {
   ],
 };
 
+// Section S12 «Строки и интернирование» (RS-03 §2 · 6 lessons). Prereq CS.S1 (+ reference CS.S7
+// memory for the allocation angle). This is the STRING angle on allocation/identity — immutability,
+// the intern pool, StringBuilder, ordinal-vs-culture comparison, UTF-16/char/Rune, and Regex — NOT a
+// rehash of CS.S7 (memory/GC). Read CS.S1 first; the += allocation cost references S7's gen0 story.
+const CS_S12: Section = {
+  id: "CS.S12",
+  title: "Строки и интернирование",
+  order: 12,
+  prereqs: ["CS.S1"],
+  lessons: [
+    entry(
+      { id: "CS.S12.string-immutability", track: "CS", section: "CS.S12", title: "String иммутабельна: «изменение» аллоцирует новый объект", kicker: "C# вглубь · S12 · read-only value", icon: "types", subtitle: "value read-only, метод возвращает новый объект, цена += в цикле", estMinutes: 9, cards: 3 },
+      () => import("./cs/string-immutability.ts").then((m) => m.stringImmutability),
+    ),
+  ],
+};
+
 const CS_TRACK: Track = {
   id: "CS",
   title: S.trackCsDeepLabel,
   sub: S.trackCsDeepSub,
   badge: S.trackNewBadge,
-  sections: [CS_S1, CS_S2, CS_S3, CS_S5, CS_S7, CS_S8, CS_S9, CS_S10, CS_S11, CS_S17, CS_S18, CS_S4, CS_S6],
+  sections: [CS_S1, CS_S2, CS_S3, CS_S5, CS_S7, CS_S8, CS_S9, CS_S10, CS_S11, CS_S12, CS_S17, CS_S18, CS_S4, CS_S6],
 };
 
 // The legacy flat C# track and its 6 old lessons were removed in the F2 migration (their
