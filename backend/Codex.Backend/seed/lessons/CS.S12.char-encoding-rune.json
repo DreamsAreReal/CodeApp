@@ -1,0 +1,44 @@
+{
+  "id": "CS.S12.char-encoding-rune",
+  "track": "CS",
+  "section": "CS.S12",
+  "module": "S12.5",
+  "title": "char, Rune и UTF-16: code unit против code point",
+  "status": "published",
+  "order": 105,
+  "sources": [
+    { "id": "ms-enc", "kind": "microsoft-learn", "url": "https://learn.microsoft.com/en-us/dotnet/standard/base-types/character-encoding-introduction", "date": "2024-10-22" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "A char is a 16-bit UTF-16 code unit: the ox emoji U+1F402 is a supplementary code point that needs two char instances so string.Length is 2, but it is a single Unicode scalar value so EnumerateRunes counts 1, printing 2 then 1",
+      "code": "using System; using System.Linq; using System.Text; string s = \"\\U0001F402\"; Console.WriteLine(s.Length); Console.WriteLine(s.EnumerateRunes().Count());",
+      "expectedOutput": "2\n1",
+      "verify": "execute",
+      "sourceRefs": ["ms-enc"]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "string.Length counts UTF-16 code units, not characters: \"a\" + ox emoji (two chars) + \"b\" is 4 chars but 3 Unicode scalar values (a, emoji, b), so Length is 4 and EnumerateRunes is 3, printing 4 then 3",
+      "code": "using System; using System.Linq; using System.Text; string s = \"a\\U0001F402b\"; Console.WriteLine(s.Length); Console.WriteLine(s.EnumerateRunes().Count());",
+      "expectedOutput": "4\n3",
+      "verify": "execute",
+      "sourceRefs": ["ms-enc"]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "The two chars of the ox emoji are a surrogate pair: s[0] is a high surrogate (True), s[1] is a low surrogate (True), and char.ConvertToUtf32 reassembles them into the supplementary code point U+1F402 = 128002, printing True True 128002",
+      "code": "using System; string s = \"\\U0001F402\"; Console.WriteLine(char.IsHighSurrogate(s[0])); Console.WriteLine(char.IsLowSurrogate(s[1])); Console.WriteLine(char.ConvertToUtf32(s[0], s[1]));",
+      "expectedOutput": "True\nTrue\n128002",
+      "verify": "execute",
+      "sourceRefs": ["ms-enc"]
+    }
+  ]
+}

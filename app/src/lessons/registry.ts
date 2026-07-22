@@ -975,6 +975,10 @@ const CS_S12: Section = {
       { id: "CS.S12.string-comparison", track: "CS", section: "CS.S12", title: "Сравнение строк: ordinal vs culture и StringComparison", kicker: "C# вглубь · S12 · как сравнивать", icon: "types", subtitle: "ordinal = code point, culture = word sort, Turkish-I, всегда StringComparison", estMinutes: 10, cards: 3 },
       () => import("./cs/string-comparison.ts").then((m) => m.stringComparison),
     ),
+    entry(
+      { id: "CS.S12.char-encoding-rune", track: "CS", section: "CS.S12", title: "char, Rune и UTF-16: code unit против code point", kicker: "C# вглубь · S12 · UTF-16 внутри", icon: "types", subtitle: "char = 16-bit code unit, суррогатные пары, Rune = scalar value, Length врёт", estMinutes: 10, cards: 3 },
+      () => import("./cs/char-encoding-rune.ts").then((m) => m.charEncodingRune),
+    ),
   ],
 };
 
