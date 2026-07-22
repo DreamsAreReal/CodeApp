@@ -94,6 +94,7 @@ const EXPECT = [
   { id: "CS.S8.interlocked", segs: 5, ev: "CS-INTERLOCKED" },
   { id: "CS.S8.tpl-parallel", segs: 5, ev: "CS-TPLPAR" },
   { id: "CS.S8.thread-async-local", segs: 5, ev: "CS-THASYNCLOCAL" },
+  { id: "SD.D1.storage-engines", segs: 5, ev: "SD-STORAGE" },
   { id: "PY.M1.names-objects", segs: 8, ev: "PY-NAMES" },
   { id: "PY.M2.collections-hash", segs: 5, ev: "PY-COLL" },
   { id: "PY.M3.args-unpacking", segs: 4, ev: "PY-ARGS" },

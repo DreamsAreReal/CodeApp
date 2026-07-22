@@ -1,0 +1,42 @@
+{
+  "id": "SD.D1.storage-engines",
+  "track": "SD",
+  "section": "SD.D1",
+  "module": "D1.1",
+  "title": "Подсистемы хранения: LSM-деревья против B-деревьев",
+  "status": "self-pass",
+  "order": 200,
+  "sources": [
+    { "id": "ddia-ch3", "kind": "book", "url": "", "date": "2017" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "explain",
+      "engagementLevel": "responding",
+      "prompt": "Журнал с хеш-индексом отлично пишет. Какое его ограничение мотивирует переход к отсортированным сегментам (SSTable)?",
+      "sourceRefs": ["ddia-ch3"]
+    },
+    {
+      "id": "c2",
+      "type": "explain",
+      "engagementLevel": "responding",
+      "prompt": "В LSM-дереве при уплотнении (compaction) один и тот же ключ встретился в двух сегментах с разными значениями. Что делает процесс слияния?",
+      "sourceRefs": ["ddia-ch3"]
+    },
+    {
+      "id": "c3",
+      "type": "explain",
+      "engagementLevel": "responding",
+      "prompt": "B-дерево обновляет данные на месте, перезаписывая страницы. Зачем реализации ведут журнал упреждающей записи (WAL / redo log)?",
+      "sourceRefs": ["ddia-ch3"]
+    },
+    {
+      "id": "c4",
+      "type": "compare",
+      "engagementLevel": "responding",
+      "prompt": "Главный компромисс LSM-дерева против B-дерева по производительности — какое утверждение верно?",
+      "sourceRefs": ["ddia-ch3"]
+    }
+  ]
+}
