@@ -1,0 +1,44 @@
+{
+  "id": "CS.S13.const-vs-readonly",
+  "track": "CS",
+  "section": "CS.S13",
+  "module": "S13.8",
+  "title": "const и readonly: литерал в IL против чтения поля в рантайме",
+  "status": "published",
+  "order": 114,
+  "sources": [
+    { "id": "clr-ch7", "kind": "book", "url": "", "date": "2013" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "A const is a compile-time literal baked into the caller's IL. M() => Max compiles to ldc.i4.s (0x1F=31) with the literal 100, then ret (0x2A=42). Expression-bodied gives clean IL with no nop, so GetILAsByteArray prints 31 100 42",
+      "code": "using System; using System.Reflection; class X { const int Max = 100; public static int M() => Max; } var il = typeof(X).GetMethod(\"M\").GetMethodBody().GetILAsByteArray(); Console.WriteLine(string.Join(\" \", il));",
+      "expectedOutput": "31 100 42",
+      "verify": "execute",
+      "sourceRefs": ["clr-ch7"]
+    },
+    {
+      "id": "c2",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "A readonly field is read at run time, so the method's first IL opcode is ldsfld (load static field), whose byte is 0x7E=126 — not a ldc literal (31). So il[0] prints 126",
+      "code": "using System; using System.Reflection; class Y { static readonly int Max = 100; public static int M() => Max; } var il = typeof(Y).GetMethod(\"M\").GetMethodBody().GetILAsByteArray(); Console.WriteLine(il[0]);",
+      "expectedOutput": "126",
+      "verify": "execute",
+      "sourceRefs": ["clr-ch7"]
+    },
+    {
+      "id": "c3",
+      "type": "predict-output",
+      "engagementLevel": "responding",
+      "prompt": "A const literal is baked in even when it is a full int. Max=1000 exceeds the short ldc.i4.s range, so it uses ldc.i4 (0x20=32) with the 4-byte little-endian literal 1000 (232 + 3*256), then ret (42), printing 32 232 3 0 0 42",
+      "code": "using System; using System.Reflection; class Z { const int Max = 1000; public static int M() => Max; } var il = typeof(Z).GetMethod(\"M\").GetMethodBody().GetILAsByteArray(); Console.WriteLine(string.Join(\" \", il));",
+      "expectedOutput": "32 232 3 0 0 42",
+      "verify": "execute",
+      "sourceRefs": ["clr-ch7"]
+    }
+  ]
+}
