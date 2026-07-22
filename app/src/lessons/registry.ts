@@ -979,6 +979,10 @@ const CS_S12: Section = {
       { id: "CS.S12.char-encoding-rune", track: "CS", section: "CS.S12", title: "char, Rune и UTF-16: code unit против code point", kicker: "C# вглубь · S12 · UTF-16 внутри", icon: "types", subtitle: "char = 16-bit code unit, суррогатные пары, Rune = scalar value, Length врёт", estMinutes: 10, cards: 3 },
       () => import("./cs/char-encoding-rune.ts").then((m) => m.charEncodingRune),
     ),
+    entry(
+      { id: "CS.S12.regex", track: "CS", section: "CS.S12", title: "Regex: движок, RegexOptions.Compiled и GeneratedRegex", kicker: "C# вглубь · S12 · движок и три engine", icon: "types", subtitle: "Regex engine, IsMatch/Match/Matches, interpreter vs Compiled vs source-gen", estMinutes: 11, cards: 3 },
+      () => import("./cs/regex.ts").then((m) => m.regex),
+    ),
   ],
 };
 

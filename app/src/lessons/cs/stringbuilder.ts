@@ -170,7 +170,7 @@ export const stringbuilder: LessonData = {
       id: "c3", type: "predict-output", engagementLevel: "responding",
       question: '<code>var sb = new StringBuilder("hello"); sb.Append(" world"); sb.Replace("l", "L"); sb.Insert(0, "&gt;&gt; ");</code><br/><code>Console.WriteLine(sb.ToString()); Console.WriteLine(sb.Length);</code> — обе строки?',
       options: [">> heLLo worLd\\n14", "hello world\\n11", ">> heLLo world\\n14", ">> hello world\\n14"], correctIndex: 0, xp: 10,
-      okText: 'Всё <b>в одном</b> объекте: Append → «hello world», Replace l→L → «heLLo worLd», Insert в начало → «>> heLLo worLd» (14 символов). «appending, removing, replacing, or inserting characters».',
+      okText: 'Всё <b>в одном</b> объекте: Append → <code>hello world</code>, Replace l→L → <code>heLLo worLd</code>, Insert в начало → <code>&gt;&gt; heLLo worLd</code> (14 символов). «appending, removing, replacing, or inserting characters».',
       noText: 'Мутации идут в место: Append/Replace/Insert правят единый буфер. Итог — <b>>> heLLo worLd</b>, Length <b>14</b> (реальный прогон).',
       verify: { kind: "exec", run: "dotnet run", expect: ">> heLLo worLd\n14" }, sourceRefs: ["ms-sb"],
     },
