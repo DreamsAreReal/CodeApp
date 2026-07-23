@@ -1089,6 +1089,10 @@ const SD_D2: Section = {
       { id: "SD.D2.replication-lag", track: "SD", section: "SD.D2", title: "Отставание репликации: чтение своих записей, монотонное и префиксное чтение", kicker: "Системный дизайн · D2 · репликация", icon: "async", subtitle: "Аномалии задержки репликации и три разные гарантии чтения; конечная согласованность", estMinutes: 11, cards: 4 },
       () => import("./sd/replication-lag.ts").then((m) => m.replicationLag),
     ),
+    entry(
+      { id: "SD.D2.replication-leaderless", track: "SD", section: "SD.D2", title: "Без ведущего узла и несколько ведущих: кворумы w+r>n и конкурентные записи", kicker: "Системный дизайн · D2 · репликация", icon: "async", subtitle: "Dynamo-стиль, кворум w+r>n, LWW и потеря записей, вектор версий, multi-leader-конфликты", estMinutes: 12, cards: 4 },
+      () => import("./sd/replication-leaderless.ts").then((m) => m.replicationLeaderless),
+    ),
   ],
 };
 

@@ -1,0 +1,42 @@
+{
+  "id": "SD.D2.replication-leaderless",
+  "track": "SD",
+  "section": "SD.D2",
+  "module": "D2.3",
+  "title": "Без ведущего узла и несколько ведущих: кворумы w+r>n и конкурентные записи",
+  "status": "self-pass",
+  "order": 204,
+  "sources": [
+    { "id": "ddia-ch5", "kind": "book", "url": "", "date": "2017" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "compare",
+      "engagementLevel": "responding",
+      "prompt": "В системе без ведущего узла с n=5 репликами нужно гарантировать, что каждое чтение вернёт последнее записанное значение (строгий кворум). Какое условие на w и r это обеспечивает?",
+      "sourceRefs": ["ddia-ch5"]
+    },
+    {
+      "id": "c2",
+      "type": "explain",
+      "engagementLevel": "responding",
+      "prompt": "Два клиента конкурентно записывают один ключ в Dynamo-подобной БД. Что по книге означает, что операции конкурентны?",
+      "sourceRefs": ["ddia-ch5"]
+    },
+    {
+      "id": "c3",
+      "type": "explain",
+      "engagementLevel": "responding",
+      "prompt": "Команда выбрала LWW («выигрывает последний») для разрешения конфликтов. Какое утверждение о LWW верно по книге?",
+      "sourceRefs": ["ddia-ch5"]
+    },
+    {
+      "id": "c4",
+      "type": "compare",
+      "engagementLevel": "responding",
+      "prompt": "Чем нестрогий кворум (sloppy quorum) отличается от строгого по гарантиям чтения?",
+      "sourceRefs": ["ddia-ch5"]
+    }
+  ]
+}
