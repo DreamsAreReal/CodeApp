@@ -1085,6 +1085,10 @@ const SD_D2: Section = {
       { id: "SD.D2.replication-leaders", track: "SD", section: "SD.D2", title: "Репликация с ведущим узлом: синхронно/асинхронно и отработка отказа", kicker: "Системный дизайн · D2 · репликация", icon: "async", subtitle: "Лидер и ведомые, синхронно vs асинхронно, полусинхронная схема, failover, split-brain", estMinutes: 10, cards: 4 },
       () => import("./sd/replication-leaders.ts").then((m) => m.replicationLeaders),
     ),
+    entry(
+      { id: "SD.D2.replication-lag", track: "SD", section: "SD.D2", title: "Отставание репликации: чтение своих записей, монотонное и префиксное чтение", kicker: "Системный дизайн · D2 · репликация", icon: "async", subtitle: "Аномалии задержки репликации и три разные гарантии чтения; конечная согласованность", estMinutes: 11, cards: 4 },
+      () => import("./sd/replication-lag.ts").then((m) => m.replicationLag),
+    ),
   ],
 };
 

@@ -1,0 +1,42 @@
+{
+  "id": "SD.D2.replication-lag",
+  "track": "SD",
+  "section": "SD.D2",
+  "module": "D2.2",
+  "title": "Отставание репликации: чтение своих записей, монотонное и префиксное чтение",
+  "status": "self-pass",
+  "order": 203,
+  "sources": [
+    { "id": "ddia-ch5", "kind": "book", "url": "", "date": "2017" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "explain",
+      "engagementLevel": "responding",
+      "prompt": "Что именно гарантирует согласованность типа «чтение после записи» (read-your-writes)?",
+      "sourceRefs": ["ddia-ch5"]
+    },
+    {
+      "id": "c2",
+      "type": "explain",
+      "engagementLevel": "responding",
+      "prompt": "Какую аномалию предотвращает монотонное чтение и что оно при этом НЕ гарантирует?",
+      "sourceRefs": ["ddia-ch5"]
+    },
+    {
+      "id": "c3",
+      "type": "explain",
+      "engagementLevel": "responding",
+      "prompt": "Почему согласованное префиксное чтение особенно трудно обеспечить в секционированных (шардированных) базах?",
+      "sourceRefs": ["ddia-ch5"]
+    },
+    {
+      "id": "c4",
+      "type": "explain",
+      "engagementLevel": "responding",
+      "prompt": "Как книга рекомендует реализовать монотонное чтение?",
+      "sourceRefs": ["ddia-ch5"]
+    }
+  ]
+}
