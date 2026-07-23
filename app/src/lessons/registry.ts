@@ -1072,12 +1072,28 @@ const SD_D1: Section = {
   ],
 };
 
+// SD.D2 «Распределённые данные» — DDIA ch. 5 (replication) + ch. 6 (partitioning). Concept
+// lessons (lang:"none", MCQ-by-correctIndex). Navigation order follows the DDIA reading order:
+// leader-based → replication lag → leaderless, then partitioning schemes → secondary indexes.
+const SD_D2: Section = {
+  id: "SD.D2",
+  title: "Распределённые данные",
+  order: 202,
+  prereqs: ["SD.D1"],
+  lessons: [
+    entry(
+      { id: "SD.D2.replication-leaders", track: "SD", section: "SD.D2", title: "Репликация с ведущим узлом: синхронно/асинхронно и отработка отказа", kicker: "Системный дизайн · D2 · репликация", icon: "async", subtitle: "Лидер и ведомые, синхронно vs асинхронно, полусинхронная схема, failover, split-brain", estMinutes: 10, cards: 4 },
+      () => import("./sd/replication-leaders.ts").then((m) => m.replicationLeaders),
+    ),
+  ],
+};
+
 const SD_TRACK: Track = {
   id: "SD",
   title: "Системный дизайн",
   sub: "Высоконагруженные приложения (DDIA)",
   badge: S.trackNewBadge,
-  sections: [SD_D1],
+  sections: [SD_D1, SD_D2],
 };
 
 // The legacy flat C# track and its 6 old lessons were removed in the F2 migration (their
