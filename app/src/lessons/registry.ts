@@ -1159,6 +1159,10 @@ const SD_D4: Section = {
       { id: "SD.D4.stream-event-logs", track: "SD", section: "SD.D4", title: "Потоки событий: брокеры vs журналы, CDC, источники событий", kicker: "Системный дизайн · D4 · потоковая", icon: "async", subtitle: "Событие как неизменяемый факт, брокер с подтверждениями (сообщение удаляется) против секционированного журнала (Kafka: чтение по смещению, сообщение остаётся), перехват изменений (CDC), источники событий (event sourcing) и неизменяемость", estMinutes: 12, cards: 4 },
       () => import("./sd/stream-event-logs.ts").then((m) => m.streamEventLogs),
     ),
+    entry(
+      { id: "SD.D4.stream-processing-time", track: "SD", section: "SD.D4", title: "Обработка потоков: время события vs обработки, окна, соединения, exactly-once", kicker: "Системный дизайн · D4 · потоковая", icon: "async", subtitle: "CEP и аналитика, время наступления события против времени обработки (ложный всплеск), четыре типа окон (падающее/прыгающее/скользящее/сессия), три соединения потоков (stream-stream/stream-table/table-table) и отказоустойчивость (микропакеты, контрольные точки, идемпотентность, exactly-once)", estMinutes: 12, cards: 4 },
+      () => import("./sd/stream-processing-time.ts").then((m) => m.streamProcessingTime),
+    ),
   ],
 };
 

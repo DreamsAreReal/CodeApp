@@ -1,0 +1,42 @@
+{
+  "id": "SD.D4.stream-processing-time",
+  "track": "SD",
+  "section": "SD.D4",
+  "module": "D4.4",
+  "title": "Обработка потоков: время события vs обработки, окна, соединения, exactly-once",
+  "status": "self-pass",
+  "order": 215,
+  "sources": [
+    { "id": "ddia-ch11", "kind": "book", "url": "", "date": "2017" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "compare",
+      "engagementLevel": "responding",
+      "prompt": "Чем принципиально отличается потоковая обработка от пакетной по DDIA?",
+      "sourceRefs": ["ddia-ch11"]
+    },
+    {
+      "id": "c2",
+      "type": "explain",
+      "engagementLevel": "responding",
+      "prompt": "Почему измерять частоту событий по времени обработки, а не по времени наступления события, даёт искажение?",
+      "sourceRefs": ["ddia-ch11"]
+    },
+    {
+      "id": "c3",
+      "type": "compare",
+      "engagementLevel": "responding",
+      "prompt": "Чем падающее (tumbling) окно отличается от прыгающего (hopping) в классификации DDIA?",
+      "sourceRefs": ["ddia-ch11"]
+    },
+    {
+      "id": "c4",
+      "type": "explain",
+      "engagementLevel": "responding",
+      "prompt": "Как в потоковой обработке достигается семантика exactly-once (эффект ровно один раз) по DDIA?",
+      "sourceRefs": ["ddia-ch11"]
+    }
+  ]
+}
