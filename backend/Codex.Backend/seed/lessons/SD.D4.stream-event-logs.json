@@ -1,0 +1,42 @@
+{
+  "id": "SD.D4.stream-event-logs",
+  "track": "SD",
+  "section": "SD.D4",
+  "module": "D4.3",
+  "title": "Потоки событий: брокеры vs журналы, CDC, источники событий",
+  "status": "self-pass",
+  "order": 214,
+  "sources": [
+    { "id": "ddia-ch11", "kind": "book", "url": "", "date": "2017" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "compare",
+      "engagementLevel": "responding",
+      "prompt": "Чем журнальный брокер (Kafka) отличается от традиционного брокера AMQP/JMS в части того, что происходит с сообщением после его обработки потребителем?",
+      "sourceRefs": ["ddia-ch11"]
+    },
+    {
+      "id": "c2",
+      "type": "compare",
+      "engagementLevel": "responding",
+      "prompt": "Как соотносятся CDC (перехват изменений) и event sourcing по уровню абстракции и возможности уплотнения журнала?",
+      "sourceRefs": ["ddia-ch11"]
+    },
+    {
+      "id": "c3",
+      "type": "explain",
+      "engagementLevel": "responding",
+      "prompt": "В журнальном брокере (Kafka) с распределением нагрузки по разделам чем ограничено число потребительских узлов, обрабатывающих одну тему, и какой у этого побочный эффект?",
+      "sourceRefs": ["ddia-ch11"]
+    },
+    {
+      "id": "c4",
+      "type": "explain",
+      "engagementLevel": "responding",
+      "prompt": "В философии источников событий чем различаются команда и событие, и может ли потребитель потока отклонить пришедшее событие?",
+      "sourceRefs": ["ddia-ch11"]
+    }
+  ]
+}

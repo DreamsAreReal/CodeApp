@@ -1137,12 +1137,45 @@ const SD_D3: Section = {
   ],
 };
 
+// SD.D4 «Пакетная и потоковая обработка» — DDIA ch. 10 (batch) + ch. 11 (stream) + ch. 12
+// (the future of data systems). Concept lessons (lang:"none", MCQ-by-correctIndex). This
+// section CLOSES the DDIA book. Navigation follows the reading order: batch (Unix/MapReduce
+// → beyond MapReduce) → streams (event logs → stream processing) → the future of data systems.
+const SD_D4: Section = {
+  id: "SD.D4",
+  title: "Пакетная и потоковая обработка",
+  order: 212,
+  prereqs: ["SD.D3"],
+  lessons: [
+    entry(
+      { id: "SD.D4.batch-unix-mapreduce", track: "SD", section: "SD.D4", title: "Пакетная обработка: философия Unix, MapReduce, HDFS и sort-merge join", kicker: "Системный дизайн · D4 · пакетная", icon: "collections", subtitle: "Неизменяемый вход и единый интерфейс (Unix), map→shuffle→reduce и две callback-функции, HDFS («ничего общего», NameNode, репликация блоков), reduce-side sort-merge join и горячие ключи", estMinutes: 12, cards: 4 },
+      () => import("./sd/batch-unix-mapreduce.ts").then((m) => m.batchUnixMapreduce),
+    ),
+    entry(
+      { id: "SD.D4.batch-beyond-mapreduce", track: "SD", section: "SD.D4", title: "За пределами MapReduce: подсистемы потока данных, пересчёт и графы", kicker: "Системный дизайн · D4 · пакетная", icon: "collections", subtitle: "Материализация в HDFS против конвейеризации, операторы и три способа передачи данных, отказоустойчивость пересчётом (RDD/lineage, Flink checkpoint), map-side joins (broadcast/partitioned) и графовая обработка (Pregel/BSP)", estMinutes: 12, cards: 4 },
+      () => import("./sd/batch-beyond-mapreduce.ts").then((m) => m.batchBeyondMapreduce),
+    ),
+    entry(
+      { id: "SD.D4.stream-event-logs", track: "SD", section: "SD.D4", title: "Потоки событий: брокеры vs журналы, CDC, источники событий", kicker: "Системный дизайн · D4 · потоковая", icon: "async", subtitle: "Событие как неизменяемый факт, брокер с подтверждениями (сообщение удаляется) против секционированного журнала (Kafka: чтение по смещению, сообщение остаётся), перехват изменений (CDC), источники событий (event sourcing) и неизменяемость", estMinutes: 12, cards: 4 },
+      () => import("./sd/stream-event-logs.ts").then((m) => m.streamEventLogs),
+    ),
+    entry(
+      { id: "SD.D4.stream-processing-time", track: "SD", section: "SD.D4", title: "Обработка потоков: время события vs обработки, окна, соединения, exactly-once", kicker: "Системный дизайн · D4 · потоковая", icon: "async", subtitle: "CEP и аналитика, время наступления события против времени обработки (ложный всплеск), четыре типа окон (падающее/прыгающее/скользящее/сессия), три соединения потоков (stream-stream/stream-table/table-table) и отказоустойчивость (микропакеты, контрольные точки, идемпотентность, exactly-once)", estMinutes: 12, cards: 4 },
+      () => import("./sd/stream-processing-time.ts").then((m) => m.streamProcessingTime),
+    ),
+    entry(
+      { id: "SD.D4.future-data-systems", track: "SD", section: "SD.D4", title: "Будущее ИС: интеграция через dataflow, разунификация БД, сквозная корректность", kicker: "Системный дизайн · D4 · будущее", icon: "types", subtitle: "Интеграция данных через потоки (производные данные, лямбда-архитектура), разунификация БД (federated чтение vs unbundled запись), журнал с идемпотентностью против распределённых транзакций, сквозной аргумент и корректность (своевременность vs целостность, аудитопригодность)", estMinutes: 12, cards: 4 },
+      () => import("./sd/future-data-systems.ts").then((m) => m.futureDataSystems),
+    ),
+  ],
+};
+
 const SD_TRACK: Track = {
   id: "SD",
   title: "Системный дизайн",
   sub: "Высоконагруженные приложения (DDIA)",
   badge: S.trackNewBadge,
-  sections: [SD_D1, SD_D2, SD_D3],
+  sections: [SD_D1, SD_D2, SD_D3, SD_D4],
 };
 
 // The legacy flat C# track and its 6 old lessons were removed in the F2 migration (their

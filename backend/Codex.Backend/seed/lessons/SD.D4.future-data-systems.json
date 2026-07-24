@@ -1,0 +1,42 @@
+{
+  "id": "SD.D4.future-data-systems",
+  "track": "SD",
+  "section": "SD.D4",
+  "module": "D4.5",
+  "title": "Будущее ИС: интеграция через dataflow, разунификация БД, сквозная корректность",
+  "status": "self-pass",
+  "order": 216,
+  "sources": [
+    { "id": "ddia-ch12", "kind": "book", "url": "", "date": "2017" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "explain",
+      "engagementLevel": "responding",
+      "prompt": "Что по Клеппману означает семантика однократного (exactly-once / эффективно-однократного) выполнения?",
+      "sourceRefs": ["ddia-ch12"]
+    },
+    {
+      "id": "c2",
+      "type": "explain",
+      "engagementLevel": "responding",
+      "prompt": "Почему одной лишь транзакции БД (или TCP-дедупликации, или exactly-once процессора) недостаточно, чтобы избежать двойного списания при повторе истёкшего запроса пользователем?",
+      "sourceRefs": ["ddia-ch12"]
+    },
+    {
+      "id": "c3",
+      "type": "compare",
+      "engagementLevel": "responding",
+      "prompt": "Как Клеппман разделяет два требования, обычно смешиваемых в понятии «согласованность», и что из них важнее?",
+      "sourceRefs": ["ddia-ch12"]
+    },
+    {
+      "id": "c4",
+      "type": "compare",
+      "engagementLevel": "responding",
+      "prompt": "Почему Клеппман предпочитает упорядоченный журнал с идемпотентными потребителями распределённым транзакциям (2PC/XA) при интеграции гетерогенных систем?",
+      "sourceRefs": ["ddia-ch12"]
+    }
+  ]
+}
