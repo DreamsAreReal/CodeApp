@@ -1155,6 +1155,10 @@ const SD_D4: Section = {
       { id: "SD.D4.batch-beyond-mapreduce", track: "SD", section: "SD.D4", title: "За пределами MapReduce: подсистемы потока данных, пересчёт и графы", kicker: "Системный дизайн · D4 · пакетная", icon: "collections", subtitle: "Материализация в HDFS против конвейеризации, операторы и три способа передачи данных, отказоустойчивость пересчётом (RDD/lineage, Flink checkpoint), map-side joins (broadcast/partitioned) и графовая обработка (Pregel/BSP)", estMinutes: 12, cards: 4 },
       () => import("./sd/batch-beyond-mapreduce.ts").then((m) => m.batchBeyondMapreduce),
     ),
+    entry(
+      { id: "SD.D4.stream-event-logs", track: "SD", section: "SD.D4", title: "Потоки событий: брокеры vs журналы, CDC, источники событий", kicker: "Системный дизайн · D4 · потоковая", icon: "async", subtitle: "Событие как неизменяемый факт, брокер с подтверждениями (сообщение удаляется) против секционированного журнала (Kafka: чтение по смещению, сообщение остаётся), перехват изменений (CDC), источники событий (event sourcing) и неизменяемость", estMinutes: 12, cards: 4 },
+      () => import("./sd/stream-event-logs.ts").then((m) => m.streamEventLogs),
+    ),
   ],
 };
 
