@@ -1137,12 +1137,29 @@ const SD_D3: Section = {
   ],
 };
 
+// SD.D4 «Пакетная и потоковая обработка» — DDIA ch. 10 (batch) + ch. 11 (stream) + ch. 12
+// (the future of data systems). Concept lessons (lang:"none", MCQ-by-correctIndex). This
+// section CLOSES the DDIA book. Navigation follows the reading order: batch (Unix/MapReduce
+// → beyond MapReduce) → streams (event logs → stream processing) → the future of data systems.
+const SD_D4: Section = {
+  id: "SD.D4",
+  title: "Пакетная и потоковая обработка",
+  order: 212,
+  prereqs: ["SD.D3"],
+  lessons: [
+    entry(
+      { id: "SD.D4.batch-unix-mapreduce", track: "SD", section: "SD.D4", title: "Пакетная обработка: философия Unix, MapReduce, HDFS и sort-merge join", kicker: "Системный дизайн · D4 · пакетная", icon: "collections", subtitle: "Неизменяемый вход и единый интерфейс (Unix), map→shuffle→reduce и две callback-функции, HDFS («ничего общего», NameNode, репликация блоков), reduce-side sort-merge join и горячие ключи", estMinutes: 12, cards: 4 },
+      () => import("./sd/batch-unix-mapreduce.ts").then((m) => m.batchUnixMapreduce),
+    ),
+  ],
+};
+
 const SD_TRACK: Track = {
   id: "SD",
   title: "Системный дизайн",
   sub: "Высоконагруженные приложения (DDIA)",
   badge: S.trackNewBadge,
-  sections: [SD_D1, SD_D2, SD_D3],
+  sections: [SD_D1, SD_D2, SD_D3, SD_D4],
 };
 
 // The legacy flat C# track and its 6 old lessons were removed in the F2 migration (their

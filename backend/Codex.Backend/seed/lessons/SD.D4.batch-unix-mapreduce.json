@@ -1,0 +1,42 @@
+{
+  "id": "SD.D4.batch-unix-mapreduce",
+  "track": "SD",
+  "section": "SD.D4",
+  "module": "D4.1",
+  "title": "Пакетная обработка: философия Unix, MapReduce, HDFS и sort-merge join",
+  "status": "self-pass",
+  "order": 212,
+  "sources": [
+    { "id": "ddia-ch10", "kind": "book", "url": "", "date": "2017" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "explain",
+      "engagementLevel": "responding",
+      "prompt": "Кто в задаче MapReduce выполняет этап сортировки пар «ключ — значение» между map и reduce?",
+      "sourceRefs": ["ddia-ch10"]
+    },
+    {
+      "id": "c2",
+      "type": "explain",
+      "engagementLevel": "responding",
+      "prompt": "Что такое перетасовка (shuffle) в MapReduce и по какому принципу записи распределяются между reducer'ами?",
+      "sourceRefs": ["ddia-ch10"]
+    },
+    {
+      "id": "c3",
+      "type": "compare",
+      "engagementLevel": "responding",
+      "prompt": "Почему reduce-side join (sort-merge) предпочтительнее, чем на каждую входную запись делать запрос к удалённой БД пользователей?",
+      "sourceRefs": ["ddia-ch10"]
+    },
+    {
+      "id": "c4",
+      "type": "explain",
+      "engagementLevel": "responding",
+      "prompt": "Как в Hadoop MapReduce образуются цепочки (потоки) задач и когда следующая задача может начаться?",
+      "sourceRefs": ["ddia-ch10"]
+    }
+  ]
+}
