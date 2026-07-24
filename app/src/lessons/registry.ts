@@ -1126,6 +1126,10 @@ const SD_D3: Section = {
       { id: "SD.D3.distributed-troubles", track: "SD", section: "SD.D3", title: "Проблемы распределённых систем: сети, часы, паузы, истина большинства", kicker: "Системный дизайн · D3 · распределённые", icon: "async", subtitle: "Частичные отказы, ненадёжные сети (timeout), два вида часов, приостановки процессов, истина = большинство, fencing и византийские сбои", estMinutes: 12, cards: 4 },
       () => import("./sd/distributed-troubles.ts").then((m) => m.distributedTroubles),
     ),
+    entry(
+      { id: "SD.D3.linearizability-cap", track: "SD", section: "SD.D3", title: "Линеаризуемость и теорема CAP: свежесть, C ≠ сериализуемость, цена", kicker: "Системный дизайн · D3 · распределённые", icon: "async", subtitle: "Линеаризуемость = гарантия актуальности (одна копия), гарантия возврата, линеаризуемость ≠ сериализуемость, кворум всё равно нелинеаризуем, узкая CAP и её цена", estMinutes: 12, cards: 4 },
+      () => import("./sd/linearizability-cap.ts").then((m) => m.linearizabilityCap),
+    ),
   ],
 };
 

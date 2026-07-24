@@ -105,6 +105,7 @@ const EXPECT = [
   { id: "SD.D3.transactions-acid", segs: 5, ev: "SD-ACID" },
   { id: "SD.D3.isolation-levels", segs: 5, ev: "SD-ISOLATION" },
   { id: "SD.D3.distributed-troubles", segs: 5, ev: "SD-DISTTROUBLES" },
+  { id: "SD.D3.linearizability-cap", segs: 5, ev: "SD-LINCAP" },
   { id: "PY.M1.names-objects", segs: 8, ev: "PY-NAMES" },
   { id: "PY.M2.collections-hash", segs: 5, ev: "PY-COLL" },
   { id: "PY.M3.args-unpacking", segs: 4, ev: "PY-ARGS" },
