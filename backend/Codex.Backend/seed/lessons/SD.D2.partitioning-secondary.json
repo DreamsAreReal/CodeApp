@@ -1,0 +1,42 @@
+{
+  "id": "SD.D2.partitioning-secondary",
+  "track": "SD",
+  "section": "SD.D2",
+  "module": "D2.5",
+  "title": "Вторичные индексы, перебалансировка секций и маршрутизация запросов",
+  "status": "self-pass",
+  "order": 206,
+  "sources": [
+    { "id": "ddia-ch6", "kind": "book", "url": "", "date": "2017" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "explain",
+      "engagementLevel": "responding",
+      "prompt": "В секционированном по документам вторичном индексе (локальный индекс) какова цена чтения по индексу (например «найти все красные машины»)?",
+      "sourceRefs": ["ddia-ch6"]
+    },
+    {
+      "id": "c2",
+      "type": "compare",
+      "engagementLevel": "responding",
+      "prompt": "Каков зеркальный компромисс глобального (по термам) индекса относительно локального (по документам)?",
+      "sourceRefs": ["ddia-ch6"]
+    },
+    {
+      "id": "c3",
+      "type": "explain",
+      "engagementLevel": "responding",
+      "prompt": "Почему хеширование по модулю N (hash(key) mod N) — плохой способ назначения ключей узлам при перебалансировке?",
+      "sourceRefs": ["ddia-ch6"]
+    },
+    {
+      "id": "c4",
+      "type": "explain",
+      "engagementLevel": "responding",
+      "prompt": "Как система узнаёт актуальную карту «секция → узел» при маршрутизации, если распределение секций меняется при перебалансировке?",
+      "sourceRefs": ["ddia-ch6"]
+    }
+  ]
+}

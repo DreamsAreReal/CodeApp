@@ -1097,6 +1097,10 @@ const SD_D2: Section = {
       { id: "SD.D2.partitioning-schemes", track: "SD", section: "SD.D2", title: "Секционирование: по диапазонам против по хешу, перекос и горячие точки", kicker: "Системный дизайн · D2 · секционирование", icon: "collections", subtitle: "Range vs hash, skew и hot spots, горячий ключ и разгрузка на уровне приложения", estMinutes: 11, cards: 4 },
       () => import("./sd/partitioning-schemes.ts").then((m) => m.partitioningSchemes),
     ),
+    entry(
+      { id: "SD.D2.partitioning-secondary", track: "SD", section: "SD.D2", title: "Вторичные индексы, перебалансировка секций и маршрутизация запросов", kicker: "Системный дизайн · D2 · секционирование", icon: "collections", subtitle: "Локальный vs глобальный индекс, стратегии перебалансировки, маршрутизация и координатор", estMinutes: 12, cards: 4 },
+      () => import("./sd/partitioning-secondary.ts").then((m) => m.partitioningSecondary),
+    ),
   ],
 };
 
