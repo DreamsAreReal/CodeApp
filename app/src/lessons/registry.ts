@@ -1093,6 +1093,10 @@ const SD_D2: Section = {
       { id: "SD.D2.replication-leaderless", track: "SD", section: "SD.D2", title: "Без ведущего узла и несколько ведущих: кворумы w+r>n и конкурентные записи", kicker: "Системный дизайн · D2 · репликация", icon: "async", subtitle: "Dynamo-стиль, кворум w+r>n, LWW и потеря записей, вектор версий, multi-leader-конфликты", estMinutes: 12, cards: 4 },
       () => import("./sd/replication-leaderless.ts").then((m) => m.replicationLeaderless),
     ),
+    entry(
+      { id: "SD.D2.partitioning-schemes", track: "SD", section: "SD.D2", title: "Секционирование: по диапазонам против по хешу, перекос и горячие точки", kicker: "Системный дизайн · D2 · секционирование", icon: "collections", subtitle: "Range vs hash, skew и hot spots, горячий ключ и разгрузка на уровне приложения", estMinutes: 11, cards: 4 },
+      () => import("./sd/partitioning-schemes.ts").then((m) => m.partitioningSchemes),
+    ),
   ],
 };
 

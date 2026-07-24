@@ -100,6 +100,7 @@ const EXPECT = [
   { id: "SD.D2.replication-leaders", segs: 5, ev: "SD-REPLLEADERS" },
   { id: "SD.D2.replication-lag", segs: 5, ev: "SD-REPLLAG" },
   { id: "SD.D2.replication-leaderless", segs: 5, ev: "SD-REPLLEADERLESS" },
+  { id: "SD.D2.partitioning-schemes", segs: 5, ev: "SD-PARTSCHEMES" },
   { id: "PY.M1.names-objects", segs: 8, ev: "PY-NAMES" },
   { id: "PY.M2.collections-hash", segs: 5, ev: "PY-COLL" },
   { id: "PY.M3.args-unpacking", segs: 4, ev: "PY-ARGS" },
