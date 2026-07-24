@@ -111,6 +111,7 @@ const EXPECT = [
   { id: "SD.D4.batch-beyond-mapreduce", segs: 5, ev: "SD-BATCHBEYOND" },
   { id: "SD.D4.stream-event-logs", segs: 5, ev: "SD-STREAMLOGS" },
   { id: "SD.D4.stream-processing-time", segs: 5, ev: "SD-STREAMPROC" },
+  { id: "SD.D4.future-data-systems", segs: 5, ev: "SD-FUTURE" },
   { id: "PY.M1.names-objects", segs: 8, ev: "PY-NAMES" },
   { id: "PY.M2.collections-hash", segs: 5, ev: "PY-COLL" },
   { id: "PY.M3.args-unpacking", segs: 4, ev: "PY-ARGS" },

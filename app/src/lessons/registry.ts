@@ -1163,6 +1163,10 @@ const SD_D4: Section = {
       { id: "SD.D4.stream-processing-time", track: "SD", section: "SD.D4", title: "Обработка потоков: время события vs обработки, окна, соединения, exactly-once", kicker: "Системный дизайн · D4 · потоковая", icon: "async", subtitle: "CEP и аналитика, время наступления события против времени обработки (ложный всплеск), четыре типа окон (падающее/прыгающее/скользящее/сессия), три соединения потоков (stream-stream/stream-table/table-table) и отказоустойчивость (микропакеты, контрольные точки, идемпотентность, exactly-once)", estMinutes: 12, cards: 4 },
       () => import("./sd/stream-processing-time.ts").then((m) => m.streamProcessingTime),
     ),
+    entry(
+      { id: "SD.D4.future-data-systems", track: "SD", section: "SD.D4", title: "Будущее ИС: интеграция через dataflow, разунификация БД, сквозная корректность", kicker: "Системный дизайн · D4 · будущее", icon: "types", subtitle: "Интеграция данных через потоки (производные данные, лямбда-архитектура), разунификация БД (federated чтение vs unbundled запись), журнал с идемпотентностью против распределённых транзакций, сквозной аргумент и корректность (своевременность vs целостность, аудитопригодность)", estMinutes: 12, cards: 4 },
+      () => import("./sd/future-data-systems.ts").then((m) => m.futureDataSystems),
+    ),
   ],
 };
 
