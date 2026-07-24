@@ -1,0 +1,42 @@
+{
+  "id": "SD.D2.replication-leaders",
+  "track": "SD",
+  "section": "SD.D2",
+  "module": "D2.1",
+  "title": "Репликация с ведущим узлом: синхронно/асинхронно и отработка отказа",
+  "status": "self-pass",
+  "order": 202,
+  "sources": [
+    { "id": "ddia-ch5", "kind": "book", "url": "", "date": "2017" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "compare",
+      "engagementLevel": "responding",
+      "prompt": "В репликации с ведущим узлом что именно означает синхронная репликация на данный ведомый узел?",
+      "sourceRefs": ["ddia-ch5"]
+    },
+    {
+      "id": "c2",
+      "type": "explain",
+      "engagementLevel": "responding",
+      "prompt": "Почему на практике НЕ делают все ведомые синхронными, а берут полусинхронную схему (один синхронный, остальные асинхронные)?",
+      "sourceRefs": ["ddia-ch5"]
+    },
+    {
+      "id": "c3",
+      "type": "explain",
+      "engagementLevel": "responding",
+      "prompt": "Что происходит с ещё не реплицированными записями при фатальном сбое лидера в полностью асинхронной конфигурации?",
+      "sourceRefs": ["ddia-ch5"]
+    },
+    {
+      "id": "c4",
+      "type": "explain",
+      "engagementLevel": "responding",
+      "prompt": "Почему масштабирование по чтению (много ведомых для распределения чтений) на практике требует именно асинхронной репликации?",
+      "sourceRefs": ["ddia-ch5"]
+    }
+  ]
+}

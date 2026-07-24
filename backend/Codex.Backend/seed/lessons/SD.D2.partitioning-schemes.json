@@ -1,0 +1,42 @@
+{
+  "id": "SD.D2.partitioning-schemes",
+  "track": "SD",
+  "section": "SD.D2",
+  "module": "D2.4",
+  "title": "Секционирование: по диапазонам против по хешу, перекос и горячие точки",
+  "status": "self-pass",
+  "order": 205,
+  "sources": [
+    { "id": "ddia-ch6", "kind": "book", "url": "", "date": "2017" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "explain",
+      "engagementLevel": "responding",
+      "prompt": "Что такое горячая точка (hot spot) при секционировании?",
+      "sourceRefs": ["ddia-ch6"]
+    },
+    {
+      "id": "c2",
+      "type": "compare",
+      "engagementLevel": "responding",
+      "prompt": "Почему секционирование по хешу хуже диапазонного при запросах по диапазону значений ключа?",
+      "sourceRefs": ["ddia-ch6"]
+    },
+    {
+      "id": "c3",
+      "type": "explain",
+      "engagementLevel": "responding",
+      "prompt": "Помогает ли хеширование ключа от горячей точки, когда почти весь трафик идёт на один ключ (например пост знаменитости)?",
+      "sourceRefs": ["ddia-ch6"]
+    },
+    {
+      "id": "c4",
+      "type": "explain",
+      "engagementLevel": "responding",
+      "prompt": "Что верно про термин «согласованное хеширование» (consistent hashing) по DDIA?",
+      "sourceRefs": ["ddia-ch6"]
+    }
+  ]
+}

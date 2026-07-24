@@ -1072,12 +1072,44 @@ const SD_D1: Section = {
   ],
 };
 
+// SD.D2 «Распределённые данные» — DDIA ch. 5 (replication) + ch. 6 (partitioning). Concept
+// lessons (lang:"none", MCQ-by-correctIndex). Navigation order follows the DDIA reading order:
+// leader-based → replication lag → leaderless, then partitioning schemes → secondary indexes.
+const SD_D2: Section = {
+  id: "SD.D2",
+  title: "Распределённые данные",
+  order: 202,
+  prereqs: ["SD.D1"],
+  lessons: [
+    entry(
+      { id: "SD.D2.replication-leaders", track: "SD", section: "SD.D2", title: "Репликация с ведущим узлом: синхронно/асинхронно и отработка отказа", kicker: "Системный дизайн · D2 · репликация", icon: "async", subtitle: "Лидер и ведомые, синхронно vs асинхронно, полусинхронная схема, failover, split-brain", estMinutes: 10, cards: 4 },
+      () => import("./sd/replication-leaders.ts").then((m) => m.replicationLeaders),
+    ),
+    entry(
+      { id: "SD.D2.replication-lag", track: "SD", section: "SD.D2", title: "Отставание репликации: чтение своих записей, монотонное и префиксное чтение", kicker: "Системный дизайн · D2 · репликация", icon: "async", subtitle: "Аномалии задержки репликации и три разные гарантии чтения; конечная согласованность", estMinutes: 11, cards: 4 },
+      () => import("./sd/replication-lag.ts").then((m) => m.replicationLag),
+    ),
+    entry(
+      { id: "SD.D2.replication-leaderless", track: "SD", section: "SD.D2", title: "Без ведущего узла и несколько ведущих: кворумы w+r>n и конкурентные записи", kicker: "Системный дизайн · D2 · репликация", icon: "async", subtitle: "Dynamo-стиль, кворум w+r>n, LWW и потеря записей, вектор версий, multi-leader-конфликты", estMinutes: 12, cards: 4 },
+      () => import("./sd/replication-leaderless.ts").then((m) => m.replicationLeaderless),
+    ),
+    entry(
+      { id: "SD.D2.partitioning-schemes", track: "SD", section: "SD.D2", title: "Секционирование: по диапазонам против по хешу, перекос и горячие точки", kicker: "Системный дизайн · D2 · секционирование", icon: "collections", subtitle: "Range vs hash, skew и hot spots, горячий ключ и разгрузка на уровне приложения", estMinutes: 11, cards: 4 },
+      () => import("./sd/partitioning-schemes.ts").then((m) => m.partitioningSchemes),
+    ),
+    entry(
+      { id: "SD.D2.partitioning-secondary", track: "SD", section: "SD.D2", title: "Вторичные индексы, перебалансировка секций и маршрутизация запросов", kicker: "Системный дизайн · D2 · секционирование", icon: "collections", subtitle: "Локальный vs глобальный индекс, стратегии перебалансировки, маршрутизация и координатор", estMinutes: 12, cards: 4 },
+      () => import("./sd/partitioning-secondary.ts").then((m) => m.partitioningSecondary),
+    ),
+  ],
+};
+
 const SD_TRACK: Track = {
   id: "SD",
   title: "Системный дизайн",
   sub: "Высоконагруженные приложения (DDIA)",
   badge: S.trackNewBadge,
-  sections: [SD_D1],
+  sections: [SD_D1, SD_D2],
 };
 
 // The legacy flat C# track and its 6 old lessons were removed in the F2 migration (their
