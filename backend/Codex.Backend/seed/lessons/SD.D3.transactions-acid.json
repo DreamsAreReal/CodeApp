@@ -1,0 +1,42 @@
+{
+  "id": "SD.D3.transactions-acid",
+  "track": "SD",
+  "section": "SD.D3",
+  "module": "D3.1",
+  "title": "ACID: атомарность, согласованность, изоляция, сохраняемость",
+  "status": "self-pass",
+  "order": 207,
+  "sources": [
+    { "id": "ddia-ch7", "kind": "book", "url": "", "date": "2017" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "explain",
+      "engagementLevel": "responding",
+      "prompt": "Что именно в модели ACID гарантирует атомарность транзакции?",
+      "sourceRefs": ["ddia-ch7"]
+    },
+    {
+      "id": "c2",
+      "type": "explain",
+      "engagementLevel": "responding",
+      "prompt": "Кто отвечает за согласованность (consistency) в смысле ACID?",
+      "sourceRefs": ["ddia-ch7"]
+    },
+    {
+      "id": "c3",
+      "type": "compare",
+      "engagementLevel": "responding",
+      "prompt": "Что означает классическое (учебниковое) определение изоляции — сериализуемость?",
+      "sourceRefs": ["ddia-ch7"]
+    },
+    {
+      "id": "c4",
+      "type": "explain",
+      "engagementLevel": "responding",
+      "prompt": "Верно ли, что атомарность и изоляция нужны только для транзакций над несколькими объектами?",
+      "sourceRefs": ["ddia-ch7"]
+    }
+  ]
+}

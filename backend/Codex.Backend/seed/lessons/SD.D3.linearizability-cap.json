@@ -1,0 +1,42 @@
+{
+  "id": "SD.D3.linearizability-cap",
+  "track": "SD",
+  "section": "SD.D3",
+  "module": "D3.4",
+  "title": "Линеаризуемость и теорема CAP: свежесть, C ≠ сериализуемость, цена",
+  "status": "self-pass",
+  "order": 210,
+  "sources": [
+    { "id": "ddia-ch9", "kind": "book", "url": "", "date": "2017" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "explain",
+      "engagementLevel": "responding",
+      "prompt": "Что именно гарантирует линеаризуемость по DDIA?",
+      "sourceRefs": ["ddia-ch9"]
+    },
+    {
+      "id": "c2",
+      "type": "compare",
+      "engagementLevel": "responding",
+      "prompt": "Чем линеаризуемость отличается от сериализуемости?",
+      "sourceRefs": ["ddia-ch9"]
+    },
+    {
+      "id": "c3",
+      "type": "explain",
+      "engagementLevel": "responding",
+      "prompt": "Что на самом деле утверждает теорема CAP в трактовке DDIA?",
+      "sourceRefs": ["ddia-ch9"]
+    },
+    {
+      "id": "c4",
+      "type": "explain",
+      "engagementLevel": "responding",
+      "prompt": "Почему изоляция снимков состояния (MVCC / SSI) нелинеаризуема?",
+      "sourceRefs": ["ddia-ch9"]
+    }
+  ]
+}

@@ -1104,12 +1104,45 @@ const SD_D2: Section = {
   ],
 };
 
+// SD.D3 «Транзакции и консистентность» — DDIA ch. 7 (transactions) + ch. 8 (distributed
+// systems troubles) + ch. 9 (consistency and consensus). Concept lessons (lang:"none",
+// MCQ-by-correctIndex). Navigation order follows the DDIA reading order: ACID → isolation
+// levels → distributed troubles → linearizability/CAP → ordering/consensus.
+const SD_D3: Section = {
+  id: "SD.D3",
+  title: "Транзакции и консистентность",
+  order: 207,
+  prereqs: ["SD.D2"],
+  lessons: [
+    entry(
+      { id: "SD.D3.transactions-acid", track: "SD", section: "SD.D3", title: "ACID: атомарность, согласованность, изоляция, сохраняемость", kicker: "Системный дизайн · D3 · транзакции", icon: "types", subtitle: "Что такое транзакция, четыре буквы ACID, C ≠ C в CAP, изоляция как сериализуемость, пределы сохраняемости", estMinutes: 11, cards: 4 },
+      () => import("./sd/transactions-acid.ts").then((m) => m.transactionsAcid),
+    ),
+    entry(
+      { id: "SD.D3.isolation-levels", track: "SD", section: "SD.D3", title: "Уровни изоляции: read committed, снимки, write skew, сериализуемость", kicker: "Системный дизайн · D3 · транзакции", icon: "types", subtitle: "Read committed, изоляция снимков (MVCC), потеря обновлений, асимметрия записи и фантомы, сериализуемость (2PL, SSI)", estMinutes: 12, cards: 4 },
+      () => import("./sd/isolation-levels.ts").then((m) => m.isolationLevels),
+    ),
+    entry(
+      { id: "SD.D3.distributed-troubles", track: "SD", section: "SD.D3", title: "Проблемы распределённых систем: сети, часы, паузы, истина большинства", kicker: "Системный дизайн · D3 · распределённые", icon: "async", subtitle: "Частичные отказы, ненадёжные сети (timeout), два вида часов, приостановки процессов, истина = большинство, fencing и византийские сбои", estMinutes: 12, cards: 4 },
+      () => import("./sd/distributed-troubles.ts").then((m) => m.distributedTroubles),
+    ),
+    entry(
+      { id: "SD.D3.linearizability-cap", track: "SD", section: "SD.D3", title: "Линеаризуемость и теорема CAP: свежесть, C ≠ сериализуемость, цена", kicker: "Системный дизайн · D3 · распределённые", icon: "async", subtitle: "Линеаризуемость = гарантия актуальности (одна копия), гарантия возврата, линеаризуемость ≠ сериализуемость, кворум всё равно нелинеаризуем, узкая CAP и её цена", estMinutes: 12, cards: 4 },
+      () => import("./sd/linearizability-cap.ts").then((m) => m.linearizabilityCap),
+    ),
+    entry(
+      { id: "SD.D3.consensus-ordering", track: "SD", section: "SD.D3", title: "Упорядочение и консенсус: total order broadcast, 2PC ≠ консенсус", kicker: "Системный дизайн · D3 · консенсус", icon: "async", subtitle: "Рассылка общей последовательности, двухфазная фиксация (2PC) и её блокировка, отказоустойчивый консенсус (Paxos/Raft), 2PC ≠ консенсус, кворум = строгое большинство", estMinutes: 12, cards: 4 },
+      () => import("./sd/consensus-ordering.ts").then((m) => m.consensusOrdering),
+    ),
+  ],
+};
+
 const SD_TRACK: Track = {
   id: "SD",
   title: "Системный дизайн",
   sub: "Высоконагруженные приложения (DDIA)",
   badge: S.trackNewBadge,
-  sections: [SD_D1, SD_D2],
+  sections: [SD_D1, SD_D2, SD_D3],
 };
 
 // The legacy flat C# track and its 6 old lessons were removed in the F2 migration (their
