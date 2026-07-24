@@ -1104,12 +1104,29 @@ const SD_D2: Section = {
   ],
 };
 
+// SD.D3 «Транзакции и консистентность» — DDIA ch. 7 (transactions) + ch. 8 (distributed
+// systems troubles) + ch. 9 (consistency and consensus). Concept lessons (lang:"none",
+// MCQ-by-correctIndex). Navigation order follows the DDIA reading order: ACID → isolation
+// levels → distributed troubles → linearizability/CAP → ordering/consensus.
+const SD_D3: Section = {
+  id: "SD.D3",
+  title: "Транзакции и консистентность",
+  order: 207,
+  prereqs: ["SD.D2"],
+  lessons: [
+    entry(
+      { id: "SD.D3.transactions-acid", track: "SD", section: "SD.D3", title: "ACID: атомарность, согласованность, изоляция, сохраняемость", kicker: "Системный дизайн · D3 · транзакции", icon: "types", subtitle: "Что такое транзакция, четыре буквы ACID, C ≠ C в CAP, изоляция как сериализуемость, пределы сохраняемости", estMinutes: 11, cards: 4 },
+      () => import("./sd/transactions-acid.ts").then((m) => m.transactionsAcid),
+    ),
+  ],
+};
+
 const SD_TRACK: Track = {
   id: "SD",
   title: "Системный дизайн",
   sub: "Высоконагруженные приложения (DDIA)",
   badge: S.trackNewBadge,
-  sections: [SD_D1, SD_D2],
+  sections: [SD_D1, SD_D2, SD_D3],
 };
 
 // The legacy flat C# track and its 6 old lessons were removed in the F2 migration (their
