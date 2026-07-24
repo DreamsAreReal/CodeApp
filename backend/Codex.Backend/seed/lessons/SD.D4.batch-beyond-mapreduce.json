@@ -1,0 +1,42 @@
+{
+  "id": "SD.D4.batch-beyond-mapreduce",
+  "track": "SD",
+  "section": "SD.D4",
+  "module": "D4.2",
+  "title": "За пределами MapReduce: подсистемы потока данных, пересчёт и графы",
+  "status": "self-pass",
+  "order": 213,
+  "sources": [
+    { "id": "ddia-ch10", "kind": "book", "url": "", "date": "2017" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "explain",
+      "engagementLevel": "responding",
+      "prompt": "Как dataflow-движки (Spark, Flink, Tez) восстанавливаются после сбоя узла, если промежуточное состояние на нём потеряно?",
+      "sourceRefs": ["ddia-ch10"]
+    },
+    {
+      "id": "c2",
+      "type": "explain",
+      "engagementLevel": "responding",
+      "prompt": "Почему подсистемы потока данных (Spark, Flink, Tez) обычно работают быстрее «чистого» MapReduce на тех же вычислениях?",
+      "sourceRefs": ["ddia-ch10"]
+    },
+    {
+      "id": "c3",
+      "type": "compare",
+      "engagementLevel": "responding",
+      "prompt": "Чем модель Pregel/BSP выгодно отличается от реализации итеративного графового алгоритма поверх обычного MapReduce?",
+      "sourceRefs": ["ddia-ch10"]
+    },
+    {
+      "id": "c4",
+      "type": "compare",
+      "engagementLevel": "responding",
+      "prompt": "В чём разница между «графом операторов» (DAG) в dataflow-движке и «графовой обработкой» (graph processing)?",
+      "sourceRefs": ["ddia-ch10"]
+    }
+  ]
+}

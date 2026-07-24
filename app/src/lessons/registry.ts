@@ -1151,6 +1151,10 @@ const SD_D4: Section = {
       { id: "SD.D4.batch-unix-mapreduce", track: "SD", section: "SD.D4", title: "Пакетная обработка: философия Unix, MapReduce, HDFS и sort-merge join", kicker: "Системный дизайн · D4 · пакетная", icon: "collections", subtitle: "Неизменяемый вход и единый интерфейс (Unix), map→shuffle→reduce и две callback-функции, HDFS («ничего общего», NameNode, репликация блоков), reduce-side sort-merge join и горячие ключи", estMinutes: 12, cards: 4 },
       () => import("./sd/batch-unix-mapreduce.ts").then((m) => m.batchUnixMapreduce),
     ),
+    entry(
+      { id: "SD.D4.batch-beyond-mapreduce", track: "SD", section: "SD.D4", title: "За пределами MapReduce: подсистемы потока данных, пересчёт и графы", kicker: "Системный дизайн · D4 · пакетная", icon: "collections", subtitle: "Материализация в HDFS против конвейеризации, операторы и три способа передачи данных, отказоустойчивость пересчётом (RDD/lineage, Flink checkpoint), map-side joins (broadcast/partitioned) и графовая обработка (Pregel/BSP)", estMinutes: 12, cards: 4 },
+      () => import("./sd/batch-beyond-mapreduce.ts").then((m) => m.batchBeyondMapreduce),
+    ),
   ],
 };
 
