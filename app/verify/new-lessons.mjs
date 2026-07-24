@@ -103,6 +103,7 @@ const EXPECT = [
   { id: "SD.D2.partitioning-schemes", segs: 5, ev: "SD-PARTSCHEMES" },
   { id: "SD.D2.partitioning-secondary", segs: 5, ev: "SD-PARTSECONDARY" },
   { id: "SD.D3.transactions-acid", segs: 5, ev: "SD-ACID" },
+  { id: "SD.D3.isolation-levels", segs: 5, ev: "SD-ISOLATION" },
   { id: "PY.M1.names-objects", segs: 8, ev: "PY-NAMES" },
   { id: "PY.M2.collections-hash", segs: 5, ev: "PY-COLL" },
   { id: "PY.M3.args-unpacking", segs: 4, ev: "PY-ARGS" },

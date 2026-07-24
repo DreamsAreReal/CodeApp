@@ -1118,6 +1118,10 @@ const SD_D3: Section = {
       { id: "SD.D3.transactions-acid", track: "SD", section: "SD.D3", title: "ACID: атомарность, согласованность, изоляция, сохраняемость", kicker: "Системный дизайн · D3 · транзакции", icon: "types", subtitle: "Что такое транзакция, четыре буквы ACID, C ≠ C в CAP, изоляция как сериализуемость, пределы сохраняемости", estMinutes: 11, cards: 4 },
       () => import("./sd/transactions-acid.ts").then((m) => m.transactionsAcid),
     ),
+    entry(
+      { id: "SD.D3.isolation-levels", track: "SD", section: "SD.D3", title: "Уровни изоляции: read committed, снимки, write skew, сериализуемость", kicker: "Системный дизайн · D3 · транзакции", icon: "types", subtitle: "Read committed, изоляция снимков (MVCC), потеря обновлений, асимметрия записи и фантомы, сериализуемость (2PL, SSI)", estMinutes: 12, cards: 4 },
+      () => import("./sd/isolation-levels.ts").then((m) => m.isolationLevels),
+    ),
   ],
 };
 
