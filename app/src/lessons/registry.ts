@@ -1122,6 +1122,10 @@ const SD_D3: Section = {
       { id: "SD.D3.isolation-levels", track: "SD", section: "SD.D3", title: "Уровни изоляции: read committed, снимки, write skew, сериализуемость", kicker: "Системный дизайн · D3 · транзакции", icon: "types", subtitle: "Read committed, изоляция снимков (MVCC), потеря обновлений, асимметрия записи и фантомы, сериализуемость (2PL, SSI)", estMinutes: 12, cards: 4 },
       () => import("./sd/isolation-levels.ts").then((m) => m.isolationLevels),
     ),
+    entry(
+      { id: "SD.D3.distributed-troubles", track: "SD", section: "SD.D3", title: "Проблемы распределённых систем: сети, часы, паузы, истина большинства", kicker: "Системный дизайн · D3 · распределённые", icon: "async", subtitle: "Частичные отказы, ненадёжные сети (timeout), два вида часов, приостановки процессов, истина = большинство, fencing и византийские сбои", estMinutes: 12, cards: 4 },
+      () => import("./sd/distributed-troubles.ts").then((m) => m.distributedTroubles),
+    ),
   ],
 };
 

@@ -1,0 +1,42 @@
+{
+  "id": "SD.D3.distributed-troubles",
+  "track": "SD",
+  "section": "SD.D3",
+  "module": "D3.3",
+  "title": "Проблемы распределённых систем: сети, часы, паузы, истина большинства",
+  "status": "self-pass",
+  "order": 209,
+  "sources": [
+    { "id": "ddia-ch8", "kind": "book", "url": "", "date": "2017" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "compare",
+      "engagementLevel": "responding",
+      "prompt": "Чем монотонные часы (monotonic) отличаются от часов истинного времени (календарных) и для чего годятся?",
+      "sourceRefs": ["ddia-ch8"]
+    },
+    {
+      "id": "c2",
+      "type": "explain",
+      "engagementLevel": "responding",
+      "prompt": "Почему распределённые алгоритмы принимают решения (в т.ч. «узел мёртв») кворумом большинства, а не доверяют мнению одного узла?",
+      "sourceRefs": ["ddia-ch8"]
+    },
+    {
+      "id": "c3",
+      "type": "explain",
+      "engagementLevel": "responding",
+      "prompt": "Ограждающий маркер (fencing token) защищает от узла, который после паузы ошибочно считает себя владельцем аренды. Что обязательно для его работы?",
+      "sourceRefs": ["ddia-ch8"]
+    },
+    {
+      "id": "c4",
+      "type": "compare",
+      "engagementLevel": "responding",
+      "prompt": "Как модель DDIA относится к поведению узлов «по умолчанию» и чем от неё отличаются византийские сбои?",
+      "sourceRefs": ["ddia-ch8"]
+    }
+  ]
+}
