@@ -220,13 +220,18 @@ async function main() {
     const segCount = await page.evaluate(() => Object.keys(window.__viz.vizByKey).length);
     assert(segCount === e.segs, `${e.id} built ${e.segs} animated segments (got ${segCount})`);
     // segment 1 autoplays on view -> index advances beyond 0. Autoplay is gated by an
-    // IntersectionObserver, so put s1 in the viewport first (a real user scrolls to it);
-    // otherwise a taller intro block can leave s1 below the fold and autoplay never fires.
+    // IntersectionObserver that observes the .stage (>=35% of the SVG visible), so scroll
+    // the STAGE into view, not the section wrapper: a tall section (long explain/claims)
+    // centered by block:"center" can push the stage above the fold, so <35% of it shows and
+    // autoplay never fires — even though a real user (and run.mjs) brings the stage itself
+    // into view. Fall back to the section if the stage is not found.
     // EXCEPTION: a lesson may place its predict gate ON s1 (predictAt===1) — autoplay then
     // plays scene 0 and legitimately HOLDS at index 0 until the learner predicts, so the
     // "advanced past 0" expectation does not apply. In that case we instead require the
     // gate to actually be armed on s1 (predictAt===1) and the first frame to have played.
-    await page.evaluate(() => document.querySelector('section[data-seg="s1"]')?.scrollIntoView({ block: "center" }));
+    await page.evaluate(() =>
+      (document.querySelector('section[data-seg="s1"] .stage') || document.querySelector('section[data-seg="s1"]'))?.scrollIntoView({ block: "center" }),
+    );
     const s1gate = await page.evaluate(() => window.__viz.segments["s1"].predictAt);
     if (s1gate === 1) {
       // gate on s1: autoplay plays frame 0 then HOLDS at the gate. Wait for autoplay to
