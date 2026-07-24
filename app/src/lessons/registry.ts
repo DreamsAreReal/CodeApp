@@ -1130,6 +1130,10 @@ const SD_D3: Section = {
       { id: "SD.D3.linearizability-cap", track: "SD", section: "SD.D3", title: "Линеаризуемость и теорема CAP: свежесть, C ≠ сериализуемость, цена", kicker: "Системный дизайн · D3 · распределённые", icon: "async", subtitle: "Линеаризуемость = гарантия актуальности (одна копия), гарантия возврата, линеаризуемость ≠ сериализуемость, кворум всё равно нелинеаризуем, узкая CAP и её цена", estMinutes: 12, cards: 4 },
       () => import("./sd/linearizability-cap.ts").then((m) => m.linearizabilityCap),
     ),
+    entry(
+      { id: "SD.D3.consensus-ordering", track: "SD", section: "SD.D3", title: "Упорядочение и консенсус: total order broadcast, 2PC ≠ консенсус", kicker: "Системный дизайн · D3 · консенсус", icon: "async", subtitle: "Рассылка общей последовательности, двухфазная фиксация (2PC) и её блокировка, отказоустойчивый консенсус (Paxos/Raft), 2PC ≠ консенсус, кворум = строгое большинство", estMinutes: 12, cards: 4 },
+      () => import("./sd/consensus-ordering.ts").then((m) => m.consensusOrdering),
+    ),
   ],
 };
 

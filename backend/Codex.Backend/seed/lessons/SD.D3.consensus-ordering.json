@@ -1,0 +1,42 @@
+{
+  "id": "SD.D3.consensus-ordering",
+  "track": "SD",
+  "section": "SD.D3",
+  "module": "D3.5",
+  "title": "Упорядочение и консенсус: total order broadcast, 2PC ≠ консенсус",
+  "status": "self-pass",
+  "order": 211,
+  "sources": [
+    { "id": "ddia-ch9", "kind": "book", "url": "", "date": "2017" }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "compare",
+      "engagementLevel": "responding",
+      "prompt": "Чем задача атомарной фиксации (2PC) отличается от задачи консенсуса по требованиям к голосам?",
+      "sourceRefs": ["ddia-ch9"]
+    },
+    {
+      "id": "c2",
+      "type": "explain",
+      "engagementLevel": "responding",
+      "prompt": "Почему 2PC называют блокирующим протоколом, и что будет, если координатор упадёт после того, как участник ответил «да»?",
+      "sourceRefs": ["ddia-ch9"]
+    },
+    {
+      "id": "c3",
+      "type": "explain",
+      "engagementLevel": "responding",
+      "prompt": "Какое из четырёх свойств отказоустойчивого консенсуса — свойство жизнеспособности (liveness), формализующее отказоустойчивость, а не безопасности (safety)?",
+      "sourceRefs": ["ddia-ch9"]
+    },
+    {
+      "id": "c4",
+      "type": "explain",
+      "engagementLevel": "responding",
+      "prompt": "Сколько узлов нужно консенсус-системе со строгим большинством, чтобы пережить отказ двух узлов?",
+      "sourceRefs": ["ddia-ch9"]
+    }
+  ]
+}
